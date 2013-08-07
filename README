@@ -1,0 +1,19 @@
+This repository contains the code for the 1l stop, WH+MET, and stop w/ Higgs analyses.  
+It includes the baby maker (in the "looper" subdir) and loopers to run on the babies (in the "macros" subdir).
+The minibaby maker is in "macros/MiniBabyMaker".
+
+To checkout this repository from github along with the others needed to run, follow these commands:
+
+git clone git@github.com:cmstas/SingleLepton2012.git
+cd SingleLepton2012/
+git clone git@github.com:cmstas/CORE.git
+git clone git@github.com:cmstas/Tools.git
+cmsrel CMSSW_5_3_2_patch4
+cd CMSSW_5_3_2_patch4/src
+cmsenv
+cd ../../looper
+cp CMS2.cc CMS2.h ../CORE
+make
+
+And for more info on the snt github setup, see our twiki:
+http://www.t2.ucsd.edu/tastwiki/bin/view/CMS/GitHubInstructions
