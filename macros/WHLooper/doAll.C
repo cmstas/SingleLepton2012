@@ -35,24 +35,12 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   std::string indir = "/nfs-7/userdata/stop/output_V00-02-24_2012_2jskim";
   //  std::string indir = "/nfs-7/userdata/stop/output_V00-02-27_2012_2jskim";
   //  std::string indir = "/nfs-7/userdata/stop/output_V00-02-28_2012";
+  //  std::string indir = "/nfs-6/userdata/stop/output_V00-02-32_2012_2jskim";
 
   if (outdir.size() == 0) {
     std::cout << "ERROR: must specify outdir, exiting" << std::endl;
     exit();
   }
-
-  //  std::string outdir = "V20_wjetscomp_nb012";
-  //  std::string outdir = "V20_stopcomp_tauveto";
-  //  std::string outdir = "V20_dilflavors_nfs7";
-  //  std::string outdir = "V20_metdphiplots";
-  //  std::string outdir = "V21_wjetscomp_reshaping";
-  //  std::string outdir = "V21_leadjetpt50_preselmt50";
-  //  std::string outdir = "V21_leadjetpt50_cr9";
-  //  std::string outdir = "V21_incpresel";
-  //  std::string outdir = "V24_cr5invmass";
-  //  std::string outdir = "V27_ttsl_jetacc_pumvamed_nmissed";
-  //  std::string outdir = "V28_ttsl_tobtectest";
-
 
   TChain* data        = new TChain("t");
   TChain* ttfake        = new TChain("t");
@@ -62,6 +50,7 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   TChain* ttdl_mg        = new TChain("t");
   TChain* wjets       = new TChain("t");
   TChain* wbb         = new TChain("t");
+  TChain* wbb_nlo     = new TChain("t");
   TChain* zjets       = new TChain("t");
   TChain* vv          = new TChain("t");
   TChain* wzbb        = new TChain("t");
@@ -111,6 +100,8 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   //  wbb-> Add(Form("%s/wbbjets*.root"         , indir.c_str()));
   wbb-> Add(Form("%s/wbbjets*.root"         , "/nfs-7/userdata/stop/output_V00-02-21_2012_2jskim"));
   // wbb-> Add(Form("%s/wbbjets*.root"         , "/nfs-3/userdata/stop/output_V00-02-20_2012"));
+  // WARNING!!!!: wbb_nlo same in V36 is missing 1/207 files. may also need xsec adjusted by a few percent to match official twiki
+  wbb_nlo-> Add(Form("%s/wlnubb_amcatnlo*.root"         , "/nfs-7/userdata/stop/output_V00-02-36_2012_2jskim"));
   //  zjets-> Add(Form("%s/DYStitchtot.root"         , indir.c_str()));
   zjets-> Add(Form("%s/DY1to4Jtot.root"         , indir.c_str()));
   ttfake->    Add(Form("%s/ttfake_powheg.root"         , indir.c_str()));
@@ -122,14 +113,14 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   ttdl_mg->    Add(Form("%s/ttdl_lmgtau*.root"         , indir.c_str()));
   vv->    Add(Form("%s/diboson.root"            , indir.c_str()));
   //  wzbb->  Add(Form("%s/wz2qlnujets.root"            , indir.c_str()));
-  wzbb->  Add(Form("%s/wz2qlnujets.root"            , "/nfs-7/userdata/stop/output_V00-02-36_2012"));
+  wzbb->  Add(Form("%s/wz2qlnujets.root"            , "/nfs-7/userdata/stop/output_V00-02-36_2012_2jskim"));
   tsl->     Add(Form("%s/tW_lepsl.root"             , indir.c_str()));
   tdl->     Add(Form("%s/tW_lepdl.root"             , indir.c_str()));
   //  t->     Add(Form("%s/tWall_lep.root"             , indir.c_str()));
   ttV->   Add(Form("%s/ttV.root"           , indir.c_str()));
   vvv->   Add(Form("%s/triboson.root"           , indir.c_str()));
   whbb->   Add(Form("%s/whbb.root"           , indir.c_str()));
-  //  whbb->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-20/whbb.root");
+  //  whbb->Add("/nfs-7/userdata/stop/output_V00-02-36_2012/whbb.root");
 
   //  tchiwh_125_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_125_1.root");
   tchiwh_150_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_150_1.root");
@@ -173,6 +164,8 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   } else if (runsample == "wbb") {
     sample.push_back(wjets);   labels.push_back("wjets_onlybb");
     sample.push_back(wbb);   labels.push_back("wbb");
+  } else if (runsample == "wbb_nlo") {
+    sample.push_back(wbb_nlo);   labels.push_back("wbb_nlo");
   } else if (runsample == "others") {
     sample.push_back(zjets);   labels.push_back("zjets");
     sample.push_back(vv);      labels.push_back("VV");

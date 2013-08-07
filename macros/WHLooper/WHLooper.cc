@@ -51,7 +51,7 @@ const bool doTopPtWeight = true; // obsolete variable, automatically applied
 const bool doJetSmearing = false;
 const bool doWbbMtReweight = true;
 const bool doTopPtReweight2 = true;
-const bool doLepPlusBSFs = false;
+const bool doLepPlusBSFs = true;
 const int  doJESVar = 0; // 0 for nominal, 1 for down, 2 for up
 const bool doWbbNLO = true;
 
@@ -74,11 +74,11 @@ const bool doCR5MassLast = true; // bveto, mass last
 const bool doCR14 = true; // inverted mbb region
 
 // regions to do: need for CR results/plots
-const bool doCR1METLast = true; // high m(bb), met cut last
-const bool doCR23 = true; // dilep + (lep+track)
-const bool doCR5HighMass = true; // bveto, high mass
-const bool doCR5LowMass = true; // bveto, low mass
-const bool doCR8METLast = true; // low m(bb)
+const bool doCR1METLast = false; // high m(bb), met cut last
+const bool doCR23 = false; // dilep + (lep+track)
+const bool doCR5HighMass = false; // bveto, high mass
+const bool doCR5LowMass = false; // bveto, low mass
+const bool doCR8METLast = false; // low m(bb)
 
 // regions not really used
 const bool doInclusiveMTTail = false;
@@ -186,9 +186,14 @@ void WHLooper::loop(TChain *chain, TString name) {
     isWNjets_ = false;
   }
 
-  if (name.Contains("wbb")) {
+  if (name.Contains("wbb_nlo")) {
+    isWbbMCatNLO_ = true;
+    isWbbMG_ = false;
+  } else if (name.Contains("wbb")) {
+    isWbbMCatNLO_ = false;
     isWbbMG_ = true;
   } else {
+    isWbbMCatNLO_ = false;
     isWbbMG_ = false;
   }
 
@@ -1425,7 +1430,9 @@ void WHLooper::loop(TChain *chain, TString name) {
       if (doLepPlusBSFs && (isttsl_ || isWbbMG_ || istsl_ || isWZbb_)) {
 	float tempweight = 1.0;
 	if (mt2bl_ > 200.) {
-	  tempweight *= 0.75;
+	  // MT2bl SF of 0.75 if not using Wbb NLO xsec
+	  // weight of 1.0 if using it
+	  if (!doWbbNLO) tempweight *= 0.75;
 	  if (mt_ > 100.) {
 	    if (isWbbMG_ || isWZbb_) tempweight *= 1.1;
 	    else tempweight *= 1.4;
