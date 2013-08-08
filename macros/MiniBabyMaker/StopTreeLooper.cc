@@ -1095,9 +1095,13 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    LorentzVector bb;
             if (nb_ >= 2) {
                 bb = bjets.at(0) + bjets.at(1);
+		bbdR_ = ROOT::Math::VectorUtil::DeltaR( bjets.at(0) , bjets.at(1) );
+		bbdeta_ = fabs(bjets.at(0).eta() - bjets.at(1).eta());
             } else if (njets_ >= 2) {
 	        // events with less than 2 b's: use two leading jets
                 bb = jets.at(0) + jets.at(1);
+		bbdR_ = ROOT::Math::VectorUtil::DeltaR( jets.at(0) , jets.at(1) );
+		bbdeta_ = fabs(jets.at(0).eta() - jets.at(1).eta());
 	    }
 	    bbmass_ = bb.M();
 	    bbpt_ = bb.pt();
@@ -1522,6 +1526,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             outTree_->Branch("mini_wpt"       , &wpt_       ,  "mini_wpt/F"	 );
             outTree_->Branch("mini_bbwdphi"   , &bbwdphi_   ,  "mini_bbwdphi/F"	 );
             outTree_->Branch("mini_lepmetdphi", &lepmetdphi_,  "mini_lepmetdphi/F");
+            outTree_->Branch("mini_bbdR"      , &bbdR_      ,  "mini_bbdR/F"	 );
+            outTree_->Branch("mini_bbdeta"    , &bbdeta_    ,  "mini_bbdeta/F"	 );
 
             outTree_->Branch("mini_rand"      , &rand_      ,  "mini_rand/F"      );
 
@@ -1653,20 +1659,21 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    outTree_->SetBranchStatus("mini_wbbmtcor",1);
 	    outTree_->SetBranchStatus("mini_whtailsf",1);
 
-	    outTree_->SetBranchStatus("mini_pass1l",1);
-	    outTree_->SetBranchStatus("mini_pt_J1",1);
-
 	    outTree_->SetBranchStatus("mini_whsig",1);
 	    outTree_->SetBranchStatus("mini_whcrbbmass",1);
 	    outTree_->SetBranchStatus("mini_whcr2l",1);
 	    outTree_->SetBranchStatus("mini_whcrbveto",1);
 
+	    outTree_->SetBranchStatus("mini_pass1l",1);
 	    outTree_->SetBranchStatus("mini_bbmass",1);
 	    outTree_->SetBranchStatus("mini_njets_fwd",1);
-	    outTree_->SetBranchStatus("mini_bbpt",1);
 	    outTree_->SetBranchStatus("mini_wpt",1);
 	    outTree_->SetBranchStatus("mini_bbwdphi",1);
 	    outTree_->SetBranchStatus("mini_lepmetdphi",1);
+	    outTree_->SetBranchStatus("mini_pt_J1",1);
+	    outTree_->SetBranchStatus("mini_pt_J2",1);
+	    outTree_->SetBranchStatus("mini_bbdR",1);
+	    outTree_->SetBranchStatus("mini_bbdeta",1);
 
 	    outTree_->SetBranchStatus("mini_mchargino",1);
 	  }
@@ -1783,7 +1790,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         wpt_         = -1.0;
         bbwdphi_     = -1.0;
         lepmetdphi_  = -1.0;
-
+        bbdR_        = -1.0;
+        bbdeta_      = -1.0;
 
         rand_  = -1.0;
 
