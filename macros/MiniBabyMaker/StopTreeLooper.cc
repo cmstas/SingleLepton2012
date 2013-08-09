@@ -1399,7 +1399,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         rootdir->cd();
 
 //        outFile_   = new TFile(Form("output/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
-        outFile_   = new TFile(Form("output_V00-03-16/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
+        outFile_   = new TFile(Form("output_V00-04-01/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
 	//        outFile_   = new TFile(Form("/nfs-7/userdata/stop/output_V00-02-21_2012_4jskim/Minibabies/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
         outFile_->cd();
 
@@ -1667,6 +1667,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    outTree_->SetBranchStatus("mini_pass1l",1);
 	    outTree_->SetBranchStatus("mini_bbmass",1);
 	    outTree_->SetBranchStatus("mini_njets_fwd",1);
+	    outTree_->SetBranchStatus("mini_bbpt",1);
 	    outTree_->SetBranchStatus("mini_wpt",1);
 	    outTree_->SetBranchStatus("mini_bbwdphi",1);
 	    outTree_->SetBranchStatus("mini_lepmetdphi",1);
