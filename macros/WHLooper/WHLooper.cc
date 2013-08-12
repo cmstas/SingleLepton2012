@@ -34,7 +34,7 @@
 using namespace Stop;
 
 // selections
-const bool blindSignal = true;
+const bool blindSignal = false;
 const bool doTrkVeto = true;
 const bool doTauVeto = true;
 const bool doLep2Veto = true;
@@ -53,7 +53,7 @@ const bool doWbbMtReweight = true;
 const bool doTopPtReweight2 = true;
 const bool doLepPlusBSFs = true;
 const int  doJESVar = 0; // 0 for nominal, 1 for down, 2 for up
-const bool doWbbNLO = true;
+const bool doWbbNLO = false;
 
 // plotting options
 const bool doFlavorPlots = true;
@@ -1341,7 +1341,16 @@ void WHLooper::loop(TChain *chain, TString name) {
       // -- set met/mt definitions for cuts
       met_ = stopt.t1metphicorr();
       metphi_ = stopt.t1metphicorrphi();
-      mt_ = stopt.t1metphicorrmt();
+      // variations for JES up/down
+      if (doJESVar == 1) {
+	met_   = stopt.t1metphicorrdn();
+	metphi_ = stopt.t1metphicorrphidn();
+      } else if (doJESVar == 2) {
+	met_     = stopt.t1metphicorrup();
+	metphi_   = stopt.t1metphicorrphiup();
+      }
+      mt_     = (float)getMT(stopt.lep1().pt(), stopt.lep1().phi(), met_, metphi_);
+
 
       // -- alternate MET def: jets + leptons + remaining tracks
       // met_ = stopt.mettlj15();

@@ -123,33 +123,33 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   //  whbb->Add("/nfs-7/userdata/stop/output_V00-02-36_2012/whbb.root");
 
   //  tchiwh_125_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_125_1.root");
-  tchiwh_150_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_150_1.root");
-  tchiwh_200_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_200_1.root");
-  tchiwh_250_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_250_1.root");
-  tchiwh_250_25->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_250_25.root");
-  tchiwh_250_50->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_250_50.root");
-  tchiwh_300_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_300_1.root");
-  tchiwh_350_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_350_1.root");
-  tchiwh_400_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_400_1.root");
+  tchiwh_150_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_150_1.root");
+  tchiwh_200_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_200_1.root");
+  tchiwh_250_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_250_1.root");
+  tchiwh_250_25->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_250_25.root");
+  tchiwh_250_50->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_250_50.root");
+  tchiwh_300_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_300_1.root");
+  tchiwh_350_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_350_1.root");
+  tchiwh_400_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_400_1.root");
   tchiwh_scan->Add("/nfs-7/userdata/olivito/sms/scan/TChiwh/babies/V00-02-30_2012/TChiwh_scan.root");
   tchihhwwbb->Add("/nfs-7/userdata/stop/cms2V05-03-28_stoplooperV00-02-30/HHWWbb/HHWWbb_smallTree.root");
 
-  wino_130_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_130_1.root");
-  wino_150_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_150_1.root");
-  wino_175_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_175_1.root");
-  wino_200_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_200_1.root");
-  wino_225_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_225_1.root");
-  wino_250_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_250_1.root");
-  wino_275_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_275_1.root");
-  wino_300_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_300_1.root");
-  wino_325_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_325_1.root");
-  wino_350_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_350_1.root");
-  wino_375_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_375_1.root");
-  wino_400_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_400_1.root");
-  wino_425_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_425_1.root");
-  wino_450_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_450_1.root");
-  wino_475_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_475_1.root");
-  wino_500_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_500_1.root");
+  wino_130_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_130_1.root");
+  wino_150_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_150_1.root");
+  wino_175_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_175_1.root");
+  wino_200_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_200_1.root");
+  wino_225_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_225_1.root");
+  wino_250_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_250_1.root");
+  wino_275_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_275_1.root");
+  wino_300_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_300_1.root");
+  wino_325_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_325_1.root");
+  wino_350_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_350_1.root");
+  wino_375_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_375_1.root");
+  wino_400_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_400_1.root");
+  wino_425_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_425_1.root");
+  wino_450_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_450_1.root");
+  wino_475_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_475_1.root");
+  wino_500_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_500_1.root");
 
   if (runsample == "ttsl") {
     sample.push_back(ttsl_mg);    labels.push_back("ttbar_mg_1l");
