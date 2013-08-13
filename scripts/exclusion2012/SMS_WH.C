@@ -1,4 +1,4 @@
-#include "Utils/SMS_utils.C"
+//#include "Utils/SMS_utils.C"
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -548,17 +548,17 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     //TGraph *gr_exp = getGraph( sample , "expected" , signames.at(i) );
 
     // need to multiply by BR for W->lv (0.33) * H->bb (0.56)
-    gr[i]      = getRefXsecGraph(hxsec[i]     , (char*) "TChiWH", 0.33 * 0.56);
-    gr_exp[i]  = getRefXsecGraph(hxsec_exp[i] , (char*) "TChiWH", 0.33 * 0.56);
+    // gr[i]      = getRefXsecGraph(hxsec[i]     , (char*) "TChiWH", 0.33 * 0.56);
+    // gr_exp[i]  = getRefXsecGraph(hxsec_exp[i] , (char*) "TChiWH", 0.33 * 0.56);
 
-    gr[i]->SetLineWidth(3);
-    gr_exp[i]->SetLineWidth(3);
-    gr_exp[i]->SetLineStyle(2);
+    // gr[i]->SetLineWidth(3);
+    // gr_exp[i]->SetLineWidth(3);
+    // gr_exp[i]->SetLineStyle(2);
 
-    gr[i]->SetName(Form("gr_%i",i));
-    gr_exp[i]->SetName(Form("gr_exp_%i",i));
-    gr[i]->SetTitle(Form("gr_%i",i));
-    gr_exp[i]->SetTitle(Form("gr_exp_%i",i));
+    // gr[i]->SetName(Form("gr_%i",i));
+    // gr_exp[i]->SetName(Form("gr_exp_%i",i));
+    // gr[i]->SetTitle(Form("gr_%i",i));
+    // gr_exp[i]->SetTitle(Form("gr_exp_%i",i));
 
     //can[i] = new TCanvas(Form("can_%i",i),Form("can_%i",i),1200,600);
     //can[i]->Divide(2,1);
@@ -617,15 +617,15 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     hxsec[i]->GetYaxis()->SetRangeUser(0,600);
     hexcl[i]->Draw("samebox");
 
-    gr[i]->Draw("same");
-    gr_exp[i]->Draw("same");
+    // gr[i]->Draw("same");
+    // gr_exp[i]->Draw("same");
 
-    TLegend *leg = new TLegend(0.2,0.6,0.4,0.75);
-    leg->AddEntry(gr[i],    "observed" ,"l");
-    leg->AddEntry(gr_exp[i],"expected" ,"l");
-    leg->SetFillColor(0);
-    leg->SetBorderSize(0);
-    leg->Draw();
+    // TLegend *leg = new TLegend(0.2,0.6,0.4,0.75);
+    // leg->AddEntry(gr[i],    "observed" ,"l");
+    // leg->AddEntry(gr_exp[i],"expected" ,"l");
+    // leg->SetFillColor(0);
+    // leg->SetBorderSize(0);
+    // leg->Draw();
 
 
     // TGraph* gr_excl      = getRefXsecGraph(hxsec[i], "T5zz", 1.0);
@@ -770,8 +770,8 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     hisrerr[i]->Write();
     //    hbtagerr[i]->Write();
     hstaterr[i]->Write();
-    gr[i]->Write();
-    gr_exp[i]->Write();
+    // gr[i]->Write();
+    // gr_exp[i]->Write();
   }
   outfile->Close();
 
