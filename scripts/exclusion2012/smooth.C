@@ -200,6 +200,12 @@ TH2F* exclusionContour( TH2F* hul , char* sample , bool doBDT = false , int nsmo
   TFile* f_xsec  = TFile::Open("stop_xsec.root");
   TH1F*  h_xsec  = (TH1F*) f_xsec->Get("h_stop_xsec");
 
+  if (TString(sample).Contains("TChiWH")) {
+    f_xsec  = TFile::Open("c1n2_xsec.root");
+    h_xsec  = (TH1F*) f_xsec->Get("h_c1n2_xsec");
+    h_xsec->Scale(0.33*0.56);
+  }
+
   TH2F*  h_R     = normalizeTH2( hul , h_xsec , type);
 
   if( TString(type).Contains("up") )   h_R->SetName(Form("%s_obsp1",h_R->GetName()));
