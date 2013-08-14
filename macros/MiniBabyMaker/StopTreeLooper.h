@@ -190,6 +190,8 @@ class StopTreeLooper {
 	Float_t wpt_;
 	Float_t bbwdphi_;
 	Float_t lepmetdphi_;
+	Float_t bbdeta_;
+	Float_t bbdR_;
 
 	// susy variables
 	Float_t mstop_;

@@ -94,6 +94,7 @@ void processBaby( TString outfileid = "tt_test", TString infile = "/hadoop/cms/s
   else if (infile.Contains("W2JetsToLNu"))                           sample = Form("w2jets_%s",          outfileid.Data());
   else if (infile.Contains("W3JetsToLNu"))                           sample = Form("w3jets_%s",          outfileid.Data());
   else if (infile.Contains("W4JetsToLNu"))                           sample = Form("w4jets_%s",          outfileid.Data());
+  else if (infile.Contains("WLNubbar"))                              sample = Form("wlnubb_amcatnlo_%s",         outfileid.Data());
   else if (infile.Contains("DYJetsToLL"))                            sample = Form("DYtot_%s",           outfileid.Data());
   else if (infile.Contains("DY1JetsToLL"))                           sample = Form("DY1Jtot_%s",         outfileid.Data());
   else if (infile.Contains("DY2JetsToLL"))                           sample = Form("DY2Jtot_%s",         outfileid.Data());
@@ -227,7 +228,7 @@ void processBaby( TString outfileid = "tt_test", TString infile = "/hadoop/cms/s
   int prescale  = 1;
   float lumi    = 1.0; 
   
-  looper->ScanChain(chain, sample, kfactor, prescale, lumi);
+  looper->ScanChain(chain, TString(sample), kfactor, prescale, lumi);
 
   //  gSystem->Exit(0);
  
