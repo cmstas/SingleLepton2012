@@ -22,9 +22,10 @@ struct dataMCHists{
 
 //TH1F* compareDataMC( std::vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* histname , const char* flavor , const char* dir ,
 TGraphErrors* compareDataMC( std::vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* histname , const char* flavor , const char* dir ,
-		    int nbins ,  float xmin , float xmax , const char* xtitle , 
-		    bool overlayData = true , bool residual = false, bool drawLegend = true , 
-			     bool log = false , bool normalize = false , bool fit = false, float mcnorm = -1., const char* scalesample = "" );
+			     int nbins ,  float xmin , float xmax , const char* xtitle , 
+			     bool overlayData = true , bool residual = false, bool drawLegend = true , 
+			     bool log = false , bool normalize = false , bool fit = false, float mcnorm = -1., const char* scalesample = "",
+			     bool stacksig = false, float signorm = -1., bool errband = false);
 
 void initSymbols(int latex);
 void  printLine(int latex);
@@ -40,7 +41,7 @@ std::string getTableName( const TString sample, int latex = 0 );
 //void deleteHistos();
 int getColor(const TString sample);
 TLegend *getLegend( vector<char*> labels , bool overlayData, 
-		    float x1 = 0.7, float y1 = 0.45 , float x2 = 0.87 , float y2 = 0.94 );
+		    float x1 = 0.7, float y1 = 0.45 , float x2 = 0.87 , float y2 = 0.94, float signorm = -1., bool errband = false );
 
 TGraphAsymmErrors* makeBand(TH1F* centhist, TH1F* uphist, TH1F* dnhist);
 TCanvas* compareNormalized(std::string histname, TFile* file1, std::string label1, TFile* file2, std::string label2, int rebin = 1, bool norm = true, TFile* file3 = 0, std::string label3 = "", TFile* file4 = 0, std::string label4 = "");

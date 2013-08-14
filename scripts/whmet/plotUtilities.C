@@ -721,7 +721,7 @@ int getColor(const TString sample) {
   else if (sample.Contains("dilep top")) return kRed-4;
   else if (sample.Contains("lep plus b")) return kRed-3;
   else if (sample.Contains("top 1l")) return kRed-3;
-  else if (sample.Contains("_200_1")) return kBlue;
+  else if (sample.Contains("_200_1")) return kBlue-6;
   else if (sample.Contains("_250_1")) return kMagenta;
   else if (sample.Contains("_300_1")) return kCyan+1;
 
@@ -730,7 +730,7 @@ int getColor(const TString sample) {
 }
 
 //______________________________________________________________________________
-TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1, float x2, float y2){
+TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1, float x2, float y2, float signorm, bool errband){
 
   TLegend *leg = new TLegend(x1,y1,x2,y2);
 
@@ -751,7 +751,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
 
     TString mclabel(labels.at(imc));
 
-    if( mclabel.Contains("TChiwh") || mclabel.Contains("Wino") )   continue;
+    if( mclabel.Contains("TChi") || mclabel.Contains("Wino") )   continue;
 
     mchist[imc] = new TH1F(Form("mc_%i",imc),Form("mc_%i",imc),1,0,1);
 
@@ -785,6 +785,14 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     
   }
 
+  if (errband) {
+    TGraphErrors* bgerrgraph = new TGraphErrors();
+    bgerrgraph->SetLineColor(0);
+    bgerrgraph->SetFillColor(kGray+2);
+    bgerrgraph->SetFillStyle(3005);
+    leg->AddEntry(bgerrgraph,"Total Uncertainty","f");
+  }
+
   //-----------------
   // sig samples
   //-----------------
@@ -796,7 +804,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
 
     TString mclabel(labels.at(imc));
 
-    if( !mclabel.Contains("TChiwh") && !mclabel.Contains("Wino") )   continue;
+    if( !mclabel.Contains("TChi") && !mclabel.Contains("Wino") )   continue;
 
     mchist[imc] = new TH1F(Form("mc_%i",imc),Form("mc_%i",imc),1,0,1);
 
@@ -811,6 +819,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
       mclabel.ReplaceAll("_","/");
       mclabel.ReplaceAll("Wino/","#tilde{#chi}_{1}^{#pm}#tilde{#chi}_{2}^{0} #rightarrow (W#tilde{#chi}_{1}^{0})(H#tilde{#chi}_{1}^{0}) (");
       mclabel += ")";
+      if (signorm > 0.) mclabel += Form(" x%d",int(signorm));
     }
 
     //leg->AddEntry(mchist[imc],labels.at(imc),"f");
@@ -829,10 +838,11 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
 //______________________________________________________________________________
 //TH1F* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* histname , const char* flavor , const char* dir ,
 TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* histname , 
-                    const char* flavor , const char* dir ,
-		    int nbins ,  float xmin , float xmax ,  
-		    const char* xtitle , bool overlayData , bool residual , bool drawLegend , bool log , 
-			     bool normalize , bool fit, float mcnorm, const char* scalesample ){
+			     const char* flavor , const char* dir ,
+			     int nbins ,  float xmin , float xmax ,  
+			     const char* xtitle , bool overlayData , bool residual , bool drawLegend , bool log , 
+			     bool normalize , bool fit, float mcnorm, const char* scalesample,
+			     bool stacksig, float signorm, bool errband ){
 
   dataMCHists datamchists;
   TH1F* ratio = 0;
@@ -935,6 +945,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   int nmcsig = 0;
   std::vector<TH1F*> mcsighist;
   int rebinFactor = 1;
+  float xbinsize = 1.;
 
   //for( unsigned int imc = 0 ; imc < nmc ; imc++ ){
   for( int imc = nmc-1 ; imc > -1 ; imc-- ){
@@ -947,7 +958,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     float xmax_original = mchist[imc]->GetXaxis()->GetXmax();
     int nbins_original = mchist[imc]->GetNbinsX();
     float xbinsize_original = (xmax_original - xmin_original)/float(nbins_original);
-    float xbinsize = (xmax - xmin)/float(nbins);
+    xbinsize = (xmax - xmin)/float(nbins);
     rebinFactor = int(xbinsize/xbinsize_original);
     if (rebinFactor != 1) mchist[imc]->Rebin(rebinFactor);
     mchist[imc]->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
@@ -957,11 +968,6 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mchist[imc]->SetBinError(nbins,err);
 
     //    if( normalize && ( tscalesample.EqualTo("all") || tscalesample.EqualTo(labels[imc]) ) ) {
-    if( normalize && ( tscalesample.EqualTo("all") || TString(labels[imc]).Contains(tscalesample) ) ) {
-      if (mcnorm < 0.) mchist[imc]->Scale(SF);
-      else mchist[imc]->Scale(mcnorm);
-    }
-
     if( TString( labels.at(imc) ).Contains("TChiwh") || TString( labels.at(imc) ).Contains("Wino") ){
       // signal
       mchist[imc]->SetFillColor( 0 );
@@ -972,6 +978,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
       mcsighist.push_back(mchist[imc]);
     }else{
       // bg
+      if( normalize && ( tscalesample.EqualTo("all") || TString(labels[imc]).Contains(tscalesample) ) ) {
+	if (mcnorm < 0.) mchist[imc]->Scale(SF);
+	else mchist[imc]->Scale(mcnorm);
+      }
       mchist[imc]->SetLineColor(kBlack);
       mchist[imc]->SetFillColor( getColor(labels.at(imc)) );
       mcstack->Add( mchist[imc] );
@@ -986,6 +996,19 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   }
 
   mctothist->SetLineColor(kBlack);
+  TGraphErrors* bgerrgraph = new TGraphErrors(mctothist);
+  // loop over bins and set all errors to 25% (for now)
+  if (errband) {
+    bgerrgraph->SetFillColor(kGray+2);
+    bgerrgraph->SetFillStyle(3005);
+    const float errval = 0.25;
+    cout << "Will draw error band with value: " << errval << endl;
+    for (int i = 0; i < bgerrgraph->GetN(); ++i) {
+      Double_t x,y;
+      bgerrgraph->GetPoint(i,x,y);
+      bgerrgraph->SetPointError(i,float(rebinFactor)/2.,errval*y);
+    }
+  }
 
   ytitle += Form(" / %d GeV",rebinFactor);
   float max = 1.;
@@ -993,12 +1016,12 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   if( overlayData ){
 
     datahist->Sumw2();
-    float xmin_original = datahist->GetXaxis()->GetXmin();
-    float xmax_original = datahist->GetXaxis()->GetXmax();
-    int nbins_original = datahist->GetNbinsX();
-    float xbinsize_original = (xmax_original - xmin_original)/float(nbins_original);
-    float xbinsize = (xmax - xmin)/float(nbins);
-    int rebinFactor = int(xbinsize/xbinsize_original);
+    // float xmin_original = datahist->GetXaxis()->GetXmin();
+    // float xmax_original = datahist->GetXaxis()->GetXmax();
+    // int nbins_original = datahist->GetNbinsX();
+    // float xbinsize_original = (xmax_original - xmin_original)/float(nbins_original);
+    // float xbinsize = (xmax - xmin)/float(nbins);
+    // int rebinFactor = int(xbinsize/xbinsize_original);
     if (rebinFactor != 1) datahist->Rebin(rebinFactor);
     datahist->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
     Double_t err;
@@ -1021,9 +1044,11 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     datahist->SetMarkerStyle(20);
     datahist->Draw("E1");
     mcstack->Draw("samehist");
+    if (errband) bgerrgraph->Draw("same 2");
     if (nmcsig > 0) {
       for (int i = (int) mcsighist.size() - 1; i > -1 ; i--) {
-	mcsighist[i]->Add(mctothist);
+	if (signorm > 0.) mcsighist[i]->Scale(signorm);
+	if (stacksig) mcsighist[i]->Add(mctothist);
         if( mcsighist[i]->GetMaximum() > max ) max = mcsighist[i]->GetMaximum();
 	mcsighist[i]->Draw("samehist");
       }
@@ -1053,9 +1078,11 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mctothist->Draw("hist");
     mcstack->Draw("hist same");
     mctothist->Draw("hist same axis");
+    if (errband) bgerrgraph->Draw("same 2");
     if (nmcsig > 0) {
       for (int i = (int) mcsighist.size() - 1; i > -1 ; i--) {
-	mcsighist[i]->Add(mctothist);
+	if (signorm > 0.) mcsighist[i]->Scale(signorm);
+	if (stacksig) mcsighist[i]->Add(mctothist);
         if( mcsighist[i]->GetMaximum() > max ) max = mcsighist[i]->GetMaximum();
 	mcsighist[i]->Draw("samehist");
       }
@@ -1068,7 +1095,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 
   if( drawLegend ){
     TLegend* myleg = 0;
-    if (nmcsig > 0) myleg = getLegend( labels , overlayData, 0.57, 0.45, 0.88, 0.94 );
+    if (nmcsig > 0) myleg = getLegend( labels , overlayData, 0.57, 0.45, 0.88, 0.94, signorm, errband );
     else myleg = getLegend( labels , overlayData );
     myleg->Draw();
   }
@@ -1094,13 +1121,13 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   //else                                       text->DrawLatex(0.2,0.78,"Events with #mu#mu");
   // label for specific control regions
   float yval = 0.78;
-  if (tsdir.Contains("cr1_")) text->DrawLatex(0.2,yval,"M(b#bar{b}) > 150 GeV");
-  else if (tsdir.Contains("cr8_")) text->DrawLatex(0.2,yval,"M(b#bar{b}) < 100 GeV");
-  else if (tsdir.Contains("cr14_")) text->DrawLatex(0.2,yval,"M(b#bar{b}) < 100 GeV or M(b#bar{b}) > 150 GeV");
+  if (tsdir.Contains("cr1_")) text->DrawLatex(0.2,yval,"M_{b#bar{b}} > 150 GeV");
+  else if (tsdir.Contains("cr8_")) text->DrawLatex(0.2,yval,"M_{b#bar{b}} < 100 GeV");
+  //  else if (tsdir.Contains("cr14_")) text->DrawLatex(0.2,yval,"M_{b#bar{b}} < 100 GeV or M_{b#bar{b}} > 150 GeV");
   else if (tsdir.Contains("_met100")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 100 GeV");
   else if (tsdir.Contains("_met125")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 125 GeV");
   else if (tsdir.Contains("_met150")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 150 GeV");
-  else if (tsdir.Contains("_bbmass_nm1")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 175 GeV");
+  else if (tsdir.Contains("bbmasslast") && tsdir.Contains("_bbmass_nm1")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 175 GeV");
 
   // // draw lines for signal region -- doesn't look so good...
   // if (fullhistname.Contains("sig_bbmasslast") && fullhistname.Contains("h_bbmass") ) {

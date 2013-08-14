@@ -54,7 +54,7 @@ void initialize( const char* path, bool doData, int doSig ) {
     if (doSig > 3) {
       TChiwh_130_1_->Close();
       TChiwh_150_1_->Close();
-      TChiwh_175_1_->Close();
+      //      TChiwh_175_1_->Close();
       // TChiwh_250_25_->Close();
       // TChiwh_250_50_->Close();
       TChiwh_350_1_->Close();
@@ -86,7 +86,7 @@ void initialize( const char* path, bool doData, int doSig ) {
   tt1l_ = new TFile(Form("%s/ttbar_mg_1l_histos.root",path));
   tt2l_ = new TFile(Form("%s/ttbar_mg_2l_histos.root",path));
   vv_ = new TFile(Form("%s/VV_histos.root",path));
-  t_ = new TFile(Form("%s/single_top_histos.root",path));
+  //  t_ = new TFile(Form("%s/single_top_histos.root",path));
   t1l_ = new TFile(Form("%s/single_top_1l_histos.root",path));
   t2l_ = new TFile(Form("%s/single_top_2l_histos.root",path));
   ttV_ = new TFile(Form("%s/ttV_histos.root",path));
@@ -115,21 +115,29 @@ void initialize( const char* path, bool doData, int doSig ) {
   //   TChiwh_350_1_ = new TFile(Form("%s/TChiwh_350_1_histos.root",path));
   // }
 
+  // if (doSig > 0) {
+  //   TChiwh_200_1_ = new TFile(Form("%s/Wino_200_1_histos.root",path));
+  //   TChiwh_250_1_ = new TFile(Form("%s/Wino_250_1_histos.root",path));
+  //   TChiwh_300_1_ = new TFile(Form("%s/Wino_300_1_histos.root",path));
+  // }
+  // if (doSig > 3) {
+  //   TChiwh_130_1_ = new TFile(Form("%s/Wino_130_1_histos.root",path));
+  //   TChiwh_150_1_ = new TFile(Form("%s/Wino_150_1_histos.root",path));
+  //   TChiwh_175_1_ = new TFile(Form("%s/Wino_175_1_histos.root",path));
+  //   TChiwh_350_1_ = new TFile(Form("%s/Wino_350_1_histos.root",path));
+  //   TChiwh_400_1_ = new TFile(Form("%s/Wino_400_1_histos.root",path));
+  // }
+
   if (doSig > 0) {
-    TChiwh_250_1_ = new TFile(Form("%s/Wino_250_1_histos.root",path));
-  }
-  if (doSig > 1) {
-    TChiwh_200_1_ = new TFile(Form("%s/Wino_200_1_histos.root",path));
-  }
-  if (doSig > 2) {
-    TChiwh_300_1_ = new TFile(Form("%s/Wino_300_1_histos.root",path));
+    TChiwh_200_1_ = new TFile(Form("%s/TChiWH_200_1_histos.root",path));
+    TChiwh_250_1_ = new TFile(Form("%s/TChiWH_250_1_histos.root",path));
+    TChiwh_300_1_ = new TFile(Form("%s/TChiWH_300_1_histos.root",path));
   }
   if (doSig > 3) {
-    TChiwh_130_1_ = new TFile(Form("%s/Wino_130_1_histos.root",path));
-    TChiwh_150_1_ = new TFile(Form("%s/Wino_150_1_histos.root",path));
-    TChiwh_175_1_ = new TFile(Form("%s/Wino_175_1_histos.root",path));
-    TChiwh_350_1_ = new TFile(Form("%s/Wino_350_1_histos.root",path));
-    TChiwh_400_1_ = new TFile(Form("%s/Wino_400_1_histos.root",path));
+    TChiwh_130_1_ = new TFile(Form("%s/TChiWH_130_1_histos.root",path));
+    TChiwh_150_1_ = new TFile(Form("%s/TChiWH_150_1_histos.root",path));
+    TChiwh_350_1_ = new TFile(Form("%s/TChiWH_350_1_histos.root",path));
+    TChiwh_400_1_ = new TFile(Form("%s/TChiWH_400_1_histos.root",path));
   }
 
   // --- control regions, wlight from MC
@@ -191,8 +199,31 @@ void initialize( const char* path, bool doData, int doSig ) {
   //   mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("TChiwh_350_1");
   // }
 
+  // if (doSig == 1) {
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+  // }
+  // else if (doSig == 2) {
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
+  // }
+  // else if (doSig == 3) {
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
+  //   mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
+  // }
+  // else if (doSig > 3) {
+  //   mcfiles_.push_back(TChiwh_130_1_);     mclabels_.push_back("Wino_130_1");
+  //   mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("Wino_150_1");
+  //   mcfiles_.push_back(TChiwh_175_1_);     mclabels_.push_back("Wino_175_1");
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
+  //   mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
+  //   mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("Wino_350_1");
+  //   mcfiles_.push_back(TChiwh_400_1_);     mclabels_.push_back("Wino_400_1");
+  // }
+
   if (doSig == 1) {
-    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
+    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
   }
   else if (doSig == 2) {
     mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
@@ -206,7 +237,6 @@ void initialize( const char* path, bool doData, int doSig ) {
   else if (doSig > 3) {
     mcfiles_.push_back(TChiwh_130_1_);     mclabels_.push_back("Wino_130_1");
     mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("Wino_150_1");
-    mcfiles_.push_back(TChiwh_175_1_);     mclabels_.push_back("Wino_175_1");
     mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
     mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
     mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
@@ -230,13 +260,14 @@ void stackHist( const char* path, const char* hist, const char* flavor, const ch
 
 //TH1F* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize ) {
 // TGraphErrors* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm ) {
-TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm, int doSig, bool doRatio, const char* scalesample ) {
+TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm, int doSig, bool doRatio, const char* scalesample, bool stacksig, float signorm, bool errband ) {
   initialize(path, doData, doSig);
   histStyle style = getHistStyle(hist);
   TCanvas* c = new TCanvas();
   compareDataMC( mcfiles_ , mclabels_ , data_ , hist , flavor , dir ,
   		 style.nbins/rebin ,  style.xmin , style.xmax , (style.xtitle).c_str() ,
-		 doData , doData && doRatio , true , style.log, normalize , false , mcnorm, scalesample );
+		 doData , doData && doRatio , true , style.log, normalize , false , mcnorm, scalesample,
+		 stacksig, signorm, errband);
   // compareDataMC( mcfiles_ , mclabels_ , data_ , hist , flavor , dir ,
   // 		 style.nbins/rebin ,  style.xmin , style.xmax , (style.xtitle).c_str() ,
   // 			doData , doData , true , style.log, normalize , false , mcnorm );
@@ -487,6 +518,112 @@ void saveAllHists( const char* path, const char* dir, const char* flavor, const 
 
 }
 
+void savePublicPlotsCRs(const char* path, const char* outpath) {
+
+  // !! these should use MC W+light jets
+
+  // CR0b hists
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","cr5_metlast_bbmass_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr5_metlast_bbmass_nm1_bbmass.eps",outpath));
+
+  c = stackHistAuto(path,"h_mt2bl","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr5_metlast_mt2bl_nm1_mt2bl.eps",outpath));
+
+  c = stackHistAuto(path,"h_lep1mt","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr5_metlast_mt2bl_nm1_lep1mt.eps",outpath));
+
+  c = stackHistAuto(path,"h_met","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr5_metlast_mt2bl_nm1_met.eps",outpath));
+
+  // CR2l hists
+  c = stackHistAuto(path,"h_bbmass","","cr23_bbmass_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr23_bbmass_nm1_bbmass.eps",outpath));
+
+  c = stackHistAuto(path,"h_mt2bl","","cr23_mt_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr23_mt_nm1_mt2bl.eps",outpath));
+
+  c = stackHistAuto(path,"h_lep1mt","","cr23_mt_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr23_mt_nm1_lep1mt.eps",outpath));
+
+  c = stackHistAuto(path,"h_met","","cr23_mt_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/cr23_mt_nm1_met.eps",outpath));
+
+
+}
+
+void savePublicPlotsCRMbb(const char* path, const char* outpath) {
+
+  // CRMbb mass hists (should make with scale factors applied)
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_mt_nm1",1,1,0,-1,0,1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_mt_nm1_bbmass.eps",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met_nm1",1,2,0,-1,0,1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met_nm1_bbmass.eps",outpath));
+
+  // c = stackHistAuto(path,"h_mt2bl","","cr14_mt2bl_nm1",1,1,0,-1,0,1);
+  // c->SaveAs(Form("%s/cr14_mt2bl_nm1_mt2bl.eps",outpath));
+
+  // c = stackHistAuto(path,"h_lep1mt","","cr14_mt2bl_nm1",1,1,0,-1,0,1);
+  // c->SaveAs(Form("%s/cr14_mt2bl_nm1_lep1mt.eps",outpath));
+
+  // c = stackHistAuto(path,"h_met","","cr14_mt2bl_nm1",1,1,0,-1,0,1);
+  // c->SaveAs(Form("%s/cr14_mt2bl_nm1_met.eps",outpath));
+
+}
+
+void savePublicPlotsSig1(const char* path, const char* outpath) {
+
+  // sig presel plots, bkg norm to data, with 1 sig overlaid, scaled up
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_mt2bl_nm1",1,1,1,-1,1,1,"",0,20.);
+  c->SaveAs(Form("%s/sig_bbmasslast_mt2bl_nm1_bbmass_sig_norm.eps",outpath));
+
+  c = stackHistAuto(path,"h_mt2bl","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.);
+  c->SaveAs(Form("%s/sig_metlast_mt2bl_nm1_mt2bl_sig_norm.eps",outpath));
+
+  c = stackHistAuto(path,"h_lep1mt","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.);
+  c->SaveAs(Form("%s/sig_metlast_mt2bl_nm1_lep1mt_sig_norm.eps",outpath));
+
+  c = stackHistAuto(path,"h_met","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.);
+  c->SaveAs(Form("%s/sig_metlast_mt2bl_nm1_met_sig_norm.eps",outpath));
+
+}
+
+void savePublicPlotsSig3(const char* path, const char* outpath) {
+
+  // sig mass hists with signals overlaid
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met100_bbmass_sigoverlay.eps",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met125_bbmass_sigoverlay.eps",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met150_bbmass_sigoverlay.eps",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met175_bbmass_sigoverlay.eps",outpath));
+
+  // .. and again with error bands
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",1,-1,1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met100_bbmass_sigoverlay_errband.eps",outpath));
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met100_bbmass_sigoverlay_errband.pdf",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",1,-1,1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met125_bbmass_sigoverlay_errband.eps",outpath));
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met125_bbmass_sigoverlay_errband.pdf",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",1,-1,1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met150_bbmass_sigoverlay_errband.eps",outpath));
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met150_bbmass_sigoverlay_errband.pdf",outpath));
+
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1,-1,1);
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met175_bbmass_sigoverlay_errband.eps",outpath));
+  c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met175_bbmass_sigoverlay_errband.pdf",outpath));
+
+}
+
+
+
 histStyle getHistStyle( const char* hist ) {
 
   histStyle style;
@@ -512,7 +649,7 @@ histStyle getHistStyle( const char* hist ) {
     // style.nbins = 20;
     // style.xmin = 0.;
     //    style.xmax = 500.;
-    style.xtitle = "m_{T}(lep1) [GeV]";
+    style.xtitle = "M_{T} [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_mt2bl")) {
     style.nbins = 14;
@@ -551,7 +688,7 @@ histStyle getHistStyle( const char* hist ) {
     // style.nbins = 20;
     // style.xmin = 0.;
     //    style.xmax = 500.;
-    style.xtitle = "pf MET [GeV]";
+    style.xtitle = "E_{T}^{miss} [GeV]";
     //    style.xtitle = "type 1 phi cor pf MET [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_ht")) {
