@@ -295,7 +295,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
 
   filename = Form("rootfiles/%s%s%s_histos.root",sample,suffix,BDTchar);
 
-  char* outfilename = Form("rootfiles/%s_combinePlots%s%s%s.root",sample,suffix,BDTchar,nminchar);
+  const TString outfilename = Form("rootfiles/%s_combinePlots%s%s%s.root",sample,suffix,BDTchar,nminchar);
 
   cout << "--------------------------------------" << endl;
   cout << "Opening    " << filename << endl;
@@ -739,14 +739,15 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
   hbest->GetXaxis()->SetLabelSize(0.035);
   hbest->GetYaxis()->SetLabelSize(0.035);
   hbest->GetZaxis()->SetLabelSize(0.035);
-  hbest->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-  hbest->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+  hbest->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+  hbest->GetYaxis()->SetTitleOffset(1.15);
+  hbest->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
   hbest->GetXaxis()->SetRangeUser(xaxismin,512.5);
   hbest->GetYaxis()->SetRangeUser(0,400);
   hbest->GetZaxis()->SetTitle("best signal region");
 
   t->SetTextSize(0.035);
-  t->DrawLatex(0.18,0.92,"CMS Internal           #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  t->DrawLatex(0.18,0.92,"CMS Preliminary        #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
   
   t->SetTextSize(0.045);
   t->DrawLatex(0.21,0.83,label);
@@ -1098,10 +1099,11 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     can3->cd(1);
     gPad->SetGridx();
     gPad->SetGridy();
-    hexcl->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hexcl->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hexcl->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hexcl->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hexcl->GetXaxis()->SetRangeUser(xaxismin,512.5);
     hexcl->GetYaxis()->SetRangeUser(0,400);
+    hexcl->GetYaxis()->SetTitleOffset(1.20);
     hexcl->Draw("colz");
     //gr->Draw("lp");
     hR->Draw("CONT3SAMEC");
@@ -1115,10 +1117,11 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     can3->cd(2);
     gPad->SetGridx();
     gPad->SetGridy();
-    hexcl_obsp1->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hexcl_obsp1->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hexcl_obsp1->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hexcl_obsp1->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hexcl_obsp1->GetXaxis()->SetRangeUser(xaxismin,512.5);
     hexcl_obsp1->GetYaxis()->SetRangeUser(0,400);
+    hexcl_obsp1->GetYaxis()->SetTitleOffset(1.20);
     hexcl_obsp1->Draw("colz");
     //gr_obsp1->Draw("lp");
     hR_obsp1->Draw("CONT3SAMEC");
@@ -1132,10 +1135,11 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     can3->cd(3);
     gPad->SetGridx();
     gPad->SetGridy();
-    hexcl_obsm1->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hexcl_obsm1->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hexcl_obsm1->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hexcl_obsm1->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hexcl_obsm1->GetXaxis()->SetRangeUser(xaxismin,512.5);
     hexcl_obsm1->GetYaxis()->SetRangeUser(0,400);
+    hexcl_obsm1->GetYaxis()->SetTitleOffset(1.20);
     hexcl_obsm1->Draw("colz");
     //gr_obsm1->Draw("lp");
     hR_obsm1->Draw("CONT3SAMEC");
@@ -1149,10 +1153,11 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     can3->cd(4);
     gPad->SetGridx();
     gPad->SetGridy();
-    hexcl_exp->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hexcl_exp->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hexcl_exp->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hexcl_exp->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hexcl_exp->GetXaxis()->SetRangeUser(xaxismin,512.5);
     hexcl_exp->GetYaxis()->SetRangeUser(0,400);
+    hexcl_exp->GetYaxis()->SetTitleOffset(1.20);
     hexcl_exp->Draw("colz");
     //gr_exp->Draw("lp");
     hR_exp->Draw("CONT3SAMEC");
@@ -1166,10 +1171,11 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     can3->cd(5);
     gPad->SetGridx();
     gPad->SetGridy();
-    hexcl_expp1->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hexcl_expp1->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hexcl_expp1->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hexcl_expp1->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hexcl_expp1->GetXaxis()->SetRangeUser(0,512.5);
     hexcl_expp1->GetYaxis()->SetRangeUser(0,400);
+    hexcl_expp1->GetYaxis()->SetTitleOffset(1.20);
     hexcl_expp1->Draw("colz");
     //gr_expp1->Draw("lp");
     hR_expp1->Draw("CONT3SAMEC");
@@ -1188,10 +1194,11 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     can3->cd(6);
     gPad->SetGridx();
     gPad->SetGridy();
-    hexcl_expm1->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hexcl_expm1->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hexcl_expm1->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hexcl_expm1->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hexcl_expm1->GetXaxis()->SetRangeUser(0,512.5);
     hexcl_expm1->GetYaxis()->SetRangeUser(0,400);
+    hexcl_expm1->GetYaxis()->SetTitleOffset(1.20);
     hexcl_expm1->Draw("colz");
     //gr_expm1->Draw("lp");
     hR_expm1->Draw("CONT3SAMEC");
@@ -1243,9 +1250,9 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
   hdummy->GetXaxis()->SetLabelSize(0.035);
   hdummy->GetYaxis()->SetLabelSize(0.035);
   hdummy->GetZaxis()->SetLabelSize(0.035);
-  hdummy->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
+  hdummy->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
   hdummy->GetYaxis()->SetTitleOffset(0.9);
-  hdummy->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+  hdummy->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
   hdummy->GetZaxis()->SetTitle("95% CL UL on #sigma#timesBF [pb]");
   hdummy->GetZaxis()->SetTitleOffset(0.8);
   hdummy->GetXaxis()->SetRangeUser(xaxismin,512.5);
@@ -1489,7 +1496,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
 
 
   t->SetTextSize(0.04);
-  t->DrawLatex(0.18,0.94,"CMS Internal                             #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  t->DrawLatex(0.18,0.94,"CMS Preliminary                          #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 
   TLine *line = new TLine();
   line->SetLineWidth(2);
@@ -1536,6 +1543,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
   // T2tt_obs->Write();
 
   fout->Close();
+  cout << "results written to file: " << outfilename << endl;
 
 }
 

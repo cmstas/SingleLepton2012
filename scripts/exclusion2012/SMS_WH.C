@@ -58,8 +58,8 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   //--------------------------------------------------
 
   if( TString(sample).Contains("TChiWH") ){    
-    //    filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/TChiWH_whmet.root";
-    filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012_2jskim/Minibabies_V00-04-01_BDT_V00-00-01/TChiWH_whmet.root";
+    filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/TChiWH_whmet.root";
+    // filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012_2jskim/Minibabies_V00-04-01_BDT_V00-00-01/TChiWH_whmet.root";
     //denomname = (char*) "/tas/cms2/stop/cms2V05-03-26_stoplooperV00-02-24/T2tt_mad/minibaby_V00-03-06/Skim_4jets_MET100_MT120/myMassDB_T2tt_combined_25GeVbins.root";
     denomname = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/myMassDB_TChiWH.root";
 
@@ -578,8 +578,9 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     heff[i]->Scale(100);
     heff[i]->GetXaxis()->SetLabelSize(0.035);
     heff[i]->GetYaxis()->SetLabelSize(0.035);
-    heff[i]->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    heff[i]->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    heff[i]->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    heff[i]->GetYaxis()->SetTitleOffset(1.15);
+    heff[i]->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     heff[i]->GetZaxis()->SetTitle("efficiency (%)");
     heff[i]->GetZaxis()->SetTitleOffset(1.2);
     heff[i]->GetXaxis()->SetRangeUser(100,800);
@@ -605,8 +606,9 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
 
     hxsec[i]->GetXaxis()->SetLabelSize(0.035);
     hxsec[i]->GetYaxis()->SetLabelSize(0.035);
-    hxsec[i]->GetYaxis()->SetTitle("#tilde{#chi}^{0}_{1} mass [GeV]");
-    hxsec[i]->GetXaxis()->SetTitle("#tilde{#chi}^{#pm}_{1} mass [GeV]");
+    hxsec[i]->GetYaxis()->SetTitle("M_{#tilde{#chi}^{0}_{1}} [GeV]");
+    hxsec[i]->GetYaxis()->SetTitleOffset(1.15);
+    hxsec[i]->GetXaxis()->SetTitle("M_{#tilde{#chi}^{#pm}_{1}} [GeV]");
     hxsec[i]->GetZaxis()->SetTitle("#sigma upper limit [pb]");
     hxsec[i]->GetZaxis()->SetTitleOffset(1.2);
     hxsec[i]->Draw("colz");
