@@ -3293,6 +3293,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       pfmet_    = evt_pfmet();
       pfmetphi_ = evt_pfmetPhi();
       pfsumet_  = evt_pfsumet();
+      pfmetsignif_ = evt_pfmetSignificance();
 
       //p_met = getMet( "pfMET"    , hypIdx);
       p_met = make_pair( evt_pfmet() , evt_pfmetPhi() );      
@@ -3937,6 +3938,7 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("pfmet",           &pfmet_,            "pfmet/F");
   outTree->Branch("pfmetveto",       &pfmetveto_,        "pfmetveto/F");
   outTree->Branch("pfmetsig",        &pfmetsig_,         "pfmetsig/F");
+  outTree->Branch("pfmetsignif",     &pfmetsignif_,      "pfmetsignif/F");
   outTree->Branch("pfmetphi",        &pfmetphi_,         "pfmetphi/F");
   outTree->Branch("pfsumet",         &pfsumet_,          "pfsumet/F");
   outTree->Branch("mucormet",        &mucormet_,         "mucormet/F");
