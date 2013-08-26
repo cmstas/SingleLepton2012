@@ -82,6 +82,7 @@ namespace Stop {
 	float &pfmet() { return stopt.pfmet(); }
 	float &pfmetveto() { return stopt.pfmetveto(); }
 	float &pfmetsig() { return stopt.pfmetsig(); }
+	float &pfmetsignif() { return stopt.pfmetsignif(); }
 	float &pfmetphi() { return stopt.pfmetphi(); }
 	float &pfsumet() { return stopt.pfsumet(); }
 	float &mucormet() { return stopt.mucormet(); }
