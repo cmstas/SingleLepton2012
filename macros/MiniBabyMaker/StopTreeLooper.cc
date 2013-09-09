@@ -174,10 +174,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     makeTree(name.Data(), chain);
 
+    TH1F *h_nsig_pmssm;
     TH2F *h_nsig, *h_nsig25, *h_nsig75 ;
     TH2F *h_nsig_masslessLSP;
 
-    if( name.Contains("T2") || name.Contains("TChiWH") ){
+    if( name.Contains("T2") || name.Contains("TChiWH") || name.Contains("pMSSM") ){
         char* h_nsig_filename             = "";
         char* h_nsig_filename_masslessLSP = "";
 
@@ -265,11 +266,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	  cout << "[StopTreeLooper::loop] opening mass TH2 file  " << h_nsig_filename << endl;
 	}
 
+	else if (name.Contains("pMSSM")) {
+	  h_nsig_filename = "/nfs-7/userdata/olivito/pmssm/pmssm_nsig.root";
+	  cout << "[StopTreeLooper::loop] opening nsig TH1 file  " << h_nsig_filename << endl;
+	}
+
         TFile *f_nsig = TFile::Open(h_nsig_filename);
 
         assert(f_nsig);
 
-        h_nsig = (TH2F*) f_nsig->Get("masses");
+	if( name.Contains("T2") || name.Contains("TChiWH") ){
+	  h_nsig = (TH2F*) f_nsig->Get("masses");
+	}
 
         if( name.Contains("T2bw") ){
             h_nsig25 = (TH2F*) f_nsig->Get("masses25");
@@ -279,6 +287,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         if( name.Contains("T2tt") ){
 	  TFile *f_nsig_masslessLSP = TFile::Open(h_nsig_filename_masslessLSP);
 	  h_nsig_masslessLSP = (TH2F*) f_nsig_masslessLSP->Get("masses");
+	}
+
+	if( name.Contains("pMSSM") ){
+	  h_nsig_pmssm = (TH1F*) f_nsig->Get("run");
 	}
 
     }
@@ -473,7 +485,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     bool isData = name.Contains("data") ? true : false;
     bool isfastsim = false;
-    if (name.Contains("T2tt") || name.Contains("T2bw") || name.Contains("Wino") || name.Contains("TChiWH")) isfastsim = true;
+    if (name.Contains("T2") || name.Contains("Wino") || name.Contains("TChiWH") || name.Contains("pMSSM") ) isfastsim = true;
 
 
     cout << "[StopTreeLooper::loop] running over chain with total entries " << nEvents << endl;
@@ -696,6 +708,16 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	      nsigevents_ = (int) nevents;
 	      mchargino_   = stopt.mg();                   // chargino mass
 	      mlsp_        = stopt.ml();                   // LSP mass
+	      xsecsusy_    = stopt.xsecsusy();
+	    }
+
+	    if ( name.Contains("pMSSM") ) {
+	      int bin = h_nsig_pmssm->FindBin(stopt.run());
+	      float nevents = h_nsig_pmssm->GetBinContent(bin);
+
+	      //NOTE::need to add vtx. reweighting for the signal sample
+	      whweight_  = stopt.xsecsusy() * 1000.0 / nevents * 19.5; 
+	      nsigevents_ = (int) nevents;
 	      xsecsusy_    = stopt.xsecsusy();
 	    }
 
@@ -1399,7 +1421,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         rootdir->cd();
 
 //        outFile_   = new TFile(Form("output/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
-        outFile_   = new TFile(Form("output_V00-04-01/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
+        outFile_   = new TFile(Form("output_V00-04-04/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
 	//        outFile_   = new TFile(Form("/nfs-7/userdata/stop/output_V00-02-21_2012_4jskim/Minibabies/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
         outFile_->cd();
 
