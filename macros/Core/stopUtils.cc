@@ -608,7 +608,7 @@ float getisoeffweight(int id1, float pt, float eta)
 bool passEvtSelection(TString name, bool dometdphi) 
 {
 
-  if (!name.Contains("T2")  && !name.Contains("TChi") && !name.Contains("Wino") && !name.Contains("T6tt")) {
+  if (!name.Contains("T2")  && !name.Contains("TChi") && !name.Contains("Wino") && !name.Contains("T6tt") && !name.Contains("pMSSM")) {
 
     //rho requirement
     if ( stopt.rhovor()<0. || stopt.rhovor()>=40. ) return false;
