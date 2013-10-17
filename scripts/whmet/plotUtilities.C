@@ -569,6 +569,143 @@ void printSigRegions( vector<TFile*> mcfiles , vector<char*> labels , TFile* dat
 }
 
 //______________________________________________________________________________
+void printSigRegionsExcl( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , char* dir , bool doData, int latex, bool doSystErr ){
+
+  initSymbols( latex );
+
+  std::vector<int> metbins;
+  //  metbins.push_back(50);
+  metbins.push_back(100);
+  metbins.push_back(125);
+  metbins.push_back(150);
+  metbins.push_back(175);
+
+  std::vector<TString> bg_labels;
+  std::vector<TFile*> bg_files;
+  std::vector<TString> sig_labels;
+  std::vector<TFile*> sig_files;
+
+  assert(mcfiles.size() == labels.size());
+
+  // loop through mc files and separate into signals and bgs
+  for(unsigned int imc = 0 ; imc < mcfiles.size() ; ++imc) {
+    TString label = TString(labels[imc]);
+    if( label.Contains("TChi") || label.Contains("Wino") ) {
+      sig_labels.push_back(label);
+      sig_files.push_back(mcfiles[imc]);
+    } else {
+      bg_labels.push_back(label);
+      bg_files.push_back(mcfiles[imc]);
+    }
+  }
+
+  TString histname_dir = TString(dir) + "/h_met";
+
+  printLine(latex);
+  // header info
+  cout << delimstart << setw(startwidth) << "Sample"    << setw(width2);
+  for (unsigned int ibin = 0; ibin < metbins.size(); ++ibin) {
+    cout << delim      << setw(width1) << metbins.at(ibin)    << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  std::vector<float> nmc_tot(metbins.size(),0.);
+  std::vector<float> errmc_tot(metbins.size(),0.);
+
+  // loop over backgrounds
+  for(unsigned int ibg = 0 ; ibg < bg_labels.size() ; ++ibg){
+    cout << delimstart << setw(startwidth) << getTableName(bg_labels[ibg],latex)  << setw(width2);
+    // loop over dirs, print counts for each
+    for (unsigned int ibin = 0; ibin < metbins.size(); ++ibin) {
+      TH1F* mchist = (TH1F*)bg_files[ibg]->Get(histname_dir.Data());
+      float nmc = 0.;
+      float errmc = 0.;
+      if (mchist) {
+	Double_t errmc_stat;
+	int maxbin = -1;
+	if (ibin < metbins.size()-1) maxbin = metbins.at(ibin+1);
+	nmc = mchist->IntegralAndError(metbins.at(ibin)+1,maxbin,errmc_stat);
+	if (doSystErr) errmc = sqrt(pow(getSystError(bg_labels[ibg]) * nmc, 2) + pow(errmc_stat,2));
+	else errmc = errmc_stat;
+	nmc_tot[ibin] += nmc;
+	errmc_tot[ibin] += pow(errmc,2);
+      }
+
+      stringstream out;
+      out << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc );
+      cout << delim      << setw(width1) << out.str()  << setw(width2);
+
+    } // loop over dirs
+    cout << delimend   << endl;
+
+  } // loop over bgs
+  printLine(latex);
+
+  // total predictions for each dir
+  cout << delimstart << setw(startwidth) << "Total SM Pred"  << setw(width2);
+  for (unsigned int ibin = 0; ibin < metbins.size(); ++ibin) {
+    errmc_tot[ibin] = sqrt(errmc_tot[ibin]);
+    stringstream out;
+    out << Form( "%.1f" , nmc_tot[ibin] ) << pm << Form( "%.1f" , errmc_tot[ibin] );
+    cout << delim      << setw(width1) << out.str()  << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  // print data (or placeholder if blinding)
+  cout << delimstart << setw(startwidth) << "Data"  << setw(width2);
+  for (unsigned int ibin = 0; ibin < metbins.size(); ++ibin) {
+    stringstream out;
+    if (!doData) {
+      out << "-";
+      cout << delim      << setw(width1) << out.str()  << setw(width2);
+      continue;
+    }
+    float ndata = 0.;
+    float errdata = 0.;
+    TH1F* datahist = (TH1F*)datafile->Get(histname_dir.Data());
+    if (datahist) {
+      Double_t errdata;
+      int maxbin = -1;
+      if (ibin < metbins.size()-1) maxbin = metbins.at(ibin+1);
+      ndata = datahist->IntegralAndError(metbins.at(ibin)+1,maxbin,errdata);
+    } 
+    out << Form("%d",int(ndata));
+    cout << delim      << setw(width1) << out.str()  << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  // print signals here
+  for(unsigned int isig = 0 ; isig < sig_labels.size() ; ++isig){
+    cout << delimstart << setw(startwidth) << getTableName(sig_labels[isig],latex)  << setw(width2);
+    for (unsigned int ibin = 0; ibin < metbins.size(); ++ibin) {
+      TH1F* mchist = (TH1F*)sig_files[isig]->Get(histname_dir.Data());
+      float nmc = 0.;
+      float errmc = 0.;
+      if (mchist) {
+	Double_t errmc_stat;
+	int maxbin = -1;
+	if (ibin < metbins.size()-1) maxbin = metbins.at(ibin+1);
+	nmc = mchist->IntegralAndError(metbins.at(ibin)+1,maxbin,errmc_stat);
+	if (doSystErr) errmc = sqrt(pow(getSystError(sig_labels[isig]) * nmc, 2) + pow(errmc_stat,2));
+	else errmc = errmc_stat;
+      }
+      stringstream out;
+      out << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc );
+      cout << delim      << setw(width1) << out.str()  << setw(width2);
+
+    } // loop over dirs
+    cout << delimend   << endl;
+
+  } // loop over sigs
+
+  printLine(latex);
+
+}
+
+//______________________________________________________________________________
 float getSystError( const TString sample ){
 
   if (sample.Contains("ttbar 2l")) return 0.4;
@@ -721,9 +858,11 @@ int getColor(const TString sample) {
   else if (sample.Contains("dilep top")) return kRed-4;
   else if (sample.Contains("lep plus b")) return kRed-3;
   else if (sample.Contains("top 1l")) return kRed-3;
+  else if (sample.Contains("_150_1")) return kBlue-4;
   else if (sample.Contains("_200_1")) return kBlue-6;
   else if (sample.Contains("_250_1")) return kMagenta;
   else if (sample.Contains("_300_1")) return kCyan+1;
+  else if (sample.Contains("_350_1")) return kCyan-6;
 
   std::cout << "ERROR: getColor: didn't recognize sample: " << sample << std::endl;
   return 1;
@@ -964,8 +1103,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mchist[imc]->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
     Double_t err;
     float lastbin_and_overflow =  mchist[imc]->IntegralAndError(nbins,-1,err);
-    mchist[imc]->SetBinContent(nbins,lastbin_and_overflow);
-    mchist[imc]->SetBinError(nbins,err);
+    if (!TString(histname).Contains("h_bdt")) {
+      mchist[imc]->SetBinContent(nbins,lastbin_and_overflow);
+      mchist[imc]->SetBinError(nbins,err);
+    }
 
     //    if( normalize && ( tscalesample.EqualTo("all") || tscalesample.EqualTo(labels[imc]) ) ) {
     if( TString( labels.at(imc) ).Contains("TChiwh") || TString( labels.at(imc) ).Contains("Wino") ){
@@ -1026,8 +1167,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     datahist->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
     Double_t err;
     float lastbin_and_overflow =  datahist->IntegralAndError(nbins,-1,err);
-    datahist->SetBinContent(nbins,lastbin_and_overflow);
-    datahist->SetBinError(nbins,err);
+    if (!TString(histname).Contains("h_bdt")) {
+      datahist->SetBinContent(nbins,lastbin_and_overflow);
+      datahist->SetBinError(nbins,err);
+    }
 
     max = datahist->GetMaximum() + datahist->GetBinError(datahist->GetMaximumBin());
     if( mctothist->GetMaximum() > max ) max = mctothist->GetMaximum();
@@ -1128,6 +1271,8 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   else if (tsdir.Contains("_met125")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 125 GeV");
   else if (tsdir.Contains("_met150")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 150 GeV");
   else if (tsdir.Contains("bbmasslast") && tsdir.Contains("_bbmass_nm1")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 175 GeV");
+  else if (tsdir.Contains("cr23_")) text->DrawLatex(0.2,yval,"CR-2l");
+  else if (tsdir.Contains("cr5_")) text->DrawLatex(0.2,yval,"CR-0b");
 
   // // draw lines for signal region -- doesn't look so good...
   // if (fullhistname.Contains("sig_bbmasslast") && fullhistname.Contains("h_bbmass") ) {
@@ -1205,7 +1350,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     ratio->GetYaxis()->SetLabelSize(0.15);
     //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
     ratio->GetYaxis()->SetRangeUser(0.001,2.0);
-    ratio->GetYaxis()->SetTitle("Data/MC  ");
+    ratio->GetYaxis()->SetTitle("Data/SM  ");
     ratio->GetXaxis()->SetLabelSize(0);
     ratio->GetXaxis()->SetTitleSize(0);
     ratio->SetMarkerSize(0.7);
@@ -1493,7 +1638,7 @@ TH1F* cumulate (TH1F* in, bool increasing) {
 }
 
 //______________________________________________________________________________
-TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print) {
+TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print, float sf) {
 
   TH1F* sig = (TH1F*)signal->Clone("h_tmp_s");
   if (normalize) sig->Scale(1 / sig->Integral(0, sig->GetNbinsX() + 1));
@@ -1504,17 +1649,17 @@ TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool incr
   TGraphErrors* ret = new TGraphErrors(signal->GetNbinsX());
   for (int i = 1; i <= signal->GetNbinsX(); ++i) {
     const double x = sig_cum->GetBinCenter(i);
-    const double s = sig_cum->GetBinContent(i);
+    const double s = sig_cum->GetBinContent(i) * sf;
     if (!normalize && (s < 3.0)) continue;
-    const double b = bg_cum->GetBinContent(bg_cum->FindBin(x));
+    const double b = bg_cum->GetBinContent(bg_cum->FindBin(x)) * sf;
     const double errs = sig_cum->GetBinError(i);
     const double errb = bg_cum->GetBinError(bg_cum->FindBin(x));
-    ret->SetPoint(i - 1, b, s); // gotta love offsets
+    ret->SetPoint(i - 1, 1.-b, s); // gotta love offsets
     ret->SetPointError(i - 1, errb, errs);
-    if (print) {
+    if (print && s > 0) {
       std::cout << "x value: " << x << ", s: " << s << ", b: " << b;
-      if (b > 0.) std::cout << ", s/b: " << s/b << ", s/sqrt(b): " << s/sqrt(b)
-			    << ", sig: " << sqrt(2*( (s+b) * log(1+(s/b)) - s) );
+      if (b > 0. && !normalize) std::cout << ", s/b: " << s/b << ", s/sqrt(b): " << s/sqrt(b)
+					  << ", sig: " << sqrt(2*( (s+b) * log(1+(s/b)) - s) );
       std::cout << std::endl;
     }
   }
@@ -1523,8 +1668,8 @@ TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool incr
 
 // ---------------------------------------------------
 // function to make graph of S/sqrt(B)
-
-TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s_over_b, bool print) {
+// note: set increasing to false to cut var > XX
+TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s_over_b, bool print, float sf) {
 
   TH1F* sig = (TH1F*)signal->Clone("h_tmp_s");
   TH1F* bg = (TH1F*)background->Clone("h_tmp_bg");
@@ -1533,14 +1678,15 @@ TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s
   TGraph* ret = new TGraphErrors(signal->GetNbinsX());
   for (int i = 1; i <= signal->GetNbinsX(); ++i) {
     const double x = sig_cum->GetBinCenter(i);
-    const double s = sig_cum->GetBinContent(i);
+    const double s = sig_cum->GetBinContent(i) * sf;
     if (s < 3.0) continue;
-    const double b = bg_cum->GetBinContent(bg_cum->FindBin(x));
+    const double b = bg_cum->GetBinContent(bg_cum->FindBin(x)) * sf;
     //    const double errs = sig_cum->GetBinError(i);
     //    const double errb = bg_cum->GetBinError(bg_cum->FindBin(x));
     double s_over_rootb = 0.;
     if (b > 0.) {
-      s_over_rootb = s/sqrt(b);
+      //      s_over_rootb = s/sqrt(b);
+      s_over_rootb = s/sqrt(b + 0.25*0.25*b*b);
       if (do_s_over_b) s_over_rootb = s/b;
     }
     ret->SetPoint(i - 1, x, s_over_rootb); // gotta love offsets
@@ -1548,6 +1694,7 @@ TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s
     if (print) {
       std::cout << "x value: " << x << ", s: " << s << ", b: " << b;
       if (b > 0.) std::cout << ", s/b: " << s/b << ", s/sqrt(b): " << s/sqrt(b)
+			    << ", s/sqrt(b+syst): " << s/sqrt(b + 0.25*0.25*b*b)
 			    << ", sig: " << sqrt(2*( (s+b) * log(1+(s/b)) - s) );
       std::cout << std::endl;
     }
@@ -1605,6 +1752,14 @@ TLegend* legendize(TCanvas* c, const TString& opt, const TString& label1, const 
 // returns the error on C = A*B (or C = A/B)
 float err_mult(float A, float B, float errA, float errB, float C) {
   return sqrt(C*C*(pow(errA/A,2) + pow(errB/B,2)));
+}
+
+//______________________________________________________________________________
+// returns the error on C = A/(A+B) 
+//  note that if A and B are integers, simplifies to sqrt((C * (1-C)) / (A+B))
+//  or thinking of an efficiency, sqrt((eff * (1-eff)) / N)
+float err_binomial(float A, float B, float errA, float errB) {
+  return (1/pow(A+B,2)) * sqrt(pow(B*errA,2) + pow(A*errB,2));
 }
 
 //______________________________________________________________________________

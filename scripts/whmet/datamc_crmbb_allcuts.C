@@ -9,7 +9,7 @@
   c->SetGrid();
 
   int xbins = 6;
-  TH2F* haxis = new TH2F("haxis",";;Data/MC", xbins, 0, xbins, 40, ylow, yhigh);
+  TH2F* haxis = new TH2F("haxis",";;Data/SM", xbins, 0, xbins, 40, ylow, yhigh);
   haxis->GetXaxis()->SetBinLabel(1,"> 50");
   haxis->GetXaxis()->SetBinLabel(2,"> 75");
   haxis->GetXaxis()->SetBinLabel(3,"> 100");
@@ -86,5 +86,10 @@
   text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
   text->DrawLatex(0.2,0.78,"CR-M_{b#bar{b}}, all other cuts applied");
 
+  TString savedir = "/media/data/olivito/cms2/SingleLepton2012/plots/Aug22/pubplots";
+  TString plotname = "datamc_crmbb_allcuts";
+  c->SaveAs(savedir + "/" + plotname + ".eps");
+  c->SaveAs(savedir + "/" + plotname + ".pdf");
+  c->SaveAs(savedir + "/" + plotname + ".png");
 
 }
