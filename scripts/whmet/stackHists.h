@@ -69,5 +69,6 @@ bool matchHistName(const TString& histname, const TString& matchname);
 bool matchHistName(const TString& histname, const char* matchname);
 void printCutflowRegion( const char* path, const char* dir, bool doData, int latex, int doSig, bool doWeighted = true );
 void printSignalTable( const char* path, bool doData, int latex, int doSig, bool doWeighted = true );
+void printSignalTableExcl( const char* path, bool doData, int latex, int doSig, bool doSystErr = false );
 
 #endif
