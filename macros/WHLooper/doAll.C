@@ -36,6 +36,7 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   //  std::string indir = "/nfs-7/userdata/stop/output_V00-02-27_2012_2jskim";
   //  std::string indir = "/nfs-7/userdata/stop/output_V00-02-28_2012";
   //  std::string indir = "/nfs-6/userdata/stop/output_V00-02-32_2012_2jskim";
+  //  std::string indir = "/nfs-6/userdata/stop/output_V00-04-02_2012_2jskim";
 
   if (outdir.size() == 0) {
     std::cout << "ERROR: must specify outdir, exiting" << std::endl;
@@ -86,6 +87,7 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   TChain* wino_450_1         = new TChain("t");
   TChain* wino_475_1         = new TChain("t");
   TChain* wino_500_1         = new TChain("t");
+  TChain* tchiwhmg           = new TChain("t");
 
   std::vector<string> labels;
   std::vector<TChain*> sample;
@@ -112,15 +114,15 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   // ttdl_mg->    Add(Form("%s/ttdl_lmg.root"         , indir.c_str()));
   ttdl_mg->    Add(Form("%s/ttdl_lmgtau*.root"         , indir.c_str()));
   vv->    Add(Form("%s/diboson.root"            , indir.c_str()));
-  //  wzbb->  Add(Form("%s/wz2qlnujets.root"            , indir.c_str()));
+  //wzbb->  Add(Form("%s/wz2qlnujets.root"            , indir.c_str()));
   wzbb->  Add(Form("%s/wz2qlnujets.root"            , "/nfs-7/userdata/stop/output_V00-02-36_2012_2jskim"));
   tsl->     Add(Form("%s/tW_lepsl.root"             , indir.c_str()));
   tdl->     Add(Form("%s/tW_lepdl.root"             , indir.c_str()));
   //  t->     Add(Form("%s/tWall_lep.root"             , indir.c_str()));
   ttV->   Add(Form("%s/ttV.root"           , indir.c_str()));
   vvv->   Add(Form("%s/triboson.root"           , indir.c_str()));
-  whbb->   Add(Form("%s/whbb.root"           , indir.c_str()));
-  //  whbb->Add("/nfs-7/userdata/stop/output_V00-02-36_2012/whbb.root");
+  //  whbb->   Add(Form("%s/whbb.root"           , indir.c_str()));
+  whbb->Add("/nfs-7/userdata/stop/output_V00-02-36_2012/whbb.root");
 
   //  tchiwh_125_1->Add("/home/users/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_125_1.root");
   tchiwh_150_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-28/TChiwh_150_1.root");
@@ -150,6 +152,8 @@ void doAll(std::string runsample = "", std::string outdir = "") {
   wino_450_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_450_1.root");
   wino_475_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_475_1.root");
   wino_500_1->Add("/nfs-7/userdata/olivito/SingleLepton2012/looper/output/V00-02-31/Wino_500_1.root");
+  tchiwhmg->Add("/nfs-7/userdata/stop/output_V00-02-36_2012_2jskim/TChiWH.root");
+  //tchiwhmg->Add("/nfs-6/userdata/stop/output_V00-04-02_2012_2jskim/TChiWH.root");
 
   if (runsample == "ttsl") {
     sample.push_back(ttsl_mg);    labels.push_back("ttbar_mg_1l");
@@ -213,6 +217,14 @@ void doAll(std::string runsample = "", std::string outdir = "") {
     sample.push_back(wino_500_1);     labels.push_back("Wino_500_1");
   } else if (runsample == "scan") {
     sample.push_back(tchiwh_scan);     labels.push_back("TChiwh_scan");
+  } else if (runsample == "tchiwhmg") {
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_130_1");
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_150_1");
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_200_1");
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_250_1");
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_300_1");
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_350_1");
+    sample.push_back(tchiwhmg);     labels.push_back("TChiWH_400_1");
   } else if (runsample == "ttsl_powheg") {
     sample.push_back(ttsl);    labels.push_back("ttbar_powheg_1l");
   } else if (runsample == "ttdl_powheg") {

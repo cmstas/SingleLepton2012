@@ -24,7 +24,7 @@ LIBS = $(LIB) $(CORELIB)
 libs:	$(LIBS)
 
 $(LIB):	$(OBJECTS) 
-	$(LINKER) $(LINKERFLAGS) -shared $(OBJECTS) -o $@ 
+	$(LINKER) $(LINKERFLAGS) -shared $(OBJECTS) -o $@ -lTMVA
 
 $(CORELIB):	$(COREOBJECTS) 
 	echo "Linking $(CORELIB)"; \
