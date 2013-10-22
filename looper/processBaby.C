@@ -122,6 +122,7 @@ void processBaby( TString outfileid = "tt_test", TString infile = "/hadoop/cms/s
   else if (infile.Contains("ZZJetsTo2L2Q"))                          sample = Form("zz2l2qjets_%s",      outfileid.Data());
   else if (infile.Contains("WZJetsTo3LNu"))                          sample = Form("wz3lnujets_%s",      outfileid.Data());
   else if (infile.Contains("WZJetsTo2L2Q"))                          sample = Form("wz2l2qjets_%s",      outfileid.Data());
+  else if (infile.Contains("WZJetsTo2QLNu"))                         sample = Form("wz2qlnujets_%s",     outfileid.Data());
   else if (infile.Contains("WGstarToLNu2E"))                         sample = Form("wglnu2ejets_%s",     outfileid.Data());
   else if (infile.Contains("WGstarToLNu2Mu"))                        sample = Form("wglnu2mujets_%s",    outfileid.Data());
   else if (infile.Contains("WGstarToLNu2Tau"))                       sample = Form("wglnu2taujets_%s",   outfileid.Data());
@@ -148,6 +149,10 @@ void processBaby( TString outfileid = "tt_test", TString infile = "/hadoop/cms/s
   else if (infile.Contains("SMS-T2tt"))                              sample = Form("T2tt_%s",            outfileid.Data());
   else if (infile.Contains("SMS-T2bw"))                              sample = Form("T2bw_%s",            outfileid.Data());
   else if (infile.Contains("SMS-TChiWH"))                            sample = Form("TChiWH_%s",          outfileid.Data());
+  else if (infile.Contains("pMSSM12_MCMC1_120mh130_batch1"))         sample = Form("pMSSM_batch1_%s",    outfileid.Data());
+  else if (infile.Contains("pMSSM12_MCMC1_120mh130_batch2"))         sample = Form("pMSSM_batch2_%s",    outfileid.Data());
+  else if (infile.Contains("pMSSM12_MCMC1_120mh130_batch3"))         sample = Form("pMSSM_batch3_%s",    outfileid.Data());
+  else if (infile.Contains("pMSSM12_MCMC1_120mh130_batch4"))         sample = Form("pMSSM_batch4_%s",    outfileid.Data());
   else if (infile.Contains("TChiwh_125_1"))                          sample = Form("TChiwh_125_1_%s",    outfileid.Data());
   else if (infile.Contains("TChiwh_150_1"))                          sample = Form("TChiwh_150_1_%s",    outfileid.Data());
   else if (infile.Contains("TChiwh_200_1"))                          sample = Form("TChiwh_200_1_%s",    outfileid.Data());

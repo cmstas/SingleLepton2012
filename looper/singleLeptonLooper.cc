@@ -673,6 +673,16 @@ float singleLeptonLooper::c1n2CrossSection( float c1mass ){
 
 //--------------------------------------------------------------------
 
+float singleLeptonLooper::pmssmCrossSection( int run ){
+
+  int   bin  = pmssm_xsec_hist->FindBin(run);
+  float xsec = pmssm_xsec_hist->GetBinContent(bin);
+  return xsec;
+
+}
+
+//--------------------------------------------------------------------
+
 bool passSingleMuTrigger2011_pt30( bool isData , int lepType ) {
   
   //----------------------------
@@ -889,14 +899,32 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   c1n2_xsec_file = TFile::Open("c1n2_xsec.root");
   
   if( !c1n2_xsec_file->IsOpen() ){
-    cout << "Error, could not open stop cross section TFile, quitting" << endl;
+    cout << "Error, could not open c1n2 cross section TFile, quitting" << endl;
     exit(0);
   }
   
   c1n2_xsec_hist        = (TH1F*) c1n2_xsec_file->Get("h_c1n2_xsec");
   
   if( c1n2_xsec_hist == 0 ){
-    cout << "Error, could not retrieve stop cross section hist, quitting" << endl;
+    cout << "Error, could not retrieve c1n2 cross section hist, quitting" << endl;
+    exit(0);
+  }
+
+  //------------------------------------------------
+  // set pmssm cross section file
+  //------------------------------------------------
+
+  pmssm_xsec_file = TFile::Open("pmssm_xsec.root");
+  
+  if( !pmssm_xsec_file->IsOpen() ){
+    cout << "Error, could not open pmssm cross section TFile, quitting" << endl;
+    exit(0);
+  }
+  
+  pmssm_xsec_hist        = (TH1F*) pmssm_xsec_file->Get("h_pmssm_xsec");
+  
+  if( pmssm_xsec_hist == 0 ){
+    cout << "Error, could not retrieve pmssm cross section hist, quitting" << endl;
     exit(0);
   }
 
@@ -1559,8 +1587,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	// }
 
 	//count tops and only get two
-	//ttbar_    = &(vttbar);
-	if (ntops==2) {
+	// check explicitly for t and tbar, in case model has multiple tops etc
+	if (ntops==2 && t_ && tbar_) {
 	  LorentzVector ttpair = *t_ + *tbar_;
 	  ttbar_    = &ttpair;
 	  ptttbar_  = ttbar_->pt();
@@ -3293,6 +3321,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       pfmet_    = evt_pfmet();
       pfmetphi_ = evt_pfmetPhi();
       pfsumet_  = evt_pfsumet();
+      pfmetsignif_ = evt_pfmetSignificance();
 
       //p_met = getMet( "pfMET"    , hypIdx);
       p_met = make_pair( evt_pfmet() , evt_pfmetPhi() );      
@@ -3374,6 +3403,15 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	// factor in braching ratios here: br(w->lv) 0.33 * br(h->bb) 0.56
         xsecsusy_  = mG_ > 0. ? c1n2CrossSection(mG_) * 0.33 * 0.56 : -999;
+	// note: number of events needs to be included in weight (later)
+        weight_ = xsecsusy_ > 0. ? lumi * xsecsusy_ * 1000. : -999.;
+
+      }
+
+      else if(prefix.Contains("pMSSM")) {
+
+	// use run number to look up xsec
+        xsecsusy_  = evt_run() >= 0 ? pmssmCrossSection(evt_run()) : -999;
 	// note: number of events needs to be included in weight (later)
         weight_ = xsecsusy_ > 0. ? lumi * xsecsusy_ * 1000. : -999.;
 
@@ -3937,6 +3975,7 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("pfmet",           &pfmet_,            "pfmet/F");
   outTree->Branch("pfmetveto",       &pfmetveto_,        "pfmetveto/F");
   outTree->Branch("pfmetsig",        &pfmetsig_,         "pfmetsig/F");
+  outTree->Branch("pfmetsignif",     &pfmetsignif_,      "pfmetsignif/F");
   outTree->Branch("pfmetphi",        &pfmetphi_,         "pfmetphi/F");
   outTree->Branch("pfsumet",         &pfsumet_,          "pfsumet/F");
   outTree->Branch("mucormet",        &mucormet_,         "mucormet/F");

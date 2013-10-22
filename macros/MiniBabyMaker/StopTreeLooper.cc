@@ -174,10 +174,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     makeTree(name.Data(), chain);
 
+    TH1F *h_nsig_pmssm;
     TH2F *h_nsig, *h_nsig25, *h_nsig75 ;
     TH2F *h_nsig_masslessLSP;
 
-    if( name.Contains("T2") || name.Contains("TChiWH") ){
+    if( name.Contains("T2") || name.Contains("TChiWH") || name.Contains("pMSSM") ){
         char* h_nsig_filename             = "";
         char* h_nsig_filename_masslessLSP = "";
 
@@ -261,15 +262,22 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	}
 
 	else if (name.Contains("TChiWH")) {
-	  h_nsig_filename = "/nfs-7/userdata/stop/output_V00-02-36_2012/myMassDB_TChiWH.root";
+	  h_nsig_filename = "/nfs-7/userdata/stop/output_V00-02-36_2012/fullstats/myMassDB_TChiWH.root";
 	  cout << "[StopTreeLooper::loop] opening mass TH2 file  " << h_nsig_filename << endl;
+	}
+
+	else if (name.Contains("pMSSM")) {
+	  h_nsig_filename = "/nfs-7/userdata/olivito/pmssm/pmssm_nsig.root";
+	  cout << "[StopTreeLooper::loop] opening nsig TH1 file  " << h_nsig_filename << endl;
 	}
 
         TFile *f_nsig = TFile::Open(h_nsig_filename);
 
         assert(f_nsig);
 
-        h_nsig = (TH2F*) f_nsig->Get("masses");
+	if( name.Contains("T2") || name.Contains("TChiWH") ){
+	  h_nsig = (TH2F*) f_nsig->Get("masses");
+	}
 
         if( name.Contains("T2bw") ){
             h_nsig25 = (TH2F*) f_nsig->Get("masses25");
@@ -281,12 +289,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	  h_nsig_masslessLSP = (TH2F*) f_nsig_masslessLSP->Get("masses");
 	}
 
+	if( name.Contains("pMSSM") ){
+	  h_nsig_pmssm = (TH1F*) f_nsig->Get("run");
+	}
+
     }
 
     const int NREG_T2tt = 6;
     const int NREG_T2bw = 5;
+    const int NREG_TChiWH = 3;
     TMVA::Reader* reader_T2tt[NREG_T2tt];
     TMVA::Reader* reader_T2bw[3][NREG_T2bw];
+    TMVA::Reader* reader_TChiWH[NREG_TChiWH];
 
     TMVA::Reader* reader_T2tt_up[NREG_T2tt];
     TMVA::Reader* reader_T2bw_up[3][NREG_T2bw];
@@ -300,7 +314,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TMVA::Reader* reader_T2tt_bdown[NREG_T2tt];
     TMVA::Reader* reader_T2bw_bdown[3][NREG_T2bw];
 
-    if ( __apply_mva ) {
+    if ( __apply_mva && !DO_WHMET ) {
         for (int i=1; i < NREG_T2tt ; i++){
             reader_T2tt[i] = new TMVA::Reader( "!Color:!Silent" );
             reader_T2tt[i]->AddVariable("mini_met", &met_);
@@ -443,8 +457,33 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 reader_T2bw_bup[j][i]  ->BookMVA( "BDT" , dir+weightfile );
                 reader_T2bw_bdown[j][i]->BookMVA( "BDT" , dir+weightfile );
             }
+
         }
 
+    } // if ( __apply_mva && !DO_WHMET ) 
+
+    else if ( __apply_mva && DO_WHMET ) {
+
+        for (int i=0; i < NREG_TChiWH ; i++){
+            reader_TChiWH[i] = new TMVA::Reader( "!Color:!Silent" );
+            reader_TChiWH[i]->AddVariable("mini_met", &met_);
+            reader_TChiWH[i]->AddVariable("mini_mt", &mt_);
+            reader_TChiWH[i]->AddVariable("mini_mt2bl", &mt2bl_);
+            reader_TChiWH[i]->AddVariable("mini_pt_J1", &pt_J1_);
+            reader_TChiWH[i]->AddVariable("mini_pt_J2", &pt_J2_);
+            reader_TChiWH[i]->AddVariable("mini_bbpt", &bbpt_);
+            reader_TChiWH[i]->AddVariable("mini_bbwdphi", &bbwdphi_);
+            reader_TChiWH[i]->AddVariable("mini_bbdR", &bbdR_);
+
+            TString dir, prefix;
+            dir    = "/nfs-7/userdata/olivito/MVA/weights/V00-00-01/";
+            prefix = "classification_TChiWH_";
+            prefix += i;
+            prefix += "_BDT";
+
+            TString weightfile = dir + prefix + TString(".weights.xml");
+            reader_TChiWH[i]      ->BookMVA( "BDT" , weightfile );
+	}
     }
 
     //-----------------------------------
@@ -473,7 +512,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     bool isData = name.Contains("data") ? true : false;
     bool isfastsim = false;
-    if (name.Contains("T2tt") || name.Contains("T2bw") || name.Contains("Wino") || name.Contains("TChiWH")) isfastsim = true;
+    if (name.Contains("T2") || name.Contains("Wino") || name.Contains("TChiWH") || name.Contains("pMSSM") ) isfastsim = true;
 
 
     cout << "[StopTreeLooper::loop] running over chain with total entries " << nEvents << endl;
@@ -699,6 +738,16 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	      xsecsusy_    = stopt.xsecsusy();
 	    }
 
+	    if ( name.Contains("pMSSM") ) {
+	      int bin = h_nsig_pmssm->FindBin(stopt.run());
+	      float nevents = h_nsig_pmssm->GetBinContent(bin);
+
+	      //NOTE::need to add vtx. reweighting for the signal sample
+	      whweight_  = stopt.xsecsusy() * 1000.0 / nevents * 19.5; 
+	      nsigevents_ = (int) nevents;
+	      xsecsusy_    = stopt.xsecsusy();
+	    }
+
 	    //	    nvtxweight_ = stopt.nvtxweight();
 	    nvtxweight_ = puweight;
 
@@ -795,6 +844,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    metdown_   = stopt.t1metphicorrdn();
 	    metdownphi = stopt.t1metphicorrphidn();
 
+	    metsignif_ = stopt.pfmetsignif();
+
 	    // warning for possibly bad MET up/down variables
 	    // if( fabs( stopt.t1metphicorrdn() - met_ ) > 50.0 || fabs( stopt.t1metphicorrup() - met_ ) > 50.0 ){
 	    //   cout << __FILE__ << " " << __LINE__ << " WARNING! large difference in MET JES up/down variables" << endl;
@@ -823,6 +874,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             njets_up_ = 0;
             njets_down_ = 0;
             njets_fwd_ = 0;
+            njets20_ = 0;
             nb_ = 0;
             nb_upBCShape_ = 0;
             nb_downBCShape_ = 0;
@@ -895,6 +947,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	      //float unc     = stopt.pfjets_uncertainty().at(i);
 	      float unc = 0.0;
 
+	      float pt      = stopt.pfjets().at(i).pt();
 	      float pt_up   = stopt.pfjets().at(i).pt() * ( 1 + unc );
 	      float pt_down = stopt.pfjets().at(i).pt() * ( 1 - unc );
 	      float eta     = fabs(stopt.pfjets().at(i).eta());
@@ -919,12 +972,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 		if ( dPhiM  < (TMath::Pi()/2) ) htssmdown = htssmdown + (1-unc)*stopt.pfjets().at(i).pt();
 		else                            htosmdown = htosmdown + (1-unc)*stopt.pfjets().at(i).pt();
 	      }
-	      
-	      if ( stopt.pfjets().at(i).pt()        < JET_PT  ) continue;
-	      if(!passTightPUid) continue;
+
 	      // fwd jet counting for WH analysis
-	      if ( fabs(stopt.pfjets().at(i).eta()) > 2.4 ) ++njets_fwd_;
-	      if ( fabs(stopt.pfjets().at(i).eta()) > JET_ETA ) continue;
+	      if ( (eta > 2.4) && passTightPUid ) {
+		if (stopt.pfjets().at(i).pt() > JET_PT) ++njets_fwd_;
+		if (pt_up > JET_PT) ++njets_fwd_up_;
+		if (pt_down > JET_PT) ++njets_fwd_down_;
+	      }
+	      
+	      if(!passTightPUid) continue;
+	      if ( (pt > 20) && (pt <= 30) && (eta < 2.4) ) ++njets20_;
+	      if ( pt < JET_PT  ) continue;
+	      if ( eta > JET_ETA ) continue;
 	      // if ( (fabs(stopt.pfjets().at(i).eta()) <= 2.5) 
 	      //        && (stopt.pfjets_beta2_0p5().at(i) < 0.2) ) continue;
 	      // bool passMediumPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(),stopt.pfjets_mvaPUid().at(i),1);
@@ -938,10 +997,14 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	      njets_++;
 	      if (njets_==1) {
 		pt_J1_   = stopt.pfjets().at(i).pt();
+		pt_J1_up_   = (1+unc)*stopt.pfjets().at(i).pt();
+		pt_J1_down_ = (1-unc)*stopt.pfjets().at(i).pt();
 		dphimj1_ = getdphi(metphi, stopt.pfjets().at(i).phi() );
 	      }
 	      if (njets_==2) {
 		pt_J2_ = stopt.pfjets().at(i).pt();
+		pt_J2_up_   = (1+unc)*stopt.pfjets().at(i).pt();
+		pt_J2_down_ = (1-unc)*stopt.pfjets().at(i).pt();
 		dphimj2_    = getdphi(metphi, stopt.pfjets().at(i).phi() );
 		dphimjmin_  = TMath::Min( dphimj1_ , dphimj2_ );
 	      }
@@ -1097,16 +1160,30 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 bb = bjets.at(0) + bjets.at(1);
 		bbdR_ = ROOT::Math::VectorUtil::DeltaR( bjets.at(0) , bjets.at(1) );
 		bbdeta_ = fabs(bjets.at(0).eta() - bjets.at(1).eta());
+		float bbdphi = TVector2::Phi_mpi_pi(bjets.at(0).phi() - bjets.at(1).phi());
+		mct_ = sqrt(2 * bjets.at(0).pt() * bjets.at(1).pt() * (1 + TMath::Cos(bbdphi)));
+		float dRleptB2 = deltaR(bjets.at(1).eta(), bjets.at(1).phi() , 
+					stopt.lep1().eta(), stopt.lep1().phi());
+		mindRleptB_ = TMath::Min(dRleptB1_,dRleptB2);
             } else if (njets_ >= 2) {
 	        // events with less than 2 b's: use two leading jets
                 bb = jets.at(0) + jets.at(1);
 		bbdR_ = ROOT::Math::VectorUtil::DeltaR( jets.at(0) , jets.at(1) );
 		bbdeta_ = fabs(jets.at(0).eta() - jets.at(1).eta());
+		float bbdphi = TVector2::Phi_mpi_pi(jets.at(0).phi() - jets.at(1).phi());
+		mct_ = sqrt(2 * jets.at(0).pt() * jets.at(1).pt() * (1 + TMath::Cos(bbdphi)));
+		float dRleptJ1 = deltaR(jets.at(0).eta(), jets.at(0).phi() , 
+					stopt.lep1().eta(), stopt.lep1().phi());
+		float dRleptJ2 = deltaR(jets.at(1).eta(), jets.at(1).phi() , 
+					stopt.lep1().eta(), stopt.lep1().phi());
+		mindRleptB_ = TMath::Min(dRleptJ1,dRleptJ2);
 	    }
 	    bbmass_ = bb.M();
 	    bbpt_ = bb.pt();
 	    bbwdphi_ = fabs(TVector2::Phi_mpi_pi(bb.phi() - w.Phi()));
 	    lepmetdphi_ = fabs(TVector2::Phi_mpi_pi(stopt.lep1().phi() - metphi));
+	    LorentzVector bbl = bb + stopt.lep1();
+	    bblmass_ = bbl.M();
 
 	    // for HH->WWbb analysis
 	    if( nnonbjets_ >= 2 ){
@@ -1315,44 +1392,21 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    if( isrboost > 150.0 && isrboost < 250.0 ) isrweight_ = 0.90;
 	    if( isrboost > 250.0                     ) isrweight_ = 0.80;
 
-            for ( int i=0; i < NREG_T2tt; i++){
+	    if (!DO_WHMET) {
+	      for ( int i=0; i < NREG_T2tt; i++){
 
-	      float bdtval     = 0;
-	      float bdtvalup   = 0;
-	      float bdtvaldown = 0;
-	      float bdtvalbup   = 0;
-	      float bdtvalbdown = 0;
-
-	      if ( __apply_mva && i>0 ){
-		bdtval      = reader_T2tt[i]      ->EvaluateMVA( "BDT" );
-		bdtvalup    = reader_T2tt_up[i]   ->EvaluateMVA( "BDT" );
-		bdtvaldown  = reader_T2tt_down[i] ->EvaluateMVA( "BDT" );
-		bdtvalbup   = reader_T2tt_bup[i]  ->EvaluateMVA( "BDT" );
-		bdtvalbdown = reader_T2tt_bdown[i]->EvaluateMVA( "BDT" );
-	      }
-
-	      bdt_     .push_back(bdtval);
-	      bdtup_   .push_back(bdtvalup);
-	      bdtdown_ .push_back(bdtvaldown);
-	      bdtbup_  .push_back(bdtvalbup);
-	      bdtbdown_.push_back(bdtvalbdown);
-            }
-
-            for ( int j=0; j < 3; j++){
-	      for ( int i=0; i < NREG_T2bw; i++){
-
-		float bdtval      = 0;
-		float bdtvalup    = 0;
-		float bdtvaldown  = 0;
+		float bdtval     = 0;
+		float bdtvalup   = 0;
+		float bdtvaldown = 0;
 		float bdtvalbup   = 0;
 		float bdtvalbdown = 0;
 
-		if ( __apply_mva && i>0 && !(j==0&&i==1) ){
-		  bdtval      = reader_T2bw[j][i]      ->EvaluateMVA( "BDT" );
-		  bdtvalup    = reader_T2bw_up[j][i]   ->EvaluateMVA( "BDT" );
-		  bdtvaldown  = reader_T2bw_down[j][i] ->EvaluateMVA( "BDT" );
-		  bdtvalbup   = reader_T2bw_bup[j][i]  ->EvaluateMVA( "BDT" );
-		  bdtvalbdown = reader_T2bw_bdown[j][i]->EvaluateMVA( "BDT" );
+		if ( __apply_mva && i>0 ){
+		  bdtval      = reader_T2tt[i]      ->EvaluateMVA( "BDT" );
+		  bdtvalup    = reader_T2tt_up[i]   ->EvaluateMVA( "BDT" );
+		  bdtvaldown  = reader_T2tt_down[i] ->EvaluateMVA( "BDT" );
+		  bdtvalbup   = reader_T2tt_bup[i]  ->EvaluateMVA( "BDT" );
+		  bdtvalbdown = reader_T2tt_bdown[i]->EvaluateMVA( "BDT" );
 		}
 
 		bdt_     .push_back(bdtval);
@@ -1360,9 +1414,54 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 		bdtdown_ .push_back(bdtvaldown);
 		bdtbup_  .push_back(bdtvalbup);
 		bdtbdown_.push_back(bdtvalbdown);
-
 	      }
-	    }
+
+	      for ( int j=0; j < 3; j++){
+		for ( int i=0; i < NREG_T2bw; i++){
+
+		  float bdtval      = 0;
+		  float bdtvalup    = 0;
+		  float bdtvaldown  = 0;
+		  float bdtvalbup   = 0;
+		  float bdtvalbdown = 0;
+
+		  if ( __apply_mva && i>0 && !(j==0&&i==1) ){
+		    bdtval      = reader_T2bw[j][i]      ->EvaluateMVA( "BDT" );
+		    bdtvalup    = reader_T2bw_up[j][i]   ->EvaluateMVA( "BDT" );
+		    bdtvaldown  = reader_T2bw_down[j][i] ->EvaluateMVA( "BDT" );
+		    bdtvalbup   = reader_T2bw_bup[j][i]  ->EvaluateMVA( "BDT" );
+		    bdtvalbdown = reader_T2bw_bdown[j][i]->EvaluateMVA( "BDT" );
+		  }
+
+		  bdt_     .push_back(bdtval);
+		  bdtup_   .push_back(bdtvalup);
+		  bdtdown_ .push_back(bdtvaldown);
+		  bdtbup_  .push_back(bdtvalbup);
+		  bdtbdown_.push_back(bdtvalbdown);
+
+		}
+	      }
+	    } // if(!DO_WHMET)
+
+	    else if (DO_WHMET) {
+	      for ( int i=0; i < NREG_TChiWH; i++){
+
+		float bdtval     = 0;
+		float bdtvalup   = 0;
+		float bdtvaldown = 0;
+
+		if ( __apply_mva ){
+		  bdtval      = reader_TChiWH[i]      ->EvaluateMVA( "BDT" );
+		  // bdtvalup    = reader_TChiWH_up[i]   ->EvaluateMVA( "BDT" );
+		  // bdtvaldown  = reader_TChiWH_down[i] ->EvaluateMVA( "BDT" );
+		}
+
+		bdt_     .push_back(bdtval);
+		bdtup_   .push_back(bdtvalup);
+		bdtdown_ .push_back(bdtvaldown);
+	      }
+
+	    } // if(DO_WHMET)
 
             // fill me up
             nEventsPass++;
@@ -1399,7 +1498,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         rootdir->cd();
 
 //        outFile_   = new TFile(Form("output/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
-        outFile_   = new TFile(Form("output_V00-04-01/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
+        outFile_   = new TFile(Form("output_V00-04-04/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
 	//        outFile_   = new TFile(Form("/nfs-7/userdata/stop/output_V00-02-21_2012_4jskim/Minibabies/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
         outFile_->cd();
 
@@ -1433,6 +1532,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             outTree_->Branch("mini_met"       , &met_       ,  "mini_met/F"	 );
             outTree_->Branch("mini_metup"     , &metup_     ,  "mini_metup/F"	 );
             outTree_->Branch("mini_metdown"   , &metdown_   ,  "mini_metdown/F"	 );
+            outTree_->Branch("mini_metsignif" , &metsignif_ ,  "mini_metsignif/F");
 
             outTree_->Branch("mini_puweight"  , &puweight_  ,  "mini_puweight/F" );
 
@@ -1481,6 +1581,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             outTree_->Branch("mini_njetsup"   , &njets_up_   ,  "mini_njetsup/I"	 );
             outTree_->Branch("mini_njetsdown" , &njets_down_ ,  "mini_njetsdown/I"	 );
             outTree_->Branch("mini_njets_fwd" , &njets_fwd_  ,  "mini_njets_fwd/I"  	 );
+            outTree_->Branch("mini_njets20"   , &njets20_    ,  "mini_njets20/I"  	 );
 
             outTree_->Branch("mini_pass1l"     , &pass1l_,      "mini_pass1l/I");
             outTree_->Branch("mini_passisotrk" , &passisotrk_,  "mini_passisotrk/I");
@@ -1528,6 +1629,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             outTree_->Branch("mini_lepmetdphi", &lepmetdphi_,  "mini_lepmetdphi/F");
             outTree_->Branch("mini_bbdR"      , &bbdR_      ,  "mini_bbdR/F"	 );
             outTree_->Branch("mini_bbdeta"    , &bbdeta_    ,  "mini_bbdeta/F"	 );
+            outTree_->Branch("mini_bblmass"   , &bblmass_   ,  "mini_bblmass/F"	 );
+            outTree_->Branch("mini_mindRleptB", &mindRleptB_,  "mini_mindRleptB/F");
+            outTree_->Branch("mini_mct"       , &mct_       ,  "mini_mct/F"	 );
 
             outTree_->Branch("mini_rand"      , &rand_      ,  "mini_rand/F"      );
 
@@ -1667,6 +1771,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    outTree_->SetBranchStatus("mini_pass1l",1);
 	    outTree_->SetBranchStatus("mini_bbmass",1);
 	    outTree_->SetBranchStatus("mini_njets_fwd",1);
+	    outTree_->SetBranchStatus("mini_njets20",1);
 	    outTree_->SetBranchStatus("mini_bbpt",1);
 	    outTree_->SetBranchStatus("mini_wpt",1);
 	    outTree_->SetBranchStatus("mini_bbwdphi",1);
@@ -1675,6 +1780,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    outTree_->SetBranchStatus("mini_pt_J2",1);
 	    outTree_->SetBranchStatus("mini_bbdR",1);
 	    outTree_->SetBranchStatus("mini_bbdeta",1);
+	    outTree_->SetBranchStatus("mini_metsignif",1);
+	    outTree_->SetBranchStatus("mini_lep1pt",1);
+	    outTree_->SetBranchStatus("mini_bblmass",1);
+	    outTree_->SetBranchStatus("mini_mindRleptB",1);
+	    outTree_->SetBranchStatus("mini_mct",1);
 
 	    outTree_->SetBranchStatus("mini_mchargino",1);
 	  }
@@ -1753,6 +1863,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         njets_up_   = -1;
         njets_down_ = -1;
         njets_fwd_  = -1;
+        njets20_  = -1;
 
         // lepton variables
         pass1l_ = -1;
@@ -1793,6 +1904,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         lepmetdphi_  = -1.0;
         bbdR_        = -1.0;
         bbdeta_      = -1.0;
+        mct_         = -1.0;
 
         rand_  = -1.0;
 

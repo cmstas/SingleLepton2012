@@ -35,6 +35,7 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
 void fillYieldHist( TH1F* hin, TH1F* hyield, int bin, bool doWeighted = true );
 void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, bool splitMC = false, int latex = 0, bool doWeighted = true );
 void printSigRegions( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, int latex = 0, bool doWeighted = true );
+void printSigRegionsExcl( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , char* dir , bool doData, int latex = 0, bool doSystErr = false );
 float getSystError( const TString sample );
 std::string getTableName( const TString sample, int latex = 0 );
 
@@ -48,12 +49,13 @@ TCanvas* compareNormalized(std::string histname, TFile* file1, std::string label
 TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin = 1, bool norm = true, TH1F* h3 = 0, std::string label3 = "", TH1F* h4 = 0, std::string label4 = "");
 
 TH1F* cumulate (TH1F* in, bool increasing);
-TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print = false);
-TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s_over_b = false, bool print = false);
+TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print = false, float sf = 1.);
+TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s_over_b = false, bool print = false, float sf = 1.);
 
 TLegend* init_legend(float x1=0.5, float y1=0.5, float x2=0.88, float y2=0.8);
 TLegend* legendize(TCanvas* c, const TString& opt = 'l', const TString& label1 = "", const TString& label2 = "", const TString& label3 = "");
 float err_mult(float A, float B, float errA, float errB, float C);
+float err_binomial(float A, float B, float errA, float errB);
 TGraphErrors* makeMETGraph(TH1F* hdata, TH1F* hmc, float xoffset = 0.0, bool errOnData = false);
 
 char* pm;         

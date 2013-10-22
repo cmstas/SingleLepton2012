@@ -260,6 +260,9 @@ protected:
 	float	pfmetsig_;
 	TBranch *pfmetsig_branch;
 	bool pfmetsig_isLoaded;
+	float	pfmetsignif_;
+	TBranch *pfmetsignif_branch;
+	bool pfmetsignif_isLoaded;
 	float	pfmetphi_;
 	TBranch *pfmetphi_branch;
 	bool pfmetphi_isLoaded;
@@ -2372,6 +2375,11 @@ void Init(TTree *tree) {
 		pfmetsig_branch = tree->GetBranch("pfmetsig");
 		if (pfmetsig_branch) {pfmetsig_branch->SetAddress(&pfmetsig_);}
 	}
+	pfmetsignif_branch = 0;
+	if (tree->GetBranch("pfmetsignif") != 0) {
+		pfmetsignif_branch = tree->GetBranch("pfmetsignif");
+		if (pfmetsignif_branch) {pfmetsignif_branch->SetAddress(&pfmetsignif_);}
+	}
 	pfmetphi_branch = 0;
 	if (tree->GetBranch("pfmetphi") != 0) {
 		pfmetphi_branch = tree->GetBranch("pfmetphi");
@@ -4419,6 +4427,7 @@ void GetEntry(unsigned int idx)
 		pfmet_isLoaded = false;
 		pfmetveto_isLoaded = false;
 		pfmetsig_isLoaded = false;
+		pfmetsignif_isLoaded = false;
 		pfmetphi_isLoaded = false;
 		pfsumet_isLoaded = false;
 		mucormet_isLoaded = false;
@@ -4963,6 +4972,7 @@ void LoadAllBranches()
 	if (pfmet_branch != 0) pfmet();
 	if (pfmetveto_branch != 0) pfmetveto();
 	if (pfmetsig_branch != 0) pfmetsig();
+	if (pfmetsignif_branch != 0) pfmetsignif();
 	if (pfmetphi_branch != 0) pfmetphi();
 	if (pfsumet_branch != 0) pfsumet();
 	if (mucormet_branch != 0) mucormet();
@@ -6475,6 +6485,19 @@ void LoadAllBranches()
 			pfmetsig_isLoaded = true;
 		}
 		return pfmetsig_;
+	}
+	float &pfmetsignif()
+	{
+		if (not pfmetsignif_isLoaded) {
+			if (pfmetsignif_branch != 0) {
+				pfmetsignif_branch->GetEntry(index);
+			} else { 
+				printf("branch pfmetsignif_branch does not exist!\n");
+				exit(1);
+			}
+			pfmetsignif_isLoaded = true;
+		}
+		return pfmetsignif_;
 	}
 	float &pfmetphi()
 	{
@@ -12539,6 +12562,7 @@ namespace Stop {
 	float &pfmet();
 	float &pfmetveto();
 	float &pfmetsig();
+	float &pfmetsignif();
 	float &pfmetphi();
 	float &pfsumet();
 	float &mucormet();

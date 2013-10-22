@@ -13,6 +13,13 @@
 #include <cmath>
 #include <map>
 
+#if not defined(__CINT__) || defined(__MAKECINT__)
+// needs to be included when makecint runs (ACLIC)
+#include "TMVA/Factory.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
+#endif
+
 using namespace std;
 
 class WHLooper {
@@ -71,38 +78,48 @@ class WHLooper {
   std::vector<int> jets_fwd_idx_;
   std::vector<int> bjets_idx_;
   std::vector<float> jets_smearcorrs_;
-  int njets_;
-  int njetsalleta_;
-  int nbjets_;
-  int nbjetst_;
-  int nbjetsl_;
-  float met_;
-  float metphi_;
-  float mt_;
-  float mt2b_;
-  float mt2bl_;
-  float mt2w_;
+  Int_t njets_;
+  Int_t njetsfwd_;
+  Int_t njets20_;
+  Int_t njetsall_;
+  Int_t nbjets_;
+  Int_t nbjetst_;
+  Int_t nbjetsl_;
+  Float_t met_;
+  Float_t metphi_;
+  Float_t mt_;
+  Float_t mt2b_;
+  Float_t mt2bl_;
+  Float_t mt2w_;
+  Float_t mct_;
   LorentzVector bb_;
-  float met_soft_;
-  float sumet_;
-  float sumet_soft_;
-  float ht_;
-  float wpt_;
-  float lepmetdphi_;
-  float bbwdphi_;
+  Float_t met_soft_;
+  Float_t sumet_;
+  Float_t sumet_soft_;
+  Float_t ht_;
+  Float_t wpt_;
+  Float_t lepmetdphi_;
+  Float_t bbwdphi_;
+  Float_t bbpt_;
+  Float_t bbdR_;
+  Float_t pt_J1_;
+  Float_t pt_J2_;
+  Float_t lep1pt_;
   // for ttbar samples
-  float genmt2bl_;
+  Float_t genmt2bl_;
   bool tobtecveto_;
+  // to hold BDT vals
+  std::vector<float> bdtvals_;
 
   // for CR3 (with two leptons)
   LorentzVector lep_;
-  float pseudomet_lep_;
-  float pseudometphi_lep_;
-  float pseudomt_lep_;
-  float dphi_pseudomet_lep_;
-  float pseudomt2b_;
-  float pseudomt2bl_;
-  float pseudomt2w_;
+  Float_t pseudomet_lep_;
+  Float_t pseudometphi_lep_;
+  Float_t pseudomt_lep_;
+  Float_t dphi_pseudomet_lep_;
+  Float_t pseudomt2b_;
+  Float_t pseudomt2bl_;
+  Float_t pseudomt2w_;
 
   // internal flags
   bool isWjets_;
@@ -116,6 +133,7 @@ class WHLooper {
   bool isWHbb_;
   bool isWino_;
   bool isTChiwh_;
+  bool isTChiWHMG_;
   bool isTChihhwwbb_;
   bool isScan_;
   bool isttmg_;
