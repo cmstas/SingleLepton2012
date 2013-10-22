@@ -40,7 +40,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   // input parameters
   //--------------------------------------------------
 
-  const float lumi      = 19500;
+  const float lumi      = 19600; 
   char* suffix          = (char*) "";
   char* denomhistoname  = (char*) "masses";
   char* filename        = (char*) "";
@@ -58,10 +58,11 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   //--------------------------------------------------
 
   if( TString(sample).Contains("TChiWH") ){    
-    filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/TChiWH_whmet.root";
+    filename  = (char*) "/tas/olivito/data/whmet/output_V00-02-36_2012/Minibabies_V00-04-05/TChiWH_whmet.root";
+    //    filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/TChiWH_whmet.root";
     // filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012_2jskim/Minibabies_V00-04-01_BDT_V00-00-01/TChiWH_whmet.root";
     //denomname = (char*) "/tas/cms2/stop/cms2V05-03-26_stoplooperV00-02-24/T2tt_mad/minibaby_V00-03-06/Skim_4jets_MET100_MT120/myMassDB_T2tt_combined_25GeVbins.root";
-    denomname = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/myMassDB_TChiWH.root";
+    denomname = (char*) "/tas/olivito/data/whmet/output_V00-02-36_2012/Minibabies_V00-04-05/myMassDB_TChiWH.root";
 
     label     = (char*)"pp #rightarrow #tilde{#chi}_{1}^{#pm}#tilde{#chi}_{2}^{0} #rightarrow W(l#nu)H(b#bar{b})#tilde{#chi}_{1}^{0}#tilde{#chi}_{1}^{0}";
   }
@@ -132,6 +133,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   TCut isrweight("mini_isrweight");
   TCut sltrigeff("mini_sltrigeff");
   TCut btagsf("mini_btagsf");
+  TCut lepfastsimsf("mini_lepfastsimsf");
 
   TCut presel;
 
@@ -154,7 +156,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   TCut BDTweight("1");
   //  if( doBDT ) BDTweight = TCut("2");
 
-  TCut weight = sltrigeff * btagsf * BDTweight;
+  TCut weight = sltrigeff * btagsf * BDTweight * lepfastsimsf;
 
   TCut whweight = "mini_whweight";
 
@@ -593,7 +595,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.78,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
 
     //-------------------------------
     // cross section
@@ -647,7 +649,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.78,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
 
     //-------------------------------
     // excluded points
@@ -670,7 +672,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.71,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
 
     //-------------------------------
     // JES uncertainty
@@ -690,7 +692,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.71,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary   #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Preliminary   #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
     */
     
     /*

@@ -747,7 +747,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
   hbest->GetZaxis()->SetTitle("best signal region");
 
   t->SetTextSize(0.035);
-  t->DrawLatex(0.18,0.92,"CMS Preliminary        #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  t->DrawLatex(0.18,0.92,"CMS Preliminary        #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
   
   t->SetTextSize(0.045);
   t->DrawLatex(0.21,0.83,label);
@@ -1496,7 +1496,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
 
 
   t->SetTextSize(0.04);
-  t->DrawLatex(0.18,0.94,"CMS Preliminary                          #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  t->DrawLatex(0.18,0.94,"CMS Preliminary                          #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
 
   TLine *line = new TLine();
   line->SetLineWidth(2);

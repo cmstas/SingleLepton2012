@@ -45,13 +45,14 @@ process       signal  dilep  top1l  wzbb   wbb  wlight  rare
 process         0      1       2      3     4      5    6
 rate           %.1f    2.8     1.8   0.6   1.5    0.5    0.4 
 ------------			               
-LUMI          lnN   1.044   -    -    -     -    -    -    lumi uncertainty
+LUMI          lnN   1.026   -    -    -     -    -    -    lumi uncertainty
 JES           lnN   1.05    -    -    -     -    -    -    jet energy scale
 DILEPTRIG     lnN   1.05    -    -    -     -    -    -    (single) lepton trigger
 LEPID         lnN   1.05    -    -    -     -    -    -    lep id and iso
 BTAG          lnN   1.05    -    -    -     -    -    -    btagging eff
 ISR           lnN   1.01    -    -    -     -    -    -    isr
 DOWJER        lnN   1.05    -    -    -     -    -    -    jet energy resolution
+FASTSIM       lnN   1.01    -    -    -     -    -    -    lep fastsim eff
 DOWSIGSTAT    lnN   %.2f    -    -    -     -    -    -    stat uncert on signal
 DOWDILEP      lnN     -   1.43   -    -     -    -    -    tot uncert on dilep bg
 DOWLEPBSYST   lnN     -     -   1.57 1.36  1.43  -    -    syst uncert on lepb bg
@@ -80,13 +81,14 @@ process       signal  dilep  top1l  wzbb   wbb  wlight  rare
 process         0      1       2      3     4      5    6
 rate           %.1f    2.3     0.9   0.4   1.0    0.3    0.3 
 ------------			               
-LUMI          lnN   1.044   -    -    -     -    -    -    lumi uncertainty
+LUMI          lnN   1.026   -    -    -     -    -    -    lumi uncertainty
 JES           lnN   1.05    -    -    -     -    -    -    jet energy scale
 DILEPTRIG     lnN   1.05    -    -    -     -    -    -    (single) lepton trigger
 LEPID         lnN   1.05    -    -    -     -    -    -    lep id and iso
 BTAG          lnN   1.05    -    -    -     -    -    -    btagging eff
 ISR           lnN   1.01    -    -    -     -    -    -    isr
 DOWJER        lnN   1.05    -    -    -     -    -    -    jet energy resolution
+FASTSIM       lnN   1.01    -    -    -     -    -    -    lep fastsim eff
 DOWSIGSTAT    lnN   %.2f    -    -    -     -    -    -    stat uncert on signal
 DOWDILEP      lnN     -   1.43   -    -     -    -    -    tot uncert on dilep bg
 DOWLEPBSYST   lnN     -     -   1.57 1.36  1.43  -    -    syst uncert on lepb bg
@@ -115,13 +117,14 @@ process       signal  dilep  top1l  wzbb   wbb  wlight  rare
 process         0      1       2      3     4      5    6
 rate           %.1f    1.7     0.5   0.3   0.9    0.2    0.3 
 ------------			               
-LUMI          lnN   1.044   -    -    -     -    -    -    lumi uncertainty
+LUMI          lnN   1.026   -    -    -     -    -    -    lumi uncertainty
 JES           lnN   1.05    -    -    -     -    -    -    jet energy scale
 DILEPTRIG     lnN   1.05    -    -    -     -    -    -    (single) lepton trigger
 LEPID         lnN   1.05    -    -    -     -    -    -    lep id and iso
 BTAG          lnN   1.05    -    -    -     -    -    -    btagging eff
 ISR           lnN   1.01    -    -    -     -    -    -    isr
 DOWJER        lnN   1.05    -    -    -     -    -    -    jet energy resolution
+FASTSIM       lnN   1.01    -    -    -     -    -    -    lep fastsim eff
 DOWSIGSTAT    lnN   %.2f    -    -    -     -    -    -    stat uncert on signal
 DOWDILEP      lnN     -   1.41   -    -     -    -    -    tot uncert on dilep bg
 DOWLEPBSYST   lnN     -     -   1.57 1.36  1.43  -    -    syst uncert on lepb bg
@@ -150,13 +153,14 @@ process       signal  dilep  top1l  wzbb   wbb  wlight  rare
 process         0      1       2      3     4      5    6
 rate           %.1f    1.2     0.2   0.3   0.2    0.2    0.2 
 ------------			               
-LUMI          lnN   1.044   -    -    -     -    -    -    lumi uncertainty
+LUMI          lnN   1.026   -    -    -     -    -    -    lumi uncertainty
 JES           lnN   1.05    -    -    -     -    -    -    jet energy scale
 DILEPTRIG     lnN   1.05    -    -    -     -    -    -    (single) lepton trigger
 LEPID         lnN   1.05    -    -    -     -    -    -    lep id and iso
 BTAG          lnN   1.05    -    -    -     -    -    -    btagging eff
 ISR           lnN   1.01    -    -    -     -    -    -    isr
 DOWJER        lnN   1.05    -    -    -     -    -    -    jet energy resolution
+FASTSIM       lnN   1.01    -    -    -     -    -    -    lep fastsim eff
 DOWSIGSTAT    lnN   %.2f    -    -    -     -    -    -    stat uncert on signal
 DOWDILEP      lnN     -   1.42   -    -     -    -    -    tot uncert on dilep bg
 DOWLEPBSYST   lnN     -     -   1.57 1.36  1.43  -    -    syst uncert on lepb bg
