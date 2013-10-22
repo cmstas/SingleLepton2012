@@ -170,6 +170,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     // set up histograms
     //---------------------------------
 
+    bool isfastsim = false;
+    if (name.Contains("T2") || name.Contains("Wino") || name.Contains("TChiWH") || name.Contains("pMSSM") ) isfastsim = true;
+
     gROOT->cd();
 
     makeTree(name.Data(), chain);
@@ -262,7 +265,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	}
 
 	else if (name.Contains("TChiWH")) {
-	  h_nsig_filename = "/nfs-7/userdata/stop/output_V00-02-36_2012/fullstats/myMassDB_TChiWH.root";
+	  h_nsig_filename = "/nfs-7/userdata/stop/output_V00-02-36_2012/myMassDB_TChiWH.root";
+	  //	  h_nsig_filename = "/nfs-7/userdata/stop/output_V00-02-36_2012/fullstats/myMassDB_TChiWH.root";
 	  cout << "[StopTreeLooper::loop] opening mass TH2 file  " << h_nsig_filename << endl;
 	}
 
@@ -293,6 +297,15 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	  h_nsig_pmssm = (TH1F*) f_nsig->Get("run");
 	}
 
+    }
+
+    // retrieve fastsim SF histos
+    TH2D *h_el_fastsimsf, *h_mu_fastsimsf ;
+    if( isfastsim ){
+      TFile* f_el_fastsimsf = TFile::Open("/nfs-7/userdata/stop/fastsim/electron_FastSim_SS.root");
+      h_el_fastsimsf = (TH2D*) f_el_fastsimsf->Get("SF");
+      TFile* f_mu_fastsimsf = TFile::Open("/nfs-7/userdata/stop/fastsim/muon_FastSim_EWKino.root");
+      h_mu_fastsimsf = (TH2D*) f_mu_fastsimsf->Get("SF");
     }
 
     const int NREG_T2tt = 6;
@@ -511,9 +524,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     //  int i_permille_old = 0;
 
     bool isData = name.Contains("data") ? true : false;
-    bool isfastsim = false;
-    if (name.Contains("T2") || name.Contains("Wino") || name.Contains("TChiWH") || name.Contains("pMSSM") ) isfastsim = true;
-
 
     cout << "[StopTreeLooper::loop] running over chain with total entries " << nEvents << endl;
 
@@ -763,6 +773,25 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	      topptweight_ = 1.0;
 	    }
 
+	    // additional fast sim lepton sfs
+	    lepfastsimsf_ = 1.;
+	    if ( isfastsim ){
+	      float pt = stopt.lep1().Pt();
+	      float eta = fabs(stopt.lep1().Eta());
+	      if (abs(stopt.id1()) == 11) {
+		// avoid going out of histo range..
+		if (pt > h_el_fastsimsf->GetXaxis()->GetXmax()) pt = h_el_fastsimsf->GetXaxis()->GetXmax()-0.5;
+		int bin = h_el_fastsimsf->FindBin(pt, eta);
+		lepfastsimsf_ = h_el_fastsimsf->GetBinContent(bin);
+	      } else if (abs(stopt.id1()) == 13) {
+		// avoid going out of histo range..
+		if (pt > h_mu_fastsimsf->GetXaxis()->GetXmax()) pt = h_mu_fastsimsf->GetXaxis()->GetXmax()-0.5;
+		int bin = h_mu_fastsimsf->FindBin(pt, eta);
+		lepfastsimsf_ = h_mu_fastsimsf->GetBinContent(bin);
+	      }
+	    } 
+
+
             //------------------------------------------ 
             // polarization reweighting
             //------------------------------------------ 
@@ -844,7 +873,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    metdown_   = stopt.t1metphicorrdn();
 	    metdownphi = stopt.t1metphicorrphidn();
 
-	    metsignif_ = stopt.pfmetsignif();
+	    metsignif_ = -99.;
+	    //	    metsignif_ = stopt.pfmetsignif();
 
 	    // warning for possibly bad MET up/down variables
 	    // if( fabs( stopt.t1metphicorrdn() - met_ ) > 50.0 || fabs( stopt.t1metphicorrup() - met_ ) > 50.0 ){
@@ -1498,7 +1528,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         rootdir->cd();
 
 //        outFile_   = new TFile(Form("output/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
-        outFile_   = new TFile(Form("output_V00-04-04/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
+        outFile_   = new TFile(Form("output_V00-04-05/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
 	//        outFile_   = new TFile(Form("/nfs-7/userdata/stop/output_V00-02-21_2012_4jskim/Minibabies/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
         outFile_->cd();
 
@@ -1571,6 +1601,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             outTree_->Branch("mini_topptweight", &topptweight_,  "mini_topptweight/F");
             outTree_->Branch("mini_wbbmtcor"    , &wbbmtcor_    ,  "mini_wbbmtcor/F"    );
             outTree_->Branch("mini_whtailsf"    , &whtailsf_    ,  "mini_whtailsf/F"    );
+            outTree_->Branch("mini_lepfastsimsf", &lepfastsimsf_,  "mini_lepfastsimsf/F");
 
             outTree_->Branch("mini_nb"        , &nb_        ,   "mini_nb/I"	         );
             outTree_->Branch("mini_nbupBC"    , &nb_upBCShape_  ,  "mini_nbupBC/I"	);
@@ -1762,6 +1793,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	    outTree_->SetBranchStatus("mini_dltrigeff",1);
 	    outTree_->SetBranchStatus("mini_wbbmtcor",1);
 	    outTree_->SetBranchStatus("mini_whtailsf",1);
+	    outTree_->SetBranchStatus("mini_lepfastsimsf",1);
 
 	    outTree_->SetBranchStatus("mini_whsig",1);
 	    outTree_->SetBranchStatus("mini_whcrbbmass",1);

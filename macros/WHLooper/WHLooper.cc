@@ -56,6 +56,7 @@ const bool doTopPtReweight2 = true;
 const bool doLepPlusBSFs = true;
 const int  doJESVar = 0; // 0 for nominal, 1 for down, 2 for up
 const bool doWbbNLO = false;
+const bool doLepFastSimSFs = true;
 
 // plotting options
 const bool doFlavorPlots = true;
@@ -359,6 +360,18 @@ void WHLooper::loop(TChain *chain, TString name) {
   TFile *f_nsig = TFile::Open(h_nsig_filename);
   assert(f_nsig);
   TH2F* h_nsig = (TH2F*) f_nsig->Get("masses");
+
+  //------------------------------
+  // retrieve fastsim SF histos
+  //------------------------------
+
+  TH2D *h_el_fastsimsf, *h_mu_fastsimsf ;
+  if( isTChiWHMG_ ){
+    TFile* f_el_fastsimsf = TFile::Open("/nfs-7/userdata/stop/fastsim/electron_FastSim_SS.root");
+    h_el_fastsimsf = (TH2D*) f_el_fastsimsf->Get("SF");
+    TFile* f_mu_fastsimsf = TFile::Open("/nfs-7/userdata/stop/fastsim/muon_FastSim_EWKino.root");
+    h_mu_fastsimsf = (TH2D*) f_mu_fastsimsf->Get("SF");
+  }
 
   //------------------------------
   // set up BDT weight readers
@@ -1271,6 +1284,23 @@ void WHLooper::loop(TChain *chain, TString name) {
 
 	//NOTE::need to add vtx. reweighting for the signal sample
 	evtweight = stopt.xsecsusy() * 1000.0 / nevents * lumi; 
+
+	// additional fast sim lepton sfs
+	if ( doLepFastSimSFs ){
+	  float pt = stopt.lep1().Pt();
+	  float eta = fabs(stopt.lep1().Eta());
+	  if (abs(stopt.id1()) == 11) {
+	    // avoid going out of histo range..
+	    if (pt > h_el_fastsimsf->GetXaxis()->GetXmax()) pt = h_el_fastsimsf->GetXaxis()->GetXmax()-0.5;
+	    int bin = h_el_fastsimsf->FindBin(pt, eta);
+	    evtweight *= h_el_fastsimsf->GetBinContent(bin);
+	  } else if (abs(stopt.id1()) == 13) {
+	    // avoid going out of histo range..
+	    if (pt > h_mu_fastsimsf->GetXaxis()->GetXmax()) pt = h_mu_fastsimsf->GetXaxis()->GetXmax()-0.5;
+	    int bin = h_mu_fastsimsf->FindBin(pt, eta);
+	    evtweight *= h_mu_fastsimsf->GetBinContent(bin);
+	  }
+	} 
       }
 
       // ISR reweight for signal
