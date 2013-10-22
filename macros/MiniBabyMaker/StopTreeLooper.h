@@ -106,6 +106,7 @@ class StopTreeLooper {
 	Float_t mt2wbdown_;
 	Float_t mt2blup_;
 	Float_t mt2bldown_;
+	Float_t metsignif_;
 
 	Float_t mini_weightleft_;
 	Float_t mini_weightright_;
@@ -158,6 +159,9 @@ class StopTreeLooper {
 	Int_t njets_up_;
 	Int_t njets_down_;
 	Int_t njets_fwd_;
+	Int_t njets_fwd_up_;
+	Int_t njets_fwd_down_;
+	Int_t njets20_;
 
 	// lepton variables
 	Int_t pass1l_;
@@ -182,16 +186,25 @@ class StopTreeLooper {
 	Float_t pt_b_bup_;
 	Float_t pt_b_bdown_;
 	Float_t pt_J1_;
+	Float_t pt_J1_up_;
+	Float_t pt_J1_down_;
 	Float_t pt_J2_;
+	Float_t pt_J2_up_;
+	Float_t pt_J2_down_;
 
         // wh event kinematics
 	Float_t bbmass_;
+	Float_t bbmass_up_;
+	Float_t bbmass_down_;
 	Float_t bbpt_;
 	Float_t wpt_;
 	Float_t bbwdphi_;
 	Float_t lepmetdphi_;
 	Float_t bbdeta_;
 	Float_t bbdR_;
+	Float_t bblmass_;
+	Float_t mindRleptB_;
+	Float_t mct_;
 
 	// susy variables
 	Float_t mstop_;
