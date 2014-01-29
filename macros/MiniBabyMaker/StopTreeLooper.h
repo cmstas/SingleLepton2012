@@ -62,6 +62,7 @@ class StopTreeLooper {
 	//        list<Candidate> getBTaggedCands(list<Candidate> &candidates, StopTree* tree);
 	void initBaby();
 	void makeTree(const char*, TChain *chain);
+	float c1n2CrossSection( float c1mass );
 
         TTree  *outTree_;
         TFile  *outFile_;
@@ -269,6 +270,9 @@ class StopTreeLooper {
 	bool __disableBranches; 
     static const bool __mini_branches = true;
     static const bool __add_babies = true; 
+
+	TH1F*   c1n2_xsec_hist;
+	TFile*  c1n2_xsec_file;
 
 };
 

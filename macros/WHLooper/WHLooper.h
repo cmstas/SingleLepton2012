@@ -44,6 +44,7 @@ class WHLooper {
   void fillJetAccHists(std::map<std::string, TH1F*>& h_1d, const float evtweight = 1., const std::string& dir = "", const std::string& suffix = "");
 
   float getCSVCut(const csvpoint csv = WHLooper::CSVM);
+  float c1n2CrossSection( float c1mass );
 
   void dumpEventInfo(const std::string& comment);
 
@@ -144,6 +145,9 @@ class WHLooper {
   bool isttvsl_;
   bool isttvdl_;
   bool isttvother_;
+
+  TH1F*   c1n2_xsec_hist;
+  TFile*  c1n2_xsec_file;
 
 };
 
