@@ -165,8 +165,8 @@ void initialize( const char* path, bool doData, int doSig ) {
   mcfiles_.push_back(top1l_);    mclabels_.push_back("top 1l");
   mcfiles_.push_back(wzbb_);    mclabels_.push_back("wzbb");
   mcfiles_.push_back(wbb_);    mclabels_.push_back("wbb");
-  //  mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
-  mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
+  mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
+  //mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
   mcfiles_.push_back(rareall_);     mclabels_.push_back("rare");
 
   //  mcfiles_.push_back(tt0l_);    mclabels_.push_back("ttbar 0l");
@@ -228,11 +228,11 @@ void initialize( const char* path, bool doData, int doSig ) {
     mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
   }
   else if (doSig == 3) {
-    //    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
-    mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("Wino_150_1");
+    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+    //mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("Wino_150_1");
     mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
-    mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("Wino_350_1");
-    //    mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
+    //mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("Wino_350_1");
+    mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
   }
   else if (doSig > 3) {
     mcfiles_.push_back(TChiwh_130_1_);     mclabels_.push_back("Wino_130_1");
@@ -260,14 +260,14 @@ void stackHist( const char* path, const char* hist, const char* flavor, const ch
 
 //TH1F* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize ) {
 // TGraphErrors* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm ) {
-TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm, int doSig, bool doRatio, const char* scalesample, bool stacksig, float signorm, bool errband ) {
+TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm, int doSig, bool doRatio, const char* scalesample, bool stacksig, float signorm, bool errband, const char* cmslabel ) {
   initialize(path, doData, doSig);
   histStyle style = getHistStyle(hist);
   TCanvas* c = new TCanvas();
   compareDataMC( mcfiles_ , mclabels_ , data_ , hist , flavor , dir ,
   		 style.nbins/rebin ,  style.xmin , style.xmax , (style.xtitle).c_str() ,
 		 doData , doData && doRatio , true , style.log, normalize , false , mcnorm, scalesample,
-		 stacksig, signorm, errband);
+		 stacksig, signorm, errband, cmslabel);
   // compareDataMC( mcfiles_ , mclabels_ , data_ , hist , flavor , dir ,
   // 		 style.nbins/rebin ,  style.xmin , style.xmax , (style.xtitle).c_str() ,
   // 			doData , doData , true , style.log, normalize , false , mcnorm );
@@ -531,30 +531,46 @@ void savePublicPlotsCRs(const char* path, const char* outpath) {
   // !! these should use MC W+light jets
 
   // CR0b hists
-  TCanvas* c = stackHistAuto(path,"h_bbmass","","cr5_metlast_bbmass_nm1",1,1,0,-1,0,1);
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","cr5_metlast_bbmass_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crzb_presel_mbb.eps",outpath));
+  c->SaveAs(Form("%s/crzb_presel_mbb.pdf",outpath));
+  c->SaveAs(Form("%s/crzb_presel_mbb.png",outpath));
 
-  c = stackHistAuto(path,"h_mt2bl","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_mt2bl","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crzb_presel_mt2bl.eps",outpath));
+  c->SaveAs(Form("%s/crzb_presel_mt2bl.pdf",outpath));
+  c->SaveAs(Form("%s/crzb_presel_mt2bl.png",outpath));
 
-  c = stackHistAuto(path,"h_lep1mt","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_lep1mt","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crzb_presel_mt.eps",outpath));
+  c->SaveAs(Form("%s/crzb_presel_mt.pdf",outpath));
+  c->SaveAs(Form("%s/crzb_presel_mt.png",outpath));
 
-  c = stackHistAuto(path,"h_met","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_met","","cr5_metlast_mt2bl_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crzb_presel_met.eps",outpath));
+  c->SaveAs(Form("%s/crzb_presel_met.pdf",outpath));
+  c->SaveAs(Form("%s/crzb_presel_met.png",outpath));
 
   // CR2l hists
-  c = stackHistAuto(path,"h_bbmass","","cr23_bbmass_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_bbmass","","cr23_bbmass_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crdl_presel_mbb.eps",outpath));
+  c->SaveAs(Form("%s/crdl_presel_mbb.pdf",outpath));
+  c->SaveAs(Form("%s/crdl_presel_mbb.png",outpath));
 
-  c = stackHistAuto(path,"h_mt2bl","","cr23_mt_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_mt2bl","","cr23_mt_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crdl_presel_mt2bl.eps",outpath));
+  c->SaveAs(Form("%s/crdl_presel_mt2bl.pdf",outpath));
+  c->SaveAs(Form("%s/crdl_presel_mt2bl.png",outpath));
 
-  c = stackHistAuto(path,"h_lep1mt","","cr23_mt_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_lep1mt","","cr23_mt_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crdl_presel_mt.eps",outpath));
+  c->SaveAs(Form("%s/crdl_presel_mt.pdf",outpath));
+  c->SaveAs(Form("%s/crdl_presel_mt.png",outpath));
 
-  c = stackHistAuto(path,"h_met","","cr23_mt_nm1",1,1,0,-1,0,1);
+  c = stackHistAuto(path,"h_met","","cr23_mt_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/crdl_presel_met.eps",outpath));
+  c->SaveAs(Form("%s/crdl_presel_met.pdf",outpath));
+  c->SaveAs(Form("%s/crdl_presel_met.png",outpath));
 
 
 }
@@ -562,10 +578,10 @@ void savePublicPlotsCRs(const char* path, const char* outpath) {
 void savePublicPlotsCRMbb(const char* path, const char* outpath) {
 
   // CRMbb mass hists (should make with scale factors applied)
-  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_mt_nm1",1,1,0,-1,0,1);
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_mt_nm1",1,1,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_mt_nm1_bbmass.eps",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met_nm1",1,2,0,-1,0,1);
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met_nm1",1,2,0,-1,0,1,"",0,-1,0,"Unpublished");
   c->SaveAs(Form("%s/sig_bbmasslast_lepbsfs_met_nm1_bbmass.eps",outpath));
 
   // c = stackHistAuto(path,"h_mt2bl","","cr14_mt2bl_nm1",1,1,0,-1,0,1);
@@ -582,17 +598,25 @@ void savePublicPlotsCRMbb(const char* path, const char* outpath) {
 void savePublicPlotsSig1(const char* path, const char* outpath) {
 
   // sig presel plots, bkg norm to data, with 1 sig overlaid, scaled up
-  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_mt2bl_nm1",1,1,1,-1,1,1,"",0,20.);
+  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_mt2bl_nm1",1,1,1,-1,1,1,"",0,20.,0,"Unpublished");
   c->SaveAs(Form("%s/sig_presel_mbb.eps",outpath));
+  c->SaveAs(Form("%s/sig_presel_mbb.pdf",outpath));
+  c->SaveAs(Form("%s/sig_presel_mbb.png",outpath));
 
-  c = stackHistAuto(path,"h_mt2bl","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.);
+  c = stackHistAuto(path,"h_mt2bl","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.,0,"Unpublished");
   c->SaveAs(Form("%s/sig_presel_mt2bl.eps",outpath));
+  c->SaveAs(Form("%s/sig_presel_mt2bl.pdf",outpath));
+  c->SaveAs(Form("%s/sig_presel_mt2bl.png",outpath));
 
-  c = stackHistAuto(path,"h_lep1mt","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.);
+  c = stackHistAuto(path,"h_lep1mt","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.,0,"Unpublished");
   c->SaveAs(Form("%s/sig_presel_mt.eps",outpath));
+  c->SaveAs(Form("%s/sig_presel_mt.pdf",outpath));
+  c->SaveAs(Form("%s/sig_presel_mt.png",outpath));
 
-  c = stackHistAuto(path,"h_met","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.);
+  c = stackHistAuto(path,"h_met","","sig_metlast_mt2bl_nm1",1,1,1,-1,1,1,"",0,10.,0,"Unpublished");
   c->SaveAs(Form("%s/sig_presel_met.eps",outpath));
+  c->SaveAs(Form("%s/sig_presel_met.pdf",outpath));
+  c->SaveAs(Form("%s/sig_presel_met.png",outpath));
 
 }
 
@@ -611,23 +635,27 @@ void savePublicPlotsSig3(const char* path, const char* outpath) {
   c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1);
   c->SaveAs(Form("%s/sig_met175_mbb.eps",outpath));
 
-  // .. and again with error bands
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",1,-1,1);
+  // .. and again with error bands.  Currently stacked version
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met100_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met100_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met100_mbb_errband.png",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",1,-1,1);
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met125_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met125_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met125_mbb_errband.png",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",1,-1,1);
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met150_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met150_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met150_mbb_errband.png",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1,-1,1);
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met175_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met175_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met175_mbb_errband.png",outpath));

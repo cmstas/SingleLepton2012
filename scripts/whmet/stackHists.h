@@ -62,7 +62,7 @@ void initialize( const char* path, bool doData = true, int doSig = 0 );
 //                              int rebin = 1, bool normalize = false, float mcnorm = -1. );
 TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, 
 			int rebin = 1, bool normalize = false, float mcnorm = -1., int doSig = 0 , bool doRatio = true, const char* scalesample = "",
-			bool stacksig = false, float signorm = -1., bool errband = false);
+			bool stacksig = false, float signorm = -1., bool errband = false, const char* cmslabel = "Preliminary");
 void printYieldsDir( const char* path, const char* dir, bool doData, int latex = 0, int doSig = 9, bool doWeighted = true );
 void saveAllHists( const char* path, const char* dir, const char* flavor, const char* outpath, bool doData, int rebin = 1, bool normalize = false, float mcnorm = -1. );
 bool matchHistName(const TString& histname, const TString& matchname);

@@ -981,7 +981,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 			     int nbins ,  float xmin , float xmax ,  
 			     const char* xtitle , bool overlayData , bool residual , bool drawLegend , bool log , 
 			     bool normalize , bool fit, float mcnorm, const char* scalesample,
-			     bool stacksig, float signorm, bool errband ){
+			     bool stacksig, float signorm, bool errband, const char* cmslabel ){
 
   dataMCHists datamchists;
   TH1F* ratio = 0;
@@ -1039,6 +1039,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   float nmctot = 0.0;
   float errmctot = 0.0;
 
+  bool drawingSignal = false;
   for( int imc = nmc-1 ; imc > -1 ; imc-- ){
     TH1F* mchist_tmp = (TH1F*)mcfiles[imc]->Get(fullhistname.Data());
     if (mchist_tmp) {
@@ -1048,6 +1049,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
       if (TString(labels[imc]).Contains("TChiwh") || TString(labels[imc]).Contains("Wino")) {
 	// signal: don't add to bg total
 	cout << "MC signal yield " << labels[imc] << " " << Form("%.2f",nmc) << " +/- " << Form("%.2f",err) << endl;
+	drawingSignal = true;
       } else {
 	nmctot += mchist[imc]->Integral();
 	Double_t err;
@@ -1196,7 +1198,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 	mcsighist[i]->Draw("samehist");
       }
     }
-    if( log ) datahist->SetMaximum( 90 * max );
+    if( log ) {
+      datahist->SetMaximum( 90 * max );
+      if (TString(histname).Contains("mt2bl")) datahist->SetMaximum(200*max);
+    }
     else      datahist->SetMaximum( 1.4 * max );
     datahist->Draw("sameE1");
     datahist->Draw("sameaxis");
@@ -1204,6 +1209,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     if(!log) {
       datahist->GetYaxis()->SetRangeUser(0.,1.4*max);
       if (TString(histname).Contains("dphi")) datahist->GetYaxis()->SetRangeUser(0.,3.0*max);
+      if (TString(histname).Contains("bbmass") && tsdir.Contains("bbmasslast") && drawingSignal
+	  && (tsdir.Contains("met1") || tsdir.Contains("bbmass_nm1")) && !stacksig ) {
+	datahist->GetYaxis()->SetRangeUser(0.,2.5*max);
+      }
     }
 
     datamchists.datahist = datahist;
@@ -1246,7 +1255,8 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   TLatex *text = new TLatex();
   text->SetNDC();
   text->SetTextSize(0.03);
-  text->DrawLatex(0.2,0.88,"CMS Preliminary");
+  TString label = "CMS " + TString(cmslabel);
+  text->DrawLatex(0.2,0.88,label);
   //text->DrawLatex(0.2,0.83,"0.98 fb^{-1} at #sqrt{s} = 7 TeV");
   text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 

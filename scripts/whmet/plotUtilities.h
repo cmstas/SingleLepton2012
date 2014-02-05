@@ -25,7 +25,7 @@ TGraphErrors* compareDataMC( std::vector<TFile*> mcfiles , vector<char*> labels 
 			     int nbins ,  float xmin , float xmax , const char* xtitle , 
 			     bool overlayData = true , bool residual = false, bool drawLegend = true , 
 			     bool log = false , bool normalize = false , bool fit = false, float mcnorm = -1., const char* scalesample = "",
-			     bool stacksig = false, float signorm = -1., bool errband = false);
+			     bool stacksig = false, float signorm = -1., bool errband = false, const char* cmslabel = "Preliminary");
 
 void initSymbols(int latex);
 void  printLine(int latex);
