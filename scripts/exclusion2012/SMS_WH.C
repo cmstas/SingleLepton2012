@@ -40,7 +40,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   // input parameters
   //--------------------------------------------------
 
-  const float lumi      = 19600; 
+  const float lumi      = 19500; 
   char* suffix          = (char*) "";
   char* denomhistoname  = (char*) "masses";
   char* filename        = (char*) "";
@@ -596,7 +596,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.78,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Unpublished  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 
     //-------------------------------
     // cross section
@@ -650,7 +650,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.78,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Unpublished  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 
     //-------------------------------
     // excluded points
@@ -673,7 +673,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.71,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Unpublished  #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 
     //-------------------------------
     // JES uncertainty
@@ -693,7 +693,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.71,signames.at(i).c_str());
-    t->DrawLatex(0.15,0.92,"CMS Preliminary   #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
+    t->DrawLatex(0.15,0.92,"CMS Unpublished   #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
     */
     
     /*
@@ -705,7 +705,7 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
     t->DrawLatex(0.2,0.83,label);
     //t->DrawLatex(0.2,0.77,"m(#tilde{q}) >> m(#tilde{g})");
     t->DrawLatex(0.2,0.71,signames.at(i).c_str());
-    t->DrawLatex(0.18,0.92,"CMS Preliminary            #sqrt{s} = 7 TeV, #scale[0.6]{#int}Ldt = 4.98 fb^{-1}");
+    t->DrawLatex(0.18,0.92,"CMS Unpublished            #sqrt{s} = 7 TeV, #scale[0.6]{#int}Ldt = 4.98 fb^{-1}");
     */
 
     if( print ){
