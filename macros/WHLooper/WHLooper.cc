@@ -57,6 +57,7 @@ const bool doLepPlusBSFs = true;
 const int  doJESVar = 0; // 0 for nominal, 1 for down, 2 for up
 const bool doWbbNLO = false;
 const bool doLepFastSimSFs = true;
+const bool doUpdateSigXsec = true;
 
 // plotting options
 const bool doFlavorPlots = true;
@@ -360,6 +361,24 @@ void WHLooper::loop(TChain *chain, TString name) {
   TFile *f_nsig = TFile::Open(h_nsig_filename);
   assert(f_nsig);
   TH2F* h_nsig = (TH2F*) f_nsig->Get("masses");
+
+  //------------------------------------------------
+  // set c1n2 cross section file
+  //------------------------------------------------
+
+  c1n2_xsec_file = TFile::Open("../../looper/c1n2_xsec.root");
+  
+  if( !c1n2_xsec_file->IsOpen() ){
+    cout << "Error, could not open c1n2 cross section TFile, quitting" << endl;
+    exit(0);
+  }
+  
+  c1n2_xsec_hist        = (TH1F*) c1n2_xsec_file->Get("h_c1n2_xsec");
+  
+  if( c1n2_xsec_hist == 0 ){
+    cout << "Error, could not retrieve c1n2 cross section hist, quitting" << endl;
+    exit(0);
+  }
 
   //------------------------------
   // retrieve fastsim SF histos
@@ -1283,7 +1302,11 @@ void WHLooper::loop(TChain *chain, TString name) {
 	float nevents = h_nsig->GetBinContent(bin);
 
 	//NOTE::need to add vtx. reweighting for the signal sample
-	evtweight = stopt.xsecsusy() * 1000.0 / nevents * lumi; 
+	float xsecsusy = stopt.xsecsusy();
+	if (doUpdateSigXsec) {
+	  xsecsusy = stopt.mg() > 0. ? c1n2CrossSection(stopt.mg()) * 0.33 * 0.56 : -999;
+	}
+	evtweight = xsecsusy * 1000.0 / nevents * lumi; 
 
 	// additional fast sim lepton sfs
 	if ( doLepFastSimSFs ){
@@ -5033,3 +5056,14 @@ void WHLooper::dumpEventInfo(const std::string& comment) {
 
   return;
 }
+
+//--------------------------------------------------------------------
+
+float WHLooper::c1n2CrossSection( float c1mass ){
+
+  int   bin  = c1n2_xsec_hist->FindBin(c1mass);
+  float xsec = c1n2_xsec_hist->GetBinContent(bin);
+  return xsec;
+
+}
+

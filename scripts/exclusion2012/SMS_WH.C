@@ -58,7 +58,8 @@ void SMS_WH(char* sample = "TChiWH" , bool print = true){
   //--------------------------------------------------
 
   if( TString(sample).Contains("TChiWH") ){    
-    filename  = (char*) "/tas/olivito/data/whmet/output_V00-02-36_2012/Minibabies_V00-04-05/TChiWH_whmet.root";
+    filename  = (char*) "/tas/olivito/data/whmet/output_V00-02-36_2012_2jskim/Minibabies_V00-04-06/TChiWH_whmet.root";
+    //    filename  = (char*) "/tas/olivito/data/whmet/output_V00-02-36_2012_2jskim/Minibabies_V00-04-01_BDT_V00-00-01/TChiWH_whmet.root";
     //    filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012/Minibabies_V00-03-16/TChiWH_whmet.root";
     // filename  = (char*) "/tas01/disk03/olivito/whmet/output_V00-02-36_2012_2jskim/Minibabies_V00-04-01_BDT_V00-00-01/TChiWH_whmet.root";
     //denomname = (char*) "/tas/cms2/stop/cms2V05-03-26_stoplooperV00-02-24/T2tt_mad/minibaby_V00-03-06/Skim_4jets_MET100_MT120/myMassDB_T2tt_combined_25GeVbins.root";

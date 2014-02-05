@@ -166,6 +166,24 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     BTagShapeInterface * upLShape     = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  0.0 ,  1.0);
     BTagShapeInterface * downLShape   = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  0.0 , -1.0);
 
+    //------------------------------------------------
+    // set c1n2 cross section file
+    //------------------------------------------------
+
+    c1n2_xsec_file = TFile::Open("../../looper/c1n2_xsec.root");
+  
+    if( !c1n2_xsec_file->IsOpen() ){
+      cout << "Error, could not open c1n2 cross section TFile, quitting" << endl;
+      exit(0);
+    }
+  
+    c1n2_xsec_hist        = (TH1F*) c1n2_xsec_file->Get("h_c1n2_xsec");
+  
+    if( c1n2_xsec_hist == 0 ){
+      cout << "Error, could not retrieve c1n2 cross section hist, quitting" << endl;
+      exit(0);
+    }
+
     //---------------------------------
     // set up histograms
     //---------------------------------
@@ -741,11 +759,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	      float nevents = h_nsig->GetBinContent(bin);
 
 	      //NOTE::need to add vtx. reweighting for the signal sample
-	      whweight_  = stopt.xsecsusy() * 1000.0 / nevents * 19.5; 
+	      //	      xsecsusy_    = stopt.xsecsusy();
+	      xsecsusy_  = stopt.mg() > 0. ? c1n2CrossSection(stopt.mg()) * 0.33 * 0.56 : -999;
+	      whweight_  = xsecsusy_ * 1000.0 / nevents * 19.5; 
 	      nsigevents_ = (int) nevents;
 	      mchargino_   = stopt.mg();                   // chargino mass
 	      mlsp_        = stopt.ml();                   // LSP mass
-	      xsecsusy_    = stopt.xsecsusy();
 	    }
 
 	    if ( name.Contains("pMSSM") ) {
@@ -1528,7 +1547,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         rootdir->cd();
 
 //        outFile_   = new TFile(Form("output/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
-        outFile_   = new TFile(Form("output_V00-04-05/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
+        outFile_   = new TFile(Form("output_V00-04-06/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
 	//        outFile_   = new TFile(Form("/nfs-7/userdata/stop/output_V00-02-21_2012_4jskim/Minibabies/%s%s.root", prefix, m_minibabylabel_.c_str()), "RECREATE");
         outFile_->cd();
 
@@ -2129,3 +2148,14 @@ double Reweight_T2bW (double thetaChi_eff, double thetaW_eff, std::vector<SUSYGe
     return weight;
 
 };
+
+//--------------------------------------------------------------------
+
+float StopTreeLooper::c1n2CrossSection( float c1mass ){
+
+  int   bin  = c1n2_xsec_hist->FindBin(c1mass);
+  float xsec = c1n2_xsec_hist->GetBinContent(bin);
+  return xsec;
+
+}
+

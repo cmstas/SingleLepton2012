@@ -35,7 +35,7 @@ def write_sr1(filename, nsig, errsig):
     f = open(filename,'w')
     f.write("""imax 1  number of channels
 jmax 6  number of backgrounds
-kmax 16  number of nuisance parameters (sources of systematical uncertainties)
+kmax 17  number of nuisance parameters (sources of systematical uncertainties)
 ------------
 bin         1
 observation 7
@@ -71,7 +71,7 @@ def write_sr2(filename, nsig, errsig):
     f = open(filename,'w')
     f.write("""imax 1  number of channels
 jmax 6  number of backgrounds
-kmax 16  number of nuisance parameters (sources of systematical uncertainties)
+kmax 17  number of nuisance parameters (sources of systematical uncertainties)
 ------------
 bin         1
 observation 6
@@ -107,7 +107,7 @@ def write_sr3(filename, nsig, errsig):
     f = open(filename,'w')
     f.write("""imax 1  number of channels
 jmax 6  number of backgrounds
-kmax 16  number of nuisance parameters (sources of systematical uncertainties)
+kmax 17  number of nuisance parameters (sources of systematical uncertainties)
 ------------
 bin         1
 observation 3
@@ -143,7 +143,7 @@ def write_sr4(filename, nsig, errsig):
     f = open(filename,'w')
     f.write("""imax 1  number of channels
 jmax 6  number of backgrounds
-kmax 16  number of nuisance parameters (sources of systematical uncertainties)
+kmax 17  number of nuisance parameters (sources of systematical uncertainties)
 ------------
 bin         1
 observation 3
