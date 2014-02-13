@@ -876,7 +876,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
   TH1F*    datahist = new TH1F("datahist","datahist",1,0,1);
   datahist->Sumw2();
 
-  if( overlayData ) leg->AddEntry(datahist,"Data");
+  if( overlayData ) leg->AddEntry(datahist,"Data","pe");
 
   const unsigned int nmc = labels.size();
   TH1F*    mchist[nmc];
@@ -1254,11 +1254,12 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 
   TLatex *text = new TLatex();
   text->SetNDC();
-  text->SetTextSize(0.03);
+  text->SetTextSize(0.035);
   TString label = "CMS " + TString(cmslabel);
   text->DrawLatex(0.2,0.88,label);
   //text->DrawLatex(0.2,0.83,"0.98 fb^{-1} at #sqrt{s} = 7 TeV");
-  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  //  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, L = 19.5 fb^{-1}");
 
   // if     ( TString(flavor).Contains("ee")  ) text->DrawLatex(0.2,0.78,"Events with ee");
   // else if( TString(flavor).Contains("mm")  ) text->DrawLatex(0.2,0.78,"Events with #mu#mu");
@@ -1611,6 +1612,57 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
   if (h3_norm) leg->AddEntry(h3_norm,label3.c_str(),"l");
   if (h4_norm) leg->AddEntry(h4_norm,label4.c_str(),"l");
   leg->Draw("same");
+
+  gPad->Modified();
+
+  return c;
+}
+
+//____________________________________________________________________________
+TCanvas* divideNormalized(std::string histname, TFile* f1, std::string label1, TFile* f2, std::string label2, int rebin, bool norm) {
+
+  TH1F* h1 = (TH1F*)f1->Get(histname.c_str());
+  TH1F* h2 = (TH1F*)f2->Get(histname.c_str());
+
+  TCanvas* c = divideNormalized(h1,label1,h2,label2,rebin,norm);
+
+  return c;
+}
+
+//____________________________________________________________________________
+TCanvas* divideNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin, bool norm) {
+
+  TCanvas* c = new TCanvas(Form("c_%s",h1->GetName()),Form("c_%s",h1->GetName()));
+  c->SetGridy();
+
+  TH1F* h1_clone = (TH1F*)h1->Clone(Form("%s_clone",h1->GetName()));
+  TH1F* h2_clone = (TH1F*)h2->Clone(Form("%s_clone",h2->GetName()));
+
+  h1_clone->SetLineWidth(2);
+
+  if (rebin > 1) {
+    h1_clone->Rebin(rebin);
+    h2_clone->Rebin(rebin);
+  }
+
+  h1_clone->Sumw2();
+  h2_clone->Sumw2();
+
+  TH1F* h1_norm = 0;
+  TH1F* h2_norm = 0;
+
+  if (norm) {
+    h1_norm = (TH1F*)h1_clone->DrawNormalized("histe");
+    h2_norm = (TH1F*)h2_clone->DrawNormalized("histe same");
+  } else {
+    h1_norm = h1_clone;
+    h2_norm = h2_clone;
+  }
+
+  TH1F* h_divide = h1_norm;
+  h_divide->Divide(h2_norm);
+  h_divide->GetYaxis()->SetTitle(Form("%s / %s",label1.c_str(),label2.c_str()));
+  h_divide->Draw("pe");
 
   gPad->Modified();
 

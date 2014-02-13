@@ -47,6 +47,8 @@ TLegend *getLegend( vector<char*> labels , bool overlayData,
 TGraphAsymmErrors* makeBand(TH1F* centhist, TH1F* uphist, TH1F* dnhist);
 TCanvas* compareNormalized(std::string histname, TFile* file1, std::string label1, TFile* file2, std::string label2, int rebin = 1, bool norm = true, TFile* file3 = 0, std::string label3 = "", TFile* file4 = 0, std::string label4 = "");
 TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin = 1, bool norm = true, TH1F* h3 = 0, std::string label3 = "", TH1F* h4 = 0, std::string label4 = "");
+TCanvas* divideNormalized(std::string histname, TFile* f1, std::string label1, TFile* f2, std::string label2, int rebin = 1, bool norm = true);
+TCanvas* divideNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin = 1, bool norm = true);
 
 TH1F* cumulate (TH1F* in, bool increasing);
 TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print = false, float sf = 1.);
