@@ -747,7 +747,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
   hbest->GetZaxis()->SetTitle("best signal region");
 
   t->SetTextSize(0.035);
-  t->DrawLatex(0.18,0.92,"CMS Preliminary        #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
+  t->DrawLatex(0.18,0.92,"CMS Unpublished        #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
   
   t->SetTextSize(0.045);
   t->DrawLatex(0.21,0.83,label);
@@ -773,10 +773,10 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
 
     if( TString(sample).Contains("TChiWH") ){
       t->SetTextSize(0.038);
-      t->DrawLatex(0.2,0.75," 1 = MET100");
-      t->DrawLatex(0.2,0.71," 2 = MET125");
-      t->DrawLatex(0.2,0.67," 3 = MET150");
-      t->DrawLatex(0.2,0.63," 4 = MET175");
+      t->DrawLatex(0.2,0.75," 1 = E_{T}^{miss} > 100 GeV");
+      t->DrawLatex(0.2,0.70," 2 = E_{T}^{miss} > 125 GeV");
+      t->DrawLatex(0.2,0.65," 3 = E_{T}^{miss} > 150 GeV");
+      t->DrawLatex(0.2,0.60," 4 = E_{T}^{miss} > 175 GeV");
     }
 
   }
@@ -1496,7 +1496,7 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
 
 
   t->SetTextSize(0.04);
-  t->DrawLatex(0.18,0.94,"CMS Preliminary                          #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.6 fb^{-1}");
+  t->DrawLatex(0.18,0.94,"CMS Unpublished                          #sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 
   TLine *line = new TLine();
   line->SetLineWidth(2);
@@ -1508,6 +1508,8 @@ void combinePlots_WH(char* sample = "TChiWH" , bool print = true , bool doFixups
     if( plotExcludedPoints ) can3->Print(Form("plots/combinePlots_%s%s%s%s_excludedPoints.pdf",sample,suffix,BDTchar,nminchar));
     can1->Print(Form("plots/combinePlots_%s%s%s%s.eps"               ,sample,suffix,BDTchar,nminchar));
     can2->Print(Form("plots/combinePlots_%s%s%s%s_bestRegion.eps"    ,sample,suffix,BDTchar,nminchar));
+    can2->Print(Form("plots/combinePlots_%s%s%s%s_bestRegion.pdf"    ,sample,suffix,BDTchar,nminchar));
+    can2->Print(Form("plots/combinePlots_%s%s%s%s_bestRegion.png"    ,sample,suffix,BDTchar,nminchar));
     if( plotExcludedPoints ) can3->Print(Form("plots/combinePlots_%s%s%s%s_excludedPoints.eps",sample,suffix,BDTchar,nminchar));
   }
 
