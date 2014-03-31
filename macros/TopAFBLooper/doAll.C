@@ -22,7 +22,7 @@ void doAll() {
   // samples to run over
   //
  
-  char* path = "/nfs-3/userdata/stop/output_V00-02-11_2012_4jskim";
+  char* path = "/nfs-6/userdata/stop/output_V00-02-32_2012";
 
 //   const int NSAMPLES = 15;
 //   char* sampletag[NSAMPLES] = {
