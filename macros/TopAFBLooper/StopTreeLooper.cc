@@ -9,10 +9,6 @@
 #include "../Core/STOPT.h"
 #include "../Core/stopUtils.h"
 #include "../Plotting/PlotUtilities.h"
-#include "../Core/MT2Utility.h"
-#include "../Core/mt2bl_bisect.h"
-#include "../Core/mt2w_bisect.h"
-#include "../Core/PartonCombinatorics.h"
 #include "../../Tools/BTagReshaping/BTagReshaping.h"
 
 #include "TROOT.h"
@@ -38,11 +34,6 @@ std::set<DorkyEventIdentifier> already_seen;
 std::set<DorkyEventIdentifier> events_lasercalib;
 std::set<DorkyEventIdentifier> events_hcallasercalib;
 
-bool dobdt = false;
-string tag_bdt[6] = {"0", "1", "2", "3", "4", "5"};
-float bdt_cut_lm[6] = {0.3, 0.2, 0.35, 0.45, 0.2, 0.2};
-float bdt_cut[6]    = {0.3, 0.3, 0.45, 0.55, 0.3, 0.3};
-float bdt_cut_hm[6] = {0.3, 0.4, 0.55, 0.65, 0.5, 0.5};
 
 StopTreeLooper::StopTreeLooper()
 {
@@ -50,33 +41,9 @@ StopTreeLooper::StopTreeLooper()
   min_njets = -9999;
   t1metphicorr = -9999.;
   t1metphicorrphi = -9999.;
-  t1metphicorrmt = -9999.;
-  t1metphicorr_lep = -9999.;
-  t1metphicorrphi_lep = -9999.;
-  t1metphicorrmt_lep = -9999.;
-  dphi_pseudometlep = -9999.;	
-  leppt = -9999.;	
-  dphimjmin = -9999.;
-  dphimj1 = -9999.;
-  dphimj2 = -9999.;
-  pt_b = -9999.;
-  dRleptB1 = -9999.;
-  htssl = -9999.;
-  htosl = -9999.;
-  htratiol = -9999.;
-  htssm = -9999.;
-  htosm = -9999.;
-  htratiom = -9999.;
-  min_mtpeak = -9999.;
-  max_mtpeak = -9999.; 
   n_jets  = -9999;
   n_bjets = -9999;
   n_ljets = -9999;
-  chi2min = -9999.;
-  chi2minprob = -9999.;
-  mt2bmin = -9999.;
-  mt2blmin = -9999.;
-  mt2wmin = -9999.;
   pfcalo_metratio = -9999.;
   pfcalo_metdphi  = -9999.;
 }
@@ -127,7 +94,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
   std::map<std::string, TH1F*> h_1d;
   //also for control regions
-  std::map<std::string, TH1F*> h_1d_cr1, h_1d_cr2, h_1d_cr4, h_1d_cr5;
+  std::map<std::string, TH1F*> h_1d_cr1, h_1d_cr2, h_1d_cr3, h_1d_cr4;
   //for signal region 
   std::map<std::string, TH1F*> h_1d_sig;
   //for ttbar dilepton njets distribution
@@ -161,21 +128,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
   bool isData = name.Contains("data") ? true : false;
 
   //Define jet multiplicity requirement
-  min_njets = 4;
+  min_njets = 2;
   printf("[StopTreeLooper::loop] N JET min. requirement for signal %i \n", min_njets);
 
-  //Define peak region 
-  min_mtpeak = 50.; 
-  max_mtpeak = 80.; 
-  printf("[StopTreeLooper::loop] MT PEAK definition %.0f - %.0f GeV \n", min_mtpeak, max_mtpeak);
-
   cout << "[StopTreeLooper::loop] running over chain with total entries " << nEvents << endl;
-
-  // met region tags
-  const int NMET = 9;
-  float   metcut[NMET] = { 0., 50., 100., 150., 200., 250., 300., 350., 400. };
-  float    mtcut[NMET] = { 150., 150., 120., 120., 120., 120., 120., 120., 120. };
-  string tag_met[NMET] = { "", "_met50", "_met100", "_met150", "_met200", "_met250", "_met300", "_met350", "_met400" };
 
   stwatch.Start();
 
@@ -271,7 +227,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       	getPhiCorrMET( stopt.t1met10(), stopt.t1met10phi(), stopt.nvtx(), !isData);
       t1metphicorr    = p_t1metphicorr.first;
       t1metphicorrphi = p_t1metphicorr.second;
-      t1metphicorrmt  = getMT( stopt.lep1().Pt() , stopt.lep1().Phi() , t1metphicorr , t1metphicorrphi );  
 
       pfcalo_metratio = t1metphicorr/stopt.calomet();
       pfcalo_metdphi  = getdphi(t1metphicorrphi, stopt.calometphi());
@@ -288,16 +243,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       n_bjets = 0;
       n_ljets = 0;
 
-      // kinematic variables
-      htssl = 0.;
-      htosl = 0.;
-      htssm = 0.;
-      htosm = 0.;
-
       for( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i ){
 	
 	if( stopt.pfjets().at(i).pt()<30 )  continue;
-	if( fabs(stopt.pfjets().at(i).eta())>2.4 )  continue;
+	if( fabs(stopt.pfjets().at(i).eta())>2.4 )  continue;  //note, this was 2.5 for 7 TeV AFB
 	//	if( stopt.pfjets_beta2_0p5().at(i)<0.2 )  continue;
 
 	//	bool passMediumPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(),stopt.pfjets_mvaPUid().at(i),1);
@@ -307,13 +256,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
 	n_jets++;
 	n_ljets++;
-	if (n_jets==1) 
-	  dphimj1 = getdphi(t1metphicorrphi, stopt.pfjets().at(i).phi() );
-	if (n_jets==2) {
-	  dphimj2 = getdphi(t1metphicorrphi, stopt.pfjets().at(i).phi() );
-	  dphimjmin = TMath::Min( dphimj1 , dphimj2 );
-	}
-      	jets.push_back( stopt.pfjets().at(i) );
+
+  jets.push_back( stopt.pfjets().at(i) );
 
 	//to not use reshaped discriminator
 	//float csv_nominal= stopt.pfjets_csv().at(i);
@@ -324,10 +268,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 				   stopt.pfjets_mcflavorAlgo().at(i) ); 
 	if (csv_nominal > 0.679) {
 	  n_bjets++;
-	  if (n_bjets==1) {
-	    pt_b = stopt.pfjets().at(i).pt();
-	    dRleptB1 = ROOT::Math::VectorUtil::DeltaR( stopt.lep1(), stopt.pfjets().at(i) );
-	  }
 	}
 	btag.push_back( csv_nominal );
 
@@ -335,14 +275,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       	else mc.push_back  ( 0 );
 
       	sigma_jets.push_back(stopt.pfjets_sigma().at(i));
-
-	float dPhiL = getdphi(stopt.lep1().Phi(), stopt.pfjets().at(i).phi() );
-	float dPhiM = getdphi(t1metphicorrphi, stopt.pfjets().at(i).phi() );   
-
-	if ( dPhiL  < (TMath::Pi()/2) ) htssl=htssl+stopt.pfjets().at(i).pt();
-	else                            htosl=htosl+stopt.pfjets().at(i).pt();
-	if ( dPhiM  < (TMath::Pi()/2) ) htssm=htssm+stopt.pfjets().at(i).pt();
-	else                            htosm=htosm+stopt.pfjets().at(i).pt();
  
         //count jets that are not overlapping with second lepton
 	if (isData) continue;
@@ -353,28 +285,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
       } 
 
-      //      if (n_jets<min_njets) continue;
-
-      //maria variables
-      htratiol = htssl / (htosl + htssl);
-      htratiom = htssm / (htosm + htssm);
-
-      // get list of candidates 
-      // PartonCombinatorics pc (stopt.pfjets(), stopt.pfjets_csv(), stopt.pfjets_sigma(), stopt.pfjets_mc3(), 
-      // 			     stopt.lep1(), t1metphicorr, t1metphicorrphi, isData);
-      // MT2CHI2 mt2c2 = pc.getMt2Chi2();
-      // PartonCombinatorics pc (myJets, myJetsTag, myJetsSigma, myJetsMC, 
-      //  stopt.lep1(), t1metphicorr, t1metphicorrphi, isData);
-      // MT2CHI2 mt2c2 = pc.getMt2Chi2();
-      // chi2 and MT2 variables
-      // chi2min= mt2c2.one_chi2;               // minimum chi2 
-      // chi2minprob= TMath::Prob(chi2min,1);   // probability of minimum chi2
-      chi2min= (float)calculateChi2SNT(jets, sigma_jets, btag);// minimum chi2 
-      chi2minprob= TMath::Prob(chi2min,1);   // probability of minimum chi2
-      // mt2bmin= mt2c2.three_mt2b;             // minimum MT2b
-      // mt2blmin= mt2c2.three_mt2bl;            // minimum MT2bl
-      // mt2wmin= mt2c2.three_mt2w;             // minimum MT2w
-      mt2wmin= (float)calculateMT2w(jets, btag, stopt.lep1(), t1metphicorr, t1metphicorrphi); // minimum MT2w
       
       //----------------------------------------------------------------------------
       // histogram tags
@@ -388,49 +298,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       string tag_isotrk = passisotrk ? "" : "_wisotrk";
       //string tag_isotrk = (passLepPlusIsoTrkSelection(isData)) ? "" : "_wisotrk";   
 
-      // tag_T2tt_LM -- dphi and chi2 selection
-      bool passT2ttLM = (dphimjmin>0.8 && chi2min<5) ? true : false;
-      string tag_T2tt_LM = passT2ttLM ? "_passT2ttLM" : "_failT2ttLM"; 
-      
-      // tag_T2tt_HM -- add mt2w requirement
-      bool passT2ttHM = (passT2ttLM && mt2wmin>200) ? true : false;
-      string tag_T2tt_HM = passT2ttHM ? "_passT2ttHM" : "_failT2ttHM"; 
-
-      // tag_T2bw_LM -- dphi and bpt selection
-      bool passT2bwLM = ( dphimjmin>0.8 ) ? true : false;
-      string tag_T2bw_LM = passT2bwLM ? "_passT2bwLM" : "_failT2bwLM"; 
-
-      // tag_T2bw_HM -- add mt2w requirement
-      bool passbpt = false;
-      if (n_bjets<1 && n_jets>0 && jets.at(0).pt()>100.) passbpt = true;
-      else if (n_bjets>0 && pt_b>100.) passbpt = true;
-      bool passT2bwHM = (passT2bwLM && passbpt && mt2wmin>200) ? true : false;
-      string tag_T2bw_HM = passT2bwHM ? "_passT2bwHM" : "_failT2bwHM"; 
-
       //z-peak/veto
       string tag_zcut;
       if ( fabs( stopt.dilmass() - 91.) > 15. ) tag_zcut = "_zveto";
       else if  ( fabs( stopt.dilmass() - 91.) < 10. ) tag_zcut = "_zpeak";
       else tag_zcut = "_ignore";
-
-      //event with true truth-level track
-      //and events with true truth-level tau
-      bool hastruetrk = false;
-      bool hastruetau = false;
-      if (stopt.nleps()>1 && abs(stopt.mclep2().Eta())<2.5)  {
-	//check if second lepton is e/mu pT>5GeV
-	if (abs(stopt.mcid2())<14 && stopt.mclep2().Pt()>5.) hastruetrk = true;
-	//if second lepton is tau 
-	//check if daughter lepton or single track has pT>10GeV
-	if (abs(stopt.mcid2())>14) {  
-	  if (stopt.mcdecay2()==2 && stopt.mctaudpt2()>5.) hastruetrk = true;
-	  if (stopt.mcdecay2()==1 && stopt.mcndec2()==1 && stopt.mctaudpt2()>10.) hastruetrk = true;
-	  //pt requirement on tau veto is 20 GeV
-	  if (stopt.mctaudvis2().Pt()>20.) hastruetau = true;
-	}
-      }
-      string tag_truetrk = hastruetrk ? "_wtruetrk" : "_notruetrk";
-      string tag_truetau = hastruetau ? "_wtruetau" : "_notruetau";
 
       //flavor types
       string flav_tag_sl;
@@ -448,14 +320,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	flav_tag_dl = "_elmu";
       else flav_tag_dl = "_mysterydl";
       string basic_flav_tag_dl = flav_tag_dl;
-      if ( abs(stopt.id1()) != abs(stopt.id2()) ) basic_flav_tag_dl = "_mueg";
+      if ( abs(stopt.id1()) != abs(stopt.id2()) && flav_tag_dl != "_mysterydl" ) basic_flav_tag_dl = "_mueg";
 
-      //tag for gen-level MT
-      string tag_mttruth[NMET];
-      double genmt  = getMT( stopt.mclep1().Pt() , stopt.mclep1().Phi() , stopt.genmet() , stopt.genmetphi() );
-      for (int im = 0; im<NMET; im++) {
-        tag_mttruth[im] = (genmt>mtcut[im]) ? "_genMTtail" : "_genMTnottail";
-      }
+
 
       //------------------------------------------ 
       // datasets bit
@@ -488,29 +355,23 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       float trigweight_dl = isData ? 1. : getdltrigweight(stopt.id1(), stopt.id2());
 
       //
-      // SIGNAL REGION - single lepton + b-tag
+      // SIGNAL REGION - dilepton + b-tag
       //
       // selection - 1 lepton 
       // Add iso track veto
       // Add b-tag
-      if ( dataset_1l && passSingleLeptonSelection(isData) 
-	   && n_jets>=min_njets )
-	{
-	  for (int im = 0; im<NMET; im++) {
-	    if ( t1metphicorr < metcut[im] ) continue;
-	    makeSIGPlots( evtweight*trigweight, h_1d_sig, tag_isotrk+"_prebtag"+tag_met[im], flav_tag_sl, mtcut[im] );
-	    makeSIGPlots( evtweight*trigweight, h_1d_sig, tag_isotrk+tag_btag+tag_met[im]  , flav_tag_sl, mtcut[im] );
-	    //store information to determine fraction of events with true iso. trk or a tau
-	    if ( name.Contains("tt") && stopt.nleps()>1 ) {
-	      //truth track information
-	      makeSIGPlots( evtweight*trigweight, h_1d_sig, tag_isotrk+tag_btag+tag_truetrk+tag_met[im], flav_tag_sl, mtcut[im] );
-	      makeSIGPlots( evtweight*trigweight, h_1d_sig, tag_isotrk+tag_btag+tag_truetau+tag_met[im], flav_tag_sl, mtcut[im] );
-	      makeSIGPlots( evtweight*trigweight, h_1d_sig, tag_isotrk+tag_btag+tag_truetrk+tag_truetau+tag_met[im], 
-			    flav_tag_sl, mtcut[im] );
-	    }
-	  }
-	}
 
+      //need proper signal region cuts here, including 3rd lepton veto etc.
+
+      if ( dataset_2l && passDileptonSelection(isData) 
+     && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. ) 
+     && n_bjets>0 ) 
+  {
+      makeNJPlots( evtweight*trigweight_dl, h_1d_nj, "", basic_flav_tag_dl);
+      if ( n_jets < min_njets  ) makeSIGPlots( evtweight*trigweight_dl, h_1d_sig, tag_isotrk+tag_btag  , basic_flav_tag_dl );
+  }
+
+/*
       //
       // CR1 - single lepton + b-veto
       //
@@ -521,16 +382,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 	   && passisotrk
 	   && n_jets>=min_njets )
 	{
-	  for (int im = 0; im<NMET; im++) {
-	    if ( t1metphicorr < metcut[im] ) continue;
 	    //pre b-tag veto
-	    makeCR1Plots( evtweight*trigweight, h_1d_cr1, "_prebveto"+tag_met[im], flav_tag_sl, mtcut[im] );
-	    //separate events depending on whether the gen-level MT is in the tail, for SFRtop estimate from CR1
-	    makeCR1Plots( evtweight*trigweight, h_1d_cr1, "_prebveto"+tag_met[im]+tag_mttruth[im], flav_tag_sl, mtcut[im] );
+	    makeCR1Plots( evtweight*trigweight, h_1d_cr1, "_prebveto", flav_tag_sl );
 	    //b-veto
-	    if ( n_bjets==0 ) 
-	      makeCR1Plots( evtweight*trigweight, h_1d_cr1, tag_met[im], flav_tag_sl, mtcut[im] );
-	  }
+	    if ( n_bjets==0 ) makeCR1Plots( evtweight*trigweight, h_1d_cr1,, flav_tag_sl );
+
 	}//end CR1 selection
       
       //
@@ -564,94 +420,27 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 		   && n_jets>=min_njets 
 		   && n_bjets==0 ) {
 
-		//calculate pseudo met and mt
-		//find positive lepton - this is the one that is combined with the pseudomet to form the mT
-		bool isfirstp = (stopt.id1() > 0) ? true : false;
-		
-		//recalculate met
-		float metx = t1metphicorr * cos( t1metphicorrphi );
-		float mety = t1metphicorr * sin( t1metphicorrphi );
-		
-		//recalculate the MET with the positive lepton
-		metx += isfirstp ? stopt.lep1().px() : stopt.lep2().px();
-		mety += isfirstp ? stopt.lep1().py() : stopt.lep2().py();
-		
-		t1metphicorr_lep    = sqrt(metx*metx + mety*mety);
-		t1metphicorrphi_lep = atan2( mety , metx );
-		
-		//recalculate the MT with the negative lepton
-		t1metphicorrmt_lep = isfirstp ?
-		  getMT( stopt.lep2().Pt() , stopt.lep2().Phi() , t1metphicorr_lep , t1metphicorrphi_lep ) :
-		  getMT( stopt.lep1().Pt() , stopt.lep1().Phi() , t1metphicorr_lep , t1metphicorrphi_lep );
-		//dphi between met and lepton
-		dphi_pseudometlep = isfirstp ?
-		  getdphi( stopt.lep2().Phi() , t1metphicorrphi_lep ) :
-		  getdphi( stopt.lep1().Phi() , t1metphicorrphi_lep );
-		//lepton pt 
-		leppt = isfirstp ? stopt.lep1().Pt() : stopt.lep2().Pt();
-
-		for (int im = 0; im<NMET; im++) {
-		  if ( t1metphicorr_lep < metcut[im] ) continue;
-		  makeCR2Plots( evtweight*trigweight_dl, h_1d_cr2, tag_met[im], basic_flav_tag_dl, mtcut[im] );
-		}
+          makeCR2Plots( evtweight*trigweight_dl, h_1d_cr2,, basic_flav_tag_dl );
 
 	      }
 	    }
 	}//end CR2 selection
 
-      //
-      // CR4 - ttbar dilepton sample with 2 good leptons
-      //
-      
-      // selection - all dilepton, z-veto for SF dilepton
-      // Add b-tag requirement
-      if ( dataset_2l && passDileptonSelection(isData) 
-	   && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. ) 
-	   && n_bjets>0 ) 
-	{
-	  //jet multiplicity distributions 
-	  //store in separate file since this is used for njet reweighting
-	  for (int im = 0; im<NMET; im++) {
-	    if ( t1metphicorr < metcut[im] ) continue;
-	    makeNJPlots( evtweight*trigweight_dl, h_1d_nj, tag_met[im], basic_flav_tag_dl);
-	    if ( n_jets < min_njets  ) continue; 
-	    makeCR4Plots( evtweight*trigweight_dl, h_1d_cr4, tag_met[im], flav_tag_dl, mtcut[im] );
-	  }
-	}//end CR4 selection
 
-      ////////////////////////////////////////////////////////////////////////////////////////////////////
-      // Apply jet requirement
-      if ( n_jets < min_njets ) continue;
 
       //
-      // Sample before isolated track requirement - for fake rate of requirement
+      // CR3 - single lepton control REGION - single lepton + b-tag
       //
+      // selection - 1 lepton 
+      // Add iso track veto
+      // Add b-tag
 
-      // selection - at least 1 lepton
-      // Add b-tag requirement
       if ( dataset_1l && passSingleLeptonSelection(isData) 
-	   && n_bjets>0 ) 
-	{
-	  for (int im = 0; im<NMET; im++) {
-	    if ( t1metphicorr < metcut[im] ) continue;
-	    makeCR1Plots( evtweight*trigweight, h_1d_cr5, "_preveto"+tag_met[im], flav_tag_sl, mtcut[im] );
-	    if ( passLepPlusIsoTrkSelection(isData) || passLepPlusTauSelection(isData) ) {
-	      makeCR5Plots( evtweight*trigweight, h_1d_cr5, "_all"+tag_met[im], flav_tag_sl, mtcut[im] );
-	      // sample with only 1 lepton - this is the true CR5
-	      if ( stopt.ngoodlep() == 1 ) 
-		makeCR5Plots( evtweight*trigweight, h_1d_cr5, tag_met[im], flav_tag_sl, mtcut[im] );
-	      if ( !passTauVeto() ) 
-		makeCR5Plots( evtweight*trigweight, h_1d_cr5, "_wtau"+tag_met[im], flav_tag_sl, mtcut[im] );
-	      if ( passIsoTrkVeto_v4() && !passTauVeto() )
-		makeCR5Plots( evtweight*trigweight, h_1d_cr5, "_wtau_notrk"+tag_met[im], flav_tag_sl, mtcut[im] );
-	      if ( passLepPlusIsoTrkSelection(isData) && passTauVeto() )
-		makeCR5Plots( evtweight*trigweight, h_1d_cr5, "_wtrk_notau"+tag_met[im], flav_tag_sl, mtcut[im] );
-	      if ( passLepPlusIsoTrkSelection(isData) )
-		makeCR5Plots( evtweight*trigweight, h_1d_cr5, "_wtrk"+tag_met[im], flav_tag_sl, mtcut[im] );
-
-	    }
-	  }  
-	}//end CR5 selection 
+     && n_jets>=min_njets )
+  {
+      makeCR3Plots( evtweight*trigweight, h_1d_cr3, tag_isotrk+tag_btag  , flav_tag_sl );
+  }
+*/
 
     } // end event loop
     
@@ -691,9 +480,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
   outfile_sig.Write();
   outfile_sig.Close();
-
+/*
   //control regions
-  //h_1d_cr1, h_1d_cr2, h_1d_cr4, h_1d_cr5
+  //h_1d_cr1, h_1d_cr2, h_1d_cr4, h_1d_cr3
 
   TFile outfile_cr1(Form("CR1%s",m_outfilename_.c_str()),"RECREATE") ; 
   printf("[StopTreeLooper::loop] Saving CR1 histograms to %s\n", m_outfilename_.c_str());
@@ -731,18 +520,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
   outfile_cr4.Write();
   outfile_cr4.Close();
 
-  TFile outfile_cr5(Form("CR5%s",m_outfilename_.c_str()),"RECREATE") ; 
-  printf("[StopTreeLooper::loop] Saving CR5 histograms to %s\n", m_outfilename_.c_str());
+  TFile outfile_cr3(Form("CR3%s",m_outfilename_.c_str()),"RECREATE") ; 
+  printf("[StopTreeLooper::loop] Saving CR3 histograms to %s\n", m_outfilename_.c_str());
 
-  std::map<std::string, TH1F*>::iterator it1d_cr5;
-  for(it1d_cr5=h_1d_cr5.begin(); it1d_cr5!=h_1d_cr5.end(); it1d_cr5++) {
-    it1d_cr5->second->Write(); 
-    delete it1d_cr5->second;
+  std::map<std::string, TH1F*>::iterator it1d_cr3;
+  for(it1d_cr3=h_1d_cr3.begin(); it1d_cr3!=h_1d_cr3.end(); it1d_cr3++) {
+    it1d_cr3->second->Write(); 
+    delete it1d_cr3->second;
   }
 
-  outfile_cr5.Write();
-  outfile_cr5.Close();
-    
+  outfile_cr3.Write();
+  outfile_cr3.Close();
+*/
   TFile outfile_nj(Form("NJ%s",m_outfilename_.c_str()),"RECREATE") ; 
   printf("[StopTreeLooper::loop] Saving NJ histograms to %s\n", m_outfilename_.c_str());
 
@@ -754,7 +543,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
   outfile_nj.Write();
   outfile_nj.Close();
-
+/*
   TFile outfile_z(Form("Z%s",m_outfilename_.c_str()),"RECREATE") ; 
   printf("[StopTreeLooper::loop] Saving Z histograms to %s\n", m_outfilename_.c_str());
 
@@ -766,7 +555,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
   outfile_z.Write();
   outfile_z.Close();
-
+*/
   already_seen.clear();
 
   gROOT->cd();
@@ -775,228 +564,14 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
 
 
-void StopTreeLooper::makeCR2Plots(float evtweight, std::map<std::string, TH1F*> &h_1d, 
-				  string tag_selection, string flav_tag_dl, float mtcut ) 
-{
-
-  //binning for mT plots
-  int nbins = 30;
-  float h_xmin = 0.;
-  float h_xmax = 300.;
-  float x_ovflw = h_xmax-0.001;
-  
-  float pseudomt_count = -1.;
-  if ( t1metphicorrmt_lep > min_mtpeak
-       && t1metphicorrmt_lep < max_mtpeak )    pseudomt_count = 0.5;
-  else if ( t1metphicorrmt_lep > mtcut ) pseudomt_count = 1.5;
-  
-  //default met
-  plot1D("h_cr2_met"+tag_selection+flav_tag_dl, min(t1metphicorr, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //pseudo-met
-  plot1D("h_cr2_pseudomet"+tag_selection+flav_tag_dl, min(t1metphicorr_lep, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //positive lepton pt - enters mT calculation
-  plot1D("h_cr2_leppt"+tag_selection+flav_tag_dl, min(leppt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //angle between pos-lep and pseudopseudomet
-  plot1D("h_cr2_dphi_pseudometlep"+tag_selection          +flav_tag_dl, dphi_pseudometlep, evtweight, h_1d, 15, 0., TMath::Pi());
-  //pseudo-mt
-  plot1D("h_cr2_pseudomt"      +tag_selection+flav_tag_dl, min(t1metphicorrmt_lep, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  plot1D("h_cr2_pseudomt_count"+tag_selection+flav_tag_dl, pseudomt_count, evtweight, h_1d, 2, 0, 2);
-  //boson pt 
-  float pt_boson = (stopt.lep1()+stopt.lep2()).pt();
-  plot1D("h_cr2_pt_dilep"+tag_selection+flav_tag_dl, pt_boson, evtweight, h_1d, 100, 0., 500);
-
-  //check HO and TOB/TEC cleanup cut variables
-  plot1D("h_cr2_pfcaloMET"+tag_selection+flav_tag_dl, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
-  plot1D("h_cr2_pfcalodPhi"+tag_selection+flav_tag_dl, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());
-
-}
-
-void StopTreeLooper::makeCR4Plots( float evtweight, std::map<std::string, TH1F*> &h_1d, 
-				   string tag_selection, string flav_tag_dl, float mtcut ) 
-{
-  int nbins = 50;
-  float h_xmin = 0.;
-  float h_xmax = 500.;
-  float x_ovflw = h_xmax-0.001;
-  
-  float mt_count = -1.;
-  if ( t1metphicorrmt > min_mtpeak 
-       && t1metphicorrmt < max_mtpeak )    mt_count = 0.5;
-  else if ( t1metphicorrmt > mtcut ) mt_count = 1.5;
-  
-  //default met
-  plot1D("h_cr4_met"+tag_selection+flav_tag_dl, min(t1metphicorr, x_ovflw), evtweight, h_1d, nbins-5, 50., h_xmax);
-  //leading lepton pt - enters mT calculation
-  plot1D("h_cr4_leppt"+tag_selection+flav_tag_dl, min(stopt.lep1().Pt(), x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //leading lepton eta
-  plot1D("h_cr4_lepeta"+tag_selection+flav_tag_dl, stopt.lep1().Eta(), evtweight, h_1d, 21, -2.1, 2.1);
-  //subleading lepton pt
-  plot1D("h_cr4_subleadleppt"+tag_selection+flav_tag_dl, min(stopt.lep2().Pt(), x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //angle between lead-lep and met
-  float dphi_metlep = getdphi( stopt.lep1().Phi() , t1metphicorrphi );
-  plot1D("h_cr4_dphi_metlep"+tag_selection+flav_tag_dl, dphi_metlep, evtweight, h_1d, 15, 0., TMath::Pi());
-  //min dphi leading two jets - this should cut most of the ttbar single leptons
-  plot1D("h_cr4_mindPhiJ12"+tag_selection+flav_tag_dl, dphimjmin, evtweight, h_1d, 15, 0., TMath::Pi());
-  //b-pT
-  plot1D("h_cr4_bpt"+tag_selection+flav_tag_dl, pt_b, evtweight, h_1d, 50, 30., 400.);
-  //angle between leading b-jet and lepton
-  plot1D("h_cr4_dR_lepb1"+tag_selection+flav_tag_dl, min(dRleptB1, (float)4.999), evtweight, h_1d, 15, 0., 5.);
-  //maria variables
-  plot1D("h_cr4_htratiom"+tag_selection+flav_tag_dl, htratiom, evtweight, h_1d, 50, 0., 1.);
-  /// MT2 and chi2
-  plot1D("h_cr4_mt2wmin" +tag_selection+flav_tag_dl, min(mt2wmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr4_mt2bmin" +tag_selection+flav_tag_dl, min(mt2bmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr4_mt2blmin"+tag_selection+flav_tag_dl, min(mt2blmin, (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr4_chi2min" +tag_selection+flav_tag_dl, min(chi2min , (float)19.999) , evtweight, h_1d, 100, 0., 20.);
-  //BDT
-  
-
-  //MT
-  //binning for mT plots
-  nbins = 30;
-  h_xmin = 0.;
-  h_xmax = 300.;
-  x_ovflw = h_xmax-0.001;
-  plot1D("h_cr4_mt"+tag_selection+flav_tag_dl, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  plot1D("h_cr4_mt_count"+tag_selection+flav_tag_dl, mt_count, evtweight, h_1d, 2, 0, 2);
-
-  //Plot more angles between various objects
-  //angle between 2 leptons
-  float dphi_dilep = getdphi( stopt.lep1().Phi() ,  stopt.lep2().Phi() );
-  plot1D("h_cr4_dphi_dilep"+tag_selection+flav_tag_dl, dphi_dilep, evtweight, h_1d, 15, 0., TMath::Pi());
-  //dR between 2 leptons
-  float dR_dilep = dRbetweenVectors( stopt.lep1() ,  stopt.lep2() );
-  plot1D("h_cr4_dR_dilep"+tag_selection+flav_tag_dl, min(dR_dilep, (float)4.999), evtweight, h_1d, 15, 0., 5.);
-  //boson pt (here the dilepton pt is proportional to ISR)
-  float pt_boson = (stopt.lep1()+stopt.lep2()).pt();
-  plot1D("h_cr4_pt_dilep"+tag_selection+flav_tag_dl, pt_boson, evtweight, h_1d, 100, 0., 500);
-
-  //check HO and TOB/TEC cleanup cut variables
-  plot1D("h_cr4_pfcaloMET"+tag_selection+flav_tag_dl, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
-  plot1D("h_cr4_pfcalodPhi"+tag_selection+flav_tag_dl, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());
-
-}
-
-void StopTreeLooper::makeCR5Plots( float evtweight, std::map<std::string, TH1F*> &h_1d, 
-				   string tag_selection, string flav_tag, float mtcut ) 
-{
-
-  int nbins = 50;
-  float h_xmin = 0.;
-  float h_xmax = 500.;
-  float x_ovflw = h_xmax-0.001;
-  
-  float mt_count = -1.;
-  if ( t1metphicorrmt > min_mtpeak 
-       && t1metphicorrmt < max_mtpeak ) mt_count = 0.5;
-  else if ( t1metphicorrmt > mtcut ) mt_count = 1.5;
-  
-  //default met
-  plot1D("h_cr5_met"+tag_selection+flav_tag, min(t1metphicorr, x_ovflw), evtweight, h_1d, nbins-5, 50., h_xmax);
-  //leading lepton pt - enters mT calculation
-  plot1D("h_cr5_leppt"+tag_selection+flav_tag, min(stopt.lep1().Pt(), x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //isolated track pt
-  plot1D("h_cr5_isotrkpt"+tag_selection+flav_tag, min(stopt.pfcand10().Pt(), x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //angle between lead-lep and met
-  float dphi_metlep = getdphi( stopt.lep1().Phi() , t1metphicorrphi );
-  plot1D("h_cr5_dphi_metlep"+tag_selection+flav_tag, dphi_metlep, evtweight, h_1d, 15, 0., TMath::Pi());
-  //min dphi leading two jets - this should cut most of the ttbar single leptons
-  plot1D("h_cr5_mindPhiJ12"+tag_selection+flav_tag, dphimjmin, evtweight, h_1d, 15, 0., TMath::Pi());
-  //b-pT
-  plot1D("h_cr5_bpt"+tag_selection+flav_tag, pt_b, evtweight, h_1d, 50, 30., 400.);
-  //angle between leading b-jet and lepton
-  plot1D("h_cr5_dR_lepb1"+tag_selection+flav_tag, min(dRleptB1, (float)4.999), evtweight, h_1d, 15, 0., 5.);
-  //maria variables
-  plot1D("h_cr5_htratiom"+tag_selection+flav_tag, htratiom, evtweight, h_1d, 50, 0., 1.);
-  /// MT2 and chi2
-  plot1D("h_cr5_mt2wmin" +tag_selection+flav_tag, min(mt2wmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr5_mt2bmin" +tag_selection+flav_tag, min(mt2bmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr5_mt2blmin"+tag_selection+flav_tag, min(mt2blmin, (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr5_chi2min" +tag_selection+flav_tag, min(chi2min , (float)19.999) , evtweight, h_1d, 100, 0., 20.);
-  //BDT
-  
-  //MT
-  //binning for mT plots
-  nbins = 30;
-  h_xmin = 0.;
-  h_xmax = 300.;
-  x_ovflw = h_xmax-0.001;
-  plot1D("h_cr5_mt"      +tag_selection+flav_tag, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  plot1D("h_cr5_mt_count"+tag_selection+flav_tag, mt_count, evtweight, h_1d, 2, 0, 2);
-  //use larger range to calculate SF for fakes with higher stats.
-  float mt_count_lg = -1.;
-  if ( t1metphicorrmt < 100. ) mt_count_lg = 0.5;
-  else if ( t1metphicorrmt > mtcut ) mt_count_lg = 1.5;
-  plot1D("h_cr5_mt_count_lg"+tag_selection+flav_tag, mt_count_lg, evtweight, h_1d, 2, 0, 2);
-
-  //Plot more angles between various objects
-  //angle between lepton and isolated track
-  float dphi_leptrk = getdphi( stopt.lep1().Phi() ,  stopt.pfcand10().Phi() );
-  plot1D("h_cr5_dphi_leptrk"+tag_selection+flav_tag, dphi_leptrk, evtweight, h_1d, 15, 0., TMath::Pi());
-  //dR between lepton and isolated track
-  float dR_leptrk = dRbetweenVectors( stopt.lep1() , stopt.pfcand10() );
-  plot1D("h_cr5_dR_leptrk"+tag_selection+flav_tag, min(dR_leptrk, (float)4.999), evtweight, h_1d, 15, 0., 5.);
-
-  //check HO and TOB/TEC cleanup cut variables
-  plot1D("h_cr5_pfcaloMET"+tag_selection+flav_tag, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
-  plot1D("h_cr5_pfcalodPhi"+tag_selection+flav_tag, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());
-
-}
-
 void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F*> &h_1d, 
-				   string tag_selection, string flav_tag, float mtcut ) 
+				   string tag_selection, string flav_tag) 
 {
 
   int nbins = 50;
-  float h_xmin = 0.;
-  float h_xmax = 500.;
-  float x_ovflw = h_xmax-0.001;
-  
-  float mt_count = -1.;
-  if ( t1metphicorrmt > min_mtpeak 
-       && t1metphicorrmt < max_mtpeak )    mt_count = 0.5;
-  else if ( t1metphicorrmt > mtcut ) mt_count = 1.5;
-  
+
   //default met
-  plot1D("h_sig_met"+tag_selection+flav_tag, min(t1metphicorr, x_ovflw), evtweight, h_1d, nbins-5, 50, h_xmax);
-  //lepton pt - enters mT calculation
-  plot1D("h_sig_leppt"+tag_selection+flav_tag, min(stopt.lep1().Pt(), x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //angle between lepton and met
-  float dphi_metlep = getdphi( stopt.lep1().Phi() , t1metphicorrphi );
-  plot1D("h_sig_dphi_metlep"+tag_selection+flav_tag, dphi_metlep, evtweight, h_1d, 15, 0., TMath::Pi());
-  //min dphi leading two jets - this should cut most of the ttbar single leptons
-  plot1D("h_sig_mindPhiJ12"+tag_selection+flav_tag, dphimjmin, evtweight, h_1d, 15, 0., TMath::Pi());
-  //b-pT
-  plot1D("h_sig_bpt"+tag_selection+flav_tag, pt_b, evtweight, h_1d, 50, 30., 400.);
-  //angle between leading b-jet and lepton
-  plot1D("h_sig_dR_lepb1"+tag_selection+flav_tag, min(dRleptB1, (float)4.999), evtweight, h_1d, 15, 0., 5.);
-  //maria variables
-  plot1D("h_sig_htratiom"+tag_selection+flav_tag, htratiom, evtweight, h_1d, 50, 0., 1.);
-  /// MT2 and chi2
-  plot1D("h_sig_mt2wmin" +tag_selection+flav_tag, min(mt2wmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_sig_mt2bmin" +tag_selection+flav_tag, min(mt2bmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_sig_mt2blmin"+tag_selection+flav_tag, min(mt2blmin, (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_sig_chi2min" +tag_selection+flav_tag, min(chi2min , (float)19.999) , evtweight, h_1d, 100, 0., 20.);
-  //BDT
-  
-  //MT
-  //binning for mT plots
-  nbins = 30;
-  h_xmin = 0.;
-  h_xmax = 300.;
-  x_ovflw = h_xmax-0.001;
-  plot1D("h_sig_mt"      +tag_selection+flav_tag, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  plot1D("h_sig_mt_count"+tag_selection+flav_tag, mt_count, evtweight, h_1d, 2, 0, 2);
-  //Corrected jet counting with simple overlap removal
-  if ( stopt.nleps()>1 ) {
-    string tag_kbin = (n_ljets<4) ? "_K3" : "_K4";
-    plot1D("h_sig_mt"      +tag_kbin+tag_selection+flav_tag, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-    plot1D("h_sig_mt_count"+tag_kbin+tag_selection+flav_tag, mt_count, evtweight, h_1d, 2, 0, 2);
-  }
-  if(dphimjmin>0.8) {
-    plot1D("h_sig_mt_mindPhiJ12"      +tag_selection+flav_tag, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-    plot1D("h_sig_mt_count_mindPhiJ12"+tag_selection+flav_tag, mt_count, evtweight, h_1d, 2, 0, 2);    
-  }
+  plot1D("h_sig_met"+tag_selection+flav_tag, t1metphicorr, evtweight, h_1d, nbins-5, 50, 500);
 
   //check HO and TOB/TEC cleanup cut variables
   plot1D("h_sig_pfcaloMET"+tag_selection+flav_tag, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
@@ -1004,69 +579,7 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F*>
 
 }
 
-void StopTreeLooper::makeCR1Plots( float evtweight, std::map<std::string, TH1F*> &h_1d, 
-				   string tag_selection, string flav_tag, float mtcut ) 
-{
 
-  int nbins = 50;
-  float h_xmin = 0.;
-  float h_xmax = 500.;
-  float x_ovflw = h_xmax-0.001;
-
-  float mt_count = -1.;
-  if ( t1metphicorrmt > min_mtpeak 
-       && t1metphicorrmt < max_mtpeak ) {
-    mt_count = 0.5;
-
-  plot1D("h_cr1_mtpeak_pfcaloMET"+tag_selection+flav_tag, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
-  plot1D("h_cr1_mtpeak_pfcalodPhi"+tag_selection+flav_tag, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());
-
-  } else if ( t1metphicorrmt > mtcut ) {
-    mt_count = 1.5;
-  
-    plot1D("h_cr1_mttail_pfcaloMET"+tag_selection+flav_tag, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
-    plot1D("h_cr1_mttail_pfcalodPhi"+tag_selection+flav_tag, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());
-
-  }
-
-  plot1D("h_cr1_njets"    +tag_selection+flav_tag, min(n_jets,4),  evtweight, h_1d, 5,0,5);
-  plot1D("h_cr1_njets_all"+tag_selection+flav_tag, min(n_jets,9),  evtweight, h_1d, 10, 0, 10);
-  //default met
-  plot1D("h_cr1_met"+tag_selection+flav_tag, min(t1metphicorr, x_ovflw), evtweight, h_1d, nbins-5, 50., h_xmax);
-  //lepton pt - enters mT calculation
-  plot1D("h_cr1_leppt"+tag_selection+flav_tag, min(stopt.lep1().Pt(), x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  //lepton phi
-  plot1D("h_cr1_lepphi"+tag_selection+flav_tag, stopt.lep1().Phi(), evtweight, h_1d, 30, -1.*TMath::Pi(), TMath::Pi());
-  //met phi
-  plot1D("h_cr1_metphi"+tag_selection+flav_tag, t1metphicorrphi, evtweight, h_1d, 30, -1.*TMath::Pi(), TMath::Pi());
-  //angle between lepton and met
-  float dphi_metlep = getdphi( stopt.lep1().Phi() , t1metphicorrphi );
-  plot1D("h_cr1_dphi_metlep"+tag_selection+flav_tag, dphi_metlep, evtweight, h_1d, 15, 0., TMath::Pi());
-  //min dphi leading two jets - this should cut most of the ttbar single leptons
-  plot1D("h_cr1_mindPhiJ12"+tag_selection+flav_tag, dphimjmin, evtweight, h_1d, 15, 0., TMath::Pi());
-  //maria variables
-  plot1D("h_cr1_htratiom"+tag_selection+flav_tag, htratiom, evtweight, h_1d, 50, 0., 1.);
-  /// MT2 and chi2
-  plot1D("h_cr1_mt2wmin" +tag_selection+flav_tag, min(mt2wmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr1_mt2bmin" +tag_selection+flav_tag, min(mt2bmin , (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr1_mt2blmin"+tag_selection+flav_tag, min(mt2blmin, (float)499.99),  evtweight, h_1d, 100, 0., 500);
-  plot1D("h_cr1_chi2min" +tag_selection+flav_tag, min(chi2min , (float)19.999) , evtweight, h_1d, 100, 0., 20.);
-  //BDT
-  
-  //MT
-  //binning for mT plots
-  nbins = 30;
-  h_xmin = 0.;
-  h_xmax = 300.;
-  x_ovflw = h_xmax-0.001;
-  plot1D("h_cr1_mt"+tag_selection      +flav_tag, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
-  plot1D("h_cr1_mt_count"+tag_selection+flav_tag, mt_count, evtweight, h_1d, 2, 0, 2);
-
-  //check HO and TOB/TEC cleanup cut variables
-  plot1D("h_cr1_pfcaloMET"+tag_selection+flav_tag, min(pfcalo_metratio, (float)3.9999) , evtweight, h_1d, 100, 0, 4.);
-  plot1D("h_cr1_pfcalodPhi"+tag_selection+flav_tag, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());  
-
-}
 
 void StopTreeLooper::makeNJPlots( float evtweight, std::map<std::string, TH1F*> &h_1d, 
 				  string tag_selection, string flav_tag ) 
@@ -1086,9 +599,8 @@ void StopTreeLooper::makeZPlots( float evtweight, std::map<std::string, TH1F*> &
   int nbins = 30;
   float h_xmin = 0.;
   float h_xmax = 300.;
-  float x_ovflw = h_xmax-0.001;
 
-  plot1D("h_z_met"+tag_selection+flav_tag, min(t1metphicorr,x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
+  plot1D("h_z_met"+tag_selection+flav_tag, t1metphicorr, evtweight, h_1d, nbins, h_xmin, h_xmax);
 
   string lep1type =  abs(stopt.id1())==13 ? "h_muo" : "h_ele";
   string lep2type =  abs(stopt.id2())==13 ? "h_muo" : "h_ele";
@@ -1102,7 +614,6 @@ void StopTreeLooper::makeZPlots( float evtweight, std::map<std::string, TH1F*> &
 
   float dphi_metlep = getdphi(stopt.lep1().Phi(), t1metphicorrphi);
   plot1D("h_z_dphi_metl"+tag_selection+flav_tag, dphi_metlep, evtweight, h_1d, 15, 0., 3.14159);
-  plot1D("h_z_mt"+tag_selection+flav_tag, min(t1metphicorrmt, x_ovflw), evtweight, h_1d, nbins, h_xmin, h_xmax);
 
   if ( n_jets<1 ) return;
   plot1D("h_z_j1pt" +tag_selection+flav_tag, min(jets.at(0).Pt(), (float)399.99), evtweight, h_1d, 20, 30., 400.);
