@@ -54,6 +54,8 @@ class StopTreeLooper {
 	int n_bjets;
 	int n_ljets;
 	vector<LorentzVector> jets;
+	vector<LorentzVector> bjets;
+	vector<LorentzVector> bcandidates;
 	vector<float> btag;
 	vector<float> sigma_jets;
 	vector<int> mc;

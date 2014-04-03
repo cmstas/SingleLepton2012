@@ -4,7 +4,7 @@ INCLUDE = -I../ -I./ $(ROOFITINCLUDE)
 CFLAGS = -Wall -g -fPIC $(shell root-config --cflags) $(INCLUDE) $(EXTRACFLAGS) -DTOOLSLIB
 LINKER = g++
 
-LINKERFLAGS = $(shell root-config --ldflags) $(shell root-config --libs) -lMinuit -lMathMore
+LINKERFLAGS = $(shell root-config --ldflags) $(shell root-config --libs) -lMinuit -lMathMore -lPyROOT
 ifeq ($(shell root-config --platform),macosx)
 	LINKERFLAGS = -dynamiclib -undefined dynamic_lookup -Wl,-x -O -Xlinker -bind_at_load -flat_namespace $(shell root-config --libs) -lEG -lGenVector -lMathMore
 endif

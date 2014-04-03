@@ -21,6 +21,7 @@
 #include "Riostream.h"
 #include "TFitter.h"
 #include "TRandom.h"
+#include "TPython.h"
 
 #include <algorithm>
 #include <utility>
@@ -80,6 +81,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     }
 
     //------------------------------------------------------------------------------------------------------
+    // load Betchart solver
+    //------------------------------------------------------------------------------------------------------
+
+    TPython::LoadMacro("loadBetchart.py");
+
+    //------------------------------------------------------------------------------------------------------
     // set csv discriminator reshaping
     //------------------------------------------------------------------------------------------------------
 
@@ -126,6 +133,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     nEventsChain = nEvents;
     ULong64_t nEventsTotal = 0;
     int nevt_check = 0;
+    int nevt_nlep[10] = {0};
 
     bool isData = name.Contains("data") ? true : false;
 
@@ -227,6 +235,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //----------------------------------------------------------------------------
 
             if ( !passEvtSelection(name) ) continue;
+            nevt_nlep[stopt.ngoodlep()]++;
+            if (stopt.ngoodlep() > 2) continue; //veto the third lepton
 
             //----------------------------------------------------------------------------
             // Function to perform MET phi corrections on-the-fly
@@ -246,6 +256,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //----------------------------------------------------------------------------
 
             jets.clear();
+            bjets.clear();
             btag.clear();
             sigma_jets.clear();
             mc.clear();
@@ -253,6 +264,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             n_bjets = 0;
             n_ljets = 0;
 
+            //stopt.pfjets() are already sorted by pT
             for ( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i )
             {
 
@@ -279,6 +291,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                                             stopt.pfjets_mcflavorAlgo().at(i) );
                 if (csv_nominal > 0.679)
                 {
+                    bjets.push_back( stopt.pfjets().at(i) );
+                    //if more than 2 b-jets, use the ones with highest pT as b candidates
+                    if (bcandidates.size()<2) bcandidates.push_back( stopt.pfjets().at(i) );
                     n_bjets++;
                 }
                 btag.push_back( csv_nominal );
@@ -295,6 +310,14 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 if (ROOT::Math::VectorUtil::DeltaR(stopt.mclep2(), stopt.pfjets().at(i)) > 0.4 ) continue;
                 n_ljets--;
 
+            }
+
+            //if <2 btagged jets, take the highest pT light jets as b candidates
+            if (bcandidates.size()<2) {
+                bcandidates.push_back( stopt.pfjets().at(0) );
+            }
+            if (bcandidates.size()<2) {
+                bcandidates.push_back( stopt.pfjets().at(1) );
             }
 
 
@@ -333,6 +356,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             else flav_tag_dl = "_mysterydl";
             string basic_flav_tag_dl = flav_tag_dl;
             if ( abs(stopt.id1()) != abs(stopt.id2()) && flav_tag_dl != "_mysterydl" ) basic_flav_tag_dl = "_mueg";
+            if (stopt.id1()*stopt.id2() > 0) basic_flav_tag_dl += "_SS";
 
 
 
@@ -377,10 +401,17 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             if ( dataset_2l && passDileptonSelection(isData)
                     && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
-                    && n_bjets > 0 )
+                    && n_bjets > 0
+                    && (stopt.lep1() + stopt.lep2()).M() >= 20.0 
+                    && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. ) )
             {
+                //check cuts
+                if ( (stopt.lep1().Pt() < 20.0 || stopt.lep2().Pt() < 20.0 ) ) cout<<stopt.lep1().Pt()<<" "<<stopt.lep2().Pt()<<endl;
+                if ( (stopt.lep1() + stopt.lep2()).M() < 20.0 )  cout<<(stopt.lep1() + stopt.lep2()).M()<<endl;
+                if ( t1metphicorr < 40. && basic_flav_tag_dl != "_mueg" )  cout<<"MET: "<<t1metphicorr<<" "+basic_flav_tag_dl<<endl;
+
                 makeNJPlots( evtweight * trigweight_dl, h_1d_nj, "", basic_flav_tag_dl);
-                if ( n_jets < min_njets  ) makeSIGPlots( evtweight * trigweight_dl, h_1d_sig, tag_isotrk + tag_btag  , basic_flav_tag_dl );
+                if ( n_jets < min_njets  ) makeSIGPlots( evtweight * trigweight_dl, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
             }
 
             /*
@@ -548,6 +579,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     */
     TFile outfile_nj(Form("NJ%s", m_outfilename_.c_str()), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving NJ histograms to %s\n", m_outfilename_.c_str());
+
+    printf("[StopTreeLooper::loop] nevt_nlep %i %i %i %i %i %i %i\n",nevt_nlep[0],nevt_nlep[1],nevt_nlep[2],nevt_nlep[3],nevt_nlep[4],nevt_nlep[5],nevt_nlep[6]) ;
 
     std::map<std::string, TH1F *>::iterator it1d_nj;
     for (it1d_nj = h_1d_nj.begin(); it1d_nj != h_1d_nj.end(); it1d_nj++)
