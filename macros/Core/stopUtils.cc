@@ -932,6 +932,54 @@ bool passDileptonSSSelection(bool isData)
 }
 
 //-------------------------------------------
+// the dilepton OS selection, including endcap electrons
+//-------------------------------------------
+
+bool passDileptonSelectionWithEndcapEls(bool isData) 
+{
+  //two lepton selection including endcap electrons for 8 TeV AFB analysis
+
+  //exactly 2 leptons
+  if ( stopt.ngoodlep() != 2 ) return false;
+
+  //opposite sign
+  if ( stopt.id1()*stopt.id2()>0 ) return false;
+
+  //pass trigger if data - dilepton
+  if ( isData && stopt.mm() != 1 && stopt.me() != 1 
+       && stopt.em() != 1 && stopt.ee() != 1 ) return false;
+
+  //passes pt and eta requirements
+  if ( stopt.lep1().Pt() < 20 )          return false;
+  if ( stopt.lep2().Pt() < 20 )          return false;
+  if ( fabs(stopt.lep1().Eta() ) > 2.4)  return false;
+  if ( fabs(stopt.lep2().Eta() ) > 2.4)  return false;
+
+  //consistency with pf leptons
+  if ( fabs( stopt.pflep1().Pt() - stopt.lep1().Pt() ) > 10. )  return false;
+  if ( fabs( stopt.pflep2().Pt() - stopt.lep2().Pt() ) > 10. )  return false;
+
+  //requirement for leading lepton
+  if ( ( stopt.isopf1() * stopt.lep1().Pt() ) > 5. )  return false; 
+  if ( fabs(stopt.id1())==11 && stopt.eoverpin() > 4. ) return false;
+
+  //requirement for trailing lepton
+  if ( ( stopt.isopf2() * stopt.lep2().Pt() ) > 5. )  return false; 
+  if ( fabs(stopt.id2())==11 && stopt.eoverpin2() > 4. ) return false;
+
+  //electrons up to |eta|=2.5
+  if (fabs(stopt.id1())==11 && fabs(stopt.lep1().Eta() ) > 2.5) return false;
+  if (fabs(stopt.id2())==11 && fabs(stopt.lep2().Eta() ) > 2.5) return false;
+
+  //if have more than 1 lepton, remove cases where have 2 close together
+  if ( stopt.ngoodlep() > 1 && 
+       dRbetweenVectors( stopt.lep1() ,  stopt.lep2() )<0.1 ) return false;
+
+  return true;
+
+}
+
+//-------------------------------------------
 // good lepton + veto isolated track
 //-------------------------------------------
 
