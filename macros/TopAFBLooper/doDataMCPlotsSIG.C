@@ -309,7 +309,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     const char *file1dname[N1DHISTS] =
     {
         "met",
-        "lep_azimuthal_asymmetry_2",
+        "lep_azimuthal_asymmetry2",
         "lep_charge_asymmetry",
         "top_rapiditydiff_Marco",
         "lepPlus_costheta_cms",
@@ -326,7 +326,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     const char *hist1dname[N1DHISTS] =
     {
         "h_sig_met",
-        "h_sig_lep_azimuthal_asymmetry_2",
+        "h_sig_lep_azimuthal_asymmetry2",
         "h_sig_lep_charge_asymmetry",
         "h_sig_top_rapiditydiff_Marco",
         "h_sig_lepPlus_costheta_cms",
@@ -682,21 +682,14 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         cout << "Setting Titles" << endl;
         for (int i = 0; i < N1DHISTS; ++i)
         {
-            if (i == 3)
-            {
-                h_dt1d[i]->GetXaxis()->SetBinLabel(1, "Peak");
-                h_dt1d[i]->GetXaxis()->SetBinLabel(2, "Tail");
-                h_dt1d[i]->GetYaxis()->SetTitle("Entries");
-            }
-            else
-            {
-                h_dt1d[i]->GetXaxis()->SetTitle(Form("%s",
-                                                     xtitle1d[i]));
-                h_dt1d[i]->GetXaxis()->SetTitleOffset(1.);
-                h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / %3.0f %s",
-                                                     h_dt1d[i]->GetBinWidth(1),
-                                                     ytitle1d[i]));
-            }
+
+            h_dt1d[i]->GetXaxis()->SetTitle(Form("%s",
+                                                 xtitle1d[i]));
+            h_dt1d[i]->GetXaxis()->SetTitleOffset(1.);
+            h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / %3.1f %s",
+                                                 h_dt1d[i]->GetBinWidth(1),
+                                                 ytitle1d[i]));
+
             if (find(logScale.begin(), logScale.end(), i) != logScale.end())
             {
                 h_dt1d[i]->GetYaxis()->SetTitleOffset(1.1);
@@ -709,21 +702,13 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             for (int j = 0; j < MCID; ++j)
             {
 
-                if (i == 3)
-                {
-                    h_mc1d[i][j]->GetXaxis()->SetBinLabel(1, "Peak");
-                    h_mc1d[i][j]->GetXaxis()->SetBinLabel(2, "Tail");
-                    h_mc1d[i][j]->GetYaxis()->SetTitle("Entries");
-                }
-                else
-                {
-                    h_mc1d[i][j]->GetXaxis()->SetTitle(Form("%s",
-                                                            xtitle1d[i]));
-                    h_mc1d[i][j]->GetXaxis()->SetTitleOffset(1.);
-                    h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / %3.0f %s",
-                                                            h_dt1d[i]->GetBinWidth(1),
-                                                            ytitle1d[i]));
-                }
+                h_mc1d[i][j]->GetXaxis()->SetTitle(Form("%s",
+                                                        xtitle1d[i]));
+                h_mc1d[i][j]->GetXaxis()->SetTitleOffset(1.);
+                h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / %3.1f %s",
+                                                        h_dt1d[i]->GetBinWidth(1),
+                                                        ytitle1d[i]));
+
                 if (find(logScale.begin(), logScale.end(), i) != logScale.end())
                 {
                     h_mc1d[i][j]->GetYaxis()->SetTitleOffset(1.1);
@@ -1037,19 +1022,19 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         //s_mc1d_comb[i]->Add(sorted_mc1d_comb[i].at(TTDL));
         //s_mc1d_comb[i]->Add(sorted_mc1d_comb[i].at(TTSL));
 
-/*
-        TList *histos = s_mc1d_comb[i]->GetHists();
-        double stacksum = 0;
-        TIter next(histos);
-        TH1F *hist;
-        while ((hist = (TH1F *)next()))
-        {
-            cout << "Adding " << hist->GetName() << endl;
-            stacksum += hist[i].Integral(1, hist->GetNbinsX());
-        }
+        /*
+                TList *histos = s_mc1d_comb[i]->GetHists();
+                double stacksum = 0;
+                TIter next(histos);
+                TH1F *hist;
+                while ((hist = (TH1F *)next()))
+                {
+                    cout << "Adding " << hist->GetName() << endl;
+                    stacksum += hist[i].Integral(1, hist->GetNbinsX());
+                }
 
-        cout << endl << "stack " << stacksum << endl;
-*/
+                cout << endl << "stack " << stacksum << endl;
+        */
 
         cout << endl << "MC " << h_mc1d_tot_comb[i]->Integral(1, h_mc1d_tot_comb[i]->GetNbinsX())
              << endl;
@@ -1112,12 +1097,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             h_dt1d_comb[i]->SetMaximum(maxval);
             h_dt1d_comb[i]->SetMinimum(5e-1);
             s_mc1d_comb[i]->SetMinimum(5e-1);
-            if (i == 7)
-            {
-                h_dt1d_comb[i]->SetMinimum(5);
-                s_mc1d_comb[i]->SetMinimum(5);
-            }
-            if (isr > 4 || i == 0)
+            if (i == 0)
             {
                 h_dt1d_comb[i]->SetMinimum(1e-2);
                 s_mc1d_comb[i]->SetMinimum(1e-2);

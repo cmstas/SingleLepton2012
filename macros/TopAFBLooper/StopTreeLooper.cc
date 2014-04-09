@@ -528,6 +528,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 top_spin_correlation_gen = lepPlus_costheta_cms_gen * lepMinus_costheta_cms_gen;
                 lep_cos_opening_angle_gen = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
 
+                //reset 4-vectors to lab frame
+                topplus_genp_p4.SetPtEtaPhiE(stopt.t().Pt(),stopt.t().Eta(),stopt.t().Phi(),stopt.t().E());
+                topminus_genp_p4.SetPtEtaPhiE(stopt.tbar().Pt(),stopt.tbar().Eta(),stopt.tbar().Phi(),stopt.tbar().E());
+                lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(),stopt.lep_t().Eta(),stopt.lep_t().Phi(),stopt.lep_t().E());
+                lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(),stopt.lep_tbar().Eta(),stopt.lep_tbar().Phi(),stopt.lep_tbar().E());
+
             }
 
 
@@ -1013,9 +1019,9 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *>
         plot1DUnderOverFlow("h_sig_tt_mass_Delta" + tag_selection + flav_tag, tt_mass - tt_mass_gen , evtweight, h_1d, nbins, -500, 500);
         plot1DUnderOverFlow("h_sig_ttRapidity2_Delta" + tag_selection + flav_tag, ttRapidity2 - ttRapidity2_gen , evtweight, h_1d, nbins, -5, 5);
         plot1DUnderOverFlow("h_sig_absttRapidity2_Delta" + tag_selection + flav_tag, fabs(ttRapidity2) - fabs(ttRapidity2_gen) , evtweight, h_1d, nbins, -5, 5);
-        plot1DUnderOverFlow("h_sig_tt_pT_Delta" + tag_selection + flav_tag, tt_pT - tt_pT_gen , evtweight, h_1d, nbins, -1, 200);
-        plot1DUnderOverFlow("h_sig_top1_pt_Delta" + tag_selection + flav_tag, top1_pt - top1_pt_gen , evtweight, h_1d, nbins, -1, 300);
-        plot1DUnderOverFlow("h_sig_top2_pt_Delta" + tag_selection + flav_tag, top2_pt - top2_pt_gen , evtweight, h_1d, nbins, -1, 300);
+        plot1DUnderOverFlow("h_sig_tt_pT_Delta" + tag_selection + flav_tag, tt_pT - tt_pT_gen , evtweight, h_1d, nbins, -200, 200);
+        plot1DUnderOverFlow("h_sig_top1_pt_Delta" + tag_selection + flav_tag, top1_pt - top1_pt_gen , evtweight, h_1d, nbins, -300, 300);
+        plot1DUnderOverFlow("h_sig_top2_pt_Delta" + tag_selection + flav_tag, top2_pt - top2_pt_gen , evtweight, h_1d, nbins, -300, 300);
     }
 
 
