@@ -298,7 +298,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 {
                     bjets.push_back( stopt.pfjets().at(i) );
                     //if more than 2 b-jets, use the ones with highest pT as b candidates
-                    if (bcandidates.size()<2) bcandidates.push_back( stopt.pfjets().at(i) );
+                    if (bcandidates.size() < 2) bcandidates.push_back( stopt.pfjets().at(i) );
                     n_bjets++;
                 }
                 else
@@ -322,19 +322,21 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             }
 
             //if <2 btagged jets, take the highest pT light jets as b candidates
-            if (bcandidates.size()<2 && nonbjets.size()>0) {
+            if (bcandidates.size() < 2 && nonbjets.size() > 0)
+            {
                 bcandidates.push_back( nonbjets.at(0) );
             }
-            if (bcandidates.size()<2 && nonbjets.size()>1) {
+            if (bcandidates.size() < 2 && nonbjets.size() > 1)
+            {
                 bcandidates.push_back( nonbjets.at(1) );
             }
 
             //require at least 2 jets and leptons
-            if(!(n_jets > 1 && stopt.id2() != -999)) continue;
+            if (!(n_jets > 1 && stopt.id2() != -999)) continue;
 
             //----------------------------------------------------------------------------
             // ttbar solver
-            //----------------------------------------------------------------------------  
+            //----------------------------------------------------------------------------
 
             nu1_vecs.clear();
             nu2_vecs.clear();
@@ -347,21 +349,28 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //jet1.SetPtEtaPhiE(0,0,0,0);
             //jet2.SetPtEtaPhiE(0,0,0,0);
 
-            if(stopt.id1() < 0) {
-                lepPlus.SetPtEtaPhiE(stopt.lep1().Pt(),stopt.lep1().Eta(),stopt.lep1().Phi(),stopt.lep1().E());
-                lepMinus.SetPtEtaPhiE(stopt.lep2().Pt(),stopt.lep2().Eta(),stopt.lep2().Phi(),stopt.lep2().E());
+            if (stopt.id1() > 0)
+            {
+                lepPlus.SetPtEtaPhiE(stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.lep1().Phi(), stopt.lep1().E());
+                lepMinus.SetPtEtaPhiE(stopt.lep2().Pt(), stopt.lep2().Eta(), stopt.lep2().Phi(), stopt.lep2().E());
             }
-            else {
-                lepMinus.SetPtEtaPhiE(stopt.lep1().Pt(),stopt.lep1().Eta(),stopt.lep1().Phi(),stopt.lep1().E());
-                lepPlus.SetPtEtaPhiE(stopt.lep2().Pt(),stopt.lep2().Eta(),stopt.lep2().Phi(),stopt.lep2().E());
+            else
+            {
+                lepMinus.SetPtEtaPhiE(stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.lep1().Phi(), stopt.lep1().E());
+                lepPlus.SetPtEtaPhiE(stopt.lep2().Pt(), stopt.lep2().Eta(), stopt.lep2().Phi(), stopt.lep2().E());
             }
-            jet1.SetPtEtaPhiE(bcandidates.at(0).Pt(),bcandidates.at(0).Eta(),bcandidates.at(0).Phi(),bcandidates.at(0).E());
-            jet2.SetPtEtaPhiE(bcandidates.at(1).Pt(),bcandidates.at(1).Eta(),bcandidates.at(1).Phi(),bcandidates.at(1).E());
 
-            top1_p4.SetPtEtaPhiE(0,0,0,0);
-            top2_p4.SetPtEtaPhiE(0,0,0,0);
-            nusum.SetPtEtaPhiE(0,0,0,0);
-            cms.SetPtEtaPhiE(0,0,0,0);
+            //if ( stopt.id1() * stopt.id2() > 0 ) printf("[StopTreeLooper::loop] Same-sign leptons \n");
+
+            if ( ( fabs(lepPlus.E() - stopt.lepp().E()) > 0.01 || fabs(lepMinus.E() - stopt.lepm().E()) > 0.01 ) && stopt.id1() * stopt.id2() < 0 ) printf("[StopTreeLooper::loop] Something went wrong with lepton assignments. %d %f %f %d %f %f \n", stopt.id1(), lepPlus.E(), stopt.lepp().E(), stopt.id2(), lepMinus.E(), stopt.lepm().E() );
+
+            jet1.SetPtEtaPhiE(bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
+            jet2.SetPtEtaPhiE(bcandidates.at(1).Pt(), bcandidates.at(1).Eta(), bcandidates.at(1).Phi(), bcandidates.at(1).E());
+
+            top1_p4.SetPtEtaPhiE(0, 0, 0, 0);
+            top2_p4.SetPtEtaPhiE(0, 0, 0, 0);
+            nusum.SetPtEtaPhiE(0, 0, 0, 0);
+            cms.SetPtEtaPhiE(0, 0, 0, 0);
 
             m_top = -999;
             m_top_B = -999;
@@ -421,7 +430,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             float jet2_phi = jet2.Phi();
 
             //variables that require ttbar solution
-            if ( m_top > 0 ) {
+            if ( m_top > 0 )
+            {
+
+                if ( fabs(top1_p4.M() - 172.5) > 1.  || fabs(top2_p4.M() - 172.5) > 1. ) printf("[StopTreeLooper::loop] Something went wrong with ttbar solver. \n");
 
                 tt_mass = (top1_p4 + top2_p4).M();
                 ttRapidity2 = (top1_p4 + top2_p4).Rapidity();
@@ -461,11 +473,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             // gen-level asymmetry calculations
             //----------------------------------------------------------------------------
 
-            lepPlus_gen.SetPtEtaPhiE(0,0,0,0);
-            lepMinus_gen.SetPtEtaPhiE(0,0,0,0);
-            topplus_genp_p4.SetPtEtaPhiE(0,0,0,0);
-            topminus_genp_p4.SetPtEtaPhiE(0,0,0,0);
-            cms_gen.SetPtEtaPhiE(0,0,0,0);
+            lepPlus_gen.SetPtEtaPhiE(0, 0, 0, 0);
+            lepMinus_gen.SetPtEtaPhiE(0, 0, 0, 0);
+            topplus_genp_p4.SetPtEtaPhiE(0, 0, 0, 0);
+            topminus_genp_p4.SetPtEtaPhiE(0, 0, 0, 0);
+            cms_gen.SetPtEtaPhiE(0, 0, 0, 0);
 
             lep_charge_asymmetry_gen = -999.0;
             lep_azimuthal_asymmetry_gen = -999.0;
@@ -484,19 +496,23 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             top1_pt_gen = -999.0;
             top2_pt_gen = -999.0;
 
-            if ( name.Contains("ttdl") ) {
+            if ( name.Contains("ttdl") )
+            {
 
-                topplus_genp_p4.SetPtEtaPhiE(stopt.t().Pt(),stopt.t().Eta(),stopt.t().Phi(),stopt.t().E());
-                topminus_genp_p4.SetPtEtaPhiE(stopt.tbar().Pt(),stopt.tbar().Eta(),stopt.tbar().Phi(),stopt.tbar().E());
+                topplus_genp_p4.SetPtEtaPhiE(stopt.t().Pt(), stopt.t().Eta(), stopt.t().Phi(), stopt.t().E());
+                topminus_genp_p4.SetPtEtaPhiE(stopt.tbar().Pt(), stopt.tbar().Eta(), stopt.tbar().Phi(), stopt.tbar().E());
 
-                lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(),stopt.lep_t().Eta(),stopt.lep_t().Phi(),stopt.lep_t().E());
-                lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(),stopt.lep_tbar().Eta(),stopt.lep_tbar().Phi(),stopt.lep_tbar().E());
+                lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(), stopt.lep_t().Eta(), stopt.lep_t().Phi(), stopt.lep_t().E());
+                lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(), stopt.lep_tbar().Eta(), stopt.lep_tbar().Phi(), stopt.lep_tbar().E());
+
+                if ( (fabs(topplus_genp_p4.M() - 172.5) > 100.  || fabs(topminus_genp_p4.M() - 172.5) > 100.) ) printf("[StopTreeLooper::loop] Something went wrong with gen-level tops. %f %f %d \n", topplus_genp_p4.M() , topminus_genp_p4.M() , stopt.nleps() );
 
                 lep_charge_asymmetry_gen = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
                 lep_azimuthal_asymmetry_gen = lepPlus_gen.DeltaPhi(lepMinus_gen);
                 lep_azimuthal_asymmetry2_gen = acos(cos(lep_azimuthal_asymmetry_gen));
 
                 tt_mass_gen = (topplus_genp_p4 + topminus_genp_p4).M();
+                if ( (fabs(tt_mass_gen - stopt.mttbar()) > 1.0) ) printf("[StopTreeLooper::loop] Something went wrong with gen-level ttbar. %f %f \n", tt_mass_gen, stopt.mttbar() );
                 ttRapidity2_gen = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
 
                 top1_pt_gen =  topplus_genp_p4.Pt();
@@ -529,10 +545,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 lep_cos_opening_angle_gen = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
 
                 //reset 4-vectors to lab frame
-                topplus_genp_p4.SetPtEtaPhiE(stopt.t().Pt(),stopt.t().Eta(),stopt.t().Phi(),stopt.t().E());
-                topminus_genp_p4.SetPtEtaPhiE(stopt.tbar().Pt(),stopt.tbar().Eta(),stopt.tbar().Phi(),stopt.tbar().E());
-                lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(),stopt.lep_t().Eta(),stopt.lep_t().Phi(),stopt.lep_t().E());
-                lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(),stopt.lep_tbar().Eta(),stopt.lep_tbar().Phi(),stopt.lep_tbar().E());
+                topplus_genp_p4.SetPtEtaPhiE(stopt.t().Pt(), stopt.t().Eta(), stopt.t().Phi(), stopt.t().E());
+                topminus_genp_p4.SetPtEtaPhiE(stopt.tbar().Pt(), stopt.tbar().Eta(), stopt.tbar().Phi(), stopt.tbar().E());
+                lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(), stopt.lep_t().Eta(), stopt.lep_t().Phi(), stopt.lep_t().E());
+                lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(), stopt.lep_tbar().Eta(), stopt.lep_tbar().Phi(), stopt.lep_tbar().E());
 
             }
 
@@ -619,18 +635,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if ( dataset_2l && passDileptonSelectionWithEndcapEls(isData)
                     && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
                     && n_bjets > 0
-                    && (stopt.lep1() + stopt.lep2()).M() >= 20.0 
+                    && (stopt.lep1() + stopt.lep2()).M() >= 20.0
                     && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. ) )
             {
                 //check cuts
-                if ( (stopt.lep1().Pt() < 20.0 || stopt.lep2().Pt() < 20.0 ) ) cout<<stopt.lep1().Pt()<<" "<<stopt.lep2().Pt()<<endl;
-                if ( (stopt.lep1() + stopt.lep2()).M() < 20.0 )  cout<<(stopt.lep1() + stopt.lep2()).M()<<endl;
-                if ( t1metphicorr < 40. && basic_flav_tag_dl != "_mueg" )  cout<<"MET: "<<t1metphicorr<<" "+basic_flav_tag_dl<<endl;
+                if ( (stopt.lep1().Pt() < 20.0 || stopt.lep2().Pt() < 20.0 ) ) cout << stopt.lep1().Pt() << " " << stopt.lep2().Pt() << endl;
+                if ( (stopt.lep1() + stopt.lep2()).M() < 20.0 )  cout << (stopt.lep1() + stopt.lep2()).M() << endl;
+                if ( t1metphicorr < 40. && basic_flav_tag_dl != "_mueg" )  cout << "MET: " << t1metphicorr << " " + basic_flav_tag_dl << endl;
 
                 makeNJPlots( evtweight * trigweight_dl, h_1d_nj, "", basic_flav_tag_dl);
                 if ( n_jets >= min_njets  ) makeSIGPlots( evtweight * trigweight_dl, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
                 if ( n_jets >= min_njets  ) makeSIGPlots( evtweight * trigweight_dl, h_1d_sig,  tag_btag  , "_all" );
-                if ( n_jets >= min_njets && name.Contains("ttdl") ) {
+                if ( n_jets >= min_njets && name.Contains("ttdl") )
+                {
                     makettPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
                     makettPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                     makeAccPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
@@ -811,7 +828,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TFile outfile_nj(Form("NJ%s", m_outfilename_.c_str()), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving NJ histograms to %s\n", m_outfilename_.c_str());
 
-    printf("[StopTreeLooper::loop] nevt_nlep %i %i %i %i %i %i %i\n",nevt_nlep[0],nevt_nlep[1],nevt_nlep[2],nevt_nlep[3],nevt_nlep[4],nevt_nlep[5],nevt_nlep[6]) ;
+    printf("[StopTreeLooper::loop] nevt_nlep %i %i %i %i %i %i %i\n", nevt_nlep[0], nevt_nlep[1], nevt_nlep[2], nevt_nlep[3], nevt_nlep[4], nevt_nlep[5], nevt_nlep[6]) ;
 
     std::map<std::string, TH1F *>::iterator it1d_nj;
     for (it1d_nj = h_1d_nj.begin(); it1d_nj != h_1d_nj.end(); it1d_nj++)
@@ -849,12 +866,13 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *
 
     int nbins = 80;
 
-    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry" + tag_selection + flav_tag, lep_charge_asymmetry , evtweight, h_1d, nbins, -4, 4);    
+    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry" + tag_selection + flav_tag, lep_charge_asymmetry , evtweight, h_1d, nbins, -4, 4);
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry" + tag_selection + flav_tag, lep_azimuthal_asymmetry , evtweight, h_1d, nbins, -TMath::Pi(), TMath::Pi());
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2" + tag_selection + flav_tag, lep_azimuthal_asymmetry2 , evtweight, h_1d, nbins, 0, TMath::Pi());
-    plot1DUnderOverFlow("h_sig_m_top" + tag_selection + flav_tag, m_top , evtweight, h_1d, nbins-1, 171.4, 173.6);
+    plot1DUnderOverFlow("h_sig_m_top" + tag_selection + flav_tag, m_top , evtweight, h_1d, nbins - 1, 171.4, 173.6);
 
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot1DUnderOverFlow("h_sig_top_rapiditydiff_cms" + tag_selection + flav_tag, top_rapiditydiff_cms , evtweight, h_1d, nbins, -4, 4);
         plot1DUnderOverFlow("h_sig_top_pseudorapiditydiff_cms" + tag_selection + flav_tag, top_pseudorapiditydiff_cms , evtweight, h_1d, nbins, -4, 4);
         plot1DUnderOverFlow("h_sig_top_rapiditydiff_Marco" + tag_selection + flav_tag, top_rapiditydiff_Marco , evtweight, h_1d, nbins, -4, 4);
@@ -903,12 +921,13 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
     double maxttpt = 300.0;
     double maxttrapidity2 = 3.0;
 
-    //1D distributions 
-    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry_gen" + tag_selection + flav_tag, lep_charge_asymmetry_gen , evtweight, h_1d, nbins, -2, 2);    
+    //1D distributions
+    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry_gen" + tag_selection + flav_tag, lep_charge_asymmetry_gen , evtweight, h_1d, nbins, -2, 2);
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry_gen , evtweight, h_1d, nbins, -TMath::Pi(), TMath::Pi());
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry2_gen , evtweight, h_1d, nbins, 0, TMath::Pi());
 
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot1DUnderOverFlow("h_sig_top_rapiditydiff_cms_gen" + tag_selection + flav_tag, top_rapiditydiff_cms_gen , evtweight, h_1d, nbins, -2, 2);
         plot1DUnderOverFlow("h_sig_top_pseudorapiditydiff_cms_gen" + tag_selection + flav_tag, top_pseudorapiditydiff_cms_gen , evtweight, h_1d, nbins, -2, 2);
         plot1DUnderOverFlow("h_sig_top_rapiditydiff_Marco_gen" + tag_selection + flav_tag, top_rapiditydiff_Marco_gen , evtweight, h_1d, nbins, -2, 2);
@@ -922,7 +941,8 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
     }
 
     //2D distributions vs Mttbar
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot2DUnderOverFlow("h_sig_lep_charge_asymmetry_vs_mtt_gen" + tag_selection + flav_tag, lep_charge_asymmetry_gen , tt_mass_gen , evtweight, h_2d, nbins, -2, 2, nbinsmtt, minmtt, maxmtt);
         plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_vs_mtt_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry_gen , tt_mass_gen , evtweight, h_2d, nbins, -TMath::Pi(), TMath::Pi(), nbinsmtt, minmtt, maxmtt);
         plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_vs_mtt_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry2_gen , tt_mass_gen , evtweight, h_2d, nbins, 0, TMath::Pi(), nbinsmtt, minmtt, maxmtt);
@@ -939,7 +959,8 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
     }
 
     //2D distributions vs ttbar pT
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot2DUnderOverFlow("h_sig_lep_charge_asymmetry_vs_ttpt_gen" + tag_selection + flav_tag, lep_charge_asymmetry_gen , tt_pT_gen , evtweight, h_2d, nbins, -2, 2, nbinsttpt, minttpt, maxttpt);
         plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_vs_ttpt_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry_gen , tt_pT_gen , evtweight, h_2d, nbins, -TMath::Pi(), TMath::Pi(), nbinsttpt, minttpt, maxttpt);
         plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_vs_ttpt_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry2_gen , tt_pT_gen , evtweight, h_2d, nbins, 0, TMath::Pi(), nbinsttpt, minttpt, maxttpt);
@@ -956,7 +977,8 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
     }
 
     //2D distributions vs |ttbar rapidity|
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot2DUnderOverFlow("h_sig_lep_charge_asymmetry_vs_ttrapidity2_gen" + tag_selection + flav_tag, lep_charge_asymmetry_gen , fabs(ttRapidity2_gen) , evtweight, h_2d, nbins, -2, 2, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
         plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_vs_ttrapidity2_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry_gen , fabs(ttRapidity2_gen) , evtweight, h_2d, nbins, -TMath::Pi(), TMath::Pi(), nbinsttrapidity2, minttrapidity2, maxttrapidity2);
         plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_vs_ttrapidity2_gen" + tag_selection + flav_tag, lep_azimuthal_asymmetry2_gen , fabs(ttRapidity2_gen) , evtweight, h_2d, nbins, 0, TMath::Pi(), nbinsttrapidity2, minttrapidity2, maxttrapidity2);
@@ -980,16 +1002,17 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
 
 
 
-void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *> &h_1d, std::map<std::string, TH2F*> &h_2d,
-                                   string tag_selection, string flav_tag)
+void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *> &h_1d, std::map<std::string, TH2F *> &h_2d,
+                                  string tag_selection, string flav_tag)
 {
 
     int nbins = 80;
 
 
-    //gen-level distributions 
+    //gen-level distributions
 
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot1DUnderOverFlow("h_sig_tt_mass_gen" + tag_selection + flav_tag, tt_mass_gen , evtweight, h_1d, nbins, 0, 1600);
         plot1DUnderOverFlow("h_sig_ttRapidity2_gen" + tag_selection + flav_tag, ttRapidity2_gen , evtweight, h_1d, nbins, -4, 4);
         plot1DUnderOverFlow("h_sig_tt_pT_gen" + tag_selection + flav_tag, tt_pT_gen , evtweight, h_1d, nbins, 0, 400);
@@ -1000,11 +1023,12 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *>
 
     //ttbar solution resolution plots
 
-    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry_Delta" + tag_selection + flav_tag, lep_charge_asymmetry - lep_charge_asymmetry_gen , evtweight, h_1d, nbins, -5, 5);    
+    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry_Delta" + tag_selection + flav_tag, lep_charge_asymmetry - lep_charge_asymmetry_gen , evtweight, h_1d, nbins, -5, 5);
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_Delta" + tag_selection + flav_tag, lep_azimuthal_asymmetry - lep_azimuthal_asymmetry_gen , evtweight, h_1d, nbins, -2.*TMath::Pi(), 2.*TMath::Pi());
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_Delta" + tag_selection + flav_tag, lep_azimuthal_asymmetry2 - lep_azimuthal_asymmetry2_gen , evtweight, h_1d, nbins, -TMath::Pi(), TMath::Pi());
 
-    if(m_top > 0) {
+    if (m_top > 0)
+    {
         plot1DUnderOverFlow("h_sig_top_rapiditydiff_cms_Delta" + tag_selection + flav_tag, top_rapiditydiff_cms - top_rapiditydiff_cms_gen , evtweight, h_1d, nbins, -5, 5);
         plot1DUnderOverFlow("h_sig_top_pseudorapiditydiff_cms_Delta" + tag_selection + flav_tag, top_pseudorapiditydiff_cms - top_pseudorapiditydiff_cms_gen , evtweight, h_1d, nbins, -5, 5);
         plot1DUnderOverFlow("h_sig_top_rapiditydiff_Marco_Delta" + tag_selection + flav_tag, top_rapiditydiff_Marco - top_rapiditydiff_Marco_gen , evtweight, h_1d, nbins, -5, 5);
@@ -1024,204 +1048,209 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *>
         plot1DUnderOverFlow("h_sig_top2_pt_Delta" + tag_selection + flav_tag, top2_pt - top2_pt_gen , evtweight, h_1d, nbins, -300, 300);
     }
 
+    if (m_top > 0)
+    {
+        double top1dotgen = top1_vecs.at(imaxweight).Vect().Dot( topplus_genp_p4.Vect() ) / top1_vecs.at(imaxweight).Vect().Mag() / topplus_genp_p4.Vect().Mag();
+        double top1dotgent2 = top1_vecs.at(imaxweight).Vect().Dot( topminus_genp_p4.Vect() ) / top1_vecs.at(imaxweight).Vect().Mag() / topminus_genp_p4.Vect().Mag();
+        double top2dotgent1 = top2_vecs.at(imaxweight).Vect().Dot( topplus_genp_p4.Vect() ) / top2_vecs.at(imaxweight).Vect().Mag() / topplus_genp_p4.Vect().Mag();
+        double top2dotgen = top2_vecs.at(imaxweight).Vect().Dot( topminus_genp_p4.Vect() ) / top2_vecs.at(imaxweight).Vect().Mag() / topminus_genp_p4.Vect().Mag();
+        double top1Pratio = ( top1_vecs.at(imaxweight).Vect().Mag() - topplus_genp_p4.Vect().Mag() ) / ( top1_vecs.at(imaxweight).Vect().Mag() + topplus_genp_p4.Vect().Mag() );
+        double top2Pratio = ( top2_vecs.at(imaxweight).Vect().Mag() - topminus_genp_p4.Vect().Mag() ) / ( top2_vecs.at(imaxweight).Vect().Mag() + topminus_genp_p4.Vect().Mag() );
+
+        /*
+            double nu1dotgen = nu1_vecs.at(imaxweight).Vect().Dot( nuPlus_gen.Vect() ) / nu1_vecs.at(imaxweight).Vect().Mag() / nuPlus_gen.Vect().Mag();
+            double nu1dotgennu2 = nu1_vecs.at(imaxweight).Vect().Dot( nuMinus_gen.Vect() ) / nu1_vecs.at(imaxweight).Vect().Mag() / nuMinus_gen.Vect().Mag();
+            double nu2dotgennu1 = nu2_vecs.at(imaxweight).Vect().Dot( nuPlus_gen.Vect() ) / nu2_vecs.at(imaxweight).Vect().Mag() / nuPlus_gen.Vect().Mag();
+            double nu2dotgen = nu2_vecs.at(imaxweight).Vect().Dot( nuMinus_gen.Vect() ) / nu2_vecs.at(imaxweight).Vect().Mag() / nuMinus_gen.Vect().Mag();
+            double nu1Pratio = ( nu1_vecs.at(imaxweight).Vect().Mag() - nuPlus_gen.Vect().Mag() ) / ( nu1_vecs.at(imaxweight).Vect().Mag() + nuPlus_gen.Vect().Mag() );
+            double nu2Pratio = ( nu2_vecs.at(imaxweight).Vect().Mag() - nuMinus_gen.Vect().Mag() ) / ( nu2_vecs.at(imaxweight).Vect().Mag() + nuMinus_gen.Vect().Mag() );
 
 
-    double top1dotgen = top1_vecs[imaxweight].Vect().Dot( topplus_genp_p4.Vect() ) / top1_vecs[imaxweight].Vect().Mag() / topplus_genp_p4.Vect().Mag();
-    double top1dotgent2 = top1_vecs[imaxweight].Vect().Dot( topminus_genp_p4.Vect() ) / top1_vecs[imaxweight].Vect().Mag() / topminus_genp_p4.Vect().Mag();
-    double top2dotgent1 = top2_vecs[imaxweight].Vect().Dot( topplus_genp_p4.Vect() ) / top2_vecs[imaxweight].Vect().Mag() / topplus_genp_p4.Vect().Mag();
-    double top2dotgen = top2_vecs[imaxweight].Vect().Dot( topminus_genp_p4.Vect() ) / top2_vecs[imaxweight].Vect().Mag() / topminus_genp_p4.Vect().Mag();
-    double top1Pratio = ( top1_vecs[imaxweight].Vect().Mag() - topplus_genp_p4.Vect().Mag() ) / ( top1_vecs[imaxweight].Vect().Mag() + topplus_genp_p4.Vect().Mag() );
-    double top2Pratio = ( top2_vecs[imaxweight].Vect().Mag() - topminus_genp_p4.Vect().Mag() ) / ( top2_vecs[imaxweight].Vect().Mag() + topminus_genp_p4.Vect().Mag() );
+            TLorentzVector nusum_gen = nuPlus_gen + nuMinus_gen;
+        */
 
-/*
-    double nu1dotgen = nu1_vecs[imaxweight].Vect().Dot( nuPlus_gen.Vect() ) / nu1_vecs[imaxweight].Vect().Mag() / nuPlus_gen.Vect().Mag();
-    double nu1dotgennu2 = nu1_vecs[imaxweight].Vect().Dot( nuMinus_gen.Vect() ) / nu1_vecs[imaxweight].Vect().Mag() / nuMinus_gen.Vect().Mag();
-    double nu2dotgennu1 = nu2_vecs[imaxweight].Vect().Dot( nuPlus_gen.Vect() ) / nu2_vecs[imaxweight].Vect().Mag() / nuPlus_gen.Vect().Mag();
-    double nu2dotgen = nu2_vecs[imaxweight].Vect().Dot( nuMinus_gen.Vect() ) / nu2_vecs[imaxweight].Vect().Mag() / nuMinus_gen.Vect().Mag();
-    double nu1Pratio = ( nu1_vecs[imaxweight].Vect().Mag() - nuPlus_gen.Vect().Mag() ) / ( nu1_vecs[imaxweight].Vect().Mag() + nuPlus_gen.Vect().Mag() );
-    double nu2Pratio = ( nu2_vecs[imaxweight].Vect().Mag() - nuMinus_gen.Vect().Mag() ) / ( nu2_vecs[imaxweight].Vect().Mag() + nuMinus_gen.Vect().Mag() );
+        double met_x = t1metphicorr * cos(t1metphicorrphi);
+        double met_y = t1metphicorr * sin(t1metphicorrphi);
 
+        //double DeltaMETsol_gen = sqrt( pow( nusum.Px() - nusum_gen.Px() , 2 ) + pow( nusum.Py() - nusum_gen.Py() , 2 ) );
+        //double DeltaMETmeas_gen = sqrt( pow( met_x - nusum_gen.Px() , 2 ) + pow( met_y - nusum_gen.Py() , 2 ) );
 
-    TLorentzVector nusum_gen = nuPlus_gen + nuMinus_gen;
-*/
-
-    double met_x = t1metphicorr*cos(t1metphicorrphi);
-    double met_y = t1metphicorr*sin(t1metphicorrphi);
-
-    //double DeltaMETsol_gen = sqrt( pow( nusum.Px() - nusum_gen.Px() , 2 ) + pow( nusum.Py() - nusum_gen.Py() , 2 ) );
-    //double DeltaMETmeas_gen = sqrt( pow( met_x - nusum_gen.Px() , 2 ) + pow( met_y - nusum_gen.Py() , 2 ) );
-
-    //cout<<"about to plot2D"<<endl;
-
-
-
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_MET" + tag_selection + flav_tag, acos(top1dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_MET" + tag_selection + flav_tag, acos(top2dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
-
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(top1dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(top2dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
-
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_njets" + tag_selection + flav_tag, acos(top1dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_njets" + tag_selection + flav_tag, acos(top2dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_nbtag" + tag_selection + flav_tag, acos(top1dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_nbtag" + tag_selection + flav_tag, acos(top2dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
-
-    //plot2DUnderOverFlow("h_tt_topdotgen_vs_ntaugen" + tag_selection + flav_tag, acos(top1dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
-    //plot2DUnderOverFlow("h_tt_topdotgen_vs_ntaugen" + tag_selection + flav_tag, acos(top2dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
-
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_mttgen" + tag_selection + flav_tag, acos(top1dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
-    plot2DUnderOverFlow("h_tt_topdotgen_vs_mttgen" + tag_selection + flav_tag, acos(top2dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
+        //cout<<"about to plot2D"<<endl;
 
 
 
-    plot2DUnderOverFlow("h_tt_topPratio_vs_MET" + tag_selection + flav_tag, fabs(top1Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
-    plot2DUnderOverFlow("h_tt_topPratio_vs_MET" + tag_selection + flav_tag, fabs(top2Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_MET" + tag_selection + flav_tag, acos(top1dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_MET" + tag_selection + flav_tag, acos(top2dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
 
-    plot2DUnderOverFlow("h_tt_topPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(top1Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
-    plot2DUnderOverFlow("h_tt_topPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(top2Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(top1dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(top2dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
 
-    plot2DUnderOverFlow("h_tt_topPratio_vs_njets" + tag_selection + flav_tag, fabs(top1Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_topPratio_vs_njets" + tag_selection + flav_tag, fabs(top2Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_topPratio_vs_nbtag" + tag_selection + flav_tag, fabs(top1Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
-    plot2DUnderOverFlow("h_tt_topPratio_vs_nbtag" + tag_selection + flav_tag, fabs(top2Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_njets" + tag_selection + flav_tag, acos(top1dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_njets" + tag_selection + flav_tag, acos(top2dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_nbtag" + tag_selection + flav_tag, acos(top1dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_nbtag" + tag_selection + flav_tag, acos(top2dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
 
-    //plot2DUnderOverFlow("h_tt_topPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(top1Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
-    //plot2DUnderOverFlow("h_tt_topPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(top2Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
+        //plot2DUnderOverFlow("h_tt_topdotgen_vs_ntaugen" + tag_selection + flav_tag, acos(top1dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
+        //plot2DUnderOverFlow("h_tt_topdotgen_vs_ntaugen" + tag_selection + flav_tag, acos(top2dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
 
-    plot2DUnderOverFlow("h_tt_topPratio_vs_mttgen" + tag_selection + flav_tag, fabs(top1Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
-    plot2DUnderOverFlow("h_tt_topPratio_vs_mttgen" + tag_selection + flav_tag, fabs(top2Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
-
-
-/*
-
-
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_MET" + tag_selection + flav_tag, acos(nu1dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_MET" + tag_selection + flav_tag, acos(nu2dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
-
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(nu1dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(nu2dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
-
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_njets" + tag_selection + flav_tag, acos(nu1dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_njets" + tag_selection + flav_tag, acos(nu2dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_nbtag" + tag_selection + flav_tag, acos(nu1dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_nbtag" + tag_selection + flav_tag, acos(nu2dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
-
-    //plot2DUnderOverFlow("h_tt_nudotgen_vs_ntaugen" + tag_selection + flav_tag, acos(nu1dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
-    //plot2DUnderOverFlow("h_tt_nudotgen_vs_ntaugen" + tag_selection + flav_tag, acos(nu2dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
-
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_mttgen" + tag_selection + flav_tag, acos(nu1dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
-    plot2DUnderOverFlow("h_tt_nudotgen_vs_mttgen" + tag_selection + flav_tag, acos(nu2dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_mttgen" + tag_selection + flav_tag, acos(top1dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
+        plot2DUnderOverFlow("h_tt_topdotgen_vs_mttgen" + tag_selection + flav_tag, acos(top2dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
 
 
 
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_MET" + tag_selection + flav_tag, fabs(nu1Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_MET" + tag_selection + flav_tag, fabs(nu2Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_MET" + tag_selection + flav_tag, fabs(top1Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_MET" + tag_selection + flav_tag, fabs(top2Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
 
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(nu1Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(nu2Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(top1Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(top2Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
 
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_njets" + tag_selection + flav_tag, fabs(nu1Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_njets" + tag_selection + flav_tag, fabs(nu2Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_nbtag" + tag_selection + flav_tag, fabs(nu1Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_nbtag" + tag_selection + flav_tag, fabs(nu2Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_njets" + tag_selection + flav_tag, fabs(top1Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_njets" + tag_selection + flav_tag, fabs(top2Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_nbtag" + tag_selection + flav_tag, fabs(top1Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_nbtag" + tag_selection + flav_tag, fabs(top2Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
 
-    //plot2DUnderOverFlow("h_tt_nuPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(nu1Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
-    //plot2DUnderOverFlow("h_tt_nuPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(nu2Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
+        //plot2DUnderOverFlow("h_tt_topPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(top1Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
+        //plot2DUnderOverFlow("h_tt_topPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(top2Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
 
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_mttgen" + tag_selection + flav_tag, fabs(nu1Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
-    plot2DUnderOverFlow("h_tt_nuPratio_vs_mttgen" + tag_selection + flav_tag, fabs(nu2Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
-*/
-
+        plot2DUnderOverFlow("h_tt_topPratio_vs_mttgen" + tag_selection + flav_tag, fabs(top1Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
+        plot2DUnderOverFlow("h_tt_topPratio_vs_mttgen" + tag_selection + flav_tag, fabs(top2Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
 
 
+        /*
 
-    //if (top1sdp > -998) plot1DUnderOverFlow("h_tt_top1sdp" + tag_selection + flav_tag, acos(top1sdp), 1., h_1d, 40, 0., 3.1415926536);
-    //if (top2sdp > -998) plot1DUnderOverFlow("h_tt_top2sdp" + tag_selection + flav_tag, acos(top2sdp), 1., h_1d, 40, 0., 3.1415926536);
 
-    plot1DUnderOverFlow("h_tt_top1dotgen" + tag_selection + flav_tag, acos(top1dotgen), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_top2dotgen" + tag_selection + flav_tag, acos(top2dotgen), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_top2dotgent1" + tag_selection + flav_tag, acos(top2dotgent1), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_top1dotgent2" + tag_selection + flav_tag, acos(top1dotgent2), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_top1Pratio" + tag_selection + flav_tag, top1Pratio, 1., h_1d, 40, -1., 1.);
-    plot1DUnderOverFlow("h_tt_top2Pratio" + tag_selection + flav_tag, top2Pratio, 1., h_1d, 40, -1., 1.);
-/*
-    plot1DUnderOverFlow("h_tt_nu1dotgen" + tag_selection + flav_tag, acos(nu1dotgen), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_nu2dotgen" + tag_selection + flav_tag, acos(nu2dotgen), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_nu2dotgennu1" + tag_selection + flav_tag, acos(nu2dotgennu1), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_nu1dotgennu2" + tag_selection + flav_tag, acos(nu1dotgennu2), 1., h_1d, 40, 0., 3.1415926536);
-    plot1DUnderOverFlow("h_tt_nu1Pratio" + tag_selection + flav_tag, nu1Pratio, 1., h_1d, 40, -1., 1.);
-    plot1DUnderOverFlow("h_tt_nu2Pratio" + tag_selection + flav_tag, nu2Pratio, 1., h_1d, 40, -1., 1.);
-*/
-    //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
-    //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_MET" + tag_selection + flav_tag, acos(nu1dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_MET" + tag_selection + flav_tag, acos(nu2dotgen), t1metphicorr, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 200);
 
-    if(closestApproach) {
-        plot1DUnderOverFlow("h_tt_top1dotgen_closest_bestsol" + tag_selection + flav_tag, acos(top1dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_top2dotgen_closest_bestsol" + tag_selection + flav_tag, acos(top2dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_top1Pratio_closest_bestsol" + tag_selection + flav_tag, top1Pratio, 1., h_1d, 40, -1., 1.);
-        plot1DUnderOverFlow("h_tt_top2Pratio_closest_bestsol" + tag_selection + flav_tag, top2Pratio, 1., h_1d, 40, -1., 1.);
-/*
-        plot1DUnderOverFlow("h_tt_nu1dotgen_closest_bestsol" + tag_selection + flav_tag, acos(nu1dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_nu2dotgen_closest_bestsol" + tag_selection + flav_tag, acos(nu2dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_nu1Pratio_closest_bestsol" + tag_selection + flav_tag, nu1Pratio, 1., h_1d, 40, -1., 1.);
-        plot1DUnderOverFlow("h_tt_nu2Pratio_closest_bestsol" + tag_selection + flav_tag, nu2Pratio, 1., h_1d, 40, -1., 1.);
-*/
-        plot1DUnderOverFlow("h_tt_closestDeltaMET_closest_maxwsol" + tag_selection + flav_tag,      closestDeltaMET_maxwcombo , 1., h_1d, 40, 0., 200.);
-        plot1DUnderOverFlow("h_tt_closestDeltaMET_closest_bestsol" + tag_selection + flav_tag,      closestDeltaMET_bestcombo , 1., h_1d, 40, 0., 200.);
-        if(closestDeltaMET_othercombo>0) plot1DUnderOverFlow("h_tt_closestDeltaMET_closest_othersol" + tag_selection + flav_tag,      closestDeltaMET_othercombo , 1., h_1d, 40, 0., 200.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(nu1dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_closestDeltaMET" + tag_selection + flav_tag, acos(nu2dotgen), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 3.1415926536, 40, 0., 100);
 
-        //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen_closest" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
-        //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen_closest" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_njets" + tag_selection + flav_tag, acos(nu1dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_njets" + tag_selection + flav_tag, acos(nu2dotgen), n_jets, 1., h_2d, 40, 0., 3.1415926536, 8, 0., 8.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_nbtag" + tag_selection + flav_tag, acos(nu1dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_nbtag" + tag_selection + flav_tag, acos(nu2dotgen), n_bjets, 1., h_2d, 40, 0., 3.1415926536, 4, 0., 4.);
 
-        for (int i = 0; i < top1_vecs.size(); ++i)
+            //plot2DUnderOverFlow("h_tt_nudotgen_vs_ntaugen" + tag_selection + flav_tag, acos(nu1dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
+            //plot2DUnderOverFlow("h_tt_nudotgen_vs_ntaugen" + tag_selection + flav_tag, acos(nu2dotgen), ntaus, 1., h_2d, 40, 0., 3.1415926536, 3, 0., 3.);
+
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_mttgen" + tag_selection + flav_tag, acos(nu1dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
+            plot2DUnderOverFlow("h_tt_nudotgen_vs_mttgen" + tag_selection + flav_tag, acos(nu2dotgen), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 3.1415926536, 40, 285., 1485.);
+
+
+
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_MET" + tag_selection + flav_tag, fabs(nu1Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_MET" + tag_selection + flav_tag, fabs(nu2Pratio), t1metphicorr, 1., h_2d, 40, 0., 1., 40, 0., 200);
+
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(nu1Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_closestDeltaMET" + tag_selection + flav_tag, fabs(nu2Pratio), closestDeltaMET_bestcombo, 1., h_2d, 40, 0., 1., 40, 0., 100);
+
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_njets" + tag_selection + flav_tag, fabs(nu1Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_njets" + tag_selection + flav_tag, fabs(nu2Pratio), n_jets, 1., h_2d, 40, 0., 1., 8, 0., 8.);
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_nbtag" + tag_selection + flav_tag, fabs(nu1Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_nbtag" + tag_selection + flav_tag, fabs(nu2Pratio), n_bjets, 1., h_2d, 40, 0., 1., 4, 0., 4.);
+
+            //plot2DUnderOverFlow("h_tt_nuPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(nu1Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
+            //plot2DUnderOverFlow("h_tt_nuPratio_vs_ntaugen" + tag_selection + flav_tag, fabs(nu2Pratio), ntaus, 1., h_2d, 40, 0., 1., 3, 0., 3.);
+
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_mttgen" + tag_selection + flav_tag, fabs(nu1Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
+            plot2DUnderOverFlow("h_tt_nuPratio_vs_mttgen" + tag_selection + flav_tag, fabs(nu2Pratio), (topplus_genp_p4 + topminus_genp_p4).M(), 1., h_2d, 40, 0., 1., 40, 285., 1485.);
+        */
+
+
+
+
+        //if (top1sdp > -998) plot1DUnderOverFlow("h_tt_top1sdp" + tag_selection + flav_tag, acos(top1sdp), 1., h_1d, 40, 0., 3.1415926536);
+        //if (top2sdp > -998) plot1DUnderOverFlow("h_tt_top2sdp" + tag_selection + flav_tag, acos(top2sdp), 1., h_1d, 40, 0., 3.1415926536);
+
+        plot1DUnderOverFlow("h_tt_top1dotgen" + tag_selection + flav_tag, acos(top1dotgen), 1., h_1d, 40, 0., 3.1415926536);
+        plot1DUnderOverFlow("h_tt_top2dotgen" + tag_selection + flav_tag, acos(top2dotgen), 1., h_1d, 40, 0., 3.1415926536);
+        plot1DUnderOverFlow("h_tt_top2dotgent1" + tag_selection + flav_tag, acos(top2dotgent1), 1., h_1d, 40, 0., 3.1415926536);
+        plot1DUnderOverFlow("h_tt_top1dotgent2" + tag_selection + flav_tag, acos(top1dotgent2), 1., h_1d, 40, 0., 3.1415926536);
+        plot1DUnderOverFlow("h_tt_top1Pratio" + tag_selection + flav_tag, top1Pratio, 1., h_1d, 40, -1., 1.);
+        plot1DUnderOverFlow("h_tt_top2Pratio" + tag_selection + flav_tag, top2Pratio, 1., h_1d, 40, -1., 1.);
+        /*
+            plot1DUnderOverFlow("h_tt_nu1dotgen" + tag_selection + flav_tag, acos(nu1dotgen), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_nu2dotgen" + tag_selection + flav_tag, acos(nu2dotgen), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_nu2dotgennu1" + tag_selection + flav_tag, acos(nu2dotgennu1), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_nu1dotgennu2" + tag_selection + flav_tag, acos(nu1dotgennu2), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_nu1Pratio" + tag_selection + flav_tag, nu1Pratio, 1., h_1d, 40, -1., 1.);
+            plot1DUnderOverFlow("h_tt_nu2Pratio" + tag_selection + flav_tag, nu2Pratio, 1., h_1d, 40, -1., 1.);
+        */
+        //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
+        //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
+
+        if (closestApproach)
         {
-            if (i!=imaxweight) {
-                double top1dotgen_i = top1_vecs[i].Vect().Dot( topplus_genp_p4.Vect() ) / top1_vecs[i].Vect().Mag() / topplus_genp_p4.Vect().Mag();
-                double top2dotgen_i = top2_vecs[i].Vect().Dot( topminus_genp_p4.Vect() ) / top2_vecs[i].Vect().Mag() / topminus_genp_p4.Vect().Mag();
-                double top1Pratio_i = ( top1_vecs[i].Vect().Mag() - topplus_genp_p4.Vect().Mag() ) / ( top1_vecs[i].Vect().Mag() + topplus_genp_p4.Vect().Mag() );
-                double top2Pratio_i = ( top2_vecs[i].Vect().Mag() - topminus_genp_p4.Vect().Mag() ) / ( top2_vecs[i].Vect().Mag() + topminus_genp_p4.Vect().Mag() );
-                plot1DUnderOverFlow("h_tt_top1dotgen_closest_othersol" + tag_selection + flav_tag, acos(top1dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
-                plot1DUnderOverFlow("h_tt_top2dotgen_closest_othersol" + tag_selection + flav_tag, acos(top2dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
-                plot1DUnderOverFlow("h_tt_top1Pratio_closest_othersol" + tag_selection + flav_tag, top1Pratio_i, 1., h_1d, 40, -1., 1.);
-                plot1DUnderOverFlow("h_tt_top2Pratio_closest_othersol" + tag_selection + flav_tag, top2Pratio_i, 1., h_1d, 40, -1., 1.);
+            plot1DUnderOverFlow("h_tt_top1dotgen_closest_bestsol" + tag_selection + flav_tag, acos(top1dotgen), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_top2dotgen_closest_bestsol" + tag_selection + flav_tag, acos(top2dotgen), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_top1Pratio_closest_bestsol" + tag_selection + flav_tag, top1Pratio, 1., h_1d, 40, -1., 1.);
+            plot1DUnderOverFlow("h_tt_top2Pratio_closest_bestsol" + tag_selection + flav_tag, top2Pratio, 1., h_1d, 40, -1., 1.);
+            /*
+                    plot1DUnderOverFlow("h_tt_nu1dotgen_closest_bestsol" + tag_selection + flav_tag, acos(nu1dotgen), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_nu2dotgen_closest_bestsol" + tag_selection + flav_tag, acos(nu2dotgen), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_nu1Pratio_closest_bestsol" + tag_selection + flav_tag, nu1Pratio, 1., h_1d, 40, -1., 1.);
+                    plot1DUnderOverFlow("h_tt_nu2Pratio_closest_bestsol" + tag_selection + flav_tag, nu2Pratio, 1., h_1d, 40, -1., 1.);
+            */
+            plot1DUnderOverFlow("h_tt_closestDeltaMET_closest_maxwsol" + tag_selection + flav_tag,      closestDeltaMET_maxwcombo , 1., h_1d, 40, 0., 200.);
+            plot1DUnderOverFlow("h_tt_closestDeltaMET_closest_bestsol" + tag_selection + flav_tag,      closestDeltaMET_bestcombo , 1., h_1d, 40, 0., 200.);
+            if (closestDeltaMET_othercombo > 0) plot1DUnderOverFlow("h_tt_closestDeltaMET_closest_othersol" + tag_selection + flav_tag,      closestDeltaMET_othercombo , 1., h_1d, 40, 0., 200.);
+
+            //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen_closest" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
+            //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen_closest" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
+
+            for (int i = 0; i < top1_vecs.size(); ++i)
+            {
+                if (i != imaxweight)
+                {
+                    double top1dotgen_i = top1_vecs.at(i).Vect().Dot( topplus_genp_p4.Vect() ) / top1_vecs.at(i).Vect().Mag() / topplus_genp_p4.Vect().Mag();
+                    double top2dotgen_i = top2_vecs.at(i).Vect().Dot( topminus_genp_p4.Vect() ) / top2_vecs.at(i).Vect().Mag() / topminus_genp_p4.Vect().Mag();
+                    double top1Pratio_i = ( top1_vecs.at(i).Vect().Mag() - topplus_genp_p4.Vect().Mag() ) / ( top1_vecs.at(i).Vect().Mag() + topplus_genp_p4.Vect().Mag() );
+                    double top2Pratio_i = ( top2_vecs.at(i).Vect().Mag() - topminus_genp_p4.Vect().Mag() ) / ( top2_vecs.at(i).Vect().Mag() + topminus_genp_p4.Vect().Mag() );
+                    plot1DUnderOverFlow("h_tt_top1dotgen_closest_othersol" + tag_selection + flav_tag, acos(top1dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_top2dotgen_closest_othersol" + tag_selection + flav_tag, acos(top2dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_top1Pratio_closest_othersol" + tag_selection + flav_tag, top1Pratio_i, 1., h_1d, 40, -1., 1.);
+                    plot1DUnderOverFlow("h_tt_top2Pratio_closest_othersol" + tag_selection + flav_tag, top2Pratio_i, 1., h_1d, 40, -1., 1.);
+                }
             }
+
+
         }
-
-
-    }
-    else {
-        plot1DUnderOverFlow("h_tt_top1dotgen_max" + tag_selection + flav_tag, acos(top1dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_top2dotgen_max" + tag_selection + flav_tag, acos(top2dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_top1Pratio_max" + tag_selection + flav_tag, top1Pratio, 1., h_1d, 40, -1., 1.);
-        plot1DUnderOverFlow("h_tt_top2Pratio_max" + tag_selection + flav_tag, top2Pratio, 1., h_1d, 40, -1., 1.);
-/*
-        plot1DUnderOverFlow("h_tt_nu1dotgen_max" + tag_selection + flav_tag, acos(nu1dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_nu2dotgen_max" + tag_selection + flav_tag, acos(nu2dotgen), 1., h_1d, 40, 0., 3.1415926536);
-        plot1DUnderOverFlow("h_tt_nu1Pratio_max" + tag_selection + flav_tag, nu1Pratio, 1., h_1d, 40, -1., 1.);
-        plot1DUnderOverFlow("h_tt_nu2Pratio_max" + tag_selection + flav_tag, nu2Pratio, 1., h_1d, 40, -1., 1.);
-*/
-        plot1DUnderOverFlow("h_tt_closestDeltaMET_max" + tag_selection + flav_tag,      closestDeltaMET_maxwcombo , 1., h_1d, 40, 0., 200.);
-
-        //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen_max" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
-        //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen_max" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
-
-        for (int i = 0; i < top1_vecs.size(); ++i)
+        else
         {
-            if (i!=imaxweight) {
-                double top1dotgen_i = top1_vecs[i].Vect().Dot( topplus_genp_p4.Vect() ) / top1_vecs[i].Vect().Mag() / topplus_genp_p4.Vect().Mag();
-                double top2dotgen_i = top2_vecs[i].Vect().Dot( topminus_genp_p4.Vect() ) / top2_vecs[i].Vect().Mag() / topminus_genp_p4.Vect().Mag();
-                double top1Pratio_i = ( top1_vecs[i].Vect().Mag() - topplus_genp_p4.Vect().Mag() ) / ( top1_vecs[i].Vect().Mag() + topplus_genp_p4.Vect().Mag() );
-                double top2Pratio_i = ( top2_vecs[i].Vect().Mag() - topminus_genp_p4.Vect().Mag() ) / ( top2_vecs[i].Vect().Mag() + topminus_genp_p4.Vect().Mag() );
-                plot1DUnderOverFlow("h_tt_top1dotgen_othersols" + tag_selection + flav_tag, acos(top1dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
-                plot1DUnderOverFlow("h_tt_top2dotgen_othersols" + tag_selection + flav_tag, acos(top2dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
-                plot1DUnderOverFlow("h_tt_top1Pratio_othersols" + tag_selection + flav_tag, top1Pratio_i, 1., h_1d, 40, -1., 1.);
-                plot1DUnderOverFlow("h_tt_top2Pratio_othersols" + tag_selection + flav_tag, top2Pratio_i, 1., h_1d, 40, -1., 1.);
+            plot1DUnderOverFlow("h_tt_top1dotgen_max" + tag_selection + flav_tag, acos(top1dotgen), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_top2dotgen_max" + tag_selection + flav_tag, acos(top2dotgen), 1., h_1d, 40, 0., 3.1415926536);
+            plot1DUnderOverFlow("h_tt_top1Pratio_max" + tag_selection + flav_tag, top1Pratio, 1., h_1d, 40, -1., 1.);
+            plot1DUnderOverFlow("h_tt_top2Pratio_max" + tag_selection + flav_tag, top2Pratio, 1., h_1d, 40, -1., 1.);
+            /*
+                    plot1DUnderOverFlow("h_tt_nu1dotgen_max" + tag_selection + flav_tag, acos(nu1dotgen), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_nu2dotgen_max" + tag_selection + flav_tag, acos(nu2dotgen), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_nu1Pratio_max" + tag_selection + flav_tag, nu1Pratio, 1., h_1d, 40, -1., 1.);
+                    plot1DUnderOverFlow("h_tt_nu2Pratio_max" + tag_selection + flav_tag, nu2Pratio, 1., h_1d, 40, -1., 1.);
+            */
+            plot1DUnderOverFlow("h_tt_closestDeltaMET_max" + tag_selection + flav_tag,      closestDeltaMET_maxwcombo , 1., h_1d, 40, 0., 200.);
+
+            //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen_max" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
+            //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen_max" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
+
+            for (int i = 0; i < top1_vecs.size(); ++i)
+            {
+                if (i != imaxweight)
+                {
+                    double top1dotgen_i = top1_vecs.at(i).Vect().Dot( topplus_genp_p4.Vect() ) / top1_vecs.at(i).Vect().Mag() / topplus_genp_p4.Vect().Mag();
+                    double top2dotgen_i = top2_vecs.at(i).Vect().Dot( topminus_genp_p4.Vect() ) / top2_vecs.at(i).Vect().Mag() / topminus_genp_p4.Vect().Mag();
+                    double top1Pratio_i = ( top1_vecs.at(i).Vect().Mag() - topplus_genp_p4.Vect().Mag() ) / ( top1_vecs.at(i).Vect().Mag() + topplus_genp_p4.Vect().Mag() );
+                    double top2Pratio_i = ( top2_vecs.at(i).Vect().Mag() - topminus_genp_p4.Vect().Mag() ) / ( top2_vecs.at(i).Vect().Mag() + topminus_genp_p4.Vect().Mag() );
+                    plot1DUnderOverFlow("h_tt_top1dotgen_othersols" + tag_selection + flav_tag, acos(top1dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_top2dotgen_othersols" + tag_selection + flav_tag, acos(top2dotgen_i), 1., h_1d, 40, 0., 3.1415926536);
+                    plot1DUnderOverFlow("h_tt_top1Pratio_othersols" + tag_selection + flav_tag, top1Pratio_i, 1., h_1d, 40, -1., 1.);
+                    plot1DUnderOverFlow("h_tt_top2Pratio_othersols" + tag_selection + flav_tag, top2Pratio_i, 1., h_1d, 40, -1., 1.);
+                }
             }
+
+
+
         }
-
-
-
-    }
+    }// m_top>0
 
 
 }
@@ -1306,21 +1335,21 @@ void StopTreeLooper::solvettbar()
 
     //internal variables
     double maxweight = -1;
-    int imaxweightcombos[2] = {-1,-1};
-    double maxweightcombos[2] = {-1,-1};
-    double avgweightcombos[2] = {0,0};
+    int imaxweightcombos[2] = { -1, -1};
+    double maxweightcombos[2] = { -1, -1};
+    double avgweightcombos[2] = {0, 0};
 
     //now repeat using the Betchart solver
     double nusols[4][2][3];
-    double met_x = t1metphicorr*cos(t1metphicorrphi);
-    double met_y = t1metphicorr*sin(t1metphicorrphi);
+    double met_x = t1metphicorr * cos(t1metphicorrphi);
+    double met_y = t1metphicorr * sin(t1metphicorrphi);
 
     //create lines of python code to transmit the input values
-    TString l0 = Form("l0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)",lepPlus.Pt(),lepPlus.Eta(),lepPlus.Phi(),lepPlus.E());
-    TString l1 = Form("l1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)",lepMinus.Pt(),lepMinus.Eta(),lepMinus.Phi(),lepMinus.E());
-    TString j0 = Form("j0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)",bcandidates.at(0).Pt(),bcandidates.at(0).Eta(),bcandidates.at(0).Phi(),bcandidates.at(0).E());
-    TString j1 = Form("j1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)",bcandidates.at(1).Pt(),bcandidates.at(1).Eta(),bcandidates.at(1).Phi(),bcandidates.at(1).E());
-    TString metxy = Form("metx, mety = %0.8f, %0.8f",met_x,met_y);
+    TString l0 = Form("l0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", lepPlus.Pt(), lepPlus.Eta(), lepPlus.Phi(), lepPlus.E());
+    TString l1 = Form("l1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", lepMinus.Pt(), lepMinus.Eta(), lepMinus.Phi(), lepMinus.E());
+    TString j0 = Form("j0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
+    TString j1 = Form("j1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", bcandidates.at(1).Pt(), bcandidates.at(1).Eta(), bcandidates.at(1).Phi(), bcandidates.at(1).E());
+    TString metxy = Form("metx, mety = %0.8f, %0.8f", met_x, met_y);
 
     //cout<<l0<<endl;
     //cout<<l1<<endl;
@@ -1336,12 +1365,12 @@ void StopTreeLooper::solvettbar()
 
     int ncombo0 = 0;
     int ncombo1 = 0;
-    int num_err_sols[2] = {0,0};
+    int num_err_sols[2] = {0, 0};
 
     for (int icombo = 0; icombo < 2; ++icombo)
     {
-        if(icombo == 0) TPython::Exec("dnsC = doubleNeutrinoSolutionsCheckLinAlg((j0, j1), (l0, l1), (metx, mety))");
-        if(icombo == 1) TPython::Exec("dnsC = doubleNeutrinoSolutionsCheckLinAlg((j1, j0), (l0, l1), (metx, mety))");
+        if (icombo == 0) TPython::Exec("dnsC = doubleNeutrinoSolutionsCheckLinAlg((j0, j1), (l0, l1), (metx, mety))");
+        if (icombo == 1) TPython::Exec("dnsC = doubleNeutrinoSolutionsCheckLinAlg((j1, j0), (l0, l1), (metx, mety))");
         TPython::Exec("dns = dnsC.dns");
         //TPython::Exec("dns = doubleNeutrinoSolutions((j0, j1), (l0, l1), (metx, mety))");
         TPython::Exec("soltest = 1");
@@ -1350,7 +1379,8 @@ void StopTreeLooper::solvettbar()
         int soltest  = TPython::Eval("soltest");
 
 
-        if(soltest) {
+        if (soltest)
+        {
 
 
             TPython::Exec("solutions = dns.nunu_s");
@@ -1366,7 +1396,7 @@ void StopTreeLooper::solvettbar()
                 {
                     for (int ix = 0; ix < 3; ++ix)
                     {
-                        TString sols = Form("solutions[%0d][%0d][%0d]",is,inu,ix);
+                        TString sols = Form("solutions[%0d][%0d][%0d]", is, inu, ix);
                         //cout<<sols<<endl;
                         nusols[is][inu][ix]  = TPython::Eval(sols);
                         //if(nusols[is][inu][ix] == -1) cout<<nusols[is][inu][ix]<<endl;
@@ -1380,14 +1410,16 @@ void StopTreeLooper::solvettbar()
                 double sol_weight = -1;
                 //double sol_weight_check = -1;
 
-                if(icombo==0) { 
+                if (icombo == 0)
+                {
                     lvTop1 = lepPlus + nu1_vec + jet1;
                     lvTop2 = lepMinus + nu2_vec + jet2;
                     //sol_weight = d_llsol->get_weight(jet1 , jet2, lepPlus, lepMinus, nu1_vec, nu2_vec, AMWTmass, mapJetPhi2Discr);
                     sol_weight = 1.;
                     ncombo0++;
                 }
-                if(icombo==1) {
+                if (icombo == 1)
+                {
                     lvTop1 = lepPlus + nu1_vec + jet2;
                     lvTop2 = lepMinus + nu2_vec + jet1;
                     //sol_weight = d_llsol->get_weight(jet2 , jet1, lepPlus, lepMinus, nu1_vec, nu2_vec, AMWTmass, mapJetPhi2Discr);
@@ -1401,12 +1433,14 @@ void StopTreeLooper::solvettbar()
                 //cout<<"combo "<<icombo<<" solution "<<is<<" weight "<<sol_weight<<" masses: "<<lvTop1.M()<<" "<<lvTop2.M()<<" "<<lvW1.M()<<" "<<lvW2.M()<<endl;
 
                 //don't use solutions with numerical error in solution (output masses don't match input). The input masses used are hard-coded in nuSolutions.py.
-                if (  (fabs(172.5 - lvTop1.M()) > 1.0 || fabs(172.5 - lvTop2.M()) > 1.0) ) {
+                if (  (fabs(172.5 - lvTop1.M()) > 1.0 || fabs(172.5 - lvTop2.M()) > 1.0) )
+                {
                     num_err_sols[icombo]++;
                     continue;
                 }
 
-                if (  (fabs(80.385 - lvW1.M()) > 1.0 || fabs(80.385 - lvW2.M()) > 1.0) ) {
+                if (  (fabs(80.385 - lvW1.M()) > 1.0 || fabs(80.385 - lvW2.M()) > 1.0) )
+                {
                     //cout<<"mW error: "<<lvW1.M()<<" "<<lvW2.M()<<" mt: "<<lvTop1.M()<<" "<<lvTop2.M()<<endl;
                     num_err_sols[icombo]++;
                     continue;
@@ -1436,20 +1470,25 @@ void StopTreeLooper::solvettbar()
     for (int is = 0; is < int(AMWT_weights.size()); ++is)
     {
         //cout<<"w: "<<AMWT_weights[is]<<endl;
-        if (AMWT_weights[is]>maxweight) {
+        if (AMWT_weights[is] > maxweight)
+        {
             imaxweight = is;
             maxweight = AMWT_weights[is];
         }
-        if( is < ncombo0_filled ) {
+        if ( is < ncombo0_filled )
+        {
             avgweightcombos[0] += AMWT_weights[is];
-            if (AMWT_weights[is]>maxweightcombos[0]) {
+            if (AMWT_weights[is] > maxweightcombos[0])
+            {
                 imaxweightcombos[0] = is;
                 maxweightcombos[0] = AMWT_weights[is];
             }
         }
-        else {
+        else
+        {
             avgweightcombos[1] += AMWT_weights[is];
-            if (AMWT_weights[is]>maxweightcombos[1]) {
+            if (AMWT_weights[is] > maxweightcombos[1])
+            {
                 imaxweightcombos[1] = is;
                 maxweightcombos[1] = AMWT_weights[is];
             }
@@ -1462,45 +1501,50 @@ void StopTreeLooper::solvettbar()
 
     //cout<<AMWT_weights.size() <<" "<<ncombo0_filled <<" "<<ncombo1_filled <<" "<<imaxweight<<" "<<maxweight<<" "<<imaxweightcombos[0]<<" "<<maxweightcombos[0]<<" "<<avgweightcombos[0]<<" "<<imaxweightcombos[1]<<" "<<maxweightcombos[1]<<" "<<avgweightcombos[1]<<endl;
 
-    if(useMaxCombo && ncombo0_filled > 0 && ncombo1_filled > 0 ) imaxweight = (avgweightcombos[0] > avgweightcombos[1]) ? imaxweightcombos[0] : imaxweightcombos[1];
+    if (useMaxCombo && ncombo0_filled > 0 && ncombo1_filled > 0 ) imaxweight = (avgweightcombos[0] > avgweightcombos[1]) ? imaxweightcombos[0] : imaxweightcombos[1];
 
     //if( (ncombo0 == 1 || ncombo1 == 1) && (ncombo0 > 1 || ncombo1 > 1) && (ncombo0 - num_err_sols[0] == 0 || ncombo1 - num_err_sols[1] == 0)  )  cout<<"all exact solutions have numerr: "<<ncombo0<<" "<<num_err_sols[0]<<" "<<ncombo1<<" "<<num_err_sols[1]<<" imax: "<<imaxweight<<" "<<imaxweightcombos[0]<<" "<<imaxweightcombos[1]<<endl;
 
     //don't take "closest approach" solution if exact solutions are available
-    if(ncombo0 == 1) {
-        if(ncombo1 > 1 && ncombo1_filled > 0) imaxweight = imaxweightcombos[1];
+    if (ncombo0 == 1)
+    {
+        if (ncombo1 > 1 && ncombo1_filled > 0) imaxweight = imaxweightcombos[1];
         else closestApproach = true;
     }
-    if(ncombo1 == 1) {
-        if(ncombo0 > 1 && ncombo0_filled > 0) imaxweight = imaxweightcombos[0];
+    if (ncombo1 == 1)
+    {
+        if (ncombo0 > 1 && ncombo0_filled > 0) imaxweight = imaxweightcombos[0];
         else closestApproach = true;
     }
 
     //cout<<imaxweight<<endl;
 
-    if( AMWT_weights.size() > 0) {
-        nusum = nu1_vecs[imaxweight]+nu2_vecs[imaxweight];
+    if ( AMWT_weights.size() > 0)
+    {
+        nusum = nu1_vecs.at(imaxweight) + nu2_vecs.at(imaxweight);
         closestDeltaMET_maxwcombo = sqrt( pow( nusum.Px() - met_x , 2 ) + pow( nusum.Py() - met_y , 2 ) );
 
-        if(closestApproach && ncombo0 == 1 && ncombo1 == 1) {
-            TLorentzVector nusum_othercombo = nu1_vecs[1-imaxweight]+nu2_vecs[1-imaxweight];
+        if (closestApproach && ncombo0 == 1 && ncombo1 == 1)
+        {
+            TLorentzVector nusum_othercombo = nu1_vecs[1 - imaxweight] + nu2_vecs[1 - imaxweight];
             closestDeltaMET_othercombo = sqrt( pow( nusum_othercombo.Px() - met_x , 2 ) + pow( nusum_othercombo.Py() - met_y , 2 ) );
-            if(useClosestDeltaMET && closestDeltaMET_othercombo<closestDeltaMET_maxwcombo ) imaxweight = 1-imaxweight;
-            if(doDeltaMETcut && !useClosestDeltaMET && closestDeltaMET_maxwcombo > deltaMETcut && closestDeltaMET_othercombo<closestDeltaMET_maxwcombo ) imaxweight = 1-imaxweight;
+            if (useClosestDeltaMET && closestDeltaMET_othercombo < closestDeltaMET_maxwcombo ) imaxweight = 1 - imaxweight;
+            if (doDeltaMETcut && !useClosestDeltaMET && closestDeltaMET_maxwcombo > deltaMETcut && closestDeltaMET_othercombo < closestDeltaMET_maxwcombo ) imaxweight = 1 - imaxweight;
         }
 
-        m_top_B = (top1_vecs[imaxweight].M() + top2_vecs[imaxweight].M())/2.;
-        nusum = nu1_vecs[imaxweight]+nu2_vecs[imaxweight];
+        m_top_B = (top1_vecs.at(imaxweight).M() + top2_vecs.at(imaxweight).M()) / 2.;
+        nusum = nu1_vecs.at(imaxweight) + nu2_vecs.at(imaxweight);
         closestDeltaMET_bestcombo = sqrt( pow( nusum.Px() - met_x , 2 ) + pow( nusum.Py() - met_y , 2 ) );
 
         //cut on deltaMET (measured vs closest solution)
-        if(doDeltaMETcut && closestDeltaMET_bestcombo > deltaMETcut) m_top_B = -999.;
+        if (doDeltaMETcut && closestDeltaMET_bestcombo > deltaMETcut) m_top_B = -999.;
 
-        if(imaxweight < 0) cout<<"something went wrong choosing the best solution"<<endl;
+        if (imaxweight < 0) cout << "something went wrong choosing the best solution" << endl;
 
     }
 
-    if(m_top_B > 0) {
+    if (m_top_B > 0)
+    {
         top1_p4 = top1_vecs.at(imaxweight);
         top2_p4 = top2_vecs.at(imaxweight);
     }
