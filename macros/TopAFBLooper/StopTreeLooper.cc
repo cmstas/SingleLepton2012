@@ -22,6 +22,7 @@
 #include "TFitter.h"
 #include "TRandom.h"
 #include "TPython.h"
+#include "LHAPDF/LHAPDF.h"
 
 #include <algorithm>
 #include <utility>
@@ -47,6 +48,10 @@ StopTreeLooper::StopTreeLooper()
     n_ljets = -9999;
     pfcalo_metratio = -9999.;
     pfcalo_metdphi  = -9999.;
+
+    mb_solver = 4.8;
+    mW_solver = 80.385;
+    mt_solver = 172.5;
 }
 
 StopTreeLooper::~StopTreeLooper()
@@ -86,6 +91,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     TPython::LoadMacro("loadBetchart.py");
     //d_llsol = new ttdilepsolve;
+    LHAPDF::initPDFSet("pdfs/cteq61.LHgrid");
 
     //------------------------------------------------------------------------------------------------------
     // set csv discriminator reshaping
@@ -382,6 +388,63 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             solvettbar();
 
+
+            /*
+            TLorentzVector t1test1 = top1_p4;
+            TLorentzVector t2test1 = top2_p4;
+
+            nu1_vecs.clear();
+            nu2_vecs.clear();
+            top1_vecs.clear();
+            top2_vecs.clear();
+            AMWT_weights.clear();
+
+            //lepPlus.SetPtEtaPhiE(0,0,0,0);
+            //lepMinus.SetPtEtaPhiE(0,0,0,0);
+            //jet1.SetPtEtaPhiE(0,0,0,0);
+            //jet2.SetPtEtaPhiE(0,0,0,0);
+
+            if (stopt.id1() < 0)
+            {
+                lepPlus.SetPtEtaPhiE(stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.lep1().Phi(), stopt.lep1().E());
+                lepMinus.SetPtEtaPhiE(stopt.lep2().Pt(), stopt.lep2().Eta(), stopt.lep2().Phi(), stopt.lep2().E());
+            }
+            else
+            {
+                lepMinus.SetPtEtaPhiE(stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.lep1().Phi(), stopt.lep1().E());
+                lepPlus.SetPtEtaPhiE(stopt.lep2().Pt(), stopt.lep2().Eta(), stopt.lep2().Phi(), stopt.lep2().E());
+            }
+
+            jet1.SetPtEtaPhiE(bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
+            jet2.SetPtEtaPhiE(bcandidates.at(1).Pt(), bcandidates.at(1).Eta(), bcandidates.at(1).Phi(), bcandidates.at(1).E());
+
+            top1_p4.SetPtEtaPhiE(0, 0, 0, 0);
+            top2_p4.SetPtEtaPhiE(0, 0, 0, 0);
+            nusum.SetPtEtaPhiE(0, 0, 0, 0);
+            cms.SetPtEtaPhiE(0, 0, 0, 0);
+
+            m_top = -999;
+            m_top_B = -999;
+            closestDeltaMET_maxwcombo = -999;
+            closestDeltaMET_othercombo = -999;
+            closestDeltaMET_bestcombo = -999;
+            imaxweight = -1;
+            closestApproach = false;
+
+            solvettbar();
+
+            TLorentzVector t1test2 = top1_p4;
+            TLorentzVector t2test2 = top2_p4;
+
+            if( fabs(t1test1.E() - t2test2.E()) > 0.001  ||  fabs(t2test1.E() - t1test2.E()) > 0.001   ) {
+                printf("t1test1 %f %f %f %f \n", t1test1.Pt(), t1test1.Eta(), t1test1.Phi(), t1test1.E());
+                printf("t2test2 %f %f %f %f \n", t2test2.Pt(), t2test2.Eta(), t2test2.Phi(), t2test2.E());
+                printf("t1test2 %f %f %f %f \n", t1test2.Pt(), t1test2.Eta(), t1test2.Phi(), t1test2.E());
+                printf("t2test1 %f %f %f %f \n \n", t2test1.Pt(), t2test1.Eta(), t2test1.Phi(), t2test1.E());
+            }
+            */
+
+
             m_top = m_top_B;
 
             //----------------------------------------------------------------------------
@@ -433,7 +496,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if ( m_top > 0 )
             {
 
-                if ( fabs(top1_p4.M() - 172.5) > 1.  || fabs(top2_p4.M() - 172.5) > 1. ) printf("[StopTreeLooper::loop] Something went wrong with ttbar solver. \n");
+                if ( fabs(top1_p4.M() - mt_solver) > 1.  || fabs(top2_p4.M() - mt_solver) > 1. ) printf("[StopTreeLooper::loop] Something went wrong with ttbar solver. \n");
 
                 tt_mass = (top1_p4 + top2_p4).M();
                 ttRapidity2 = (top1_p4 + top2_p4).Rapidity();
@@ -505,7 +568,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(), stopt.lep_t().Eta(), stopt.lep_t().Phi(), stopt.lep_t().E());
                 lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(), stopt.lep_tbar().Eta(), stopt.lep_tbar().Phi(), stopt.lep_tbar().E());
 
-                if ( (fabs(topplus_genp_p4.M() - 172.5) > 100.  || fabs(topminus_genp_p4.M() - 172.5) > 100.) ) printf("[StopTreeLooper::loop] Something went wrong with gen-level tops. %f %f %d \n", topplus_genp_p4.M() , topminus_genp_p4.M() , stopt.nleps() );
+                if ( (fabs(topplus_genp_p4.M() - mt_solver) > 100.  || fabs(topminus_genp_p4.M() - mt_solver) > 100.) ) printf("[StopTreeLooper::loop] Something went wrong with gen-level tops. %f %f %d \n", topplus_genp_p4.M() , topminus_genp_p4.M() , stopt.nleps() );
 
                 lep_charge_asymmetry_gen = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
                 lep_azimuthal_asymmetry_gen = lepPlus_gen.DeltaPhi(lepMinus_gen);
@@ -889,6 +952,14 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *
         plot1DUnderOverFlow("h_sig_top1_p_CM" + tag_selection + flav_tag, top1_p_CM , evtweight, h_1d, nbins, 0, 800);
         plot1DUnderOverFlow("h_sig_top2_p_CM" + tag_selection + flav_tag, top2_p_CM , evtweight, h_1d, nbins, 0, 800);
         plot1DUnderOverFlow("h_sig_top_rapiditydiffsigned_cms" + tag_selection + flav_tag, top_rapiditydiffsigned_cms , evtweight, h_1d, nbins, -4, 4);
+
+        plot1DUnderOverFlow("h_sig_maxAMWTweight_cms" + tag_selection + flav_tag, AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
+        for (int i = 0; i < int(AMWT_weights.size()); ++i)
+        {
+            if (i != imaxweight) plot1DUnderOverFlow("h_sig_otherAMWTweights_cms" + tag_selection + flav_tag, AMWT_weights.at(i) , evtweight, h_1d, nbins, 0, 1);
+            if (i != imaxweight) plot1DUnderOverFlow("h_sig_otherAMWTweightsratio_cms" + tag_selection + flav_tag, AMWT_weights.at(i) / AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
+        }
+
     }
 
 
@@ -1198,7 +1269,7 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *>
             //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen_closest" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
             //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen_closest" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
 
-            for (int i = 0; i < top1_vecs.size(); ++i)
+            for (int i = 0; i < int(top1_vecs.size()); ++i)
             {
                 if (i != imaxweight)
                 {
@@ -1232,7 +1303,7 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *>
             //plot1DUnderOverFlow("h_tt_DeltaMETsol_gen_max" + tag_selection + flav_tag,  DeltaMETsol_gen , 1., h_1d, 40, 0., 200.);
             //plot1DUnderOverFlow("h_tt_DeltaMETmeas_gen_max" + tag_selection + flav_tag,  DeltaMETmeas_gen , 1., h_1d, 40, 0., 200.);
 
-            for (int i = 0; i < top1_vecs.size(); ++i)
+            for (int i = 0; i < int(top1_vecs.size()); ++i)
             {
                 if (i != imaxweight)
                 {
@@ -1340,15 +1411,14 @@ void StopTreeLooper::solvettbar()
     double avgweightcombos[2] = {0, 0};
 
     //now repeat using the Betchart solver
-    double nusols[4][2][3];
     double met_x = t1metphicorr * cos(t1metphicorrphi);
     double met_y = t1metphicorr * sin(t1metphicorrphi);
 
     //create lines of python code to transmit the input values
     TString l0 = Form("l0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", lepPlus.Pt(), lepPlus.Eta(), lepPlus.Phi(), lepPlus.E());
     TString l1 = Form("l1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", lepMinus.Pt(), lepMinus.Eta(), lepMinus.Phi(), lepMinus.E());
-    TString j0 = Form("j0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
-    TString j1 = Form("j1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", bcandidates.at(1).Pt(), bcandidates.at(1).Eta(), bcandidates.at(1).Phi(), bcandidates.at(1).E());
+    TString j0 = Form("j0 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", jet1.Pt(), jet1.Eta(), jet1.Phi(), jet1.E());
+    TString j1 = Form("j1 = lv(%0.8f,%0.8f,%0.8f,%0.8f)", jet2.Pt(), jet2.Eta(), jet2.Phi(), jet2.E());
     TString metxy = Form("metx, mety = %0.8f, %0.8f", met_x, met_y);
 
     //cout<<l0<<endl;
@@ -1381,14 +1451,13 @@ void StopTreeLooper::solvettbar()
 
         if (soltest)
         {
-
-
             TPython::Exec("solutions = dns.nunu_s");
             //TPython::Exec("print solutions");
             TPython::Exec("nSolB = len(solutions)");
 
             const int nSolB  = TPython::Eval("nSolB");
             //cout<<"nSolB: "<<nSolB<<endl;
+            double nusols[nSolB][2][3];
 
             for (int is = 0; is < nSolB; ++is)
             {
@@ -1414,32 +1483,34 @@ void StopTreeLooper::solvettbar()
                 {
                     lvTop1 = lepPlus + nu1_vec + jet1;
                     lvTop2 = lepMinus + nu2_vec + jet2;
-                    //sol_weight = d_llsol->get_weight(jet1 , jet2, lepPlus, lepMinus, nu1_vec, nu2_vec, AMWTmass, mapJetPhi2Discr);
-                    sol_weight = 1.;
+                    //sol_weight = d_llsol->get_weight(jet1 , jet2, lepPlus, lepMinus, nu1_vec, nu2_vec, mt_solver, mapJetPhi2Discr);
+                    //sol_weight = 1.;
+                    sol_weight = get_pdf_prob(lvTop1, lvTop2) * get_dalitz_prob(lepPlus, lvTop1) * get_dalitz_prob(lepMinus, lvTop2);
+                    //cout<<get_pdf_prob(lvTop1, lvTop2) << " " << get_dalitz_prob(lepPlus, lvTop1) << " " << get_dalitz_prob(lepMinus, lvTop2)<<endl;
                     ncombo0++;
                 }
                 if (icombo == 1)
                 {
                     lvTop1 = lepPlus + nu1_vec + jet2;
                     lvTop2 = lepMinus + nu2_vec + jet1;
-                    //sol_weight = d_llsol->get_weight(jet2 , jet1, lepPlus, lepMinus, nu1_vec, nu2_vec, AMWTmass, mapJetPhi2Discr);
-                    sol_weight = 1.;
+                    //sol_weight = d_llsol->get_weight(jet2 , jet1, lepPlus, lepMinus, nu1_vec, nu2_vec, mt_solver, mapJetPhi2Discr);
+                    //sol_weight = 1.;
+                    sol_weight = get_pdf_prob(lvTop1, lvTop2) * get_dalitz_prob(lepPlus, lvTop1) * get_dalitz_prob(lepMinus, lvTop2);
                     ncombo1++;
                 }
-
 
                 TLorentzVector lvW1 = lepPlus + nu1_vec;
                 TLorentzVector lvW2 = lepMinus + nu2_vec;
                 //cout<<"combo "<<icombo<<" solution "<<is<<" weight "<<sol_weight<<" masses: "<<lvTop1.M()<<" "<<lvTop2.M()<<" "<<lvW1.M()<<" "<<lvW2.M()<<endl;
 
                 //don't use solutions with numerical error in solution (output masses don't match input). The input masses used are hard-coded in nuSolutions.py.
-                if (  (fabs(172.5 - lvTop1.M()) > 1.0 || fabs(172.5 - lvTop2.M()) > 1.0) )
+                if (  (fabs(mt_solver - lvTop1.M()) > 1.0 || fabs(mt_solver - lvTop2.M()) > 1.0) )
                 {
                     num_err_sols[icombo]++;
                     continue;
                 }
 
-                if (  (fabs(80.385 - lvW1.M()) > 1.0 || fabs(80.385 - lvW2.M()) > 1.0) )
+                if (  (fabs(mW_solver - lvW1.M()) > 1.0 || fabs(mW_solver - lvW2.M()) > 1.0) )
                 {
                     //cout<<"mW error: "<<lvW1.M()<<" "<<lvW2.M()<<" mt: "<<lvTop1.M()<<" "<<lvTop2.M()<<endl;
                     num_err_sols[icombo]++;
@@ -1469,28 +1540,28 @@ void StopTreeLooper::solvettbar()
 
     for (int is = 0; is < int(AMWT_weights.size()); ++is)
     {
-        //cout<<"w: "<<AMWT_weights[is]<<endl;
-        if (AMWT_weights[is] > maxweight)
+        //cout<<"w: "<<AMWT_weights.at(is)<<endl;
+        if (AMWT_weights.at(is) > maxweight)
         {
             imaxweight = is;
-            maxweight = AMWT_weights[is];
+            maxweight = AMWT_weights.at(is);
         }
         if ( is < ncombo0_filled )
         {
-            avgweightcombos[0] += AMWT_weights[is];
-            if (AMWT_weights[is] > maxweightcombos[0])
+            avgweightcombos[0] += AMWT_weights.at(is);
+            if (AMWT_weights.at(is) > maxweightcombos[0])
             {
                 imaxweightcombos[0] = is;
-                maxweightcombos[0] = AMWT_weights[is];
+                maxweightcombos[0] = AMWT_weights.at(is);
             }
         }
         else
         {
-            avgweightcombos[1] += AMWT_weights[is];
-            if (AMWT_weights[is] > maxweightcombos[1])
+            avgweightcombos[1] += AMWT_weights.at(is);
+            if (AMWT_weights.at(is) > maxweightcombos[1])
             {
                 imaxweightcombos[1] = is;
-                maxweightcombos[1] = AMWT_weights[is];
+                maxweightcombos[1] = AMWT_weights.at(is);
             }
         }
     }
@@ -1526,7 +1597,7 @@ void StopTreeLooper::solvettbar()
 
         if (closestApproach && ncombo0 == 1 && ncombo1 == 1)
         {
-            TLorentzVector nusum_othercombo = nu1_vecs[1 - imaxweight] + nu2_vecs[1 - imaxweight];
+            TLorentzVector nusum_othercombo = nu1_vecs.at(1 - imaxweight) + nu2_vecs.at(1 - imaxweight);
             closestDeltaMET_othercombo = sqrt( pow( nusum_othercombo.Px() - met_x , 2 ) + pow( nusum_othercombo.Py() - met_y , 2 ) );
             if (useClosestDeltaMET && closestDeltaMET_othercombo < closestDeltaMET_maxwcombo ) imaxweight = 1 - imaxweight;
             if (doDeltaMETcut && !useClosestDeltaMET && closestDeltaMET_maxwcombo > deltaMETcut && closestDeltaMET_othercombo < closestDeltaMET_maxwcombo ) imaxweight = 1 - imaxweight;
@@ -1539,7 +1610,7 @@ void StopTreeLooper::solvettbar()
         //cut on deltaMET (measured vs closest solution)
         if (doDeltaMETcut && closestDeltaMET_bestcombo > deltaMETcut) m_top_B = -999.;
 
-        if (imaxweight < 0) cout << "something went wrong choosing the best solution" << endl;
+        if (imaxweight < 0 || imaxweight >= int(AMWT_weights.size()) ) cout << "something went wrong choosing the best solution" << endl;
 
     }
 
@@ -1549,4 +1620,54 @@ void StopTreeLooper::solvettbar()
         top2_p4 = top2_vecs.at(imaxweight);
     }
 
+}
+
+double StopTreeLooper::get_pdf_prob( TLorentzVector &t1, TLorentzVector &t2 )
+{
+    //CM energy
+    double e_com = 8000;
+
+    //Determine x1 and x2
+    double x1 = ( t1.E() + t2.E() + t1.Pz() + t2.Pz() ) / e_com;
+    double x2 = ( t1.E() + t2.E() - t1.Pz() - t2.Pz() ) / e_com;
+
+    vector <double> f1, f2;
+
+    f1 = LHAPDF::xfx(x1, mt_solver);
+    f2 = LHAPDF::xfx(x2, mt_solver);
+
+    // The order of f:
+    //    -t  -b  -c  -s  -u  -d   g   d   u   s   c   b   t
+    //    -6  -5  -4  -3  -2  -1   0   1   2   3   4   5   6
+    //     0   1   2   3   4   5   6   7   8   9   10  11  12
+
+    double sbar1 = f1[3], sbar2 = f2[3];
+    double ubar1 = f1[4], ubar2 = f2[4];
+    double dbar1 = f1[5], dbar2 = f2[5];
+    double g1    = f1[6], g2    = f2[6];
+    double d1    = f1[7], d2    = f2[7];
+    double u1    = f1[8], u2    = f2[8];
+    double s1    = f1[9], s2    = f2[9];
+
+    //Should glue-glue be doubled? Probably not, but plot histo later
+    double pdf_prob = (u1 * ubar2 + u2 * ubar1 +
+                       d1 * dbar2 + d2 * dbar1 +
+                       s1 * sbar2 + s2 * sbar1 +
+                       g1 * g2);
+
+    return pdf_prob;
+}
+
+double StopTreeLooper::get_dalitz_prob( TLorentzVector &lep, TLorentzVector &top )
+{
+    double mb = mb_solver;
+    double mw = mW_solver;
+    double mte = lep.Dot( top );
+    double mt = top.M();
+    double mt2 = mt * mt;
+    double mb2 = mb * mb;
+    double mw2 = mw * mw;
+    double mt2_mb2 = mt2 - mb2;
+
+    return 4. * mte * ( mt2 - mb2 - 2. * mte ) / ( mt2_mb2 * mt2_mb2 + mw2 * ( mt2 + mb2 ) - 2. * mw2 * mw2 );
 }

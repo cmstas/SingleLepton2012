@@ -11,7 +11,7 @@
 #include <iostream>
 #include "Math/LorentzVector.h"
 
-//#include "../CORE/topmass/ttdilepsolve.cpp" 
+//#include "../CORE/topmass/ttdilepsolve.h" 
 //#include "../CORE/topmass/getTopMassEstimate.icc" 
  
 #include <cmath>
@@ -49,6 +49,9 @@ class StopTreeLooper {
 			   string tag_selection, string flav_tag );
 
 	void solvettbar();
+
+	double get_pdf_prob( TLorentzVector &t1, TLorentzVector &t2 );
+	double get_dalitz_prob( TLorentzVector &lep, TLorentzVector &top );
 
     private:
 
@@ -141,6 +144,10 @@ class StopTreeLooper {
     double closestDeltaMET_maxwcombo;
     double closestDeltaMET_othercombo;
     double closestDeltaMET_bestcombo;
+
+    double mb_solver;
+    double mW_solver;
+    double mt_solver;
 
     int imaxweight;
     bool closestApproach;

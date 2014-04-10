@@ -12,6 +12,8 @@ void doAll() {
   gSystem->Load("libEG.so");
   gSystem->Load("libMathCore.so");
 
+  gSystem->Load("/nfs-6/userdata/yanjuntu/LHAPDF/lib/libLHAPDF.so");
+
   gSystem->Load("../../Tools/MiniFWLite/libMiniFWLite.so");
 
   gROOT->ProcessLine(".L libStopTreeLooper.so");
