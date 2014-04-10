@@ -610,10 +610,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 topminus_genp_p4.Boost(-cms_gen.BoostVector());
                 top_costheta_cms_gen = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
 
-                lep_charge_asymmetry_gen = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
-                lep_azimuthal_asymmetry_gen = cos(lepPlus_gen.DeltaPhi(lepMinus_gen));
-                lep_azimuthal_asymmetry2_gen = acos(lep_azimuthal_asymmetry_gen);
-
                 lepPlus_gen.Boost(-cms_gen.BoostVector());
                 lepPlus_gen.Boost(-topplus_genp_p4.BoostVector());
                 lepMinus_gen.Boost(-cms_gen.BoostVector());
@@ -1745,12 +1741,12 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("top_costheta_cms",      &top_costheta_cms,    "top_costheta_cms/F"     );
     babyTree_->Branch("lepPlus_costheta_cms",      &lepPlus_costheta_cms, "lepPlus_costheta_cms/F"     );
     babyTree_->Branch("lepMinus_costheta_cms",      &lepMinus_costheta_cms, "lepMinus_costheta_cms/F"     );
-    babyTree_->Branch("top_rapidtiydiff_cms",      &top_rapiditydiff_cms, "top_rapiditydiff_cms/F"     );
-    babyTree_->Branch("top_rapidtiydiff_Marco",      &top_rapiditydiff_Marco, "top_rapiditydiff_Marco/F"     );
-    babyTree_->Branch("top_pseudorapidtiydiff_cms",      &top_pseudorapiditydiff_cms, "top_pseudorapiditydiff_cms/F"     );
-    babyTree_->Branch("top_rapidtiydiff_cms_gen",      &top_rapiditydiff_cms_gen, "top_rapiditydiff_cms_gen/F"     );
-    babyTree_->Branch("top_rapidtiydiff_Marco_gen",      &top_rapiditydiff_Marco_gen, "top_rapiditydiff_Marco_gen/F"     );
-    babyTree_->Branch("top_pseudorapidtiydiff_cms_gen",      &top_pseudorapiditydiff_cms_gen, "top_pseudorapiditydiff_cms_gen/F"     );
+    babyTree_->Branch("top_rapiditydiff_cms",      &top_rapiditydiff_cms, "top_rapiditydiff_cms/F"     );
+    babyTree_->Branch("top_rapiditydiff_Marco",      &top_rapiditydiff_Marco, "top_rapiditydiff_Marco/F"     );
+    babyTree_->Branch("top_pseudorapiditydiff_cms",      &top_pseudorapiditydiff_cms, "top_pseudorapiditydiff_cms/F"     );
+    babyTree_->Branch("top_rapiditydiff_cms_gen",      &top_rapiditydiff_cms_gen, "top_rapiditydiff_cms_gen/F"     );
+    babyTree_->Branch("top_rapiditydiff_Marco_gen",      &top_rapiditydiff_Marco_gen, "top_rapiditydiff_Marco_gen/F"     );
+    babyTree_->Branch("top_pseudorapiditydiff_cms_gen",      &top_pseudorapiditydiff_cms_gen, "top_pseudorapiditydiff_cms_gen/F"     );
     babyTree_->Branch("tt_mass_gen",           &tt_mass_gen,          "tt_mass_gen/F"              );
     //babyTree_->Branch("ttRapidity_gen",            &ttRapidity_gen,          "ttRapidity_gen/F"            );
     babyTree_->Branch("lep_charge_asymmetry_gen",  &lep_charge_asymmetry_gen, "lep_charge_asymmetry_gen_/F" );
