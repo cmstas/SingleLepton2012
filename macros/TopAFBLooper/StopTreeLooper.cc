@@ -10,6 +10,7 @@
 #include "../Core/stopUtils.h"
 #include "../Plotting/PlotUtilities.h"
 #include "../../Tools/BTagReshaping/BTagReshaping.h"
+#include "LHAPDF/LHAPDF.h"
 
 #include "TROOT.h"
 #include "TH1F.h"
@@ -22,7 +23,6 @@
 #include "TFitter.h"
 #include "TRandom.h"
 #include "TPython.h"
-#include "LHAPDF/LHAPDF.h"
 
 #include <algorithm>
 #include <utility>
@@ -36,6 +36,12 @@ std::set<DorkyEventIdentifier> already_seen;
 std::set<DorkyEventIdentifier> events_lasercalib;
 std::set<DorkyEventIdentifier> events_hcallasercalib;
 
+//these values are also hard-coded in nuSolutions.py
+const double mb_solver = 4.8;
+const double mW_solver = 80.385;
+const double mt_solver = 172.5;
+bool makeCRplots = false;
+
 
 StopTreeLooper::StopTreeLooper()
 {
@@ -48,14 +54,12 @@ StopTreeLooper::StopTreeLooper()
     n_ljets = -9999;
     pfcalo_metratio = -9999.;
     pfcalo_metdphi  = -9999.;
-
-    mb_solver = 4.8;
-    mW_solver = 80.385;
-    mt_solver = 172.5;
 }
 
 StopTreeLooper::~StopTreeLooper()
 {
+    delete babyFile_;
+    //delete babyTree_; //this causes a crash
 }
 
 void StopTreeLooper::setOutFileName(string filename)
@@ -74,6 +78,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     printf("[StopTreeLooper::loop] %s\n", name.Data());
 
+    TString babyFilename = name + "_baby.root";
+    MakeBabyNtuple(babyFilename.Data());
+
     load_badlaserevents("../Core/badlaser_events.txt", events_lasercalib);
     load_badlaserevents("../Core/badhcallaser_events.txt", events_hcallasercalib);
 
@@ -86,11 +93,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     }
 
     //------------------------------------------------------------------------------------------------------
-    // load Betchart solver and AMWT
+    // load Betchart solver, and PDFs for AMWT weight
     //------------------------------------------------------------------------------------------------------
 
     TPython::LoadMacro("loadBetchart.py");
-    //d_llsol = new ttdilepsolve;
     LHAPDF::initPDFSet("pdfs/cteq61.LHgrid");
 
     //------------------------------------------------------------------------------------------------------
@@ -173,6 +179,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         {
             stopt.GetEntry(event);
 
+            //if (event % 100 != 0) continue; //to skip 99 of every 100 events
+
             //----------------------------
             // increment counters
             //----------------------------
@@ -190,7 +198,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     fflush(stdout);
                     stwatch.Stop();
                     if (i_permille % 100 < 0.0001)
-                        cout << "At " << i_permille / 10. << "% time is " << stwatch.RealTime() << " cpu: " << stwatch.CpuTime() << endl;
+                        cout << "At " << i_permille / 10. << "% of " << name.Data() << " time is " << stwatch.RealTime() << " cpu: " << stwatch.CpuTime() << endl;
                     stwatch.Start();//stwatch.Continue();
 
                 }
@@ -221,6 +229,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             }
 
             nevt_check++;
+
+            run = stopt.run();
+            ls = stopt.lumi();
+            evt = stopt.event();
+            weight = -999;
+
             //----------------------------------------------------------------------------
             // determine event weight
             // make 2 example histograms of nvtx and corresponding weight
@@ -243,8 +257,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //----------------------------------------------------------------------------
 
             if ( !passEvtSelection(name) ) continue;
-            nevt_nlep[stopt.ngoodlep()]++;
-            if (stopt.ngoodlep() > 2) continue; //veto the third lepton
 
             //----------------------------------------------------------------------------
             // Function to perform MET phi corrections on-the-fly
@@ -258,6 +270,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             pfcalo_metratio = t1metphicorr / stopt.calomet();
             pfcalo_metdphi  = getdphi(t1metphicorrphi, stopt.calometphi());
+
 
             //----------------------------------------------------------------------------
             // get jet information
@@ -337,8 +350,13 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 bcandidates.push_back( nonbjets.at(1) );
             }
 
-            //require at least 2 jets and leptons
-            if (!(n_jets > 1 && stopt.id2() != -999)) continue;
+            //----------------------------------------------------------------------------
+            // Require event to pass full selection already unless we want to make control region plots.
+            //----------------------------------------------------------------------------
+
+            if ( !makeCRplots && !passFullSelection(isData) ) continue;
+
+            nevt_nlep[stopt.ngoodlep()]++;
 
             //----------------------------------------------------------------------------
             // ttbar solver
@@ -689,32 +707,31 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //
             // SIGNAL REGION - dilepton + b-tag
             //
-            // selection - 1 lepton
-            // Add iso track veto
-            // Add b-tag
 
-            //need proper signal region cuts here, including 3rd lepton veto etc.
-
-            if ( dataset_2l && passDileptonSelectionWithEndcapEls(isData)
-                    && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
-                    && n_bjets > 0
-                    && (stopt.lep1() + stopt.lep2()).M() >= 20.0
-                    && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. ) )
+            if ( dataset_2l && passFullSelection(isData) )
             {
                 //check cuts
                 if ( (stopt.lep1().Pt() < 20.0 || stopt.lep2().Pt() < 20.0 ) ) cout << stopt.lep1().Pt() << " " << stopt.lep2().Pt() << endl;
                 if ( (stopt.lep1() + stopt.lep2()).M() < 20.0 )  cout << (stopt.lep1() + stopt.lep2()).M() << endl;
                 if ( t1metphicorr < 40. && basic_flav_tag_dl != "_mueg" )  cout << "MET: " << t1metphicorr << " " + basic_flav_tag_dl << endl;
 
-                makeNJPlots( evtweight * trigweight_dl, h_1d_nj, "", basic_flav_tag_dl);
-                if ( n_jets >= min_njets  ) makeSIGPlots( evtweight * trigweight_dl, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
-                if ( n_jets >= min_njets  ) makeSIGPlots( evtweight * trigweight_dl, h_1d_sig,  tag_btag  , "_all" );
-                if ( n_jets >= min_njets && name.Contains("ttdl") )
+                weight = evtweight * trigweight_dl;
+
+                makeNJPlots( weight, h_1d_nj, "", basic_flav_tag_dl);
+                if ( n_jets >= min_njets  )
                 {
-                    makettPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
-                    makettPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
-                    makeAccPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
-                    makeAccPlots( evtweight * trigweight_dl, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
+                    FillBabyNtuple();
+
+                    makeSIGPlots( weight, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
+                    makeSIGPlots( weight, h_1d_sig,  tag_btag  , "_all" );
+
+                    if ( name.Contains("ttdl") )
+                    {
+                        makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                        makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
+                        makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                        makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
+                    }
                 }
             }
 
@@ -793,15 +810,17 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
         // delete tree;
 
-        stwatch.Stop();
-        cout << "time is " << stwatch.CpuTime() << endl;
-        stwatch.Start();
+        //stwatch.Stop();
+        //cout << "time is " << stwatch.CpuTime() << endl;
+        //stwatch.Start();
 
     } // end file loop
 
     //
     // finish
     //
+    printf("[StopTreeLooper::loop] Closing baby ntuple \n");
+    CloseBabyNtuple();
 
     cout << "N EVENT CHECK " << nevt_check << endl;
     TFile outfile(m_outfilename_.c_str(), "RECREATE") ;
@@ -891,8 +910,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TFile outfile_nj(Form("NJ%s", m_outfilename_.c_str()), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving NJ histograms to %s\n", m_outfilename_.c_str());
 
-    printf("[StopTreeLooper::loop] nevt_nlep %i %i %i %i %i %i %i\n", nevt_nlep[0], nevt_nlep[1], nevt_nlep[2], nevt_nlep[3], nevt_nlep[4], nevt_nlep[5], nevt_nlep[6]) ;
-
     std::map<std::string, TH1F *>::iterator it1d_nj;
     for (it1d_nj = h_1d_nj.begin(); it1d_nj != h_1d_nj.end(); it1d_nj++)
     {
@@ -915,9 +932,14 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       outfile_z.Write();
       outfile_z.Close();
     */
+
+    printf("[StopTreeLooper::loop] nevt_nlep %i %i %i %i %i %i %i\n", nevt_nlep[0], nevt_nlep[1], nevt_nlep[2], nevt_nlep[3], nevt_nlep[4], nevt_nlep[5], nevt_nlep[6]) ;
+
     already_seen.clear();
 
     gROOT->cd();
+
+    printf("[StopTreeLooper::loop] Finished %s\n", name.Data());
 
 }
 
@@ -1475,27 +1497,21 @@ void StopTreeLooper::solvettbar()
                 nu1_vec.SetXYZM( nusols[is][0][0] , nusols[is][0][1] , nusols[is][0][2] , 0 );
                 nu2_vec.SetXYZM( nusols[is][1][0] , nusols[is][1][1] , nusols[is][1][2] , 0 );
 
-                map<double, double >  mapJetPhi2Discr;
+                //calculate t and tbar solutions and weights. The dalitz weight only distinguishes between the two combos, while the PDF weight is different for each solution.
                 double sol_weight = -1;
-                //double sol_weight_check = -1;
-
                 if (icombo == 0)
                 {
                     lvTop1 = lepPlus + nu1_vec + jet1;
                     lvTop2 = lepMinus + nu2_vec + jet2;
-                    //sol_weight = d_llsol->get_weight(jet1 , jet2, lepPlus, lepMinus, nu1_vec, nu2_vec, mt_solver, mapJetPhi2Discr);
-                    //sol_weight = 1.;
-                    sol_weight = get_pdf_prob(lvTop1, lvTop2) * get_dalitz_prob(lepPlus, lvTop1) * get_dalitz_prob(lepMinus, lvTop2);
-                    //cout<<get_pdf_prob(lvTop1, lvTop2) << " " << get_dalitz_prob(lepPlus, lvTop1) << " " << get_dalitz_prob(lepMinus, lvTop2)<<endl;
+                    sol_weight = get_pdf_weight(lvTop1, lvTop2) * get_dalitz_prob(lepPlus, lvTop1) * get_dalitz_prob(lepMinus, lvTop2);
+                    //cout<<get_pdf_weight(lvTop1, lvTop2) << " " << get_dalitz_prob(lepPlus, lvTop1) << " " << get_dalitz_prob(lepMinus, lvTop2)<<endl;
                     ncombo0++;
                 }
                 if (icombo == 1)
                 {
                     lvTop1 = lepPlus + nu1_vec + jet2;
                     lvTop2 = lepMinus + nu2_vec + jet1;
-                    //sol_weight = d_llsol->get_weight(jet2 , jet1, lepPlus, lepMinus, nu1_vec, nu2_vec, mt_solver, mapJetPhi2Discr);
-                    //sol_weight = 1.;
-                    sol_weight = get_pdf_prob(lvTop1, lvTop2) * get_dalitz_prob(lepPlus, lvTop1) * get_dalitz_prob(lepMinus, lvTop2);
+                    sol_weight = get_pdf_weight(lvTop1, lvTop2) * get_dalitz_prob(lepPlus, lvTop1) * get_dalitz_prob(lepMinus, lvTop2);
                     ncombo1++;
                 }
 
@@ -1622,7 +1638,7 @@ void StopTreeLooper::solvettbar()
 
 }
 
-double StopTreeLooper::get_pdf_prob( TLorentzVector &t1, TLorentzVector &t2 )
+double StopTreeLooper::get_pdf_weight( TLorentzVector &t1, TLorentzVector &t2 )
 {
     //CM energy
     double e_com = 8000;
@@ -1671,3 +1687,98 @@ double StopTreeLooper::get_dalitz_prob( TLorentzVector &lep, TLorentzVector &top
 
     return 4. * mte * ( mt2 - mb2 - 2. * mte ) / ( mt2_mb2 * mt2_mb2 + mw2 * ( mt2 + mb2 ) - 2. * mw2 * mw2 );
 }
+
+
+bool StopTreeLooper::passFullSelection(bool isData)
+{
+    bool passFull = false;
+    if ( passDileptonSelectionWithEndcapEls(isData)
+            && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
+            && n_bjets > 0
+            && n_jets > 1
+            && (stopt.lep1() + stopt.lep2()).M() >= 20.0
+            && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
+       ) passFull = true;
+
+    //add isolated track veto?
+
+    return passFull;
+}
+
+
+
+
+//-------------------------------------
+// Book the baby ntuple
+//-------------------------------------
+void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
+{
+    TDirectory *rootdir = gDirectory->GetDirectory("Rint:");
+    rootdir->cd();
+    babyFile_ = new TFile(Form("%s", babyFilename), "RECREATE");
+    babyFile_->cd();
+    babyTree_ = new TTree("tree", "A Baby Ntuple");
+
+    babyTree_->Branch("run",                   &run,                 "run/I"                  );
+    babyTree_->Branch("ls",                    &ls,                  "ls/I"                   );
+    babyTree_->Branch("evt",                   &evt,                 "evt/I"                  );
+    babyTree_->Branch("t_mass",                &m_top,              "t_mass/F"               );
+    babyTree_->Branch("weight",                &weight,              "weight/D"               );
+    //babyTree_->Branch("Nsolns",                &Nsolns_,              "Nsolns/I"               );
+    //babyTree_->Branch("massltb",               &massltb_,             "massltb/F"              );
+    //babyTree_->Branch("massllb",               &massllb_,             "massllb/F"              );
+    //babyTree_->Branch("dr_ltjet_gen",          &dr_ltjet_gen_,        "dr_ltjet_gen/F"         );
+    //babyTree_->Branch("dr_lljet_gen",          &dr_lljet_gen_,        "dr_lljet_gen/F"         );
+    //babyTree_->Branch("ndavtx",                &ndavtx_,              "ndavtx/I"               );
+    babyTree_->Branch("tt_mass",               &tt_mass,             "tt_mass/F"              );
+    //babyTree_->Branch("ttRapidity",            &ttRapidity_,          "ttRapidity/F"           );
+    babyTree_->Branch("ttRapidity2",            &ttRapidity2,          "ttRapidity2/F"           );
+    babyTree_->Branch("ttRapidity2_gen",            &ttRapidity2_gen,          "ttRapidity2_gen/F"           );
+    babyTree_->Branch("ttPt",                   &tt_pT,          "ttPt/F"           );
+    babyTree_->Branch("ttPt_gen",                   &tt_pT_gen,          "ttPt_gen/F"           );
+    babyTree_->Branch("lep_charge_asymmetry",  &lep_charge_asymmetry, "lep_charge_asymmetry/F" );
+    //babyTree_->Branch("lep_pseudorap_diff",    &lep_pseudorap_diff,  "lep_pseudorap_diff/F"   );
+    babyTree_->Branch("lep_azimuthal_asymmetry", &lep_azimuthal_asymmetry,  "lep_azimuthal_asymmetry/F"   );
+    babyTree_->Branch("lep_azimuthal_asymmetry2", &lep_azimuthal_asymmetry2,  "lep_azimuthal_asymmetry2/F"   );
+    babyTree_->Branch("top_spin_correlation",  &top_spin_correlation, "top_spin_correlation/F" );
+    babyTree_->Branch("lep_cos_opening_angle",  &lep_cos_opening_angle, "lep_cos_opening_angle/F" );
+    babyTree_->Branch("top_costheta_cms",      &top_costheta_cms,    "top_costheta_cms/F"     );
+    babyTree_->Branch("lepPlus_costheta_cms",      &lepPlus_costheta_cms, "lepPlus_costheta_cms/F"     );
+    babyTree_->Branch("lepMinus_costheta_cms",      &lepMinus_costheta_cms, "lepMinus_costheta_cms/F"     );
+    babyTree_->Branch("top_rapidtiydiff_cms",      &top_rapiditydiff_cms, "top_rapiditydiff_cms/F"     );
+    babyTree_->Branch("top_rapidtiydiff_Marco",      &top_rapiditydiff_Marco, "top_rapiditydiff_Marco/F"     );
+    babyTree_->Branch("top_pseudorapidtiydiff_cms",      &top_pseudorapiditydiff_cms, "top_pseudorapiditydiff_cms/F"     );
+    babyTree_->Branch("top_rapidtiydiff_cms_gen",      &top_rapiditydiff_cms_gen, "top_rapiditydiff_cms_gen/F"     );
+    babyTree_->Branch("top_rapidtiydiff_Marco_gen",      &top_rapiditydiff_Marco_gen, "top_rapiditydiff_Marco_gen/F"     );
+    babyTree_->Branch("top_pseudorapidtiydiff_cms_gen",      &top_pseudorapiditydiff_cms_gen, "top_pseudorapiditydiff_cms_gen/F"     );
+    babyTree_->Branch("tt_mass_gen",           &tt_mass_gen,          "tt_mass_gen/F"              );
+    //babyTree_->Branch("ttRapidity_gen",            &ttRapidity_gen,          "ttRapidity_gen/F"            );
+    babyTree_->Branch("lep_charge_asymmetry_gen",  &lep_charge_asymmetry_gen, "lep_charge_asymmetry_gen_/F" );
+    babyTree_->Branch("lep_azimuthal_asymmetry_gen",    &lep_azimuthal_asymmetry_gen,  "lep_azimuthal_asymmetry_gen_/F"   );
+    babyTree_->Branch("lep_azimuthal_asymmetry2_gen",    &lep_azimuthal_asymmetry2_gen,  "lep_azimuthal_asymmetry2_gen_/F"   );
+    babyTree_->Branch("top_spin_correlation_gen",  &top_spin_correlation_gen, "top_spin_correlation_gen/F"  );
+    babyTree_->Branch("lep_cos_opening_angle_gen",  &lep_cos_opening_angle_gen, "lep_cos_opening_angle_gen/F"  );
+    babyTree_->Branch("top_costheta_cms_gen",      &top_costheta_cms_gen,    "top_costheta_cms_gen/F"      );
+    babyTree_->Branch("lepPlus_costheta_cms_gen",      &lepPlus_costheta_cms_gen, "lepPlus_costheta_cms_gen/F"      );
+    babyTree_->Branch("lepMinus_costheta_cms_gen",      &lepMinus_costheta_cms_gen, "lepMinus_costheta_cms_gen/F"      );
+}
+
+//----------------------------------
+// Fill the baby
+//----------------------------------
+void StopTreeLooper::FillBabyNtuple()
+{
+    babyTree_->Fill();
+}
+
+//--------------------------------
+// Close the baby
+//--------------------------------
+void StopTreeLooper::CloseBabyNtuple()
+{
+    babyFile_->cd();
+    babyTree_->Write();
+    babyFile_->Close();
+}
+
+

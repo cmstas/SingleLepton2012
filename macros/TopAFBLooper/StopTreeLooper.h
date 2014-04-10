@@ -11,9 +11,6 @@
 #include <iostream>
 #include "Math/LorentzVector.h"
 
-//#include "../CORE/topmass/ttdilepsolve.h" 
-//#include "../CORE/topmass/getTopMassEstimate.icc" 
- 
 #include <cmath>
 #include <map>
 
@@ -48,12 +45,24 @@ class StopTreeLooper {
 	void makeZPlots(  float evtweight, std::map<std::string, TH1F*> &h_1d, 
 			   string tag_selection, string flav_tag );
 
+	//ttbar solver
 	void solvettbar();
-
-	double get_pdf_prob( TLorentzVector &t1, TLorentzVector &t2 );
+	double get_pdf_weight( TLorentzVector &t1, TLorentzVector &t2 );
 	double get_dalitz_prob( TLorentzVector &lep, TLorentzVector &top );
 
+	//baby ntuples
+	void MakeBabyNtuple(const char *babyFilename);
+	void FillBabyNtuple();
+	void CloseBabyNtuple();
+
+	//selection
+	bool passFullSelection(bool isData);
+
+
     private:
+
+	TFile *babyFile_;
+	TTree *babyTree_;
 
 	string m_outfilename_;
 	// njets requirement
@@ -75,44 +84,47 @@ class StopTreeLooper {
 	vector<int> mc;
 	
 
+    Int_t   run;
+    Int_t   ls;
+    Int_t   evt;
+    double weight;
 
+	float lep_charge_asymmetry;
+	float lep_azimuthal_asymmetry;
+	float lep_azimuthal_asymmetry2;
+	float top_rapiditydiff_cms;
+	float top_pseudorapiditydiff_cms;
+	float top_rapiditydiff_Marco;
+	float top_costheta_cms;
+	float lepPlus_costheta_cms;
+	float lepMinus_costheta_cms;
+	float top_spin_correlation;
+	float lep_cos_opening_angle;
+	float tt_mass;
+	float ttRapidity2;
+	float tt_pT;
+	float top1_pt;
+	float top2_pt;
+	float top1_p_CM;
+	float top2_p_CM;
+	float top_rapiditydiffsigned_cms;
 
-	double lep_charge_asymmetry;
-	double lep_azimuthal_asymmetry;
-	double lep_azimuthal_asymmetry2;
-	double top_rapiditydiff_cms;
-	double top_pseudorapiditydiff_cms;
-	double top_rapiditydiff_Marco;
-	double top_costheta_cms;
-	double lepPlus_costheta_cms;
-	double lepMinus_costheta_cms;
-	double top_spin_correlation;
-	double lep_cos_opening_angle;
-	double tt_mass;
-	double ttRapidity2;
-	double tt_pT;
-	double top1_pt;
-	double top2_pt;
-	double top1_p_CM;
-	double top2_p_CM;
-	double top_rapiditydiffsigned_cms;
-
-	double lep_charge_asymmetry_gen;
-	double lep_azimuthal_asymmetry_gen;
-	double lep_azimuthal_asymmetry2_gen;
-	double top_rapiditydiff_cms_gen;
-	double top_pseudorapiditydiff_cms_gen;
-	double top_rapiditydiff_Marco_gen;
-	double top_costheta_cms_gen;
-	double lepPlus_costheta_cms_gen;
-	double lepMinus_costheta_cms_gen;
-	double top_spin_correlation_gen;
-	double lep_cos_opening_angle_gen;
-	double tt_mass_gen;
-	double ttRapidity2_gen;
-	double tt_pT_gen;
-	double top1_pt_gen;
-	double top2_pt_gen;
+	float lep_charge_asymmetry_gen;
+	float lep_azimuthal_asymmetry_gen;
+	float lep_azimuthal_asymmetry2_gen;
+	float top_rapiditydiff_cms_gen;
+	float top_pseudorapiditydiff_cms_gen;
+	float top_rapiditydiff_Marco_gen;
+	float top_costheta_cms_gen;
+	float lepPlus_costheta_cms_gen;
+	float lepMinus_costheta_cms_gen;
+	float top_spin_correlation_gen;
+	float lep_cos_opening_angle_gen;
+	float tt_mass_gen;
+	float ttRapidity2_gen;
+	float tt_pT_gen;
+	float top1_pt_gen;
+	float top2_pt_gen;
 
 
 
@@ -139,24 +151,17 @@ class StopTreeLooper {
     vector <TLorentzVector> top1_vecs;
     vector <TLorentzVector> top2_vecs;
     vector <double> AMWT_weights;
-    double m_top;
-    double m_top_B;
-    double closestDeltaMET_maxwcombo;
-    double closestDeltaMET_othercombo;
-    double closestDeltaMET_bestcombo;
-
-    double mb_solver;
-    double mW_solver;
-    double mt_solver;
+    float m_top;
+    float m_top_B;
+    float closestDeltaMET_maxwcombo;
+    float closestDeltaMET_othercombo;
+    float closestDeltaMET_bestcombo;
 
     int imaxweight;
     bool closestApproach;
 
 	float pfcalo_metratio;
 	float pfcalo_metdphi;
-
-	//ttdilepsolve *d_llsol;
-
 
 };
 

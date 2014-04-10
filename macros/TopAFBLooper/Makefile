@@ -1,6 +1,6 @@
 CC = g++
 ROOFITINCLUDE = $(shell scramv1 tool info roofitcore | grep INCLUDE | sed 's/^INCLUDE=/-I/')
-INCLUDE = -I../ -I./ $(ROOFITINCLUDE) -I/nfs-6/userdata/yanjuntu/LHAPDF/include
+INCLUDE = -I../ -I./ $(ROOFITINCLUDE) -I./LHAPDF/include
 CFLAGS = -Wall -g -fPIC $(shell root-config --cflags) $(INCLUDE) $(EXTRACFLAGS) -DTOOLSLIB
 LINKER = g++
 
