@@ -40,7 +40,7 @@ std::set<DorkyEventIdentifier> events_hcallasercalib;
 const double mb_solver = 4.8;
 const double mW_solver = 80.385;
 const double mt_solver = 172.5;
-bool makeCRplots = false;
+bool makeCRplots = false; //For CR studies. If true don't apply the selection until making plots.
 
 
 StopTreeLooper::StopTreeLooper()
@@ -229,6 +229,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             }
 
             nevt_check++;
+            nevt_nlep[stopt.ngoodlep()]++;
 
             run = stopt.run();
             ls = stopt.lumi();
@@ -356,8 +357,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             if ( !makeCRplots && !passFullSelection(isData) ) continue;
 
-            nevt_nlep[stopt.ngoodlep()]++;
-
             //----------------------------------------------------------------------------
             // ttbar solver
             //----------------------------------------------------------------------------
@@ -405,63 +404,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             closestApproach = false;
 
             solvettbar();
-
-
-            /*
-            TLorentzVector t1test1 = top1_p4;
-            TLorentzVector t2test1 = top2_p4;
-
-            nu1_vecs.clear();
-            nu2_vecs.clear();
-            top1_vecs.clear();
-            top2_vecs.clear();
-            AMWT_weights.clear();
-
-            //lepPlus.SetPtEtaPhiE(0,0,0,0);
-            //lepMinus.SetPtEtaPhiE(0,0,0,0);
-            //jet1.SetPtEtaPhiE(0,0,0,0);
-            //jet2.SetPtEtaPhiE(0,0,0,0);
-
-            if (stopt.id1() < 0)
-            {
-                lepPlus.SetPtEtaPhiE(stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.lep1().Phi(), stopt.lep1().E());
-                lepMinus.SetPtEtaPhiE(stopt.lep2().Pt(), stopt.lep2().Eta(), stopt.lep2().Phi(), stopt.lep2().E());
-            }
-            else
-            {
-                lepMinus.SetPtEtaPhiE(stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.lep1().Phi(), stopt.lep1().E());
-                lepPlus.SetPtEtaPhiE(stopt.lep2().Pt(), stopt.lep2().Eta(), stopt.lep2().Phi(), stopt.lep2().E());
-            }
-
-            jet1.SetPtEtaPhiE(bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
-            jet2.SetPtEtaPhiE(bcandidates.at(1).Pt(), bcandidates.at(1).Eta(), bcandidates.at(1).Phi(), bcandidates.at(1).E());
-
-            top1_p4.SetPtEtaPhiE(0, 0, 0, 0);
-            top2_p4.SetPtEtaPhiE(0, 0, 0, 0);
-            nusum.SetPtEtaPhiE(0, 0, 0, 0);
-            cms.SetPtEtaPhiE(0, 0, 0, 0);
-
-            m_top = -999;
-            m_top_B = -999;
-            closestDeltaMET_maxwcombo = -999;
-            closestDeltaMET_othercombo = -999;
-            closestDeltaMET_bestcombo = -999;
-            imaxweight = -1;
-            closestApproach = false;
-
-            solvettbar();
-
-            TLorentzVector t1test2 = top1_p4;
-            TLorentzVector t2test2 = top2_p4;
-
-            if( fabs(t1test1.E() - t2test2.E()) > 0.001  ||  fabs(t2test1.E() - t1test2.E()) > 0.001   ) {
-                printf("t1test1 %f %f %f %f \n", t1test1.Pt(), t1test1.Eta(), t1test1.Phi(), t1test1.E());
-                printf("t2test2 %f %f %f %f \n", t2test2.Pt(), t2test2.Eta(), t2test2.Phi(), t2test2.E());
-                printf("t1test2 %f %f %f %f \n", t1test2.Pt(), t1test2.Eta(), t1test2.Phi(), t1test2.E());
-                printf("t2test1 %f %f %f %f \n \n", t2test1.Pt(), t2test1.Eta(), t2test1.Phi(), t2test1.E());
-            }
-            */
-
 
             m_top = m_top_B;
 
@@ -713,24 +655,23 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                 weight = evtweight * trigweight_dl;
 
+                FillBabyNtuple();
+
                 makeNJPlots( weight, h_1d_nj, "", basic_flav_tag_dl);
-                if ( n_jets >= min_njets  )
+                makeSIGPlots( weight, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
+                makeSIGPlots( weight, h_1d_sig,  tag_btag  , "_all" );
+
+                if ( name.Contains("ttdl") )
                 {
-                    FillBabyNtuple();
-
-                    makeSIGPlots( weight, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
-                    makeSIGPlots( weight, h_1d_sig,  tag_btag  , "_all" );
-
-                    if ( name.Contains("ttdl") )
-                    {
-                        makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
-                        makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
-                        makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
-                        makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
-                    }
+                    makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                    makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
+                    makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                    makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                 }
+
             }
 
+            // Control regions (not yet fully implemented)
             /*
                   //
                   // CR1 - single lepton + b-veto
@@ -1687,6 +1628,9 @@ double StopTreeLooper::get_dalitz_prob( TLorentzVector &lep, TLorentzVector &top
 
 bool StopTreeLooper::passFullSelection(bool isData)
 {
+    //isolated track veto. Not used because it doesn't help signal/bkg because the main background has exactly 2 leptons, and because it's difficult for MC to model it well.
+    //if ( stopt.trkpt10loose() >0. && stopt.trkreliso10loose() < 0.1 ) return false;
+
     bool passFull = false;
     if ( passDileptonSelectionWithEndcapEls(isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
@@ -1695,8 +1639,6 @@ bool StopTreeLooper::passFullSelection(bool isData)
             && (stopt.lep1() + stopt.lep2()).M() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
-
-    //add isolated track veto?
 
     return passFull;
 }
