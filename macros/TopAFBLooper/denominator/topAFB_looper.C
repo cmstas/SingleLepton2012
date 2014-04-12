@@ -669,8 +669,8 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
 
                     lep_charge_asymmetry_gen = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
-                    lep_azimuthal_asymmetry_gen = cos(lepPlus_gen.DeltaPhi(lepMinus_gen));
-                    lep_azimuthal_asymmetry2_gen = acos(lep_azimuthal_asymmetry_gen);
+                    lep_azimuthal_asymmetry_gen = lepPlus_gen.DeltaPhi(lepMinus_gen);
+                    lep_azimuthal_asymmetry2_gen = acos(cos(lep_azimuthal_asymmetry_gen));
 
                     lepPlus_gen.Boost(-cms_gen.BoostVector());
                     lepPlus_gen.Boost(-topplus_genp_p4.BoostVector());
@@ -689,7 +689,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
                     fillHistos( httpT_gen, tt_pT_gen ,  weight, myType, jetBin, Nsolns);
                     fillHistos( hlepChargeAsym_gen, lep_charge_asymmetry_gen ,  weight, myType, jetBin, Nsolns);
                     fillHistos( hlepAzimAsym_gen, lep_azimuthal_asymmetry_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( hlepAzimAsym2_gen, acos(lep_azimuthal_asymmetry_gen) ,  weight, myType, jetBin, Nsolns);
+                    fillHistos( hlepAzimAsym2_gen, lep_azimuthal_asymmetry2_gen ,  weight, myType, jetBin, Nsolns);
                     if (m_top > 0 || applyNoCuts)
                     {
                         fillHistos( htopSpinCorr_gen, top_spin_correlation_gen  ,  weight, myType, jetBin, Nsolns);
@@ -710,7 +710,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
                         //2D unfolding requires ttbar solution even for the purely leptonic variables
                         fillHistos( hlepChargeAsym_gen2d, lep_charge_asymmetry_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( hlepAzimAsym_gen2d, lep_azimuthal_asymmetry_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym2_gen2d, acos(lep_azimuthal_asymmetry_gen) ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
+                        fillHistos( hlepAzimAsym2_gen2d, lep_azimuthal_asymmetry2_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( htopSpinCorr_gen2d, top_spin_correlation_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( hlepCosOpeningAngle_gen2d, lep_cos_opening_angle_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( htopCosTheta_gen2d, top_costheta_cms_gen   ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
@@ -724,7 +724,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                         fillHistos( hlepChargeAsym_ttpT_gen2d, lep_charge_asymmetry_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( hlepAzimAsym_ttpT_gen2d, lep_azimuthal_asymmetry_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym2_ttpT_gen2d, acos(lep_azimuthal_asymmetry_gen) ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
+                        fillHistos( hlepAzimAsym2_ttpT_gen2d, lep_azimuthal_asymmetry2_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( htopSpinCorr_ttpT_gen2d, top_spin_correlation_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( hlepCosOpeningAngle_ttpT_gen2d, lep_cos_opening_angle_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
                         fillHistos( htopCosTheta_ttpT_gen2d, top_costheta_cms_gen   ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
@@ -738,7 +738,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                         fillHistos( hlepChargeAsym_ttRapidity2_gen2d, lep_charge_asymmetry_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
                         fillHistos( hlepAzimAsym_ttRapidity2_gen2d, lep_azimuthal_asymmetry_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym2_ttRapidity2_gen2d, acos(lep_azimuthal_asymmetry_gen) ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
+                        fillHistos( hlepAzimAsym2_ttRapidity2_gen2d, lep_azimuthal_asymmetry2_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
                         fillHistos( htopSpinCorr_ttRapidity2_gen2d, top_spin_correlation_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
                         fillHistos( hlepCosOpeningAngle_ttRapidity2_gen2d, lep_cos_opening_angle_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
                         fillHistos( htopCosTheta_ttRapidity2_gen2d, top_costheta_cms_gen   ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
