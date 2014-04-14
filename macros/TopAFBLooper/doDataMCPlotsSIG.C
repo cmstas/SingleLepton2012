@@ -299,7 +299,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 12;
+    const int N1DHISTS = 29;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -319,7 +319,29 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "m_top",
         "tt_mass",
         "tt_pT",
-        "ttRapidity2"
+        "ttRapidity2",
+
+        "n_jets",
+        "n_bjets",
+        "metphi",
+        "lepPlus_Pt",
+        "lepMinus_Pt",
+        "lepPt",
+        //"lepPt_ele",
+        //"lepPt_muo",
+        "b0_Pt",
+        "b1_Pt",
+        "nonb_Pt",
+        "lepPlus_Eta",
+        "lepMinus_Eta",
+        "lepEta",
+        //"lepEta_ele",
+        //"lepEta_muo",
+        "b0_Eta",
+        "b1_Eta",
+        "nonb_Eta",
+        "pfcaloMET",
+        "pfcalodPhi"
     };
 
     // Histogram names
@@ -336,7 +358,29 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_m_top",
         "h_sig_tt_mass",
         "h_sig_tt_pT",
-        "h_sig_ttRapidity2"
+        "h_sig_ttRapidity2",
+
+        "h_sig_n_jets",
+        "h_sig_n_bjets",
+        "h_sig_metphi",
+        "h_sig_lepPlus_Pt",
+        "h_sig_lepMinus_Pt",
+        "h_sig_lepPt",
+        //"h_sig_lepPt_ele",
+        //"h_sig_lepPt_muo",
+        "h_sig_b0_Pt",
+        "h_sig_b1_Pt",
+        "h_sig_nonb_Pt",
+        "h_sig_lepPlus_Eta",
+        "h_sig_lepMinus_Eta",
+        "h_sig_lepEta",
+        //"h_sig_lepEta_ele",
+        //"h_sig_lepEta_muo",
+        "h_sig_b0_Eta",
+        "h_sig_b1_Eta",
+        "h_sig_nonb_Eta",
+        "h_sig_pfcaloMET",
+        "h_sig_pfcalodPhi"
     };
 
     // List of Log scale plots:
@@ -355,7 +399,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //logScale.push_back(56);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -370,7 +414,29 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "M_{t}",
         "M_{t#bar{t}}",
         "p_{T}^{t#bar{t}}",
-        "y_{t#bar{t}}"
+        "y_{t#bar{t}}",
+
+        "n_jets",
+        "n_bjets",
+        "metphi",
+        "lepPlus_Pt",
+        "lepMinus_Pt",
+        "lepPt",
+        //"lepPt_ele",
+        //"lepPt_muo",
+        "b0_Pt",
+        "b1_Pt",
+        "nonb_Pt",
+        "lepPlus_Eta",
+        "lepMinus_Eta",
+        "lepEta",
+        //"lepEta_ele",
+        //"lepEta_muo",
+        "b0_Eta",
+        "b1_Eta",
+        "nonb_Eta",
+        "pfcaloMET",
+        "pfcalodPhi"
     };
 
     const char *ytitle1d[N1DHISTS] =
@@ -386,6 +452,28 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "GeV",
         "GeV",
         "GeV",
+        "",
+
+        //"",
+        //"",
+        //"",
+        //"",
+        //"",
+        //"",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         ""
     };
 
@@ -1175,73 +1263,19 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     }
     //}  NSAMPLE loop
 
-    /*
-        cout << "-------------------------------------------------" << endl;
-        cout << "*************************************************" << endl;
-        cout << "-------------------------------------------------" << endl;
-        cout << "PRINT SUMMARY YIELDS TABLE" << endl;
-
-        for (int leptype = 0; leptype < nCh; ++leptype)
-        {
-            cout << "\\hline" << endl;
-            cout << "\\hline" << endl;
-            printf("%s pre-veto \\mt-SF \t ", leptag[leptype]);
-            for (int isr = 0; isr < NSAMPLE; ++isr)
-            {
-                printf(" & $%.2f \\pm %.2f$", mtsf_pv[isr][leptype], emtsf_pv[isr][leptype]);
-            }
-            printf(" \\\\\n");
-        }
-        cout << "\\hline" << endl;
-        cout << "\\hline" << endl;
-        for (int leptype = 0; leptype < nCh; ++leptype)
-        {
-            printf("%s post-veto \\mt-SF \t ", leptag[leptype]);
-            for (int isr = 0; isr < NSAMPLE; ++isr)
-            {
-                printf(" & $%.2f \\pm %.2f$", mtsf[isr][leptype], emtsf[isr][leptype]);
-            }
-            printf(" \\\\\n");
-        }
-        cout << "\\hline" << endl;
-        printf("Comb. post-veto \\mt-SF \t ");
-        for (int isr = 0; isr < NSAMPLE; ++isr)
-        {
-            printf(" & $%.2f \\pm %.2f$", mtsf_comb[isr], emtsf_comb[isr]);
-        }
-        printf(" \\\\\n");
-        cout << "\\hline" << endl;
-        cout << "\\hline" << endl;
-
-        cout << "-------------------------------------------------" << endl;
-        cout << "*************************************************" << endl;
-        cout << "-------------------------------------------------" << endl;
-        for (int leptype = 0; leptype < nCh; ++leptype)
-        {
-            cout << "\\hline" << endl;
-            cout << "\\hline" << endl;
-            printf("%s MC \t\t ", leptag[leptype]);
-            for (int isr = 0; isr < NSAMPLE; ++isr)
-            {
-                printf(" & $%.0f \\pm %.0f$", mc_mtctail[isr][leptype], emc_mtctail[isr][leptype]);
-            }
-            printf(" \\\\\n");
-            printf("%s Data \t\t ", leptag[leptype]);
-            for (int isr = 0; isr < NSAMPLE; ++isr)
-            {
-                printf(" & $%.0f$", dt_mtctail[isr][leptype]);
-            }
-            printf(" \\\\\n");
-            cout << "\\hline" << endl;
-            printf("%s Data/MC SF \t ", leptag[leptype]);
-            for (int isr = 0; isr < NSAMPLE; ++isr)
-            {
-                printf(" & $%.2f \\pm %.2f$", sf_dtmc_mtctail[isr][leptype], esf_dtmc_mtctail[isr][leptype]);
-            }
-            printf(" \\\\\n");
-        }
-    */
-
+    cout << "-------------------------------------------------" << endl;
+    cout << "**********************YIELDS*********************" << endl;
+    cout << "-------------------------------------------------" << endl;
+    //printf("%s MC \t\t \n", leptag[leptype]);
+    for (int j = 0; j < MCID; ++j)
+    {
+        printf(" %s : %.0f \n", mcsample[j], h_mc1d_comb[0][j]->Integral());
+    }
+    printf(" Total_MC : %.0f \n", h_mc1d_tot_comb[0]->Integral());
+    printf(" Data : %.0f \n", h_dt1d_comb[0]->Integral());
+    cout << "-------------------------------------------------" << endl;
+    cout << "*************************************************" << endl;
+    cout << "-------------------------------------------------" << endl;
 
     //#endif
 }

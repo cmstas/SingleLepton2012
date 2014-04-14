@@ -163,11 +163,11 @@ void doPrintYields(char* ttbar_tag = "") {
   dt_dl[1] = TFile::Open("NJoutput/data_dimu_histos.root");
   dt_dl[2] = TFile::Open("NJoutput/data_diel_histos.root");
   
-  TH1F *h_dt_dl = (TH1F*)dt_dl[0]->Get("h_njets_met100_mueg");
+  TH1F *h_dt_dl = (TH1F*)dt_dl[0]->Get("h_njets_mueg");
   h_dt_dl->SetName("h_dt_dl");
-  TH1F *h_dt_dl_tmp = (TH1F*)dt_dl[1]->Get("h_njets_met100_dimu");
+  TH1F *h_dt_dl_tmp = (TH1F*)dt_dl[1]->Get("h_njets_dimu");
   h_dt_dl->Add(h_dt_dl_tmp);
-  h_dt_dl_tmp = (TH1F*)dt_dl[2]->Get("h_njets_met100_diel");
+  h_dt_dl_tmp = (TH1F*)dt_dl[2]->Get("h_njets_diel");
   h_dt_dl->Add(h_dt_dl_tmp);
 
   // Load histograms
@@ -184,7 +184,7 @@ void doPrintYields(char* ttbar_tag = "") {
     else 
       mc_dl[j] = TFile::Open(Form("NJoutput/%s_histos.root",
 				  mcsampledl[j]));
-    h_mc_dl[j] = (TH1F*)mc_dl[j]->Get("h_njets_met100");
+    h_mc_dl[j] = (TH1F*)mc_dl[j]->Get("h_njets");
     h_mc_dl[j]->SetName(Form("h_mc_dl_%s", mcsampledl[j]));
     //do not include dilepton in background
     if (j==TTDL) {
