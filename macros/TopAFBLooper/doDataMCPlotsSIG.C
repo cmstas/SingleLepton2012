@@ -299,11 +299,13 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 29;
+    const int N1DHISTS = 33;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
     TH1F *h_mc1d_tot_comb[N1DHISTS];
+    bool hasplot[nCh][N1DHISTS] = {{0}};
+    bool hasplotall[N1DHISTS] = {0};
 
     // Output file names
     const char *file1dname[N1DHISTS] =
@@ -327,16 +329,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
-        //"lepPt_ele",
-        //"lepPt_muo",
+        "lepPt_ele",
+        "lepPt_muo",
         "b0_Pt",
         "b1_Pt",
         "nonb_Pt",
         "lepPlus_Eta",
         "lepMinus_Eta",
         "lepEta",
-        //"lepEta_ele",
-        //"lepEta_muo",
+        "lepEta_ele",
+        "lepEta_muo",
         "b0_Eta",
         "b1_Eta",
         "nonb_Eta",
@@ -366,16 +368,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_lepPlus_Pt",
         "h_sig_lepMinus_Pt",
         "h_sig_lepPt",
-        //"h_sig_lepPt_ele",
-        //"h_sig_lepPt_muo",
+        "h_sig_lepPt_ele",
+        "h_sig_lepPt_muo",
         "h_sig_b0_Pt",
         "h_sig_b1_Pt",
         "h_sig_nonb_Pt",
         "h_sig_lepPlus_Eta",
         "h_sig_lepMinus_Eta",
         "h_sig_lepEta",
-        //"h_sig_lepEta_ele",
-        //"h_sig_lepEta_muo",
+        "h_sig_lepEta_ele",
+        "h_sig_lepEta_muo",
         "h_sig_b0_Eta",
         "h_sig_b1_Eta",
         "h_sig_nonb_Eta",
@@ -399,7 +401,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //logScale.push_back(56);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -422,16 +424,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
-        //"lepPt_ele",
-        //"lepPt_muo",
+        "lepPt_ele",
+        "lepPt_muo",
         "b0_Pt",
         "b1_Pt",
         "nonb_Pt",
         "lepPlus_Eta",
         "lepMinus_Eta",
         "lepEta",
-        //"lepEta_ele",
-        //"lepEta_muo",
+        "lepEta_ele",
+        "lepEta_muo",
         "b0_Eta",
         "b1_Eta",
         "nonb_Eta",
@@ -454,12 +456,12 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "GeV",
         "",
 
-        //"",
-        //"",
-        //"",
-        //"",
-        //"",
-        //"",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
@@ -572,12 +574,23 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
             cout << "DT: " << h_dt1d[i] << " " << Form("%s%s", hist1dname[i], leptag[leptype]) << endl;
 
+            bool combplotcreated = hasplotall[i];
+
+            if (h_dt1d[i] != 0)
+            {
+                hasplot[leptype][i] = true;
+                hasplotall[i] = true;
+            }
+            else continue;
+
+            //cout << "gtl: " << __LINE__ << endl;
+
             h_dt1d[i]->SetName(Form("%s", hist1dname[i]));
 
             h_dt1d[i]->Rebin(rebinFactor[i]);
 
             //e+mu combined data
-            if (leptype == 0)
+            if ( combplotcreated == false )
             {
                 h_dt1d_comb[i] = (TH1F *)h_dt1d[i]->Clone();
                 h_dt1d_comb[i]->SetName(Form("%s_comb", hist1dname[i]));
@@ -610,7 +623,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
 
                 //combined MC histograms
-                if (leptype == 0)
+                if (combplotcreated == false)
                 {
                     h_mc1d_comb[i][j] = (TH1F *)h_mc1d[i][j]->Clone();
                     h_mc1d_comb[i][j]->SetName(Form("%s_%s_comb", mcsample[j], hist1dname[i]));
@@ -619,7 +632,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                     h_mc1d_comb[i][j]->Add(h_mc1d[i][j]);
 
                 //get total
-                if (!doinit && leptype == 0)
+                if (!doinit && combplotcreated == false)
                 {
                     h_mc1d_tot_comb[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_comb_%s", hist1dname[i]));
                     h_mc1d_tot_comb[i]->SetName(Form("mctot_comb_%s", hist1dname[i]));
@@ -641,6 +654,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         //after applying all the scalings, fill vector for sorting
         for (int i = 0; i < N1DHISTS; ++i)
         {
+            if (!hasplot[leptype][i]) continue;
+
             cout << "-------------------------------------------------" << endl;
             float mcall = h_mc1d_tot[i]->Integral();
             float dtall = h_dt1d[i]->Integral();
@@ -749,6 +764,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         cout << "Styling 1D" << endl;
         for (int i = 0; i < N1DHISTS; ++i)
         {
+            if (!hasplot[leptype][i]) continue;
+
             h_dt1d[i]->SetLineColor(kBlack);
             h_dt1d[i]->SetMarkerColor(kBlack);
             h_dt1d[i]->SetFillColor(0);
@@ -770,6 +787,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         cout << "Setting Titles" << endl;
         for (int i = 0; i < N1DHISTS; ++i)
         {
+            if (!hasplot[leptype][i]) continue;
 
             h_dt1d[i]->GetXaxis()->SetTitle(Form("%s",
                                                  xtitle1d[i]));
@@ -825,6 +843,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
         for (int i = 0; i < N1DHISTS; ++i)
         {
+            if (!hasplot[leptype][i]) continue;
+
             s_mc1d[i] = new THStack(hist1dname[i], hist1dname[i]);
             s_mc1d[i]->SetName(Form("stack_%s", hist1dname[i]));
 
@@ -858,6 +878,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         // Will make them in same position, put "if(i==..)" to change them
         for (int i = 0; i < N1DHISTS; ++i)
         {
+            if (!hasplot[leptype][i]) continue;
+
             leg1d[i] = new TLegend(0.57, 0.60, 0.93, 0.931);//0.56,0.64,0.92,0.915);
             //  leg1d[i] = new TLegend(0.712, 0.541, 0.928, 0.931);//0.56,0.64,0.92,0.915);
             //    leg1d[i] = new TLegend(0.731544, 0.55507, 0.947987, 0.946241);//0.56,0.64,0.92,0.915);
@@ -882,6 +904,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
         for (int i = 0; i < N1DHISTS; ++i)
         {
+            if (!hasplot[leptype][i]) continue;
 
             canv1d[i] = new TCanvas(Form("c_%s", file1dname[i]),
                                     Form("c_%s", file1dname[i]),
@@ -1060,6 +1083,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     cout << "Styling 1D" << endl;
     for (int i = 0; i < N1DHISTS; ++i)
     {
+        if (!hasplotall[i]) continue;
+
         h_dt1d_comb[i]->SetLineColor(kBlack);
         h_dt1d_comb[i]->SetMarkerColor(kBlack);
         h_dt1d_comb[i]->SetFillColor(0);
@@ -1080,6 +1105,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     cout << "Setting Titles" << endl;
     for (int i = 0; i < N1DHISTS; ++i)
     {
+        if (!hasplotall[i]) continue;
+
         h_dt1d_comb[i]->GetXaxis()->SetTitle(Form("%s",
                                              xtitle1d[i]));
         h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / %3.0f %s",
@@ -1095,6 +1122,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
     for (int i = 0; i < N1DHISTS; ++i)
     {
+        if (!hasplotall[i]) continue;
+
         s_mc1d_comb[i] = new THStack(hist1dname[i], hist1dname[i]);
         s_mc1d_comb[i]->SetName(Form("stack_%s", hist1dname[i]));
 
@@ -1139,6 +1168,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     // Will make them in same position, put "if(i==..)" to change them
     for (int i = 0; i < N1DHISTS; ++i)
     {
+        if (!hasplotall[i]) continue;
+
         leg1d_comb[i] = new TLegend(0.57, 0.60, 0.93, 0.931);
         leg1d_comb[i]->SetName(Form("leg_%s", h_dt1d_comb[i]->GetName()));
         leg1d_comb[i]->SetFillColor(0);
@@ -1159,6 +1190,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
     for (int i = 0; i < N1DHISTS; ++i)
     {
+        if (!hasplotall[i]) continue;
 
         canv1d_comb[i] = new TCanvas(Form("c_%s", file1dname[i]),
                                      Form("c_%s", file1dname[i]),
