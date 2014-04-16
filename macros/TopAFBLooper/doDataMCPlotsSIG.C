@@ -605,10 +605,14 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 h_mc1d[i][j] =
                     (TH1F *)mc_dl[j]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
 
+                //cout << "MC" << j << " " << mcsample[j] << ": " << h_mc1d[i][j] << " "
+                //     << Form("%s", hist1dname[i]) << endl;
+
                 if (h_mc1d[i][j] == 0)
                 {
                     h_mc1d[i][j] =
-                        (TH1F *)mc_dl[0]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[0]));
+                        //(TH1F *)mc_dl[0]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
+                        (TH1F *)dt_dl[leptype]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
                     h_mc1d[i][j]->SetName(Form("%s_%s", mcsample[j], hist1dname[i]));
                     zeroHist(h_mc1d[i][j]);
                 }
