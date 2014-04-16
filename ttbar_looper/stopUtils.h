@@ -176,5 +176,6 @@ void fillHistos(TH2F *h2[4][4],float xvalue, float yvalue, float weight, int myT
 void fillHistos(TProfile *h2[4][4],float xvalue, float yvalue,  int myType, int nJetsIdx);
 float getdltrigweight(int id1, int id2);
 float getsltrigweight(int id1, float pt, float eta);
+int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau);
 
 #endif

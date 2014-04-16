@@ -1429,8 +1429,11 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	}
 
 	//splitting ttbar into ttdil/ttotr
-	//nleps = leptonGenpCount_lepTauDecays(nels, nmus, ntaus);
-	nleps = leptonGenpCount(nels, nmus, ntaus);
+	nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
+  //nleps = leptonGenpCount_lepTauDecays(nels, nmus, ntaus);
+	//nleps = leptonGenpCount(nels, nmus, ntaus);
+  //if(nleps != 2 ) continue;
+  //cout<<prefix<<" "<<nels<<" "<<nmus<<" "<<ntaus<<endl;
 	
 	nels_  = nels;
 	nmus_  = nmus;
@@ -1669,7 +1672,17 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	    int id = genps_id().at(igen);
 
-	    if( !( abs(id)==11 || abs(id)==13 || abs(id)==15 ) ) continue;
+      bool taulepdaughter = false;
+
+      if ( abs(id)==15 ) {
+          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[igen].size(); kk++)
+          {
+              int daughter = abs(cms2.genps_lepdaughter_id()[igen][kk]);
+              if ( daughter == 12 || daughter == 14) taulepdaughter = true;
+          }
+      }
+
+      if( !( abs(id)==11 || abs(id)==13 || taulepdaughter ) ) continue;
 
 	    nfoundleps++;
 	    mcid1_   = id;
@@ -1730,7 +1743,17 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	    int id = genps_id().at(igen);
 
-	    if( !( abs(id)==11 || abs(id)==13 || abs(id)==15 ) ) continue;
+      bool taulepdaughter = false;
+
+      if ( abs(id)==15 ) {
+          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[igen].size(); kk++)
+          {
+              int daughter = abs(cms2.genps_lepdaughter_id()[igen][kk]);
+              if ( daughter == 12 || daughter == 14) taulepdaughter = true;
+          }
+      }
+
+      if( !( abs(id)==11 || abs(id)==13 || taulepdaughter ) ) continue;
 
 	    nfoundleps++;
 
@@ -1794,7 +1817,17 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	    int id = genps_id().at(igen);
 
-	    if( !( abs(id)==11 || abs(id)==13 || abs(id)==15 ) ) continue;
+      bool taulepdaughter = false;
+
+      if ( abs(id)==15 ) {
+          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[igen].size(); kk++)
+          {
+              int daughter = abs(cms2.genps_lepdaughter_id()[igen][kk]);
+              if ( daughter == 12 || daughter == 14) taulepdaughter = true;
+          }
+      }
+
+      if( !( abs(id)==11 || abs(id)==13 || taulepdaughter ) ) continue;
 
 	    igenmin2 = igen;
 
@@ -4756,4 +4789,34 @@ float getsltrigweight(int id1, float pt, float eta)
 
   return 1.;
 
+}
+
+
+int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau){
+    nele = 0;
+    nmuon = 0;
+    ntau = 0;
+    int size = cms2.genps_id().size();
+    for (int jj = 0; jj < size; jj++)
+    {
+        if ( cms2.genps_status().at(jj)!=3 ) continue;
+        if (abs(cms2.genps_id().at(jj)) == 11) nele++;
+        if (abs(cms2.genps_id().at(jj)) == 13) nmuon++;
+        if (abs(cms2.genps_id().at(jj)) == 15)
+        {
+            for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[jj].size(); kk++)
+            {
+                int daughter = abs(cms2.genps_lepdaughter_id()[jj][kk]);
+                //we count neutrino's because that guarantees that
+                //there is a corresponding lepton and that it comes from
+                // a leptonic tau decay. You can get electrons from converted photons
+                //which are radiated by charged pions from the tau decay but thats
+                //hadronic and we don't care for those
+                if ( daughter == 12 || daughter == 14)
+                    ntau++;
+            }//daughter loop
+        }//if tau
+    }//genps loop
+
+    return nele + nmuon + ntau;
 }
