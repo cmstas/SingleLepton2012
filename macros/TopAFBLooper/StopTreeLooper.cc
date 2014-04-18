@@ -40,6 +40,8 @@ std::set<DorkyEventIdentifier> events_hcallasercalib;
 const double mb_solver = 4.8;
 const double mW_solver = 80.385;
 const double mt_solver = 172.5;
+
+const double mlb_max = sqrt(mt_solver * mt_solver - mW_solver * mW_solver);
 bool makeCRplots = false; //For CR studies. If true don't apply the selection until making plots.
 
 
@@ -54,6 +56,7 @@ StopTreeLooper::StopTreeLooper()
     n_ljets = -9999;
     pfcalo_metratio = -9999.;
     pfcalo_metdphi  = -9999.;
+    pfcalo_deltamet  = -9999.;
 }
 
 StopTreeLooper::~StopTreeLooper()
@@ -152,8 +155,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     bool isData = name.Contains("data") ? true : false;
 
     //Define jet multiplicity requirement
-    min_njets = 2;
-    printf("[StopTreeLooper::loop] N JET min. requirement for signal %i \n", min_njets);
+    //min_njets = 2;
+    //printf("[StopTreeLooper::loop] N JET min. requirement for signal %i \n", min_njets);
 
     cout << "[StopTreeLooper::loop] running over chain with total entries " << nEvents << endl;
 
@@ -257,7 +260,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             // rho 0-40 GeV, MET filters, >=1 good lepton, veto 2 leptons dR < 0.1
             //----------------------------------------------------------------------------
 
-            if ( !passEvtSelection(name) ) continue;
+            //if ( !passEvtSelection(name) ) continue; //cut on pfcalo_metdphi is enabled by default (i.e. second argument = true), which does not make sense for events with MET~0 like we can have in the emu channel.
+            if ( !passEvtSelection(name, false) ) continue;
 
             //----------------------------------------------------------------------------
             // Function to perform MET phi corrections on-the-fly
@@ -269,8 +273,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             t1metphicorr    = p_t1metphicorr.first;
             t1metphicorrphi = p_t1metphicorr.second;
 
-            pfcalo_metratio = t1metphicorr / stopt.calomet();
+            //cout<<t1metphicorrphi - stopt.t1metphicorrphi()<<endl;
+
+            //pfcalo_metratio = t1metphicorr / stopt.calomet();
             pfcalo_metdphi  = getdphi(t1metphicorrphi, stopt.calometphi());
+            pfcalo_deltamet = sqrt( pow( t1metphicorr * sin(t1metphicorrphi) - stopt.calomet() * sin(stopt.calometphi()) , 2 ) + pow( t1metphicorr * cos(t1metphicorrphi) - stopt.calomet() * cos(stopt.calometphi()) , 2 ) );
+            pfcalo_metratio = pfcalo_deltamet / t1metphicorr;
 
 
             //----------------------------------------------------------------------------
@@ -351,14 +359,27 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 bcandidates.push_back( nonbjets.at(1) );
             }
 
+
             //----------------------------------------------------------------------------
-            // Require event to pass full selection already unless we want to make control region plots.
+            // Require event to pass full selection prior to ttbar solver unless we want to make control region plots.
             //----------------------------------------------------------------------------
 
             if ( !makeCRplots && !passFullSelection(isData) ) continue;
 
+            //mlb variables sensitive to top mass without needing solver
+            mlb_1 = (stopt.lep1() + bcandidates.at(0)).M();
+            mlb_2 = (stopt.lep2() + bcandidates.at(1)).M();
+            mlb_3 = (stopt.lep1() + bcandidates.at(1)).M();
+            mlb_4 = (stopt.lep2() + bcandidates.at(0)).M();
+            mlb_min = std::min( std::min(mlb_1, mlb_2), std::min(mlb_3, mlb_4) );
+
+            //events with mlb_min beyond the kinematic edge cannot be solved and have lower signal:background ratio. Could also cut on second-lowest mlb, but this would remove some events where we got one of the bs wrong that are still OK for the purely leptonic variables.
+            if ( mlb_min > mlb_max ) continue;
+            //if ( mlb_min > 160. ) continue;
+
+
             //----------------------------------------------------------------------------
-            // ttbar solver
+            // set up variables used by ttbar solver
             //----------------------------------------------------------------------------
 
             nu1_vecs.clear();
@@ -402,6 +423,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             closestDeltaMET_bestcombo = -999;
             imaxweight = -1;
             closestApproach = false;
+
+            //----------------------------------------------------------------------------
+            // ttbar solver
+            //----------------------------------------------------------------------------
 
             solvettbar();
 
@@ -901,6 +926,8 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *
         plot1DUnderOverFlow("h_sig_top_costheta_cms" + tag_selection + flav_tag, top_costheta_cms , evtweight, h_1d, nbins, -1, 1);
         plot1DUnderOverFlow("h_sig_lepPlus_costheta_cms" + tag_selection + flav_tag, lepPlus_costheta_cms , evtweight, h_1d, nbins, -1, 1);
         plot1DUnderOverFlow("h_sig_lepMinus_costheta_cms" + tag_selection + flav_tag, lepMinus_costheta_cms , evtweight, h_1d, nbins, -1, 1);
+        plot1DUnderOverFlow("h_sig_lep_costheta_cms" + tag_selection + flav_tag, lepPlus_costheta_cms , evtweight, h_1d, nbins, -1, 1);
+        plot1DUnderOverFlow("h_sig_lep_costheta_cms" + tag_selection + flav_tag, lepMinus_costheta_cms , evtweight, h_1d, nbins, -1, 1);
         plot1DUnderOverFlow("h_sig_top_spin_correlation" + tag_selection + flav_tag, top_spin_correlation , evtweight, h_1d, nbins, -1, 1);
         plot1DUnderOverFlow("h_sig_lep_cos_opening_angle" + tag_selection + flav_tag, lep_cos_opening_angle , evtweight, h_1d, nbins, -1, 1);
         plot1DUnderOverFlow("h_sig_tt_mass" + tag_selection + flav_tag, tt_mass , evtweight, h_1d, nbins, 0, 1600);
@@ -911,14 +938,19 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *
         plot1DUnderOverFlow("h_sig_top1_p_CM" + tag_selection + flav_tag, top1_p_CM , evtweight, h_1d, nbins, 0, 800);
         plot1DUnderOverFlow("h_sig_top2_p_CM" + tag_selection + flav_tag, top2_p_CM , evtweight, h_1d, nbins, 0, 800);
         plot1DUnderOverFlow("h_sig_top_rapiditydiffsigned_cms" + tag_selection + flav_tag, top_rapiditydiffsigned_cms , evtweight, h_1d, nbins, -4, 4);
-
-        plot1DUnderOverFlow("h_sig_maxAMWTweight_cms" + tag_selection + flav_tag, AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
+        plot1DUnderOverFlow("h_sig_maxAMWTweight" + tag_selection + flav_tag, AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
         for (int i = 0; i < int(AMWT_weights.size()); ++i)
         {
-            if (i != imaxweight) plot1DUnderOverFlow("h_sig_otherAMWTweights_cms" + tag_selection + flav_tag, AMWT_weights.at(i) , evtweight, h_1d, nbins, 0, 1);
-            if (i != imaxweight) plot1DUnderOverFlow("h_sig_otherAMWTweightsratio_cms" + tag_selection + flav_tag, AMWT_weights.at(i) / AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
+            if (i != imaxweight) plot1DUnderOverFlow("h_sig_otherAMWTweights" + tag_selection + flav_tag, AMWT_weights.at(i) , evtweight, h_1d, nbins, 0, 1);
+            if (i != imaxweight) plot1DUnderOverFlow("h_sig_otherAMWTweightsratio" + tag_selection + flav_tag, AMWT_weights.at(i) / AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
         }
-
+        if (closestApproach)
+        {
+            plot1DUnderOverFlow("h_sig_closestDeltaMET_bestcombo" + tag_selection + flav_tag, closestDeltaMET_bestcombo , evtweight, h_1d, nbins, 0, 200);
+            plot1DUnderOverFlow("h_sig_closestDeltaMET_maxwcombo" + tag_selection + flav_tag, closestDeltaMET_maxwcombo , evtweight, h_1d, nbins, 0, 200);
+            if (closestDeltaMET_othercombo > 0) plot1DUnderOverFlow("h_sig_closestDeltaMET_othercombo" + tag_selection + flav_tag, closestDeltaMET_othercombo , evtweight, h_1d, nbins, 0, 200);
+            plot1DUnderOverFlow("h_sig_maxAMWTweight_closestApproach" + tag_selection + flav_tag, AMWT_weights.at(imaxweight) , evtweight, h_1d, nbins, 0, 1);
+        }
     }
 
     plot1DUnderOverFlow("h_sig_n_jets" + tag_selection + flav_tag, n_jets, evtweight, h_1d, 8 , 0, 8);
@@ -927,33 +959,87 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *
     plot1DUnderOverFlow("h_sig_met" + tag_selection + flav_tag, t1metphicorr, evtweight, h_1d, nbins , 0, 500);
     plot1DUnderOverFlow("h_sig_metphi" + tag_selection + flav_tag, t1metphicorrphi, evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
 
-    plot1DUnderOverFlow("h_sig_lepPlus_Pt" + tag_selection + flav_tag, stopt.lepp().Pt(), evtweight, h_1d, nbins , 0, 500); 
-    plot1DUnderOverFlow("h_sig_lepMinus_Pt" + tag_selection + flav_tag, stopt.lepm().Pt(), evtweight, h_1d, nbins , 0, 500); 
-    plot1DUnderOverFlow("h_sig_lepPt" + tag_selection + flav_tag, stopt.lepp().Pt(), evtweight, h_1d, nbins , 0, 500); 
+    //pT
+    plot1DUnderOverFlow("h_sig_lepPlus_Pt" + tag_selection + flav_tag, stopt.lepp().Pt(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_lepMinus_Pt" + tag_selection + flav_tag, stopt.lepm().Pt(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_lepPt" + tag_selection + flav_tag, stopt.lepp().Pt(), evtweight, h_1d, nbins , 0, 500);
     plot1DUnderOverFlow("h_sig_lepPt" + tag_selection + flav_tag, stopt.lepm().Pt(), evtweight, h_1d, nbins , 0, 500);
-    if( abs(stopt.id1()) == 11 ) plot1DUnderOverFlow("h_sig_lepPt_ele" + tag_selection + flav_tag, stopt.lep1().Pt(), evtweight, h_1d, nbins , 0, 500); 
-    if( abs(stopt.id2()) == 11 ) plot1DUnderOverFlow("h_sig_lepPt_ele" + tag_selection + flav_tag, stopt.lep2().Pt(), evtweight, h_1d, nbins , 0, 500); 
-    if( abs(stopt.id1()) == 13 ) plot1DUnderOverFlow("h_sig_lepPt_muo" + tag_selection + flav_tag, stopt.lep1().Pt(), evtweight, h_1d, nbins , 0, 500); 
-    if( abs(stopt.id2()) == 13 ) plot1DUnderOverFlow("h_sig_lepPt_muo" + tag_selection + flav_tag, stopt.lep2().Pt(), evtweight, h_1d, nbins , 0, 500); 
-    plot1DUnderOverFlow("h_sig_b0_Pt" + tag_selection + flav_tag, bjets.at(0).Pt(), evtweight, h_1d, nbins , 0, 500); 
-    if(n_bjets > 1) plot1DUnderOverFlow("h_sig_b1_Pt" + tag_selection + flav_tag, bjets.at(1).Pt(), evtweight, h_1d, nbins , 0, 500); 
-    else plot1DUnderOverFlow("h_sig_nonb_Pt" + tag_selection + flav_tag, nonbjets.at(0).Pt(), evtweight, h_1d, nbins , 0, 500); 
+    if ( abs(stopt.id1()) == 11 ) plot1DUnderOverFlow("h_sig_lepPt_ele" + tag_selection + flav_tag, stopt.lep1().Pt(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id2()) == 11 ) plot1DUnderOverFlow("h_sig_lepPt_ele" + tag_selection + flav_tag, stopt.lep2().Pt(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id1()) == 13 ) plot1DUnderOverFlow("h_sig_lepPt_muo" + tag_selection + flav_tag, stopt.lep1().Pt(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id2()) == 13 ) plot1DUnderOverFlow("h_sig_lepPt_muo" + tag_selection + flav_tag, stopt.lep2().Pt(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_b0_Pt" + tag_selection + flav_tag, bjets.at(0).Pt(), evtweight, h_1d, nbins , 0, 500);
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b1_Pt" + tag_selection + flav_tag, bjets.at(1).Pt(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_b_Pt" + tag_selection + flav_tag, bjets.at(0).Pt(), evtweight, h_1d, nbins , 0, 500);
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b_Pt" + tag_selection + flav_tag, bjets.at(1).Pt(), evtweight, h_1d, nbins , 0, 500);
+    else plot1DUnderOverFlow("h_sig_nonb_Pt" + tag_selection + flav_tag, nonbjets.at(0).Pt(), evtweight, h_1d, nbins , 0, 500);
 
-    plot1DUnderOverFlow("h_sig_lepPlus_Eta" + tag_selection + flav_tag, stopt.lepp().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    plot1DUnderOverFlow("h_sig_lepMinus_Eta" + tag_selection + flav_tag, stopt.lepm().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    plot1DUnderOverFlow("h_sig_lepEta" + tag_selection + flav_tag, stopt.lepp().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
+    //eta
+    plot1DUnderOverFlow("h_sig_lepPlus_Eta" + tag_selection + flav_tag, stopt.lepp().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    plot1DUnderOverFlow("h_sig_lepMinus_Eta" + tag_selection + flav_tag, stopt.lepm().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    plot1DUnderOverFlow("h_sig_lepEta" + tag_selection + flav_tag, stopt.lepp().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
     plot1DUnderOverFlow("h_sig_lepEta" + tag_selection + flav_tag, stopt.lepm().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
-    if( abs(stopt.id1()) == 11 ) plot1DUnderOverFlow("h_sig_lepEta_ele" + tag_selection + flav_tag, stopt.lep1().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    if( abs(stopt.id2()) == 11 ) plot1DUnderOverFlow("h_sig_lepEta_ele" + tag_selection + flav_tag, stopt.lep2().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    if( abs(stopt.id1()) == 13 ) plot1DUnderOverFlow("h_sig_lepEta_muo" + tag_selection + flav_tag, stopt.lep1().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    if( abs(stopt.id2()) == 13 ) plot1DUnderOverFlow("h_sig_lepEta_muo" + tag_selection + flav_tag, stopt.lep2().Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    plot1DUnderOverFlow("h_sig_b0_Eta" + tag_selection + flav_tag, bjets.at(0).Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    if(n_bjets > 1) plot1DUnderOverFlow("h_sig_b1_Eta" + tag_selection + flav_tag, bjets.at(1).Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
-    else plot1DUnderOverFlow("h_sig_nonb_Eta" + tag_selection + flav_tag, nonbjets.at(0).Eta(), evtweight, h_1d, 52 , -2.6, 2.6); 
+    if ( abs(stopt.id1()) == 11 ) plot1DUnderOverFlow("h_sig_lepEta_ele" + tag_selection + flav_tag, stopt.lep1().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    if ( abs(stopt.id2()) == 11 ) plot1DUnderOverFlow("h_sig_lepEta_ele" + tag_selection + flav_tag, stopt.lep2().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    if ( abs(stopt.id1()) == 13 ) plot1DUnderOverFlow("h_sig_lepEta_muo" + tag_selection + flav_tag, stopt.lep1().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    if ( abs(stopt.id2()) == 13 ) plot1DUnderOverFlow("h_sig_lepEta_muo" + tag_selection + flav_tag, stopt.lep2().Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    plot1DUnderOverFlow("h_sig_b0_Eta" + tag_selection + flav_tag, bjets.at(0).Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b1_Eta" + tag_selection + flav_tag, bjets.at(1).Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    plot1DUnderOverFlow("h_sig_b_Eta" + tag_selection + flav_tag, bjets.at(0).Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b_Eta" + tag_selection + flav_tag, bjets.at(1).Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+    else plot1DUnderOverFlow("h_sig_nonb_Eta" + tag_selection + flav_tag, nonbjets.at(0).Eta(), evtweight, h_1d, 52 , -2.6, 2.6);
+
+    //phi
+    plot1DUnderOverFlow("h_sig_lepPlus_Phi" + tag_selection + flav_tag, stopt.lepp().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    plot1DUnderOverFlow("h_sig_lepMinus_Phi" + tag_selection + flav_tag, stopt.lepm().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    plot1DUnderOverFlow("h_sig_lepPhi" + tag_selection + flav_tag, stopt.lepp().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    plot1DUnderOverFlow("h_sig_lepPhi" + tag_selection + flav_tag, stopt.lepm().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    if ( abs(stopt.id1()) == 11 ) plot1DUnderOverFlow("h_sig_lepPhi_ele" + tag_selection + flav_tag, stopt.lep1().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    if ( abs(stopt.id2()) == 11 ) plot1DUnderOverFlow("h_sig_lepPhi_ele" + tag_selection + flav_tag, stopt.lep2().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    if ( abs(stopt.id1()) == 13 ) plot1DUnderOverFlow("h_sig_lepPhi_muo" + tag_selection + flav_tag, stopt.lep1().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    if ( abs(stopt.id2()) == 13 ) plot1DUnderOverFlow("h_sig_lepPhi_muo" + tag_selection + flav_tag, stopt.lep2().Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    plot1DUnderOverFlow("h_sig_b0_Phi" + tag_selection + flav_tag, bjets.at(0).Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b1_Phi" + tag_selection + flav_tag, bjets.at(1).Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    plot1DUnderOverFlow("h_sig_b_Phi" + tag_selection + flav_tag, bjets.at(0).Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b_Phi" + tag_selection + flav_tag, bjets.at(1).Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    else plot1DUnderOverFlow("h_sig_nonb_Phi" + tag_selection + flav_tag, nonbjets.at(0).Phi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+
+    //E
+    plot1DUnderOverFlow("h_sig_lepPlus_E" + tag_selection + flav_tag, stopt.lepp().E(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_lepMinus_E" + tag_selection + flav_tag, stopt.lepm().E(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_lepE" + tag_selection + flav_tag, stopt.lepp().E(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_lepE" + tag_selection + flav_tag, stopt.lepm().E(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id1()) == 11 ) plot1DUnderOverFlow("h_sig_lepE_ele" + tag_selection + flav_tag, stopt.lep1().E(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id2()) == 11 ) plot1DUnderOverFlow("h_sig_lepE_ele" + tag_selection + flav_tag, stopt.lep2().E(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id1()) == 13 ) plot1DUnderOverFlow("h_sig_lepE_muo" + tag_selection + flav_tag, stopt.lep1().E(), evtweight, h_1d, nbins , 0, 500);
+    if ( abs(stopt.id2()) == 13 ) plot1DUnderOverFlow("h_sig_lepE_muo" + tag_selection + flav_tag, stopt.lep2().E(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_b0_E" + tag_selection + flav_tag, bjets.at(0).E(), evtweight, h_1d, nbins , 0, 500);
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b1_E" + tag_selection + flav_tag, bjets.at(1).E(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_b_E" + tag_selection + flav_tag, bjets.at(0).E(), evtweight, h_1d, nbins , 0, 500);
+    if (n_bjets > 1) plot1DUnderOverFlow("h_sig_b_E" + tag_selection + flav_tag, bjets.at(1).E(), evtweight, h_1d, nbins , 0, 500);
+    else plot1DUnderOverFlow("h_sig_nonb_E" + tag_selection + flav_tag, nonbjets.at(0).E(), evtweight, h_1d, nbins , 0, 500);
+
+    //mlb variables
+    plot1DUnderOverFlow("h_sig_mlb" + tag_selection + flav_tag, mlb_1 , evtweight, h_1d, nbins, 0., 800.);
+    plot1DUnderOverFlow("h_sig_mlb" + tag_selection + flav_tag, mlb_2 , evtweight, h_1d, nbins, 0., 800.);
+    plot1DUnderOverFlow("h_sig_mlb" + tag_selection + flav_tag, mlb_3 , evtweight, h_1d, nbins, 0., 800.);
+    plot1DUnderOverFlow("h_sig_mlb" + tag_selection + flav_tag, mlb_4 , evtweight, h_1d, nbins, 0., 800.);
+    plot1DUnderOverFlow("h_sig_mlb_min" + tag_selection + flav_tag, mlb_min , evtweight, h_1d, nbins, 0., 400.);
 
     //check HO and TOB/TEC cleanup cut variables
-    plot1DUnderOverFlow("h_sig_pfcaloMET" + tag_selection + flav_tag, pfcalo_metratio , evtweight, h_1d, 100, 0, 4.);
-    plot1DUnderOverFlow("h_sig_pfcalodPhi" + tag_selection + flav_tag, pfcalo_metdphi , evtweight, h_1d, 100, 0, TMath::Pi());
+    plot1DUnderOverFlow("h_sig_calomet" + tag_selection + flav_tag, stopt.calomet(), evtweight, h_1d, nbins , 0, 500);
+    plot1DUnderOverFlow("h_sig_calometphi" + tag_selection + flav_tag, stopt.calometphi(), evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+    plot1DUnderOverFlow("h_sig_pfcalo_metratio" + tag_selection + flav_tag, pfcalo_metratio , evtweight, h_1d, nbins, 0, 4.);
+    plot1DUnderOverFlow("h_sig_pfcalo_metratio2" + tag_selection + flav_tag, pfcalo_metratio * sqrt(t1metphicorr) , evtweight, h_1d, nbins, 0, 40.);
+    //plot1DUnderOverFlow("h_sig_pfcalo_metratio2" + tag_selection + flav_tag, pfcalo_metratio * t1metphicorr / stopt.calomet() , evtweight, h_1d, nbins, 0, 4.);
+    plot1DUnderOverFlow("h_sig_pfcalodPhi" + tag_selection + flav_tag, pfcalo_metdphi , evtweight, h_1d, nbins, 0, TMath::Pi());
+    plot1DUnderOverFlow("h_sig_pfcalo_deltamet" + tag_selection + flav_tag, pfcalo_deltamet , evtweight, h_1d, nbins, 0, 200.);
+
+    float pfcalo_deltametx = t1metphicorr * sin(t1metphicorrphi) - stopt.calomet() * sin(stopt.calometphi());
+    float pfcalo_deltamety = t1metphicorr * cos(t1metphicorrphi) - stopt.calomet() * cos(stopt.calometphi());
+
+    plot1DUnderOverFlow("h_sig_pfcalo_deltametx" + tag_selection + flav_tag, pfcalo_deltametx , evtweight, h_1d, nbins, -100, 100.);
+    plot1DUnderOverFlow("h_sig_pfcalo_deltamety" + tag_selection + flav_tag, pfcalo_deltamety , evtweight, h_1d, nbins, -100, 100.);
 
 }
 
@@ -1655,10 +1741,12 @@ double StopTreeLooper::get_dalitz_prob( TLorentzVector &lep, TLorentzVector &top
 bool StopTreeLooper::passFullSelection(bool isData)
 {
     //isolated track veto. Not used because it doesn't help signal/bkg because the main background has exactly 2 leptons, and because it's difficult for MC to model it well.
-    //if ( stopt.trkpt10loose() >0. && stopt.trkreliso10loose() < 0.1 ) return false;
+    //if ( stopt.trkpt10loose() > 0. && stopt.trkreliso10loose() < 0.1 ) return false;
 
     //tau veto
     //if (!passTauVeto()) return false;
+
+    //if ( pfcalo_deltamet > 80. ) continue; //can't really cut on this because the data/MC agreement is very poor
 
     bool passFull = false;
     if ( passDileptonSelectionWithEndcapEls(isData)

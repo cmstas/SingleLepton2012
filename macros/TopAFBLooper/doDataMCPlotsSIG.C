@@ -205,11 +205,13 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //derive scale factors
 
     //list of samples
+    //const int MCID = 10;
     const int MCID = 9;
     const char *mcsample[MCID] =
     {
         "ttdl_powheg",
         "ttsl_powheg",
+        //"ttfake_powheg",
         "w1to4jets",
         "tW_lepsl",
         "tW_lepdl",
@@ -221,6 +223,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
     enum sample {TTDL = 0,
                  TTSL,
+                 //TTFA,
                  WJETS,
                  TWSL,
                  TWDL,
@@ -234,7 +237,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     {
         "t#bar{t} #rightarrow #font[12]{l^{+}l^{-}}",
         "t#bar{t} #rightarrow #font[12]{l^{#pm}} + jets",
-        //    "t#bar{t} #rightarrow #font[12]{l^{#pm}} + jets",
+        //"t#bar{t} #rightarrow all jets",
         "W+jets",
         // "t#bar{t} #rightarrow #font[12]{l^{+}l^{-}} (e/#mu)",
         // "t#bar{t} #rightarrow #font[12]{l^{+}l^{-}} (lost)",
@@ -255,6 +258,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
     //  const int mccolor[]={7,2,6,4,5,kOrange,9,kAzure-9, 8, kViolet,kGreen+1, 15,12,13,27};
     //  const int mccolor[]={7,2,6,4,kOrange,8,9,kAzure-9, 5, kViolet,kGreen+1, 15,12,13,27};
+    //const int mccolor[] = {7, 2, kRed-2, 6, 4, kOrange, 8, kViolet + 1, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
     const int mccolor[] = {7, 2, 6, 4, kOrange, 8, kViolet + 1, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
     //  const int mccolor[]={7,2,6,4,kOrange,8,5,kAzure-9, 9,5,kViolet,kGreen+1, 15,12,13,27};
 
@@ -299,7 +303,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 33;
+    const int N1DHISTS = 47;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -331,6 +335,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPt",
         "lepPt_ele",
         "lepPt_muo",
+        "b_Pt",
         "b0_Pt",
         "b1_Pt",
         "nonb_Pt",
@@ -339,11 +344,24 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepEta",
         "lepEta_ele",
         "lepEta_muo",
+        "b_Eta",
         "b0_Eta",
         "b1_Eta",
         "nonb_Eta",
-        "pfcaloMET",
-        "pfcalodPhi"
+        "pfcalo_metratio",
+        "pfcalo_metratio2",
+        "pfcalodPhi",
+        "pfcalo_deltamet",
+        "pfcalo_deltametx",
+        "pfcalo_deltamety",
+        "calomet",
+        "calometphi",
+        "mlb",
+        "mlb_min",
+        "maxAMWTweight",
+        "maxAMWTweight_closestApproach",
+        "otherAMWTweights",
+        "closestDeltaMET_bestcombo"
     };
 
     // Histogram names
@@ -370,6 +388,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_lepPt",
         "h_sig_lepPt_ele",
         "h_sig_lepPt_muo",
+        "h_sig_b_Pt",
         "h_sig_b0_Pt",
         "h_sig_b1_Pt",
         "h_sig_nonb_Pt",
@@ -378,11 +397,24 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_lepEta",
         "h_sig_lepEta_ele",
         "h_sig_lepEta_muo",
+        "h_sig_b_Eta",
         "h_sig_b0_Eta",
         "h_sig_b1_Eta",
         "h_sig_nonb_Eta",
-        "h_sig_pfcaloMET",
-        "h_sig_pfcalodPhi"
+        "h_sig_pfcalo_metratio",
+        "h_sig_pfcalo_metratio2",
+        "h_sig_pfcalodPhi",
+        "h_sig_pfcalo_deltamet",
+        "h_sig_pfcalo_deltametx",
+        "h_sig_pfcalo_deltamety",
+        "h_sig_calomet",
+        "h_sig_calometphi",
+        "h_sig_mlb",
+        "h_sig_mlb_min",
+        "h_sig_maxAMWTweight",
+        "h_sig_maxAMWTweight_closestApproach",
+        "h_sig_otherAMWTweights",
+        "h_sig_closestDeltaMET_bestcombo"
     };
 
     // List of Log scale plots:
@@ -399,9 +431,15 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //logScale.push_back(10);
     //logScale.push_back(11);
     //logScale.push_back(56);
+    logScale.push_back(33);
+    logScale.push_back(34);
+    logScale.push_back(35);
+    logScale.push_back(36);
+    logScale.push_back(41);
+    logScale.push_back(42);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -426,6 +464,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPt",
         "lepPt_ele",
         "lepPt_muo",
+        "b_Pt",
         "b0_Pt",
         "b1_Pt",
         "nonb_Pt",
@@ -434,11 +473,24 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepEta",
         "lepEta_ele",
         "lepEta_muo",
+        "b_Eta",
         "b0_Eta",
         "b1_Eta",
         "nonb_Eta",
-        "pfcaloMET",
-        "pfcalodPhi"
+        "pfcalo_metratio",
+        "pfcalo_metratio2",
+        "pfcalodPhi",
+        "pfcalo_deltamet",
+        "pfcalo_deltametx",
+        "pfcalo_deltamety",
+        "calomet",
+        "calometphi",
+        "mlb",
+        "mlb_min",
+        "maxAMWTweight",
+        "maxAMWTweight_closestApproach",
+        "otherAMWTweights",
+        "closestDeltaMET_bestcombo"
     };
 
     const char *ytitle1d[N1DHISTS] =
@@ -456,6 +508,20 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "GeV",
         "",
 
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
@@ -581,7 +647,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 hasplot[leptype][i] = true;
                 hasplotall[i] = true;
             }
-            else continue;
+            else
+            {
+                cout << Form("%s%s", hist1dname[i], leptag[leptype]) << " plot not found, skipping." << endl;
+                continue;
+            }
 
             //cout << "gtl: " << __LINE__ << endl;
 
@@ -933,8 +1003,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 plotpad->SetLogy();
                 float maxval = h_dt1d[i]->GetMaximum() * 300.;
                 h_dt1d[i]->SetMaximum(maxval);
-                h_dt1d[i]->SetMinimum(5e-1);
-                s_mc1d[i]->SetMinimum(5e-1);
+                h_dt1d[i]->SetMinimum(5e-2);
+                s_mc1d[i]->SetMinimum(5e-2);
                 // h_dt1d[i]->SetMinimum(5e-3);
                 // s_mc1d[i]->SetMinimum(5e-3);
             }
@@ -942,8 +1012,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             {
                 if (i == 5)
                 {
-                    h_dt1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.3);
-                    s_mc1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.3);
+                    h_dt1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.);
+                    s_mc1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.);
                 }
                 else
                 {
@@ -1046,7 +1116,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             //    else
             //    ratio->GetYaxis()->SetRangeUser(0.7,1.3);
             ratio->GetYaxis()->SetRangeUser(0., 2.);
-            if (i == 3) ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+            //if (i == 3) ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
             //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
             ratio->GetYaxis()->SetTitle("data/SM  ");
             ratio->GetXaxis()->SetLabelSize(0);
@@ -1219,13 +1289,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             plotpad->SetLogy();
             float maxval = h_dt1d_comb[i]->GetMaximum() * 300.;
             h_dt1d_comb[i]->SetMaximum(maxval);
-            h_dt1d_comb[i]->SetMinimum(5e-1);
-            s_mc1d_comb[i]->SetMinimum(5e-1);
-            if (i == 0)
-            {
-                h_dt1d_comb[i]->SetMinimum(1e-2);
-                s_mc1d_comb[i]->SetMinimum(1e-2);
-            }
+            h_dt1d_comb[i]->SetMinimum(5e-2);
+            s_mc1d_comb[i]->SetMinimum(5e-2);
         }
         else
         {
@@ -1295,6 +1360,9 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         canv1d_comb[i]->Print(Form("SIGplots/%s%s%s_combined.pdf",
                                    file1dname[i], metcut[isr],
                                    ttbar_tag));
+
+        cout << " Probability " << file1dname[i] << " : "
+             << compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]) << endl;
 
     }
     //}  NSAMPLE loop
