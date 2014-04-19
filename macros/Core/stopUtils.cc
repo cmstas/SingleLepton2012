@@ -967,10 +967,6 @@ bool passDileptonSelectionWithEndcapEls(bool isData)
   if ( ( stopt.isopf2() * stopt.lep2().Pt() ) > 5. )  return false; 
   if ( fabs(stopt.id2())==11 && stopt.eoverpin2() > 4. ) return false;
 
-  //electrons up to |eta|=2.5
-  if (fabs(stopt.id1())==11 && fabs(stopt.lep1().Eta() ) > 2.5) return false;
-  if (fabs(stopt.id2())==11 && fabs(stopt.lep2().Eta() ) > 2.5) return false;
-
   //if have more than 1 lepton, remove cases where have 2 close together
   if ( stopt.ngoodlep() > 1 && 
        dRbetweenVectors( stopt.lep1() ,  stopt.lep2() )<0.1 ) return false;
