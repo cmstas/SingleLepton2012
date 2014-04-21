@@ -405,6 +405,8 @@ class singleLeptonLooper
 	// assorted p4's
 	LorentzVector*  t_;   
 	LorentzVector*  tbar_;   
+	LorentzVector*  b_;   
+	LorentzVector*  bbar_;   
 	LorentzVector*  lep_t_;   
 	LorentzVector*  lep_tbar_;   
 	LorentzVector*  stop_t_;   
