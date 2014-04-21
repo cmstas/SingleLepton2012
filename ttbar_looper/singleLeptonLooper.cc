@@ -165,6 +165,69 @@ bool is_duplicate (const DorkyEventIdentifier &id) {
 
 //--------------------------------------------------------------------
 
+
+//--------------------------------------------------------------------
+
+struct DorkyStatus1Identifier {
+  int id;
+  float px, py, pz, E;
+  bool operator < (const DorkyStatus1Identifier &) const;
+  bool operator == (const DorkyStatus1Identifier &) const;
+};
+
+//--------------------------------------------------------------------
+
+bool DorkyStatus1Identifier::operator < (const DorkyStatus1Identifier &other) const
+{
+  if (id != other.id)
+    return id < other.id;
+  if (px != other.px)
+    return px < other.px;
+  if (py != other.px)
+    return py < other.px;
+  if (pz != other.px)
+    return pz < other.px;
+  if (E != other.px)
+    return E < other.px;
+  return false;
+}
+
+//--------------------------------------------------------------------
+
+bool DorkyStatus1Identifier::operator == (const DorkyStatus1Identifier &other) const
+{
+  if (id != other.id)
+    return false;
+  if (px != other.px)
+    return false;
+  if (py != other.px)
+    return false;
+  if (pz != other.px)
+    return false;
+  if (E != other.px)
+    return false;
+  return true;
+}
+
+//--------------------------------------------------------------------
+
+std::set<DorkyStatus1Identifier> already_seen_stat1;
+bool is_duplicate_stat1 (const DorkyStatus1Identifier &id) {
+  std::pair<std::set<DorkyStatus1Identifier>::const_iterator, bool> ret =
+    already_seen_stat1.insert(id);
+  return !ret.second;
+}
+
+std::set<DorkyStatus1Identifier> already_seen_stat1_test;
+bool is_duplicate_stat1_test (const DorkyStatus1Identifier &id) {
+  std::pair<std::set<DorkyStatus1Identifier>::const_iterator, bool> ret =
+    already_seen_stat1_test.insert(id);
+  return !ret.second;
+}
+
+//--------------------------------------------------------------------
+
+
 void singleLeptonLooper::InitBaby(){
 
   weightleft_  = -1.0;
@@ -998,6 +1061,11 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   float nepass = 0.;
   float nmpass = 0.;
 
+  int t_dup_stat1_tot = 0;
+  int tbar_dup_stat1_tot = 0;
+  int t_stat1_tot = 0;
+  int tbar_stat1_tot = 0;
+
   if(g_createTree) makeTree(prefix, doFakeApp, frmode);
 
   while((currentFile = (TChainElement*)fileIter.Next())) {
@@ -1455,8 +1523,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	
 	LorentzVector vdilepton(0,0,0,0);
 	LorentzVector vttbar(0,0,0,0);
+  vector <LorentzVector> t_daughters;
+  vector <LorentzVector> tbar_daughters;
+  LorentzVector vt_stat1(0,0,0,0);
+  LorentzVector vtbar_stat1(0,0,0,0);
+  int t_dup_stat1 = 0;
+  int tbar_dup_stat1 = 0;
 	int ntops = 0;
 	nbs_ = 0;
+
+  already_seen_stat1_test.clear();
 
 	for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
     if( genps_status().at(igen) != 3 ) continue;
@@ -1485,12 +1561,44 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	    ptt_       = genps_p4().at(igen).pt();
 	    vttbar    += genps_p4().at(igen);
 	    ntops++;
+
+      //Create status=1 top. This seems to only work properly for mc@nlo.
+      already_seen_stat1.clear();
+      for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
+      {
+          DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+          if ( is_duplicate_stat1(id) ) {t_dup_stat1++; t_dup_stat1_tot++; continue;}
+          if ( is_duplicate_stat1_test(id) ) {cout<<"***********this should be impossible************"<<endl;}
+          t_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
+          vt_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
+          t_stat1_tot++;
+      }
+      //cout<<"t_: "<<t_daughters.size()<<" "<<t_dup_stat1<<" "<<t_stat1_tot<<" "<<t_dup_stat1_tot<<endl;
+      //cout<<" "<<t_->Px()<<" "<<t_->Py()<<" "<<t_->Pz()<<" "<<t_->E()<<endl;
+      //cout<<" "<<vt_stat1.Px()<<" "<<vt_stat1.Py()<<" "<<vt_stat1.Pz()<<" "<<vt_stat1.E()<<endl;
+
 	  }
 	  if( id == -6 ){
 	    tbar_      = &(genps_p4().at(igen));
 	    pttbar_    = genps_p4().at(igen).pt();
 	    vttbar    += genps_p4().at(igen); 
 	    ntops++;
+
+      //Create status=1 tbar. This seems to only work properly for mc@nlo.
+      already_seen_stat1.clear();
+      for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
+      {
+          DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+          if ( is_duplicate_stat1(id) ) {tbar_dup_stat1++; tbar_dup_stat1_tot++; continue;}
+          if ( is_duplicate_stat1_test(id) ) {cout<<"***********tbar shares daughter with t************"<<endl;}
+          tbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
+          vtbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
+          tbar_stat1_tot++;
+      }
+      //cout<<"tbar_: "<<tbar_daughters.size()<<" "<<tbar_dup_stat1<<" "<<tbar_stat1_tot<<" "<<tbar_dup_stat1_tot<<endl;
+      //cout<<" "<<tbar_->Px()<<" "<<tbar_->Py()<<" "<<tbar_->Pz()<<" "<<tbar_->E()<<endl;
+      //cout<<" "<<vtbar_stat1.Px()<<" "<<vtbar_stat1.Py()<<" "<<vtbar_stat1.Pz()<<" "<<vtbar_stat1.E()<<endl;
+
 	  }
 
 	  //store stop
@@ -1678,7 +1786,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       bool taulepdaughter = false;
 
       if ( abs(id)==15 ) {
-          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[igen].size(); kk++)
+          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
           {
               int daughter = abs(cms2.genps_lepdaughter_id()[igen][kk]);
               if ( daughter == 12 || daughter == 14) taulepdaughter = true;
@@ -1751,7 +1859,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       bool taulepdaughter = false;
 
       if ( abs(id)==15 ) {
-          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[igen].size(); kk++)
+          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
           {
               int daughter = abs(cms2.genps_lepdaughter_id()[igen][kk]);
               if ( daughter == 12 || daughter == 14) taulepdaughter = true;
@@ -1827,7 +1935,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       bool taulepdaughter = false;
 
       if ( abs(id)==15 ) {
-          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[igen].size(); kk++)
+          for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
           {
               int daughter = abs(cms2.genps_lepdaughter_id()[igen][kk]);
               if ( daughter == 12 || daughter == 14) taulepdaughter = true;
