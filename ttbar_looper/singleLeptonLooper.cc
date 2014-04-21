@@ -35,6 +35,7 @@ struct SUSYGenParticle { // To be filled with status-3 genParticles
 
 int getMotherIndex(int motherid){
   for(int i = 0; i < genps_id().size() ; i++){
+    if( genps_status().at(i) != 3 ) continue;
     if( motherid == genps_id().at(i) ) return i;
   }
 
@@ -1430,9 +1431,6 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	//splitting ttbar into ttdil/ttotr
 	nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
-  //nleps = leptonGenpCount_lepTauDecays(nels, nmus, ntaus);
-	//nleps = leptonGenpCount(nels, nmus, ntaus);
-  //if(nleps != 2 ) continue;
   //cout<<prefix<<" "<<nels<<" "<<nmus<<" "<<ntaus<<endl;
 	
 	nels_  = nels;
@@ -1461,6 +1459,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	nbs_ = 0;
 
 	for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
+    if( genps_status().at(igen) != 3 ) continue;
 	  if ( abs( genps_id().at(igen) ) == 11) vdilepton += genps_p4().at(igen); 
 	  if ( abs( genps_id().at(igen) ) == 13) vdilepton += genps_p4().at(igen); 
 
@@ -1614,6 +1613,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	if(prefix.Contains("DY") && TString(evt_dataset().at(0)).Contains("madgraph") == false) {	
 	  bool doNotContinue = false;
 	  for(unsigned int i = 0; i < genps_p4().size(); i++){
+      if( genps_status().at(i) != 3 ) continue;
 	    if(abs(genps_id()[i]) == 23 && genps_p4()[i].M() > 50.)
 	      doNotContinue = true;
 	  }
@@ -1625,6 +1625,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	if(prefix.Contains("DY")){
 	  int nz = 0;
 	  for(unsigned int i = 0; i < genps_p4().size(); i++){
+      if( genps_status().at(i) != 3 ) continue;
 	    if(abs(genps_id()[i]) == 23){
 	      mllgen_ = genps_p4()[i].M();
 	      nz++;
@@ -1668,7 +1669,9 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	  int nfoundleps = 0;
 
-	  for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
+	  for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) {
+
+      if( genps_status().at(igen) != 3 ) continue;
 
 	    int id = genps_id().at(igen);
 
@@ -1741,7 +1744,9 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  
 	  for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
 
-	    int id = genps_id().at(igen);
+	    if( genps_status().at(igen) != 3 ) continue;
+
+      int id = genps_id().at(igen);
 
       bool taulepdaughter = false;
 
@@ -1812,6 +1817,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  int igenmin2 = -1;
 
 	  for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
+
+      if( genps_status().at(igen) != 3 ) continue;
 
 	    if( igen == igenmin ) continue; //skip closest lepton
 
@@ -4799,7 +4806,7 @@ int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau){
     int size = cms2.genps_id().size();
     for (int jj = 0; jj < size; jj++)
     {
-        if ( cms2.genps_status().at(jj)!=3 ) continue;
+        if ( cms2.genps_status().at(jj) != 3 ) continue;
         if (abs(cms2.genps_id().at(jj)) == 11) nele++;
         if (abs(cms2.genps_id().at(jj)) == 13) nmuon++;
         if (abs(cms2.genps_id().at(jj)) == 15)
