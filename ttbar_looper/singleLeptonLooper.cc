@@ -176,38 +176,73 @@ struct DorkyStatus1Identifier {
 };
 
 //--------------------------------------------------------------------
-
+/*
 bool DorkyStatus1Identifier::operator < (const DorkyStatus1Identifier &other) const
 {
   if (id != other.id)
     return id < other.id;
   if (px != other.px)
     return px < other.px;
-  if (py != other.px)
-    return py < other.px;
-  if (pz != other.px)
-    return pz < other.px;
-  if (E != other.px)
-    return E < other.px;
+  if (py != other.py)
+    return py < other.py;
+  if (pz != other.pz)
+    return pz < other.pz;
+  if (E != other.E)
+    return E < other.E;
+  return false;
+}
+*/
+
+// != works because the floats are identical, but this is safer
+bool DorkyStatus1Identifier::operator < (const DorkyStatus1Identifier &other) const
+{
+  if (id != other.id)
+    return id < other.id;
+  if (fabs(1. - px/other.px)>1e-6)
+    return px < other.px;
+  if (fabs(1. - py/other.py)>1e-6)
+    return py < other.py;
+  if (fabs(1. - pz/other.pz)>1e-6)
+    return pz < other.pz;
+  if (fabs(1. - E/other.E)>1e-6)
+    return E < other.E;
   return false;
 }
 
 //--------------------------------------------------------------------
-
+/*
 bool DorkyStatus1Identifier::operator == (const DorkyStatus1Identifier &other) const
 {
   if (id != other.id)
     return false;
   if (px != other.px)
     return false;
-  if (py != other.px)
+  if (py != other.py)
     return false;
-  if (pz != other.px)
+  if (pz != other.pz)
     return false;
-  if (E != other.px)
+  if (E != other.E)
     return false;
   return true;
 }
+*/
+
+// != works because the floats are identical, but this is safer
+bool DorkyStatus1Identifier::operator == (const DorkyStatus1Identifier &other) const
+{
+  if (id != other.id)
+    return false;
+  if (fabs(1. - px/other.px)>1e-6)
+    return false;
+  if (fabs(1. - py/other.py)>1e-6)
+    return false;
+  if (fabs(1. - pz/other.pz)>1e-6)
+    return false;
+  if (fabs(1. - E/other.E)>1e-6)
+    return false;
+  return true;
+}
+
 
 //--------------------------------------------------------------------
 
@@ -218,10 +253,17 @@ bool is_duplicate_stat1 (const DorkyStatus1Identifier &id) {
   return !ret.second;
 }
 
-std::set<DorkyStatus1Identifier> already_seen_stat1_test;
-bool is_duplicate_stat1_test (const DorkyStatus1Identifier &id) {
+std::set<DorkyStatus1Identifier> already_seen_stat1_t;
+bool is_duplicate_stat1_t (const DorkyStatus1Identifier &id) {
   std::pair<std::set<DorkyStatus1Identifier>::const_iterator, bool> ret =
-    already_seen_stat1_test.insert(id);
+    already_seen_stat1_t.insert(id);
+  return !ret.second;
+}
+
+std::set<DorkyStatus1Identifier> already_seen_stat1_b;
+bool is_duplicate_stat1_b (const DorkyStatus1Identifier &id) {
+  std::pair<std::set<DorkyStatus1Identifier>::const_iterator, bool> ret =
+    already_seen_stat1_b.insert(id);
   return !ret.second;
 }
 
@@ -1066,6 +1108,11 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   int t_stat1_tot = 0;
   int tbar_stat1_tot = 0;
 
+  int b_dup_stat1_tot = 0;
+  int bbar_dup_stat1_tot = 0;
+  int b_stat1_tot = 0;
+  int bbar_stat1_tot = 0;
+
   if(g_createTree) makeTree(prefix, doFakeApp, frmode);
 
   while((currentFile = (TChainElement*)fileIter.Next())) {
@@ -1523,16 +1570,29 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	
 	LorentzVector vdilepton(0,0,0,0);
 	LorentzVector vttbar(0,0,0,0);
+
   vector <LorentzVector> t_daughters;
   vector <LorentzVector> tbar_daughters;
   LorentzVector vt_stat1(0,0,0,0);
   LorentzVector vtbar_stat1(0,0,0,0);
   int t_dup_stat1 = 0;
   int tbar_dup_stat1 = 0;
+
+  vector <LorentzVector> b_daughters;
+  vector <LorentzVector> bbar_daughters;
+  LorentzVector vb_stat1(0,0,0,0);
+  LorentzVector vbbar_stat1(0,0,0,0);
+  int b_dup_stat1 = 0;
+  int bbar_dup_stat1 = 0;
+
+  TLorentzVector lepPlus_gen(0, 0, 0, 0), lepMinus_gen(0, 0, 0, 0), bPlus_gen(0, 0, 0, 0), bMinus_gen(0, 0, 0, 0), nuPlus_gen(0, 0, 0, 0), nuMinus_gen(0, 0, 0, 0);
+  TLorentzVector topPlus_status1(0, 0, 0, 0), topMinus_status1(0, 0, 0, 0), WPlus_status1(0, 0, 0, 0), WMinus_status1(0, 0, 0, 0), lepPlus_status1(0, 0, 0, 0), lepMinus_status1(0, 0, 0, 0), bPlus_status1(0, 0, 0, 0), bMinus_status1(0, 0, 0, 0), nuPlus_status1(0, 0, 0, 0), nuMinus_status1(0, 0, 0, 0);
+
 	int ntops = 0;
 	nbs_ = 0;
 
-  already_seen_stat1_test.clear();
+  already_seen_stat1_t.clear();
+  already_seen_stat1_b.clear();
 
 	for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
     if( genps_status().at(igen) != 3 ) continue;
@@ -1556,6 +1616,58 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	    }
 	  }
 
+
+
+
+    if ( abs(genps_id_mother()[igen]) == 6 ) {
+      if( id == 5 ){
+        b_         = &(genps_p4().at(igen));
+
+
+        //Create status=1 b. This seems to only work properly for mc@nlo.
+        already_seen_stat1.clear();
+        for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
+        {
+            DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+            if ( is_duplicate_stat1(id) ) {b_dup_stat1++; b_dup_stat1_tot++; continue;}
+            if ( is_duplicate_stat1_b(id) ) {cout<<"***********this should be impossible************"<<endl;}
+            b_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
+            vb_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
+            b_stat1_tot++;
+        }
+        //cout<<nbs_<<" b_: "<<b_daughters.size()<<" "<<b_dup_stat1<<" "<<b_stat1_tot<<" "<<b_dup_stat1_tot<<endl;
+        //cout<<" "<<b_->Px()<<" "<<b_->Py()<<" "<<b_->Pz()<<" "<<b_->E()<<endl;
+        //cout<<" "<<vb_stat1.Px()<<" "<<vb_stat1.Py()<<" "<<vb_stat1.Pz()<<" "<<vb_stat1.E()<<endl;
+
+      }
+      if( id == -5 ){
+        bbar_      = &(genps_p4().at(igen));
+
+        //Create status=1 bbar. This seems to only work properly for mc@nlo.
+        already_seen_stat1.clear();
+        for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
+        {
+            DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+            if ( is_duplicate_stat1(id) ) {bbar_dup_stat1++; bbar_dup_stat1_tot++; continue;}
+            if ( is_duplicate_stat1_b(id) ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
+            bbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
+            vbbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
+            bbar_stat1_tot++;
+        }
+        //cout<<nbs_<<" bbar_: "<<bbar_daughters.size()<<" "<<bbar_dup_stat1<<" "<<bbar_stat1_tot<<" "<<bbar_dup_stat1_tot<<endl;
+        //cout<<" "<<bbar_->Px()<<" "<<bbar_->Py()<<" "<<bbar_->Pz()<<" "<<bbar_->E()<<endl;
+        //cout<<" "<<vbbar_stat1.Px()<<" "<<vbbar_stat1.Py()<<" "<<vbbar_stat1.Pz()<<" "<<vbbar_stat1.E()<<endl;
+
+      }
+    }
+
+
+
+
+
+
+
+
 	  if( id == 6 ){
 	    t_         = &(genps_p4().at(igen));
 	    ptt_       = genps_p4().at(igen).pt();
@@ -1568,7 +1680,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       {
           DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(id) ) {t_dup_stat1++; t_dup_stat1_tot++; continue;}
-          if ( is_duplicate_stat1_test(id) ) {cout<<"***********this should be impossible************"<<endl;}
+          if ( is_duplicate_stat1_t(id) ) {cout<<"***********this should be impossible************"<<endl;}
           t_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vt_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
           t_stat1_tot++;
@@ -1590,7 +1702,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       {
           DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(id) ) {tbar_dup_stat1++; tbar_dup_stat1_tot++; continue;}
-          if ( is_duplicate_stat1_test(id) ) {cout<<"***********tbar shares daughter with t************"<<endl;}
+          if ( is_duplicate_stat1_t(id) ) {cout<<"***********tbar shares daughter with t************"<<endl;}
           tbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vtbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
           tbar_stat1_tot++;
@@ -1600,6 +1712,120 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       //cout<<" "<<vtbar_stat1.Px()<<" "<<vtbar_stat1.Py()<<" "<<vtbar_stat1.Pz()<<" "<<vtbar_stat1.E()<<endl;
 
 	  }
+
+
+                                if ( genps_id_mother()[igen] == 24 )
+                                {
+                                    if ( (genps_id()[igen] == -11 || genps_id()[igen] == -13 ||  genps_id()[igen] == -15) )
+                                    {
+                                        lepPlus_gen.SetXYZT(genps_p4()[igen].x(),
+                                                            genps_p4()[igen].y(),
+                                                            genps_p4()[igen].z(),
+                                                            genps_p4()[igen].t()
+                                                           );
+
+                                        //status = 1 lepton
+                                        if ( genps_id()[igen] != -15 )
+                                        {
+                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            {
+                                                int daughterID = genps_lepdaughter_id()[igen][kk];
+                                                if ( daughterID == genps_id()[igen] )
+                                                {
+                                                    lepPlus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
+                                                    continue;
+                                                }
+                                                //need to add all status=1 photons in a DR<0.1 cone around the lepton.
+                                            }
+                                        }
+
+                                    }
+                                    else if ( (genps_id()[igen] == 12 || genps_id()[igen] == 14 ||  genps_id()[igen] == 16) )
+                                    {
+                                        nuPlus_gen.SetXYZT(genps_p4()[igen].x(),
+                                                            genps_p4()[igen].y(),
+                                                            genps_p4()[igen].z(),
+                                                            genps_p4()[igen].t()
+                                                           );
+
+                                        //status = 1 neutrino
+                                        if ( genps_id()[igen] != 16 ) 
+                                        {
+                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            {
+                                                int daughterID = genps_lepdaughter_id()[igen][kk];
+                                                if ( daughterID == genps_id()[igen] )
+                                                {
+                                                    nuPlus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
+                                                    continue;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                                else if ( genps_id_mother()[igen] == -24 )
+                                {
+                                    if ( (genps_id()[igen] == 11 || genps_id()[igen] == 13 ||  genps_id()[igen] == 15) )
+                                    {
+
+                                        lepMinus_gen.SetXYZT( genps_p4()[igen].x(),
+                                                              genps_p4()[igen].y(),
+                                                              genps_p4()[igen].z(),
+                                                              genps_p4()[igen].t()
+                                                            );
+
+                                        //status = 1 lepton
+                                        if ( genps_id()[igen] != 15 )
+                                        {
+                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            {
+                                                int daughterID = genps_lepdaughter_id()[igen][kk];
+                                                if ( daughterID == genps_id()[igen] )
+                                                {
+                                                    lepMinus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
+                                                    continue;
+                                                }
+                                                //need to add all status=1 photons in a DR<0.1 cone around the lepton.
+                                            }
+                                        }
+
+                                    }
+                                    else if ( (genps_id()[igen] == -12 || genps_id()[igen] == -14 ||  genps_id()[igen] == -16) )
+                                    {
+
+                                        nuMinus_gen.SetXYZT( genps_p4()[igen].x(),
+                                                              genps_p4()[igen].y(),
+                                                              genps_p4()[igen].z(),
+                                                              genps_p4()[igen].t()
+                                                            );
+
+                                        //status = 1 neutrino
+                                        if ( genps_id()[igen] != -16 ) 
+                                        {
+                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            {
+                                                int daughterID = genps_lepdaughter_id()[igen][kk];
+                                                if ( daughterID == genps_id()[igen] )
+                                                {
+                                                    nuMinus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
+                                                    continue;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                }
+
+
+
+
+
+
+
+
 
 	  //store stop
 	  if ( id == 1000006)
