@@ -92,6 +92,7 @@ private:
     vector<float> btag;
     vector<float> sigma_jets;
     vector<int> mc;
+    bool tobtecveto_;
 
     //variables for baby ntuples
     Int_t   run;

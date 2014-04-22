@@ -43,6 +43,7 @@ const double mt_solver = 172.5;
 
 const double mlb_max = sqrt(mt_solver * mt_solver - mW_solver * mW_solver);
 bool makeCRplots = false; //For CR studies. If true don't apply the selection until making plots.
+bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
 
 
 StopTreeLooper::StopTreeLooper()
@@ -296,6 +297,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             n_jets  = 0;
             n_bjets = 0;
             n_ljets = 0;
+            tobtecveto_ = false;
 
             //stopt.pfjets() are already sorted by pT
             for ( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i )
@@ -314,6 +316,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 n_ljets++;
 
                 jets.push_back( stopt.pfjets().at(i) );
+
+                // check for tob/tec tracking problem
+                if ((fabs(stopt.pfjets().at(i).eta()) > 0.9) && (fabs(stopt.pfjets().at(i).eta()) < 1.9))
+                {
+                    if ((stopt.pfjets_chm().at(i) - stopt.pfjets_neu().at(i)) > 40) tobtecveto_ = true;
+                }
 
                 //to not use reshaped discriminator
                 //float csv_nominal= stopt.pfjets_csv().at(i);
@@ -359,6 +367,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 bcandidates.push_back( nonbjets.at(1) );
             }
 
+
+            //----------------------------------------------------------------------------
+            // Veto events with jet(s) with suspected TOB/TEC seeded tracking problem. http://www.t2.ucsd.edu/tastwiki/pub/CMS/20130426OsChats/wh_tobtecprob_olivito_260413.pdf
+            //----------------------------------------------------------------------------
+
+            if (doTobTecVeto && tobtecveto_) continue;
 
             //----------------------------------------------------------------------------
             // Require event to pass full selection prior to ttbar solver unless we want to make control region plots.
