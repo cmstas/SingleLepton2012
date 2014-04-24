@@ -1063,7 +1063,7 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
                                    string tag_selection, string flav_tag)
 {
 
-    int nbins = 80;
+    int nbins = 60; //60 bins in the asymmetry variable makes more sense than 80 since we will be rebinning to 6 or 12 bins for the acceptance histograms
 
     int nbinsmtt = 120;
     int nbinsttpt = 300;
