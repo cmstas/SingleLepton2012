@@ -1,0 +1,20 @@
+#ignore compiled C++
+*.d
+*.o
+*.so
+
+#ignore linker files
+LinkDef*
+
+#ignore ROOT files
+*.root
+
+#ignore other repositories checked out in here
+CORE
+Tools
+
+#ignore the unfolding summary files
+summary_*unfolding_*.txt
+
+#ignore the json file that holds our systematics
+systematics.json

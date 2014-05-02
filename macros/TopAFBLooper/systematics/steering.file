@@ -1,0 +1,17 @@
+# steering file
+# 
+# systidentifier filename
+#
+# systidentifier and filename cannot contain spaces
+#
+JESup summary_1Dunfolding_0_10_10_10_10_formated.txt
+JESdown summary_1Dunfolding_10_0_10_10_10_formated.txt
+#JER summary_1Dunfolding_10_10_0_10_10_formated.txt
+#LeptonEnergyScaleUp summary_1Dunfolding_10_10_10_10_15_formated.txt
+#LeptonEnergyScaleDown summary_1Dunfolding_10_10_10_10_5_formated.txt
+#SFbdown summary_1Dunfolding_10_10_10_15_10_formated.txt
+#SFbup summary_1Dunfolding_10_10_10_5_10_formated.txt
+#tau summary_1Dunfolding_10_10_20_10_10_formated.txt
+#TrigSFdown summary_1Dunfolding_10_20_10_10_10_formated.txt
+#TrigSFup summary_1Dunfolding_20_10_10_10_10_formated.txt
+Default summary_1Dunfolding_formated.txt
