@@ -1,0 +1,5 @@
+#ignore the unfolding summary files
+summary_*unfolding_*.txt
+
+#ignore the json file that holds our systematics
+systematics.json
