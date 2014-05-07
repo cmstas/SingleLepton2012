@@ -22,28 +22,32 @@ def parseSystFiles(systfiles):
     systematics = {}
 
     for syst in systfiles.keys():
-        try:
-            systfile = open(systfiles[syst])
-        except:
-            print ""
-            print "Syst file",systfiles[syst],"for systematics",syst,"cannot be opened"
-            print ""
-            sys.exit(1)
-        for line in systfile.readlines():
-            array = line.split()
-            if len(array) != 6:
-                print "malformated line in systfile",systfiles[syst]
-                print "line:",line
-                sys,exit(1)
-            identifier = array[0]
-            name = array[1]
-            type = array[2].split(':')[0] #remove ':'
-            asymmetry = float(array[3])
-            error = float(array[5])
-            if identifier not in systematics.keys(): systematics[identifier] = {}
-            systematics[identifier]['name'] = name
-            if syst not in systematics[identifier].keys(): systematics[identifier][syst] = {}
-            systematics[identifier][syst][type] = [asymmetry,error]
+        for subtype in systfiles[syst].keys():
+            for direction in systfiles[syst][subtype].keys():
+                try:
+                    systfile = open(systfiles[syst][subtype][direction])
+                except:
+                    print ""
+                    print "Syst file",systfiles[syst],"for systematics",syst,"cannot be opened"
+                    print ""
+                    sys.exit(1)
+                for line in systfile.readlines():
+                    array = line.split()
+                    if len(array) != 6:
+                        print "malformated line in systfile",systfiles[syst]
+                        print "line:",line
+                        sys,exit(1)
+                    identifier = array[0]
+                    name = array[1]
+                    type = array[2].split(':')[0] #remove ':'
+                    asymmetry = float(array[3])
+                    error = float(array[5])
+                    if identifier not in systematics.keys(): systematics[identifier] = {}
+                    systematics[identifier]['name'] = name
+                    if syst not in systematics[identifier].keys(): systematics[identifier][syst] = {}
+                    if subtype not in systematics[identifier][syst].keys(): systematics[identifier][syst][subtype] = {}
+                    if direction not in systematics[identifier][syst][subtype].keys(): systematics[identifier][syst][subtype][direction] = {}
+                    systematics[identifier][syst][subtype][direction][type] = [asymmetry,error]
             
     return systematics
             
@@ -80,9 +84,11 @@ def main():
     for line in steeringfile.readlines():
         if line.startswith('#'): continue        
         array = line.split()
-        if array[0] in systfiles.keys(): 
-            print 'systematics:',array[0],'was entered twice in steering file:',steeringfilename,'Please choose only one entry per systematics, using last entry.'
-        systfiles[array[0]] = array[1]
+        if array[0] not in systfiles.keys(): systfiles[array[0]] = {}
+        if array[1] not in systfiles[array[0]].keys(): systfiles[array[0]][array[1]] = {}
+        if array[2] in systfiles[array[0]][array[1]].keys():
+            print 'systematics:',array[0],array[1],array[2],'was entered twice in steering file:',steeringfilename,'Please choose only one entry per systematics, using last entry.'
+        systfiles[array[0]][array[1]][array[2]] = array[3]
         
     systematics = parseSystFiles(systfiles)
     

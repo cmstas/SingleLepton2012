@@ -38,29 +38,52 @@ def main():
         print ""
         sys.exit(1)
         
-    results = {}
+    #results = {}
 
-    # example: use JES up and down
     for plot in systematics.keys():
-        if plot not in results.keys(): results[plot] = {}
+
+        #if plot not in results.keys(): results[plot] = {}
+
+        print plot
+
         if 'Default' not in systematics[plot].keys(): 
             print 'Could not find Default values'
             sys.exit(1)
-        if 'JESup' not in systematics[plot].keys(): 
-            print 'Could not find JESup values'
-            sys.exit(1)
-        if 'JESdown' not in systematics[plot].keys(): 
-            print 'Could not find JESdown values'
-            sys.exit(1)
-        print "%10s: % 2.6f +/- %2.6f" % ('Default',systematics[plot]['Default']['Unfolded'][0],systematics[plot]['Default']['Unfolded'][1])
-        print "%10s: % 2.6f +/- %2.6f" % ('JESup',systematics[plot]['JESup']['Unfolded'][0],systematics[plot]['JESup']['Unfolded'][1])
-        print "%10s: % 2.6f +/- %2.6f" % ('JESdown',systematics[plot]['JESdown']['Unfolded'][0],systematics[plot]['JESdown']['Unfolded'][1])
-        print ""
-        max_difference = max(abs(systematics[plot]['Default']['Unfolded'][0]-systematics[plot]['JESup']['Unfolded'][0]),abs(systematics[plot]['Default']['Unfolded'][0]-systematics[plot]['JESdown']['Unfolded'][0]))
-        
-        print "% 2.6f +/- %2.6f +/- %2.6f" % (systematics[plot]['Default']['Unfolded'][0],systematics[plot]['Default']['Unfolded'][1],max_difference)    
-    
 
+        sumsq_total = 0
+        (default_asym, default_stat) = systematics[plot]['Default']['default']['default']['Unfolded']
+
+        for systematic in systematics[plot].keys():
+            if systematic == 'Default': continue
+            if systematic == 'name': continue
+
+            sumsq_syst = 0
+
+            for subtype in systematics[plot][systematic].keys():
+                sumsq_subtype = 0
+                maxdiff = 0
+
+                #This block deals with max(varup,vardown)-type systematics. It's only one case out of many more to come.
+                #Once more cases are added, the following should be enclosed in an "if flag == updown" statement, or similar.
+                if 'up' not in systematics[plot][systematic][subtype].keys(): 
+                    print 'Could not find upward variation'
+                    sys.exit(1)
+                if 'down' not in systematics[plot][systematic][subtype].keys(): 
+                    print 'Could not find downward variation'
+                    sys.exit(1)
+
+                updiff =   abs( default_asym - systematics[plot][systematic][subtype]['up']['Unfolded'][0] )
+                downdiff = abs( default_asym - systematics[plot][systematic][subtype]['down']['Unfolded'][0] )
+                maxdiff =  max( updiff, downdiff )
+
+                sumsq_subtype += maxdiff*maxdiff
+                sumsq_syst    += maxdiff*maxdiff
+                sumsq_total   += maxdiff*maxdiff
+
+            print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
+
+        print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, default_asym, default_stat, math.sqrt(sumsq_total))
+        print ""
     
 
 if __name__ == '__main__':

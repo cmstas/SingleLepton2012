@@ -1,5 +1,9 @@
+#ignore all untracked linkdef files
+#(already-tracked files can't be ignored)
+LinkDef*
+
 #ignore the unfolding summary files
 summary_*unfolding_*.txt
 
-#ignore the json file that holds our systematics
+#ignore the temporary json file that holds our systematics
 systematics.json

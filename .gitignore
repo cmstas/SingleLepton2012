@@ -3,9 +3,6 @@
 *.o
 *.so
 
-#ignore linker files
-LinkDef*
-
 #ignore ROOT files
 *.root
 
