@@ -1,17 +1,24 @@
 # steering file
 # 
-# systidentifier subtype direction filename
+# systematic, subtype, direction, filename (cannot contain spaces)
 #
-# systidentifier, subtype, direction, filename (cannot contain spaces)
+JES            default up      summary_1Dunfolding_JESup_formated.txt
+JES            default down    summary_1Dunfolding_JESdown_formated.txt
+JER            default diffnom summary_1Dunfolding_JER_formated.txt
+Lep_E_scale    default up      summary_1Dunfolding_lepenergyup_formated.txt
+Lep_E_scale    default down    summary_1Dunfolding_lepenergydown_formated.txt
+SFb            default down    summary_1Dunfolding_sfbdown_formated.txt
+SFb            default up      summary_1Dunfolding_sfbup_formated.txt
+tau            default diffnom summary_1Dunfolding_tau_formated.txt
+TrigSF         default down    summary_1Dunfolding_trigSFdown_formated.txt
+TrigSF         default up      summary_1Dunfolding_trigSFup_formated.txt
+Nominal        default nominal summary_1Dunfolding_default_formated.txt
 #
-JES            default up      summary_1Dunfolding_0_10_10_10_10_formated.txt
-JES            default down    summary_1Dunfolding_10_0_10_10_10_formated.txt
-#JER           default unknown summary_1Dunfolding_10_10_0_10_10_formated.txt
-LeptonEnergy   default up      summary_1Dunfolding_10_10_10_10_15_formated.txt
-LeptonEnergy   default down    summary_1Dunfolding_10_10_10_10_5_formated.txt
-SFb            default down    summary_1Dunfolding_10_10_10_15_10_formated.txt
-SFb            default up      summary_1Dunfolding_10_10_10_5_10_formated.txt
-#tau           default default summary_1Dunfolding_10_10_20_10_10_formated.txt
-TrigSF         default down    summary_1Dunfolding_10_20_10_10_10_formated.txt
-TrigSF         default up      summary_1Dunfolding_20_10_10_10_10_formated.txt
-Default        default default summary_1Dunfolding_formated.txt
+#These get calculated using half the difference
+Scale_fastsim  fastsim up	   summary_1Dunfolding_fastsim_scaleup_formated.txt
+Scale_fastsim  fastsim down	   summary_1Dunfolding_fastsim_scaledown_formated.txt
+#
+#These get calculated w/ respect to fastsim mass nominal
+Mass_fastsim   fastsim nominal summary_1Dunfolding_fastsim_massnominal_formated.txt
+Mass_fastsim   fastsim up	   summary_1Dunfolding_fastsim_massup_formated.txt
+Mass_fastsim   fastsim down	   summary_1Dunfolding_fastsim_massdown_formated.txt

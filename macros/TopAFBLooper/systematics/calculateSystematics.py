@@ -40,45 +40,57 @@ def main():
         
     #results = {}
 
+    #Loop over the different asymmetry variables...
     for plot in systematics.keys():
 
         #if plot not in results.keys(): results[plot] = {}
 
         print plot
 
-        if 'Default' not in systematics[plot].keys(): 
-            print 'Could not find Default values'
+        if 'Nominal' not in systematics[plot].keys(): 
+            print 'Could not find Nominal values'
             sys.exit(1)
 
         sumsq_total = 0
-        (default_asym, default_stat) = systematics[plot]['Default']['default']['default']['Unfolded']
+        (default_asym, default_stat) = systematics[plot]['Nominal']['default']['nominal']['Unfolded']
 
+        #Loop over the different systematics...
         for systematic in systematics[plot].keys():
-            if systematic == 'Default': continue
+            if systematic == 'Nominal': continue
             if systematic == 'name': continue
 
             sumsq_syst = 0
 
+            #Loop over the different subtypes...
             for subtype in systematics[plot][systematic].keys():
                 sumsq_subtype = 0
-                maxdiff = 0
+                maxvar = 0
+                vartype = systematics[plot][systematic][subtype]['vartype']
 
-                #This block deals with max(varup,vardown)-type systematics. It's only one case out of many more to come.
-                #Once more cases are added, the following should be enclosed in an "if flag == updown" statement, or similar.
-                if 'up' not in systematics[plot][systematic][subtype].keys(): 
-                    print 'Could not find upward variation'
+                if vartype == 'updown_newnom': nominal = systematics[plot][systematic][subtype]['nominal']['Unfolded'][0]
+                else: nominal = default_asym
+
+                #Calculate the contribution from this systematic.
+                #Calculation method depends on the vartype flag, provided in parseSystematics.py
+                if vartype == 'updown' or vartype == 'updown_newnom':
+                    upvar =   abs( nominal - systematics[plot][systematic][subtype]['up']['Unfolded'][0] )
+                    downvar = abs( nominal - systematics[plot][systematic][subtype]['down']['Unfolded'][0] )
+                    maxvar =  max( upvar, downvar )
+                elif vartype == 'half':
+                    maxvar = abs(systematics[plot][systematic][subtype]['up']['Unfolded'][0] -
+                                 systematics[plot][systematic][subtype]['down']['Unfolded'][0] ) /2
+                elif vartype == 'diffnom':
+                    maxvar = abs( nominal - systematics[plot][systematic][subtype]['diffnom']['Unfolded'][0] )
+                else:
+                    print ""
+                    print "I don't know what to do with this variation type:", vartype
+                    print systematic, subtype
                     sys.exit(1)
-                if 'down' not in systematics[plot][systematic][subtype].keys(): 
-                    print 'Could not find downward variation'
-                    sys.exit(1)
 
-                updiff =   abs( default_asym - systematics[plot][systematic][subtype]['up']['Unfolded'][0] )
-                downdiff = abs( default_asym - systematics[plot][systematic][subtype]['down']['Unfolded'][0] )
-                maxdiff =  max( updiff, downdiff )
-
-                sumsq_subtype += maxdiff*maxdiff
-                sumsq_syst    += maxdiff*maxdiff
-                sumsq_total   += maxdiff*maxdiff
+                #Add this variation to the running total(s), in quadrature
+                sumsq_subtype += maxvar*maxvar
+                sumsq_syst    += maxvar*maxvar
+                sumsq_total   += maxvar*maxvar
 
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
 
