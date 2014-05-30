@@ -1120,6 +1120,15 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
     cout << currentFile->GetTitle() << endl;
 
+    TString rootfilename = currentFile->GetTitle();
+
+    bool ismcatnlo = false;
+
+    if(rootfilename.Contains("mcatnlo")) {
+      cout<<"Processing MC@NLO sample: using status=2 Ws (before FSR from b)"<<endl;
+      ismcatnlo = true; 
+    }
+
     if (!f || f->IsZombie()) {
       throw std::runtime_error(Form("ERROR::File from TChain is invalid or corrupt: %s", currentFile->GetTitle()));
     }
@@ -1585,23 +1594,94 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   int b_dup_stat1 = 0;
   int bbar_dup_stat1 = 0;
 
-  TLorentzVector lepPlus_gen(0, 0, 0, 0), lepMinus_gen(0, 0, 0, 0), bPlus_gen(0, 0, 0, 0), bMinus_gen(0, 0, 0, 0), nuPlus_gen(0, 0, 0, 0), nuMinus_gen(0, 0, 0, 0);
+  TLorentzVector lepPlus_status3(0, 0, 0, 0), lepMinus_status3(0, 0, 0, 0), bPlus_status3(0, 0, 0, 0), bMinus_status3(0, 0, 0, 0), nuPlus_status3(0, 0, 0, 0), nuMinus_status3(0, 0, 0, 0), topPlus_status3(0, 0, 0, 0), topMinus_status3(0, 0, 0, 0);
+  TLorentzVector WPlus_status2(0, 0, 0, 0), WPlus_status3(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0), WMinus_status3(0, 0, 0, 0);
+  TLorentzVector topPlus_status2(0, 0, 0, 0), topMinus_status2(0, 0, 0, 0);
   TLorentzVector topPlus_status1(0, 0, 0, 0), topMinus_status1(0, 0, 0, 0), WPlus_status1(0, 0, 0, 0), WMinus_status1(0, 0, 0, 0), lepPlus_status1(0, 0, 0, 0), lepMinus_status1(0, 0, 0, 0), bPlus_status1(0, 0, 0, 0), bMinus_status1(0, 0, 0, 0), nuPlus_status1(0, 0, 0, 0), nuMinus_status1(0, 0, 0, 0);
 
 	int ntops = 0;
 	nbs_ = 0;
+  int foundWPlus = 0;
+  int foundWMinus = 0;
+  int foundbPlus = 0;
+  int foundbMinus = 0;
+  int ntopPlusDaughters = 0;
+  int ntopMinusDaughters = 0;
 
   already_seen_stat1_t.clear();
   already_seen_stat1_b.clear();
 
+  //dumpDocLines();
+
 	for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
-    if( genps_status().at(igen) != 3 ) continue;
+
 	  if ( abs( genps_id().at(igen) ) == 11) vdilepton += genps_p4().at(igen); 
 	  if ( abs( genps_id().at(igen) ) == 13) vdilepton += genps_p4().at(igen); 
 
 	  int id = genps_id().at(igen);
 	  int pid = abs( genps_id().at(igen) );
 	  int mothid = abs(genps_id_mother().at(igen));
+
+
+
+
+
+    //For MC@NLO. Find first status=2 Ws, which are before FSR. Note, unlike the W the status=3 b is before FSR.
+    //if(ismcatnlo){
+      if( id == 24 ){
+        if( genps_status().at(igen) == 2 && !foundWPlus ) {
+          foundWPlus=1;
+          WPlus_status2.SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             );
+        }
+        if( genps_status().at(igen) == 3 ) {
+          WPlus_status3.SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             );
+        }
+      }
+      if( id == -24 ){
+        if( genps_status().at(igen) == 2 && !foundWMinus ) {
+          foundWMinus=1;
+          WMinus_status2.SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             );
+        }
+        if( genps_status().at(igen) == 3 ) {
+          WMinus_status3.SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             );
+        }
+      }
+
+      //take last status=2 top
+      if( id == 6 && genps_status().at(igen) == 2 ){
+          topPlus_status2.SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             );
+      }
+      if( id == -6 && genps_status().at(igen) == 2 ){
+          topMinus_status2.SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             );
+      }
+    //}
+
+
+    if( genps_status().at(igen) != 3 ) continue;
 
 	  // only count/store massive b quarks
 	  // - in massless b samples, final state b's will have the mass set to 4.8 GeV
@@ -1620,9 +1700,19 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 
     if ( abs(genps_id_mother()[igen]) == 6 ) {
-      if( id == 5 ){
+      //cout<<id<<" ";
+      if ( (genps_id_mother()[igen]) == 6 ) ntopPlusDaughters++;
+      if ( (genps_id_mother()[igen]) == -6 ) ntopMinusDaughters++;
+      //if(fabs(id)==21) cout<<genps_id_mother()[igen]<<" gluon daughter"<<endl;  //MC@NLO has tops with status=3 gluon daughters
+      if( ( id == 5 || (ismcatnlo && (id == 3 || id == 1)) ) && !foundbPlus ){   //id = 1,3 is for MC@NLO where some tops decay to dW/sW instead of bW
+        foundbPlus = 1;
         b_         = &(genps_p4().at(igen));
 
+        bPlus_status3.SetXYZT(genps_p4()[igen].x(),
+                            genps_p4()[igen].y(),
+                            genps_p4()[igen].z(),
+                            genps_p4()[igen].t()
+                           );
 
         //Create status=1 b. This seems to only work properly for mc@nlo.
         already_seen_stat1.clear();
@@ -1640,8 +1730,15 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
         //cout<<" "<<vb_stat1.Px()<<" "<<vb_stat1.Py()<<" "<<vb_stat1.Pz()<<" "<<vb_stat1.E()<<endl;
 
       }
-      if( id == -5 ){
+      if( (id == -5 || (ismcatnlo && (id == -3 || id == -1)) ) && !foundbMinus ){ //id = -1,-3 is for MC@NLO where some tops decay to dW/sW instead of bW
+        foundbMinus = 1;
         bbar_      = &(genps_p4().at(igen));
+
+        bMinus_status3.SetXYZT(genps_p4()[igen].x(),
+                            genps_p4()[igen].y(),
+                            genps_p4()[igen].z(),
+                            genps_p4()[igen].t()
+                           );
 
         //Create status=1 bbar. This seems to only work properly for mc@nlo.
         already_seen_stat1.clear();
@@ -1649,7 +1746,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
         {
             DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
             if ( is_duplicate_stat1(id) ) {bbar_dup_stat1++; bbar_dup_stat1_tot++; continue;}
-            if ( is_duplicate_stat1_b(id) ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
+            //if ( is_duplicate_stat1_b(id) ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
             bbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vbbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
             bbar_stat1_tot++;
@@ -1674,6 +1771,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	    vttbar    += genps_p4().at(igen);
 	    ntops++;
 
+      topPlus_status3.SetXYZT(genps_p4()[igen].x(),
+                          genps_p4()[igen].y(),
+                          genps_p4()[igen].z(),
+                          genps_p4()[igen].t()
+                         );
+
       //Create status=1 top. This seems to only work properly for mc@nlo.
       already_seen_stat1.clear();
       for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
@@ -1696,13 +1799,19 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	    vttbar    += genps_p4().at(igen); 
 	    ntops++;
 
+      topMinus_status3.SetXYZT(genps_p4()[igen].x(),
+                          genps_p4()[igen].y(),
+                          genps_p4()[igen].z(),
+                          genps_p4()[igen].t()
+                         );
+
       //Create status=1 tbar. This seems to only work properly for mc@nlo.
       already_seen_stat1.clear();
       for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
       {
           DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(id) ) {tbar_dup_stat1++; tbar_dup_stat1_tot++; continue;}
-          if ( is_duplicate_stat1_t(id) ) {cout<<"***********tbar shares daughter with t************"<<endl;}
+          //if ( is_duplicate_stat1_t(id) ) {cout<<"***********tbar shares daughter with t************"<<endl;}
           tbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vtbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
           tbar_stat1_tot++;
@@ -1718,7 +1827,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                 {
                                     if ( (genps_id()[igen] == -11 || genps_id()[igen] == -13 ||  genps_id()[igen] == -15) )
                                     {
-                                        lepPlus_gen.SetXYZT(genps_p4()[igen].x(),
+                                        lepPlus_status3.SetXYZT(genps_p4()[igen].x(),
                                                             genps_p4()[igen].y(),
                                                             genps_p4()[igen].z(),
                                                             genps_p4()[igen].t()
@@ -1742,7 +1851,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     }
                                     else if ( (genps_id()[igen] == 12 || genps_id()[igen] == 14 ||  genps_id()[igen] == 16) )
                                     {
-                                        nuPlus_gen.SetXYZT(genps_p4()[igen].x(),
+                                        nuPlus_status3.SetXYZT(genps_p4()[igen].x(),
                                                             genps_p4()[igen].y(),
                                                             genps_p4()[igen].z(),
                                                             genps_p4()[igen].t()
@@ -1770,7 +1879,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     if ( (genps_id()[igen] == 11 || genps_id()[igen] == 13 ||  genps_id()[igen] == 15) )
                                     {
 
-                                        lepMinus_gen.SetXYZT( genps_p4()[igen].x(),
+                                        lepMinus_status3.SetXYZT( genps_p4()[igen].x(),
                                                               genps_p4()[igen].y(),
                                                               genps_p4()[igen].z(),
                                                               genps_p4()[igen].t()
@@ -1795,7 +1904,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     else if ( (genps_id()[igen] == -12 || genps_id()[igen] == -14 ||  genps_id()[igen] == -16) )
                                     {
 
-                                        nuMinus_gen.SetXYZT( genps_p4()[igen].x(),
+                                        nuMinus_status3.SetXYZT( genps_p4()[igen].x(),
                                                               genps_p4()[igen].y(),
                                                               genps_p4()[igen].z(),
                                                               genps_p4()[igen].t()
@@ -1913,6 +2022,80 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  //	  cout << "found parton, igen " << igen << " id " << pid << " motherid " << mothid << " pt " << genps_p4().at(igen).pt() << endl;
     
 	}
+  if (topPlus_status3!=topPlus_status2 || topMinus_status3!=topMinus_status2) cout<<" final top different from status=3 top "<<endl;
+
+
+  if(!foundbPlus || !foundbMinus) {
+    cout<<"One of the bs is missing! "<< nbs_ <<endl;
+    dumpDocLines();
+  }
+
+  //For MC@NLO. Boost status=3 W back to status=2
+  if(ismcatnlo && nleps_ == 2) {
+
+    //WPlus
+    TLorentzVector WPlus_status3B = WPlus_status3;
+    TLorentzVector lepPlus_status3B = lepPlus_status3;
+    TLorentzVector nuPlus_status3B = nuPlus_status3;
+
+    WPlus_status3B.Boost(-WPlus_status2.BoostVector());
+
+    lepPlus_status3B.Boost(-WPlus_status2.BoostVector());
+    lepPlus_status3B.Boost(-WPlus_status3B.BoostVector());
+    lepPlus_status3B.Boost(WPlus_status2.BoostVector());
+    nuPlus_status3B.Boost(-WPlus_status2.BoostVector());
+    nuPlus_status3B.Boost(-WPlus_status3B.BoostVector());
+    nuPlus_status3B.Boost(WPlus_status2.BoostVector());
+
+    WPlus_status3B.Boost(-WPlus_status3B.BoostVector());
+    WPlus_status3B.Boost(WPlus_status2.BoostVector());
+
+
+    //WMinus
+    TLorentzVector WMinus_status3B = WMinus_status3;
+    TLorentzVector lepMinus_status3B = lepMinus_status3;
+    TLorentzVector nuMinus_status3B = nuMinus_status3;
+
+    WMinus_status3B.Boost(-WMinus_status2.BoostVector());
+
+    lepMinus_status3B.Boost(-WMinus_status2.BoostVector());
+    lepMinus_status3B.Boost(-WMinus_status3B.BoostVector());
+    lepMinus_status3B.Boost(WMinus_status2.BoostVector());
+    nuMinus_status3B.Boost(-WMinus_status2.BoostVector());
+    nuMinus_status3B.Boost(-WMinus_status3B.BoostVector());
+    nuMinus_status3B.Boost(WMinus_status2.BoostVector());
+
+    WMinus_status3B.Boost(-WMinus_status3B.BoostVector());
+    WMinus_status3B.Boost(WMinus_status2.BoostVector());
+
+
+    //cout<<WPlus_status3B.E() - WPlus_status2.E()<<" "<<WMinus_status3B.E() - WMinus_status2.E()<<endl;
+    //cout<<(lepPlus_status3B+nuPlus_status3B).E() - WPlus_status2.E()<<" "<<(lepMinus_status3B+nuMinus_status3B).E() - WMinus_status2.E()<<endl<<endl;
+
+    //if(topPlus_status3.E()-(WPlus_status2 + bPlus_status3).E() > 1e-4) cout<<" top has >2 daughters "<<topPlus_status3.E()-(WPlus_status2 + bPlus_status3).E()<<endl;
+
+
+    lepPlus_status3 = lepPlus_status3B;
+    nuPlus_status3 = nuPlus_status3B;
+    WPlus_status3 = WPlus_status2;
+
+    lepMinus_status3 = lepMinus_status3B;
+    nuMinus_status3 = nuMinus_status3B;
+    WMinus_status3 = WMinus_status2;
+
+    //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay
+    topPlus_status3 = WPlus_status2 + bPlus_status3; 
+    topMinus_status3 = WMinus_status2 + bMinus_status3;
+
+    //check for error in calculation
+    if( fabs( (bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status3.E() ) > 5e-2 || fabs( (bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status3.E() ) > 5e-2 ) {
+      cout<<" Top daughters don't match top. Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<endl;
+      cout<<(bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status3.E()<<" "<<(bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status3.E()<<" W: "<<(lepPlus_status3B+nuPlus_status3B).E() - WPlus_status2.E()<<" "<<(lepMinus_status3B+nuMinus_status3B).E() - WMinus_status2.E()<<endl; //here we expect exact agreement
+      cout<<(bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status2.E()<<" "<<(bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
+    }
+
+  }
+
 
 	// if( npartons_ > 0 ){
 	//   cout << endl << endl;
