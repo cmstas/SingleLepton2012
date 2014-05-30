@@ -1714,7 +1714,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                             genps_p4()[igen].t()
                            );
 
-        //Create status=1 b. This seems to only work properly for mc@nlo.
+        //Create status=1 b. This only works properly for mc@nlo+herwig.
         already_seen_stat1.clear();
         for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
         {
@@ -1740,13 +1740,13 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                             genps_p4()[igen].t()
                            );
 
-        //Create status=1 bbar. This seems to only work properly for mc@nlo.
+        //Create status=1 bbar. This only works properly for mc@nlo+herwig.
         already_seen_stat1.clear();
         for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
         {
             DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
             if ( is_duplicate_stat1(id) ) {bbar_dup_stat1++; bbar_dup_stat1_tot++; continue;}
-            //if ( is_duplicate_stat1_b(id) ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
+            if ( is_duplicate_stat1_b(id) && ismcatnlo ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
             bbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vbbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
             bbar_stat1_tot++;
@@ -1777,7 +1777,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                           genps_p4()[igen].t()
                          );
 
-      //Create status=1 top. This seems to only work properly for mc@nlo.
+      //Create status=1 top. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
       for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
       {
@@ -1805,13 +1805,13 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                           genps_p4()[igen].t()
                          );
 
-      //Create status=1 tbar. This seems to only work properly for mc@nlo.
+      //Create status=1 tbar. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
       for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
       {
           DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(id) ) {tbar_dup_stat1++; tbar_dup_stat1_tot++; continue;}
-          //if ( is_duplicate_stat1_t(id) ) {cout<<"***********tbar shares daughter with t************"<<endl;}
+          if ( is_duplicate_stat1_t(id) && ismcatnlo ) {cout<<"***********tbar shares daughter with t************"<<endl;}
           tbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vtbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
           tbar_stat1_tot++;
@@ -2022,7 +2022,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  //	  cout << "found parton, igen " << igen << " id " << pid << " motherid " << mothid << " pt " << genps_p4().at(igen).pt() << endl;
     
 	}
-  if (topPlus_status3!=topPlus_status2 || topMinus_status3!=topMinus_status2) cout<<" final top different from status=3 top "<<endl;
+  if (ismcatnlo && ( topPlus_status3!=topPlus_status2 || topMinus_status3!=topMinus_status2 ) ) cout<<" final top different from status=3 top "<<endl; //no status=2 tops in pythia
 
 
   if(!foundbPlus || !foundbMinus) {
@@ -2030,8 +2030,45 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
     dumpDocLines();
   }
 
+  if(ntaus>0) continue;
+
   //For MC@NLO. Boost status=3 W back to status=2
   if(ismcatnlo && nleps_ == 2) {
+
+    //if(ntaus==0 && (lepPlus_status1!=lepPlus_status3 || lepMinus_status1!=lepMinus_status3) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3.E()-lepPlus_status1.E()<<" "<<lepMinus_status3.E()-lepMinus_status1.E()<<endl;
+
+    topPlus_status1.SetXYZT(vt_stat1.x(),
+                        vt_stat1.y(),
+                        vt_stat1.z(),
+                        vt_stat1.t()
+                       );
+
+    topMinus_status1.SetXYZT(vtbar_stat1.x(),
+                        vtbar_stat1.y(),
+                        vtbar_stat1.z(),
+                        vtbar_stat1.t()
+                       );
+
+    bPlus_status1.SetXYZT(vb_stat1.x(),
+                        vb_stat1.y(),
+                        vb_stat1.z(),
+                        vb_stat1.t()
+                       );
+
+    bMinus_status1.SetXYZT(vbbar_stat1.x(),
+                        vbbar_stat1.y(),
+                        vbbar_stat1.z(),
+                        vbbar_stat1.t()
+                       );
+
+    if(ntaus==0 && ntopPlusDaughters==2 && fabs( (bPlus_status1+lepPlus_status1+nuPlus_status1).E() - topPlus_status1.E() )>1e-3 ) cout<<"Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<< (bPlus_status1+lepPlus_status1+nuPlus_status1).E() - topPlus_status1.E() <<endl;
+    if(ntaus==0 && ntopMinusDaughters==2 && fabs( (bMinus_status1+lepMinus_status1+nuMinus_status1).E() - topMinus_status1.E() )>1e-3 ) cout<<"Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< (bMinus_status1+lepMinus_status1+nuMinus_status1).E() - topMinus_status1.E() <<endl;
+
+    //status=1 top should not include the ISR jet, so sum the b+l+nu (this method doesn't work when there are taus, but then we can't easily define a status=1 top in any case)
+    if(ntaus==0) topPlus_status1 = bPlus_status1+lepPlus_status1+nuPlus_status1;
+    if(ntaus==0) topMinus_status1 = bMinus_status1+lepMinus_status1+nuMinus_status1;
+
+
 
     //WPlus
     TLorentzVector WPlus_status3B = WPlus_status3;
@@ -2083,7 +2120,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
     nuMinus_status3 = nuMinus_status3B;
     WMinus_status3 = WMinus_status2;
 
-    //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay
+    //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay. Note this means the effective top has lower mass. This is probably what we want for top polarisation, but not for charge asymmetry?
+    //if(ntopPlusDaughters>2) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<<topPlus_status3.M()<<" "<<(WPlus_status2 + bPlus_status3).M()<<endl;
     topPlus_status3 = WPlus_status2 + bPlus_status3; 
     topMinus_status3 = WMinus_status2 + bMinus_status3;
 
@@ -2093,6 +2131,9 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       cout<<(bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status3.E()<<" "<<(bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status3.E()<<" W: "<<(lepPlus_status3B+nuPlus_status3B).E() - WPlus_status2.E()<<" "<<(lepMinus_status3B+nuMinus_status3B).E() - WMinus_status2.E()<<endl; //here we expect exact agreement
       cout<<(bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status2.E()<<" "<<(bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
     }
+
+
+    //if(ntaus==0) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< topPlus_status3.E() - topPlus_status1.E() << " " << topMinus_status3.E() - topMinus_status1.E() <<endl;
 
   }
 
