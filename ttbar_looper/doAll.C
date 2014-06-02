@@ -217,8 +217,8 @@ void doAll(bool skipFWLite = true)
     //pickSkimIfExists(chtttest,"/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_8TeV-mcatnlo_Summer12_DR53X-PU_S10_START53_V7A-v1/V05-03-24/merged*123.root");
 
     pickSkimIfExists(chtttest,"particle_level_test/ntuple_1_1_GGJ_mcatnlo_nonslim_alldaughters_allstatus.root");
-    //pickSkimIfExists(chtttest,"/hadoop/cms/store/user/linacre/CMS2_V05-03-32/TT_8TeV-mcatnlo_Summer12_DR53X-PU_S10_START53_V7A-v1/ntuple_1_1_NuN.root");
-    //pickSkimIfExists(chtttest,"/hadoop/cms/store/user/linacre/CMS2_V05-03-32/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1/ntuple_1_1_20s.root");
+    //pickSkimIfExists(chtttest,"/hadoop/cms/store/user/linacre/CMS2_V05-03-32/test_TT_8TeV-mcatnlo_Summer12_DR53X-PU_S10_START53_V7A-v1/ntuple_1_1_NuN.root");
+    //pickSkimIfExists(chtttest,"/hadoop/cms/store/user/linacre/CMS2_V05-03-32/test_TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1/ntuple_1_1_20s.root");
 
   }
 

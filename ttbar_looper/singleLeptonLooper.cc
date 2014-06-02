@@ -1531,6 +1531,27 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       neutralino_c1_ = 0;   
       neutralino_n2_ = 0;  
 
+      lepPlus_status3_ = 0;
+      lepMinus_status3_ = 0;
+      bPlus_status3_ = 0;
+      bMinus_status3_ = 0;
+      nuPlus_status3_ = 0;
+      nuMinus_status3_ = 0;
+      topPlus_status3_ = 0;
+      topMinus_status3_ = 0;
+      WPlus_status3_ = 0;
+      WMinus_status3_ = 0;
+      lepPlus_status1_ = 0;
+      lepMinus_status1_ = 0;
+      bPlus_status1_ = 0;
+      bMinus_status1_ = 0;
+      nuPlus_status1_ = 0;
+      nuMinus_status1_ = 0;
+      topPlus_status1_ = 0;
+      topMinus_status1_ = 0;
+      WPlus_status1_ = 0;
+      WMinus_status1_ = 0;
+
       npartons_    =  0;
       nwzpartons_  = -9;
       maxpartonpt_ = -1;
@@ -1594,13 +1615,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   int b_dup_stat1 = 0;
   int bbar_dup_stat1 = 0;
 
-  TLorentzVector lepPlus_status3(0, 0, 0, 0), lepMinus_status3(0, 0, 0, 0), bPlus_status3(0, 0, 0, 0), bMinus_status3(0, 0, 0, 0), nuPlus_status3(0, 0, 0, 0), nuMinus_status3(0, 0, 0, 0), topPlus_status3(0, 0, 0, 0), topMinus_status3(0, 0, 0, 0);
-  TLorentzVector WPlus_status2(0, 0, 0, 0), WPlus_status3(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0), WMinus_status3(0, 0, 0, 0);
-  TLorentzVector topPlus_status2(0, 0, 0, 0), topMinus_status2(0, 0, 0, 0);
-  TLorentzVector topPlus_status1(0, 0, 0, 0), topMinus_status1(0, 0, 0, 0), WPlus_status1(0, 0, 0, 0), WMinus_status1(0, 0, 0, 0), lepPlus_status1(0, 0, 0, 0), lepMinus_status1(0, 0, 0, 0), bPlus_status1(0, 0, 0, 0), bMinus_status1(0, 0, 0, 0), nuPlus_status1(0, 0, 0, 0), nuMinus_status1(0, 0, 0, 0);
+  TLorentzVector WPlus_status2_T(0, 0, 0, 0), WMinus_status2_T(0, 0, 0, 0);
+  LorentzVector WPlus_status2(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0);
+  LorentzVector topPlus_status2(0, 0, 0, 0), topMinus_status2(0, 0, 0, 0);
 
-	int ntops = 0;
-	nbs_ = 0;
+  int ntops = 0;
+  nbs_ = 0;
   int foundWPlus = 0;
   int foundWMinus = 0;
   int foundbPlus = 0;
@@ -1611,8 +1631,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   already_seen_stat1_t.clear();
   already_seen_stat1_b.clear();
 
-  //dumpDocLines();
-
+  
 	for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
 
 	  if ( abs( genps_id().at(igen) ) == 11) vdilepton += genps_p4().at(igen); 
@@ -1636,13 +1655,14 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                               genps_p4()[igen].z(),
                               genps_p4()[igen].t()
                              );
-        }
-        if( genps_status().at(igen) == 3 ) {
-          WPlus_status3.SetXYZT(genps_p4()[igen].x(),
+          WPlus_status2_T.SetXYZT(genps_p4()[igen].x(),
                               genps_p4()[igen].y(),
                               genps_p4()[igen].z(),
                               genps_p4()[igen].t()
                              );
+        }
+        if( genps_status().at(igen) == 3 ) {
+          WPlus_status3_ = &(genps_p4().at(igen));
         }
       }
       if( id == -24 ){
@@ -1653,13 +1673,14 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                               genps_p4()[igen].z(),
                               genps_p4()[igen].t()
                              );
-        }
-        if( genps_status().at(igen) == 3 ) {
-          WMinus_status3.SetXYZT(genps_p4()[igen].x(),
+          WMinus_status2_T.SetXYZT(genps_p4()[igen].x(),
                               genps_p4()[igen].y(),
                               genps_p4()[igen].z(),
                               genps_p4()[igen].t()
                              );
+        }
+        if( genps_status().at(igen) == 3 ) {
+          WMinus_status3_ = &(genps_p4().at(igen));
         }
       }
 
@@ -1708,11 +1729,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
         foundbPlus = 1;
         b_         = &(genps_p4().at(igen));
 
-        bPlus_status3.SetXYZT(genps_p4()[igen].x(),
-                            genps_p4()[igen].y(),
-                            genps_p4()[igen].z(),
-                            genps_p4()[igen].t()
-                           );
+        bPlus_status3_ = &(genps_p4().at(igen));
 
         //Create status=1 b. This only works properly for mc@nlo+herwig.
         already_seen_stat1.clear();
@@ -1734,11 +1751,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
         foundbMinus = 1;
         bbar_      = &(genps_p4().at(igen));
 
-        bMinus_status3.SetXYZT(genps_p4()[igen].x(),
-                            genps_p4()[igen].y(),
-                            genps_p4()[igen].z(),
-                            genps_p4()[igen].t()
-                           );
+        bMinus_status3_ = &(genps_p4().at(igen));
 
         //Create status=1 bbar. This only works properly for mc@nlo+herwig.
         already_seen_stat1.clear();
@@ -1771,11 +1784,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	    vttbar    += genps_p4().at(igen);
 	    ntops++;
 
-      topPlus_status3.SetXYZT(genps_p4()[igen].x(),
-                          genps_p4()[igen].y(),
-                          genps_p4()[igen].z(),
-                          genps_p4()[igen].t()
-                         );
+      topPlus_status3_ = &(genps_p4().at(igen));
 
       //Create status=1 top. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -1799,11 +1808,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	    vttbar    += genps_p4().at(igen); 
 	    ntops++;
 
-      topMinus_status3.SetXYZT(genps_p4()[igen].x(),
-                          genps_p4()[igen].y(),
-                          genps_p4()[igen].z(),
-                          genps_p4()[igen].t()
-                         );
+      topMinus_status3_ = &(genps_p4().at(igen));
 
       //Create status=1 tbar. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -1822,18 +1827,13 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	  }
 
-
                                 if ( genps_id_mother()[igen] == 24 )
                                 {
                                     if ( (genps_id()[igen] == -11 || genps_id()[igen] == -13 ||  genps_id()[igen] == -15) )
                                     {
-                                        lepPlus_status3.SetXYZT(genps_p4()[igen].x(),
-                                                            genps_p4()[igen].y(),
-                                                            genps_p4()[igen].z(),
-                                                            genps_p4()[igen].t()
-                                                           );
+                                        lepPlus_status3_ = &(genps_p4().at(igen));
 
-                                        //status = 1 lepton
+                                        //status = 1 lepton (e, mu only)
                                         if ( genps_id()[igen] != -15 )
                                         {
                                             for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
@@ -1841,7 +1841,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                                 int daughterID = genps_lepdaughter_id()[igen][kk];
                                                 if ( daughterID == genps_id()[igen] )
                                                 {
-                                                    lepPlus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
+                                                    lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
                                                     continue;
                                                 }
                                                 //need to add all status=1 photons in a DR<0.1 cone around the lepton.
@@ -1851,23 +1851,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     }
                                     else if ( (genps_id()[igen] == 12 || genps_id()[igen] == 14 ||  genps_id()[igen] == 16) )
                                     {
-                                        nuPlus_status3.SetXYZT(genps_p4()[igen].x(),
-                                                            genps_p4()[igen].y(),
-                                                            genps_p4()[igen].z(),
-                                                            genps_p4()[igen].t()
-                                                           );
+                                        nuPlus_status3_ = &(genps_p4().at(igen));
 
                                         //status = 1 neutrino
-                                        if ( genps_id()[igen] != 16 ) 
+                                        for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
                                         {
-                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            int daughterID = genps_lepdaughter_id()[igen][kk];
+                                            if ( daughterID == genps_id()[igen] )
                                             {
-                                                int daughterID = genps_lepdaughter_id()[igen][kk];
-                                                if ( daughterID == genps_id()[igen] )
-                                                {
-                                                    nuPlus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
-                                                    continue;
-                                                }
+                                                nuPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
+                                                continue;
                                             }
                                         }
 
@@ -1878,14 +1871,9 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                 {
                                     if ( (genps_id()[igen] == 11 || genps_id()[igen] == 13 ||  genps_id()[igen] == 15) )
                                     {
+                                        lepMinus_status3_ = &(genps_p4().at(igen));
 
-                                        lepMinus_status3.SetXYZT( genps_p4()[igen].x(),
-                                                              genps_p4()[igen].y(),
-                                                              genps_p4()[igen].z(),
-                                                              genps_p4()[igen].t()
-                                                            );
-
-                                        //status = 1 lepton
+                                        //status = 1 lepton (e, mu only)
                                         if ( genps_id()[igen] != 15 )
                                         {
                                             for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
@@ -1893,7 +1881,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                                 int daughterID = genps_lepdaughter_id()[igen][kk];
                                                 if ( daughterID == genps_id()[igen] )
                                                 {
-                                                    lepMinus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
+                                                    lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
                                                     continue;
                                                 }
                                                 //need to add all status=1 photons in a DR<0.1 cone around the lepton.
@@ -1903,33 +1891,22 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     }
                                     else if ( (genps_id()[igen] == -12 || genps_id()[igen] == -14 ||  genps_id()[igen] == -16) )
                                     {
-
-                                        nuMinus_status3.SetXYZT( genps_p4()[igen].x(),
-                                                              genps_p4()[igen].y(),
-                                                              genps_p4()[igen].z(),
-                                                              genps_p4()[igen].t()
-                                                            );
+                                        nuMinus_status3_ = &(genps_p4().at(igen));
 
                                         //status = 1 neutrino
-                                        if ( genps_id()[igen] != -16 ) 
+                                        for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
                                         {
-                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            int daughterID = genps_lepdaughter_id()[igen][kk];
+                                            if ( daughterID == genps_id()[igen] )
                                             {
-                                                int daughterID = genps_lepdaughter_id()[igen][kk];
-                                                if ( daughterID == genps_id()[igen] )
-                                                {
-                                                    nuMinus_status1.SetXYZT( genps_lepdaughter_p4()[igen][kk].x(), genps_lepdaughter_p4()[igen][kk].y(), genps_lepdaughter_p4()[igen][kk].z(), genps_lepdaughter_p4()[igen][kk].t() );
-                                                    continue;
-                                                }
+                                                nuMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
+                                                continue;
                                             }
                                         }
 
                                     }
 
                                 }
-
-
-
 
 
 
@@ -2022,7 +1999,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  //	  cout << "found parton, igen " << igen << " id " << pid << " motherid " << mothid << " pt " << genps_p4().at(igen).pt() << endl;
     
 	}
-  if (ismcatnlo && ( topPlus_status3!=topPlus_status2 || topMinus_status3!=topMinus_status2 ) ) cout<<" final top different from status=3 top "<<endl; //no status=2 tops in pythia
+  //if (ismcatnlo && ( topPlus_status3_!=topPlus_status2 || topMinus_status3_!=topMinus_status2 ) ) cout<<" final top different from status=3 top "<<endl; //no status=2 tops in pythia
 
 
   if(!foundbPlus || !foundbMinus) {
@@ -2030,110 +2007,166 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
     dumpDocLines();
   }
 
-  if(ntaus>0) continue;
+  //if(ntaus>0) continue; //for testing particle-level
 
   //For MC@NLO. Boost status=3 W back to status=2
   if(ismcatnlo && nleps_ == 2) {
+    //if(ntaus==0 && (lepPlus_status1_!=lepPlus_status3_ || lepMinus_status1_!=lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
 
-    //if(ntaus==0 && (lepPlus_status1!=lepPlus_status3 || lepMinus_status1!=lepMinus_status3) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3.E()-lepPlus_status1.E()<<" "<<lepMinus_status3.E()-lepMinus_status1.E()<<endl;
+    topPlus_status1_ = &(vt_stat1);
+    topMinus_status1_ = &(vtbar_stat1);
+    bPlus_status1_ = &(vb_stat1);
+    bMinus_status1_ = &(vbbar_stat1);
 
-    topPlus_status1.SetXYZT(vt_stat1.x(),
-                        vt_stat1.y(),
-                        vt_stat1.z(),
-                        vt_stat1.t()
-                       );
-
-    topMinus_status1.SetXYZT(vtbar_stat1.x(),
-                        vtbar_stat1.y(),
-                        vtbar_stat1.z(),
-                        vtbar_stat1.t()
-                       );
-
-    bPlus_status1.SetXYZT(vb_stat1.x(),
-                        vb_stat1.y(),
-                        vb_stat1.z(),
-                        vb_stat1.t()
-                       );
-
-    bMinus_status1.SetXYZT(vbbar_stat1.x(),
-                        vbbar_stat1.y(),
-                        vbbar_stat1.z(),
-                        vbbar_stat1.t()
-                       );
-
-    if(ntaus==0 && ntopPlusDaughters==2 && fabs( (bPlus_status1+lepPlus_status1+nuPlus_status1).E() - topPlus_status1.E() )>1e-3 ) cout<<"Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<< (bPlus_status1+lepPlus_status1+nuPlus_status1).E() - topPlus_status1.E() <<endl;
-    if(ntaus==0 && ntopMinusDaughters==2 && fabs( (bMinus_status1+lepMinus_status1+nuMinus_status1).E() - topMinus_status1.E() )>1e-3 ) cout<<"Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< (bMinus_status1+lepMinus_status1+nuMinus_status1).E() - topMinus_status1.E() <<endl;
+    //if(ntaus==0 && ntopPlusDaughters==2 && fabs( (bPlus_status1_+lepPlus_status1_+nuPlus_status1_).E() - topPlus_status1_->E() )>1e-3 ) cout<<"Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<< (bPlus_status1_+lepPlus_status1_+nuPlus_status1_).E() - topPlus_status1_->E() <<endl;
+    //if(ntaus==0 && ntopMinusDaughters==2 && fabs( (bMinus_status1_+lepMinus_status1_+nuMinus_status1_).E() - topMinus_status1_->E() )>1e-3 ) cout<<"Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< (bMinus_status1_+lepMinus_status1_+nuMinus_status1_).E() - topMinus_status1_->E() <<endl;
 
     //status=1 top should not include the ISR jet, so sum the b+l+nu (this method doesn't work when there are taus, but then we can't easily define a status=1 top in any case)
-    if(ntaus==0) topPlus_status1 = bPlus_status1+lepPlus_status1+nuPlus_status1;
-    if(ntaus==0) topMinus_status1 = bMinus_status1+lepMinus_status1+nuMinus_status1;
-
+    //if(ntaus==0) topPlus_status1_ = bPlus_status1_+lepPlus_status1_+nuPlus_status1_;
+    if(ntaus==0) topPlus_status1_->SetXYZT(vb_stat1.x()+lepPlus_status1_->x()+nuPlus_status1_->x(),
+                    vb_stat1.y()+lepPlus_status1_->y()+nuPlus_status1_->y(),
+                    vb_stat1.z()+lepPlus_status1_->z()+nuPlus_status1_->z(),
+                    vb_stat1.t()+lepPlus_status1_->t()+nuPlus_status1_->t()
+                   );
+    //if(ntaus==0) topMinus_status1_ = bMinus_status1_+lepMinus_status1_+nuMinus_status1_;
+    if(ntaus==0) topMinus_status1_->SetXYZT(vbbar_stat1.x()+lepMinus_status1_->x()+nuMinus_status1_->x(),
+                    vbbar_stat1.y()+lepMinus_status1_->y()+nuMinus_status1_->y(),
+                    vbbar_stat1.z()+lepMinus_status1_->z()+nuMinus_status1_->z(),
+                    vbbar_stat1.t()+lepMinus_status1_->t()+nuMinus_status1_->t()
+                   );
 
 
     //WPlus
-    TLorentzVector WPlus_status3B = WPlus_status3;
-    TLorentzVector lepPlus_status3B = lepPlus_status3;
-    TLorentzVector nuPlus_status3B = nuPlus_status3;
+    TLorentzVector WPlus_status3B;
+    WPlus_status3B.SetXYZT(WPlus_status3_->x(),
+                    WPlus_status3_->y(),
+                    WPlus_status3_->z(),
+                    WPlus_status3_->t()
+                   );
+    TLorentzVector lepPlus_status3B;
+    lepPlus_status3B.SetXYZT(lepPlus_status3_->x(),
+                    lepPlus_status3_->y(),
+                    lepPlus_status3_->z(),
+                    lepPlus_status3_->t()
+                   );
+    TLorentzVector nuPlus_status3B;
+    nuPlus_status3B.SetXYZT(nuPlus_status3_->x(),
+                    nuPlus_status3_->y(),
+                    nuPlus_status3_->z(),
+                    nuPlus_status3_->t()
+                   );
 
-    WPlus_status3B.Boost(-WPlus_status2.BoostVector());
 
-    lepPlus_status3B.Boost(-WPlus_status2.BoostVector());
+    WPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
+
+    lepPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
     lepPlus_status3B.Boost(-WPlus_status3B.BoostVector());
-    lepPlus_status3B.Boost(WPlus_status2.BoostVector());
-    nuPlus_status3B.Boost(-WPlus_status2.BoostVector());
+    lepPlus_status3B.Boost(WPlus_status2_T.BoostVector());
+    nuPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
     nuPlus_status3B.Boost(-WPlus_status3B.BoostVector());
-    nuPlus_status3B.Boost(WPlus_status2.BoostVector());
+    nuPlus_status3B.Boost(WPlus_status2_T.BoostVector());
 
     WPlus_status3B.Boost(-WPlus_status3B.BoostVector());
-    WPlus_status3B.Boost(WPlus_status2.BoostVector());
+    WPlus_status3B.Boost(WPlus_status2_T.BoostVector());
 
 
     //WMinus
-    TLorentzVector WMinus_status3B = WMinus_status3;
-    TLorentzVector lepMinus_status3B = lepMinus_status3;
-    TLorentzVector nuMinus_status3B = nuMinus_status3;
+    TLorentzVector WMinus_status3B;
+    WMinus_status3B.SetXYZT(WMinus_status3_->x(),
+                    WMinus_status3_->y(),
+                    WMinus_status3_->z(),
+                    WMinus_status3_->t()
+                   );
+    TLorentzVector lepMinus_status3B;
+    lepMinus_status3B.SetXYZT(lepMinus_status3_->x(),
+                    lepMinus_status3_->y(),
+                    lepMinus_status3_->z(),
+                    lepMinus_status3_->t()
+                   );
+    TLorentzVector nuMinus_status3B;
+    nuMinus_status3B.SetXYZT(nuMinus_status3_->x(),
+                    nuMinus_status3_->y(),
+                    nuMinus_status3_->z(),
+                    nuMinus_status3_->t()
+                   );
 
-    WMinus_status3B.Boost(-WMinus_status2.BoostVector());
+    WMinus_status3B.Boost(-WMinus_status2_T.BoostVector());
 
-    lepMinus_status3B.Boost(-WMinus_status2.BoostVector());
+    lepMinus_status3B.Boost(-WMinus_status2_T.BoostVector());
     lepMinus_status3B.Boost(-WMinus_status3B.BoostVector());
-    lepMinus_status3B.Boost(WMinus_status2.BoostVector());
-    nuMinus_status3B.Boost(-WMinus_status2.BoostVector());
+    lepMinus_status3B.Boost(WMinus_status2_T.BoostVector());
+    nuMinus_status3B.Boost(-WMinus_status2_T.BoostVector());
     nuMinus_status3B.Boost(-WMinus_status3B.BoostVector());
-    nuMinus_status3B.Boost(WMinus_status2.BoostVector());
+    nuMinus_status3B.Boost(WMinus_status2_T.BoostVector());
 
     WMinus_status3B.Boost(-WMinus_status3B.BoostVector());
-    WMinus_status3B.Boost(WMinus_status2.BoostVector());
+    WMinus_status3B.Boost(WMinus_status2_T.BoostVector());
 
 
-    //cout<<WPlus_status3B.E() - WPlus_status2.E()<<" "<<WMinus_status3B.E() - WMinus_status2.E()<<endl;
-    //cout<<(lepPlus_status3B+nuPlus_status3B).E() - WPlus_status2.E()<<" "<<(lepMinus_status3B+nuMinus_status3B).E() - WMinus_status2.E()<<endl<<endl;
+    //cout<<WPlus_status3B.E() - WPlus_status2_T.E()<<" "<<WMinus_status3B.E() - WMinus_status2_T.E()<<endl;
+    //cout<<(lepPlus_status3B+nuPlus_status3B).E() - WPlus_status2_T.E()<<" "<<(lepMinus_status3B+nuMinus_status3B).E() - WMinus_status2_T.E()<<endl<<endl;
 
-    //if(topPlus_status3.E()-(WPlus_status2 + bPlus_status3).E() > 1e-4) cout<<" top has >2 daughters "<<topPlus_status3.E()-(WPlus_status2 + bPlus_status3).E()<<endl;
+    //if(topPlus_status3_->E()-(WPlus_status2_T + bPlus_status3_).E() > 1e-4) cout<<" top has >2 daughters "<<topPlus_status3_->E()-(WPlus_status2_T + bPlus_status3_).E()<<endl;
+
+    lepPlus_status3_->SetXYZT(lepPlus_status3B.X(),
+                    lepPlus_status3B.Y(),
+                    lepPlus_status3B.Z(),
+                    lepPlus_status3B.T()
+                   );
+    nuPlus_status3_->SetXYZT(nuPlus_status3B.X(),
+                    nuPlus_status3B.Y(),
+                    nuPlus_status3B.Z(),
+                    nuPlus_status3B.T()
+                   );
+    WPlus_status3_->SetXYZT(WPlus_status2.X(),
+                    WPlus_status2.Y(),
+                    WPlus_status2.Z(),
+                    WPlus_status2.T()
+                   );
 
 
-    lepPlus_status3 = lepPlus_status3B;
-    nuPlus_status3 = nuPlus_status3B;
-    WPlus_status3 = WPlus_status2;
+    lepMinus_status3_->SetXYZT(lepMinus_status3B.X(),
+                    lepMinus_status3B.Y(),
+                    lepMinus_status3B.Z(),
+                    lepMinus_status3B.T()
+                   );
+    nuMinus_status3_->SetXYZT(nuMinus_status3B.X(),
+                    nuMinus_status3B.Y(),
+                    nuMinus_status3B.Z(),
+                    nuMinus_status3B.T()
+                   );
+    WMinus_status3_->SetXYZT(WMinus_status2.X(),
+                    WMinus_status2.Y(),
+                    WMinus_status2.Z(),
+                    WMinus_status2.T()
+                   );
 
-    lepMinus_status3 = lepMinus_status3B;
-    nuMinus_status3 = nuMinus_status3B;
-    WMinus_status3 = WMinus_status2;
 
     //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay. Note this means the effective top has lower mass. This is probably what we want for top polarisation, but not for charge asymmetry?
-    //if(ntopPlusDaughters>2) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<<topPlus_status3.M()<<" "<<(WPlus_status2 + bPlus_status3).M()<<endl;
-    topPlus_status3 = WPlus_status2 + bPlus_status3; 
-    topMinus_status3 = WMinus_status2 + bMinus_status3;
+    //if(ntopPlusDaughters>2) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<<topPlus_status3_->M()<<" "<<(WPlus_status2_T + bPlus_status3_).M()<<endl;
+    //topPlus_status3_ = WPlus_status2 + bPlus_status3_; 
+    topPlus_status3_->SetXYZT(WPlus_status2.X()+bPlus_status3_->X(),
+                    WPlus_status2.Y()+bPlus_status3_->Y(),
+                    WPlus_status2.Z()+bPlus_status3_->Z(),
+                    WPlus_status2.T()+bPlus_status3_->T()
+                   );
+    //topMinus_status3_ = WMinus_status2 + bMinus_status3_;
+    topMinus_status3_->SetXYZT(WMinus_status2.X()+bMinus_status3_->X(),
+                    WMinus_status2.Y()+bMinus_status3_->Y(),
+                    WMinus_status2.Z()+bMinus_status3_->Z(),
+                    WMinus_status2.T()+bMinus_status3_->T()
+                   );
 
     //check for error in calculation
-    if( fabs( (bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status3.E() ) > 5e-2 || fabs( (bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status3.E() ) > 5e-2 ) {
+
+    if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 5e-2 || fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 5e-2 ) {
       cout<<" Top daughters don't match top. Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<endl;
-      cout<<(bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status3.E()<<" "<<(bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status3.E()<<" W: "<<(lepPlus_status3B+nuPlus_status3B).E() - WPlus_status2.E()<<" "<<(lepMinus_status3B+nuMinus_status3B).E() - WMinus_status2.E()<<endl; //here we expect exact agreement
-      cout<<(bPlus_status3+lepPlus_status3B+nuPlus_status3B).E() - topPlus_status2.E()<<" "<<(bMinus_status3+lepMinus_status3B+nuMinus_status3B).E() - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
+      cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E()<<" "<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E()<<" W: "<<(lepPlus_status3_->E()+nuPlus_status3_->E()) - WPlus_status2_T.E()<<" "<<(lepMinus_status3_->E()+nuMinus_status3_->E()) - WMinus_status2_T.E()<<endl; //here we expect exact agreement
+      cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status2.E()<<" "<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
     }
 
 
-    //if(ntaus==0) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< topPlus_status3.E() - topPlus_status1.E() << " " << topMinus_status3.E() - topMinus_status1.E() <<endl;
+    //if(ntaus==0) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< topPlus_status3_->E() - topPlus_status1_->E() << " " << topMinus_status3_->E() - topMinus_status1_->E() <<endl;
 
   }
 
@@ -5037,6 +5070,30 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("neutralino_n2" , "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &neutralino_n2_ );
   outTree->Branch("lep_t_id",            &lep_t_id_,            "lep_t_id/I");  
   outTree->Branch("lep_tbar_id",         &lep_tbar_id_,         "lep_tbar_id/I");  
+
+
+  outTree->Branch("lepPlus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepPlus_status3_ );
+  outTree->Branch("lepMinus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepMinus_status3_ );
+  outTree->Branch("bPlus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &bPlus_status3_ );
+  outTree->Branch("bMinus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &bMinus_status3_ );
+  outTree->Branch("nuPlus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuPlus_status3_ );
+  outTree->Branch("nuMinus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuMinus_status3_ );
+  outTree->Branch("topPlus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topPlus_status3_ );
+  outTree->Branch("topMinus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topMinus_status3_ );
+  outTree->Branch("WPlus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WPlus_status3_ );
+  outTree->Branch("WMinus_status3", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status3_ );
+  outTree->Branch("lepPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepPlus_status1_ );
+  outTree->Branch("lepMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepMinus_status1_ );
+  outTree->Branch("bPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &bPlus_status1_ );
+  outTree->Branch("bMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &bMinus_status1_ );
+  outTree->Branch("nuPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuPlus_status1_ );
+  outTree->Branch("nuMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuMinus_status1_ );
+  outTree->Branch("topPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topPlus_status1_ );
+  outTree->Branch("topMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topMinus_status1_ );
+  outTree->Branch("WPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WPlus_status1_ );
+  outTree->Branch("WMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status1_ );
+
+
 
   //  outTree->Branch("candidates", "std::vector<Candidate>", &candidates_);
   //  outTree->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > >", &jets_ );
