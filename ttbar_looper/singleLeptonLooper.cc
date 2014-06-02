@@ -1999,7 +1999,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  //	  cout << "found parton, igen " << igen << " id " << pid << " motherid " << mothid << " pt " << genps_p4().at(igen).pt() << endl;
     
 	}
-  //if (ismcatnlo && ( topPlus_status3_!=topPlus_status2 || topMinus_status3_!=topMinus_status2 ) ) cout<<" final top different from status=3 top "<<endl; //no status=2 tops in pythia
+  if (ismcatnlo && ( *topPlus_status3_!=topPlus_status2 || *topMinus_status3_!=topMinus_status2 ) ) cout<<" final top different from status=3 top "<<endl; //no status=2 tops in pythia
 
 
   if(!foundbPlus || !foundbMinus) {
@@ -2011,15 +2011,15 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
   //For MC@NLO. Boost status=3 W back to status=2
   if(ismcatnlo && nleps_ == 2) {
-    //if(ntaus==0 && (lepPlus_status1_!=lepPlus_status3_ || lepMinus_status1_!=lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
+    //if(ntaus==0 && (*lepPlus_status1_!=*lepPlus_status3_ || *lepMinus_status1_!=*lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
 
     topPlus_status1_ = &(vt_stat1);
     topMinus_status1_ = &(vtbar_stat1);
     bPlus_status1_ = &(vb_stat1);
     bMinus_status1_ = &(vbbar_stat1);
 
-    //if(ntaus==0 && ntopPlusDaughters==2 && fabs( (bPlus_status1_+lepPlus_status1_+nuPlus_status1_).E() - topPlus_status1_->E() )>1e-3 ) cout<<"Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<< (bPlus_status1_+lepPlus_status1_+nuPlus_status1_).E() - topPlus_status1_->E() <<endl;
-    //if(ntaus==0 && ntopMinusDaughters==2 && fabs( (bMinus_status1_+lepMinus_status1_+nuMinus_status1_).E() - topMinus_status1_->E() )>1e-3 ) cout<<"Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< (bMinus_status1_+lepMinus_status1_+nuMinus_status1_).E() - topMinus_status1_->E() <<endl;
+    //if(ntaus==0 && ntopPlusDaughters==2 && fabs( (*bPlus_status1_+*lepPlus_status1_+*nuPlus_status1_).E() - topPlus_status1_->E() )>1e-3 ) cout<<"Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<< (*bPlus_status1_+*lepPlus_status1_+*nuPlus_status1_).E() - topPlus_status1_->E() <<endl;
+    //if(ntaus==0 && ntopMinusDaughters==2 && fabs( (*bMinus_status1_+*lepMinus_status1_+*nuMinus_status1_).E() - topMinus_status1_->E() )>1e-3 ) cout<<"Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< (*bMinus_status1_+*lepMinus_status1_+*nuMinus_status1_).E() - topMinus_status1_->E() <<endl;
 
     //status=1 top should not include the ISR jet, so sum the b+l+nu (this method doesn't work when there are taus, but then we can't easily define a status=1 top in any case)
     //if(ntaus==0) topPlus_status1_ = bPlus_status1_+lepPlus_status1_+nuPlus_status1_;
