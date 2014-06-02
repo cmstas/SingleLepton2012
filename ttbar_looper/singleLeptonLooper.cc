@@ -1618,6 +1618,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   TLorentzVector WPlus_status2_T(0, 0, 0, 0), WMinus_status2_T(0, 0, 0, 0);
   LorentzVector WPlus_status2(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0);
   LorentzVector topPlus_status2(0, 0, 0, 0), topMinus_status2(0, 0, 0, 0);
+  LorentzVector WPlus_status1_temp(0, 0, 0, 0), WMinus_status1_temp(0, 0, 0, 0);
 
   int ntops = 0;
   nbs_ = 0;
@@ -1663,6 +1664,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
         }
         if( genps_status().at(igen) == 3 ) {
           WPlus_status3_ = &(genps_p4().at(igen));
+          WPlus_status1_ = &(WPlus_status1_temp);
+          WPlus_status1_->SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             ); //only OK for MC@NLO+Herwig, where the status=1 and 3 leptons are identical
         }
       }
       if( id == -24 ){
@@ -1681,6 +1688,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
         }
         if( genps_status().at(igen) == 3 ) {
           WMinus_status3_ = &(genps_p4().at(igen));
+          WMinus_status1_ = &(WMinus_status1_temp);
+          WMinus_status1_->SetXYZT(genps_p4()[igen].x(),
+                              genps_p4()[igen].y(),
+                              genps_p4()[igen].z(),
+                              genps_p4()[igen].t()
+                             ); //only OK for MC@NLO+Herwig, where the status=1 and 3 leptons are identical
         }
       }
 
@@ -1833,19 +1846,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     {
                                         lepPlus_status3_ = &(genps_p4().at(igen));
 
-                                        //status = 1 lepton (e, mu only)
-                                        if ( genps_id()[igen] != -15 )
+                                        //status = 1 lepton
+                                        for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
                                         {
-                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            int daughterID = genps_lepdaughter_id()[igen][kk];
+                                            if ( daughterID == -11 || daughterID == -13 )
                                             {
-                                                int daughterID = genps_lepdaughter_id()[igen][kk];
-                                                if ( daughterID == genps_id()[igen] )
-                                                {
-                                                    lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                    continue;
-                                                }
-                                                //need to add all status=1 photons in a DR<0.1 cone around the lepton.
+                                                lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
+                                                continue;
                                             }
+                                            //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
 
                                     }
@@ -1873,19 +1883,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     {
                                         lepMinus_status3_ = &(genps_p4().at(igen));
 
-                                        //status = 1 lepton (e, mu only)
-                                        if ( genps_id()[igen] != 15 )
+                                        //status = 1 lepton
+                                        for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
                                         {
-                                            for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
+                                            int daughterID = genps_lepdaughter_id()[igen][kk];
+                                            if ( daughterID == 11 || daughterID == 13 )
                                             {
-                                                int daughterID = genps_lepdaughter_id()[igen][kk];
-                                                if ( daughterID == genps_id()[igen] )
-                                                {
-                                                    lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                    continue;
-                                                }
-                                                //need to add all status=1 photons in a DR<0.1 cone around the lepton.
+                                                lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
+                                                continue;
                                             }
+                                            //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
 
                                     }
