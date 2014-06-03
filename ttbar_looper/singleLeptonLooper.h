@@ -152,6 +152,13 @@ class singleLeptonLooper
 	Int_t   eldup_;    
 
 	// MC truth lepton info
+  	Int_t lepPlus_status3_id_;
+  	Int_t lepMinus_status3_id_;
+  	Int_t lepPlus_status3_nDaughters_;
+  	Int_t lepMinus_status3_nDaughters_;
+  	Int_t nuPlus_status3_id_;
+  	Int_t nuMinus_status3_id_;
+
 	Int_t   mcid1_;    
 	Int_t   mcid2_;    
 	Int_t   lep_t_id_;
