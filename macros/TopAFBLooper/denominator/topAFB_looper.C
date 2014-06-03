@@ -158,7 +158,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
             int ntaus = 0;
             int nleps = 0;
             if (!isData)
-                nleps = leptonGenpCount_lepTauDecays(nels, nmus, ntaus);
+                nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
 
             if (prefix == "ttdil"    &&  nleps == 2) ++nEventsTotal;
             // Progress feedback to the user
@@ -877,3 +877,32 @@ void topAFB_looper::fillHistos(TProfile *h2[4][4], float xvalue, float yvalue, i
     h2[3][3]             -> Fill(xvalue, yvalue);
 }
 
+
+int topAFB_looper::leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau){
+    nele = 0;
+    nmuon = 0;
+    ntau = 0;
+    int size = cms2.genps_id().size();
+    for (int jj = 0; jj < size; jj++)
+    {
+        if ( cms2.genps_status().at(jj) != 3 ) continue;
+        if (abs(cms2.genps_id().at(jj)) == 11) nele++;
+        if (abs(cms2.genps_id().at(jj)) == 13) nmuon++;
+        if (abs(cms2.genps_id().at(jj)) == 15)
+        {
+            for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id()[jj].size(); kk++)
+            {
+                int daughter = abs(cms2.genps_lepdaughter_id()[jj][kk]);
+                //we count neutrino's because that guarantees that
+                //there is a corresponding lepton and that it comes from
+                // a leptonic tau decay. You can get electrons from converted photons
+                //which are radiated by charged pions from the tau decay but thats
+                //hadronic and we don't care for those
+                if ( daughter == 12 || daughter == 14)
+                    ntau++;
+            }//daughter loop
+        }//if tau
+    }//genps loop
+
+    return nele + nmuon + ntau;
+}

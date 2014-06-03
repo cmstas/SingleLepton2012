@@ -19,6 +19,7 @@ public:
     void fillHistos(TH1D *h1[4][4], float value, double weight, int myType, int nJetsIdx, int Nsolns = 1);
     void fillHistos(TH2D *h2[4][4], float xvalue, float yvalue, double weight, int myType, int nJetsIdx, int Nsolns = 1);
     void fillHistos(TProfile *h2[4][4], float xvalue, float yvalue,  int myType, int nJetsIdx);
+    int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau);
 
 private:
 
