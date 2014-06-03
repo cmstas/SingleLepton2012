@@ -14,11 +14,13 @@ TrigSF         default down    summary_1Dunfolding_trigSFdown_formated.txt
 TrigSF         default up      summary_1Dunfolding_trigSFup_formated.txt
 Nominal        default nominal summary_1Dunfolding_default_formated.txt
 #
-#These get calculated using half the difference
+#Because the subtype isn't "default", these get calculated using half
+#the difference, i.e. (up-down)/2
 Scale_fastsim  fastsim up	   summary_1Dunfolding_fastsim_scaleup_formated.txt
 Scale_fastsim  fastsim down	   summary_1Dunfolding_fastsim_scaledown_formated.txt
 #
-#These get calculated w/ respect to fastsim mass nominal
+#Because the subtype isn't "default", but we specify a new nominal file, these
+#get calculated w/ respect to their specific nominal
 Mass_fastsim   fastsim nominal summary_1Dunfolding_fastsim_massnominal_formated.txt
 Mass_fastsim   fastsim up	   summary_1Dunfolding_fastsim_massup_formated.txt
 Mass_fastsim   fastsim down	   summary_1Dunfolding_fastsim_massdown_formated.txt

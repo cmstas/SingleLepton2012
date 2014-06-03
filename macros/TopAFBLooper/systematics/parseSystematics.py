@@ -26,10 +26,10 @@ def parseSystFiles(systfiles):
 
             #Figure out how to calculate the variation, based on which
             #variation directions are specified in the steering file.
-            if ('up' in systfiles[syst][subtype].keys() and
-                'down' in systfiles[syst][subtype].keys() ):
-                if 'nominal' in systfiles[syst][subtype].keys(): vartype = 'updown_newnom'
-                elif 'nominal' not in systfiles[syst][subtype].keys():
+            directionlist = list( systfiles[syst][subtype].keys() )
+            if ('up' in directionlist and 'down' in directionlist ):
+                if 'nominal' in directionlist: vartype = 'updown_newnom'
+                elif 'nominal' not in directionlist:
                     if subtype == 'default': vartype = 'updown'
                     elif subtype != 'default': vartype = 'half'
             elif systfiles[syst][subtype].keys() == ['diffnom']: vartype = 'diffnom'
