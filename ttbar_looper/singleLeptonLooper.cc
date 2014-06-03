@@ -378,6 +378,13 @@ void singleLeptonLooper::InitBaby(){
   trkreliso10loose_ = -999.;
 
   // MC truth info
+  lepPlus_status3_id_ = -9999;
+  lepMinus_status3_id_ = -9999;
+  lepPlus_status3_nDaughters_ = -9999;
+  lepMinus_status3_nDaughters_ = -9999;
+  nuPlus_status3_id_ = -9999;
+  nuMinus_status3_id_ = -9999;
+
   mcid1_	= -1;
   mcid2_	= -1;
   lep_t_id_	= -1;
@@ -1577,6 +1584,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	//splitting ttbar into ttdil/ttotr
 	nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
   //cout<<prefix<<" "<<nels<<" "<<nmus<<" "<<ntaus<<endl;
+
+  if( nleps != 2 ) continue;  //temporary
 	
 	nels_  = nels;
 	nmus_  = nmus;
@@ -1845,8 +1854,10 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     if ( (genps_id()[igen] == -11 || genps_id()[igen] == -13 ||  genps_id()[igen] == -15) )
                                     {
                                         lepPlus_status3_ = &(genps_p4().at(igen));
+                                        lepPlus_status3_id_ = genps_id().at(igen);
 
                                         //status = 1 lepton
+                                        lepPlus_status3_nDaughters_ = genps_lepdaughter_id().at(igen).size();
                                         for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
                                         {
                                             int daughterID = genps_lepdaughter_id()[igen][kk];
@@ -1862,6 +1873,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     else if ( (genps_id()[igen] == 12 || genps_id()[igen] == 14 ||  genps_id()[igen] == 16) )
                                     {
                                         nuPlus_status3_ = &(genps_p4().at(igen));
+                                        nuPlus_status3_id_ = genps_id().at(igen);
 
                                         //status = 1 neutrino
                                         for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
@@ -1882,8 +1894,10 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     if ( (genps_id()[igen] == 11 || genps_id()[igen] == 13 ||  genps_id()[igen] == 15) )
                                     {
                                         lepMinus_status3_ = &(genps_p4().at(igen));
+                                        lepMinus_status3_id_ = genps_id().at(igen);
 
                                         //status = 1 lepton
+                                        lepMinus_status3_nDaughters_ = genps_lepdaughter_id().at(igen).size();
                                         for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
                                         {
                                             int daughterID = genps_lepdaughter_id()[igen][kk];
@@ -1899,6 +1913,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
                                     else if ( (genps_id()[igen] == -12 || genps_id()[igen] == -14 ||  genps_id()[igen] == -16) )
                                     {
                                         nuMinus_status3_ = &(genps_p4().at(igen));
+                                        nuMinus_status3_id_ = genps_id().at(igen);
 
                                         //status = 1 neutrino
                                         for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
@@ -4852,7 +4867,13 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("ptjet23",          &ptjet23_,          "ptjet23/F");  
   outTree->Branch("ptjetF23",         &ptjetF23_,         "ptjetF23/F");  
   outTree->Branch("ptjetO23",         &ptjetO23_,         "ptjetO23/F");  
-  //outTree->Branch("cosphijz",         &cosphijz_,         "cosphijz/F");  
+  //outTree->Branch("cosphijz",         &cosphijz_,         "cosphijz/F");
+  outTree->Branch("lepPlus_status3_id",  &lepPlus_status3_id_,  "lepPlus_status3_id/I");
+  outTree->Branch("lepMinus_status3_id",  &lepMinus_status3_id_,  "lepMinus_status3_id/I");
+  outTree->Branch("lepPlus_status3_nDaughters",  &lepPlus_status3_nDaughters_,  "lepPlus_status3_nDaughters/I");
+  outTree->Branch("lepMinus_status3_nDaughters",  &lepMinus_status3_nDaughters_,  "lepMinus_status3_nDaughters/I");
+  outTree->Branch("nuPlus_status3_id",  &nuPlus_status3_id_,  "nuPlus_status3_id/I");
+  outTree->Branch("nuMinus_status3_id",  &nuMinus_status3_id_,  "nuMinus_status3_id/I");
   outTree->Branch("mcid1",            &mcid1_,            "mcid1/I");  
   outTree->Branch("mcdr1",            &mcdr1_,            "mcdr1/F");  
   outTree->Branch("mcdecay1",         &mcdecay1_,         "mcdecay1/I");  
