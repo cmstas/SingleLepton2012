@@ -22,28 +22,51 @@ def parseSystFiles(systfiles):
     systematics = {}
 
     for syst in systfiles.keys():
-        try:
-            systfile = open(systfiles[syst])
-        except:
-            print ""
-            print "Syst file",systfiles[syst],"for systematics",syst,"cannot be opened"
-            print ""
-            sys.exit(1)
-        for line in systfile.readlines():
-            array = line.split()
-            if len(array) != 6:
-                print "malformated line in systfile",systfiles[syst]
-                print "line:",line
-                sys,exit(1)
-            identifier = array[0]
-            name = array[1]
-            type = array[2].split(':')[0] #remove ':'
-            asymmetry = float(array[3])
-            error = float(array[5])
-            if identifier not in systematics.keys(): systematics[identifier] = {}
-            systematics[identifier]['name'] = name
-            if syst not in systematics[identifier].keys(): systematics[identifier][syst] = {}
-            systematics[identifier][syst][type] = [asymmetry,error]
+        for subtype in systfiles[syst].keys():
+
+            #Figure out how to calculate the variation, based on which
+            #variation directions are specified in the steering file.
+            directionlist = list( systfiles[syst][subtype].keys() )
+            if ('up' in directionlist and 'down' in directionlist ):
+                if 'nominal' in directionlist: vartype = 'updown_newnom'
+                elif 'nominal' not in directionlist:
+                    if subtype == 'default': vartype = 'updown'
+                    elif subtype != 'default': vartype = 'half'
+            elif systfiles[syst][subtype].keys() == ['diffnom']: vartype = 'diffnom'
+            elif systfiles[syst][subtype].keys() == ['nominal']: vartype = 'nominal'
+            else:
+                print ""
+                print "I can't understand what kind of variation this is:"
+                print syst, subtype, subtype.keys()
+                sys.exit(1)
+
+            #Parse the unfolding summary file
+            for direction in systfiles[syst][subtype].keys():
+                try:
+                    systfile = open(systfiles[syst][subtype][direction])
+                except:
+                    print ""
+                    print "Syst file",systfiles[syst],"for systematics",syst,"cannot be opened"
+                    print ""
+                    sys.exit(1)
+                for line in systfile.readlines():
+                    array = line.split()
+                    if len(array) != 6:
+                        print "malformated line in systfile",systfiles[syst]
+                        print "line:",line
+                        sys.exit(1)
+                    identifier = array[0]
+                    name = array[1]
+                    type = array[2].split(':')[0] #remove ':'
+                    asymmetry = float(array[3])
+                    error = float(array[5])
+                    if identifier not in systematics.keys(): systematics[identifier] = {}
+                    systematics[identifier]['name'] = name
+                    if syst not in systematics[identifier].keys(): systematics[identifier][syst] = {}
+                    if subtype not in systematics[identifier][syst].keys(): systematics[identifier][syst][subtype] = {}
+                    if direction not in systematics[identifier][syst][subtype].keys(): systematics[identifier][syst][subtype][direction] = {}
+                    systematics[identifier][syst][subtype][direction][type] = [asymmetry,error]
+                    systematics[identifier][syst][subtype]['vartype'] = vartype
             
     return systematics
             
@@ -80,9 +103,16 @@ def main():
     for line in steeringfile.readlines():
         if line.startswith('#'): continue        
         array = line.split()
-        if array[0] in systfiles.keys(): 
-            print 'systematics:',array[0],'was entered twice in steering file:',steeringfilename,'Please choose only one entry per systematics, using last entry.'
-        systfiles[array[0]] = array[1]
+        systname =  array[0]
+        subtype  =  array[1]
+        direction = array[2]
+        filename =  array[3]
+
+        if systname not in systfiles.keys(): systfiles[systname] = {}
+        if subtype not in systfiles[systname].keys(): systfiles[systname][subtype] = {}
+        if direction in systfiles[systname][subtype].keys():
+            print 'systematics:',systname,subtype,direction,'was entered twice in steering file:',steeringfilename,'Please choose only one entry per systematics, using last entry.'
+        systfiles[systname][subtype][direction] = filename
         
     systematics = parseSystFiles(systfiles)
     
