@@ -115,6 +115,7 @@ class singleLeptonLooper
 	float c1n2CrossSection( float c1mass );
 	float pmssmCrossSection( int run );
         void closeTree ();
+        void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
 	//	float trackIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 , bool dovtxcut = false , float pt_thresh = 0.0);
 	std::vector<float> trackIsoPtRanges( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 );
 	std::vector<float> totalIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 );
@@ -354,6 +355,7 @@ class singleLeptonLooper
 	Float_t ptttbar_;
 	Float_t mttbar_;
 	Float_t etattbar_;
+	Float_t rapidityttbar_;
 	Float_t mgcor_;
 	Int_t   wflav_;
 
@@ -509,6 +511,13 @@ class singleLeptonLooper
 	LorentzVector* WPlus_status1_;
 	LorentzVector* WMinus_status1_;
 
+	LorentzVector vt_stat1;
+	LorentzVector vtbar_stat1;
+	LorentzVector vb_stat1;
+	LorentzVector vbbar_stat1;
+	LorentzVector WPlus_status1_temp;
+	LorentzVector WMinus_status1_temp;
+	LorentzVector ttpair;
 
 	std::vector<int>   genps_pdgId_;
 	std::vector<int>   genps_firstMother_;
