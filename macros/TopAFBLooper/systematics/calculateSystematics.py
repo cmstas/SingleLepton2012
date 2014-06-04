@@ -92,6 +92,7 @@ def main():
 
         sumsq_total = 0
         covar_total = zeros( [nbins,nbins] )
+        corr_total  = zeros( [nbins,nbins] )
         bin_nominals = {}
 
         #Get the nominal values for each bin, and overall
@@ -135,10 +136,18 @@ def main():
             covar_total += covar_syst
 
         #end loop over systematics
+        #Now calculate correlation matrix
+        for row in range(nbins):
+            for col in range(nbins):
+                corr_total[row,col] = covar_total[row,col] / math.sqrt( covar_total[row,row] * covar_total[col,col] )
+
         print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, nominal_unfolded, stat_unfolded, math.sqrt(sumsq_total))
         print ""
         print "%s covariance matrix:" % plot
         print covar_total
+        print ""
+        print "%s correlation matrix:" % plot
+        print corr_total
         print ""
         print ""
 
