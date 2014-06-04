@@ -1820,7 +1820,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 		}
 		// get tau daughter pt
 		if( daughter == 11 || daughter == 13 || daughter == 211 || daughter == 321 ){
-		  if( genps_lepdaughter_p4()[igen][kk].pt() > mctaudpt1_ ) {
+		  if( genps_lepdaughter_p4()[igen][kk].pt() > mctaudpt2_ ) {
 		    mctaudpt2_ = genps_lepdaughter_p4()[igen][kk].pt();
 		    mctaudid2_ = genps_lepdaughter_id()[igen][kk];
 		    mctaud2_   = &genps_lepdaughter_p4()[igen][kk];
