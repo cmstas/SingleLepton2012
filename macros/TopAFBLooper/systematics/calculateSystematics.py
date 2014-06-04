@@ -20,8 +20,9 @@ def calculateVariation(refNominal, systematic, binname):
     if vartype == 'updown' or vartype == 'updown_newnom':
         upvar   = systematic['up'][binname][0]   - nominal
         downvar = systematic['down'][binname][0] - nominal
-        if abs(upvar) >= abs(downvar): maxvar  = upvar
-        elif abs(upvar) < abs(downvar): maxvar = downvar
+        varsign = sign(systematic['up'][binname][0] - systematic['down'][binname][0])
+        if abs(upvar) >= abs(downvar): maxvar  = abs(upvar)*varsign
+        elif abs(upvar) < abs(downvar): maxvar = abs(downvar)*varsign
     elif vartype == 'half':
         maxvar = ( systematic['up'][binname][0] - systematic['down'][binname][0] ) /2
     elif vartype == 'diffnom':
