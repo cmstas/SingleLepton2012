@@ -1546,8 +1546,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       nuMinus_status1_ = 0;
       topPlus_status1_ = 0;
       topMinus_status1_ = 0;
-      WPlus_status1_ = 0;
-      WMinus_status1_ = 0;
+      //WPlus_status1_ = 0;
+      //WMinus_status1_ = 0;
+      WPlus_status3_orig_ = 0;
+      WMinus_status3_orig_ = 0;
+      topPlus_status3_orig_ = 0;
+      topMinus_status3_orig_ = 0;
+      lepPlus_status3_orig_ = 0;
+      lepMinus_status3_orig_ = 0;
+      nuPlus_status3_orig_ = 0;
+      nuMinus_status3_orig_ = 0;
 
       npartons_    =  0;
       nwzpartons_  = -9;
@@ -4507,9 +4515,16 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("nuMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuMinus_status1_ );
   outTree->Branch("topPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topPlus_status1_ );
   outTree->Branch("topMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topMinus_status1_ );
-  outTree->Branch("WPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WPlus_status1_ );
-  outTree->Branch("WMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status1_ );
-
+  //outTree->Branch("WPlus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WPlus_status1_ );
+  //outTree->Branch("WMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status1_ );
+  outTree->Branch("WPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WPlus_status3_orig_ );
+  outTree->Branch("WMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status3_orig_ );
+  outTree->Branch("topPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topPlus_status3_orig_ );
+  outTree->Branch("topMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topMinus_status3_orig_ );
+  outTree->Branch("lepPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepPlus_status3_orig_ );
+  outTree->Branch("lepMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepMinus_status3_orig_ );
+  outTree->Branch("nuPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuPlus_status3_orig_ );
+  outTree->Branch("nuMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuMinus_status3_orig_ );
 
 
   //  outTree->Branch("candidates", "std::vector<Candidate>", &candidates_);
@@ -4871,8 +4886,14 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   vtbar_stat1.SetXYZT(0,0,0,0);
   vb_stat1.SetXYZT(0,0,0,0);
   vbbar_stat1.SetXYZT(0,0,0,0);
-  WPlus_status1_temp.SetXYZT(0,0,0,0);
-  WMinus_status1_temp.SetXYZT(0,0,0,0);
+  WPlus_status3_orig.SetXYZT(0,0,0,0);
+  WMinus_status3_orig.SetXYZT(0,0,0,0);
+  topPlus_status3_orig.SetXYZT(0,0,0,0);
+  topMinus_status3_orig.SetXYZT(0,0,0,0);
+  lepPlus_status3_orig.SetXYZT(0,0,0,0);
+  lepMinus_status3_orig.SetXYZT(0,0,0,0);
+  nuPlus_status3_orig.SetXYZT(0,0,0,0);
+  nuMinus_status3_orig.SetXYZT(0,0,0,0);
   ttpair.SetXYZT(0,0,0,0);
 
   int ntops = 0;
@@ -4924,12 +4945,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       }
       if( genps_status().at(igen) == 3 ) {
         WPlus_status3_ = &(genps_p4().at(igen));
-        WPlus_status1_ = &(WPlus_status1_temp);
-        WPlus_status1_->SetXYZT(genps_p4()[igen].x(),
-                            genps_p4()[igen].y(),
-                            genps_p4()[igen].z(),
-                            genps_p4()[igen].t()
-                           ); //only OK for MC@NLO+Herwig, where the status=1 and 3 leptons are identical
+        WPlus_status3_orig = genps_p4().at(igen);
+        WPlus_status3_orig_ = &(WPlus_status3_orig);
       }
     }
     if( id == -24 ){
@@ -4948,12 +4965,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       }
       if( genps_status().at(igen) == 3 ) {
         WMinus_status3_ = &(genps_p4().at(igen));
-        WMinus_status1_ = &(WMinus_status1_temp);
-        WMinus_status1_->SetXYZT(genps_p4()[igen].x(),
-                            genps_p4()[igen].y(),
-                            genps_p4()[igen].z(),
-                            genps_p4()[igen].t()
-                           ); //only OK for MC@NLO+Herwig, where the status=1 and 3 leptons are identical
+        WMinus_status3_orig = genps_p4().at(igen);
+        WMinus_status3_orig_ = &(WMinus_status3_orig);
       }
     }
 
@@ -5054,6 +5067,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       ntops++;
 
       topPlus_status3_ = &(genps_p4().at(igen));
+      topPlus_status3_orig = genps_p4().at(igen);
+      topPlus_status3_orig_ = &(topPlus_status3_orig);
 
       //Create status=1 top. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -5076,6 +5091,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       ntops++;
 
       topMinus_status3_ = &(genps_p4().at(igen));
+      topMinus_status3_orig = genps_p4().at(igen);
+      topMinus_status3_orig_ = &(topMinus_status3_orig);
 
       //Create status=1 tbar. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -5099,6 +5116,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                     {
                                         lepPlus_status3_ = &(genps_p4().at(igen));
                                         lepPlus_status3_id_ = genps_id().at(igen);
+                                        lepPlus_status3_orig = genps_p4().at(igen);
+                                        lepPlus_status3_orig_ = &(lepPlus_status3_orig);
 
                                         //status = 1 lepton
                                         lepPlus_status3_nDaughters_ = genps_lepdaughter_id().at(igen).size();
@@ -5118,6 +5137,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                     {
                                         nuPlus_status3_ = &(genps_p4().at(igen));
                                         nuPlus_status3_id_ = genps_id().at(igen);
+                                        nuPlus_status3_orig = genps_p4().at(igen);
+                                        nuPlus_status3_orig_ = &(nuPlus_status3_orig);
 
                                         //status = 1 neutrino
                                         for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)
@@ -5139,6 +5160,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                     {
                                         lepMinus_status3_ = &(genps_p4().at(igen));
                                         lepMinus_status3_id_ = genps_id().at(igen);
+                                        lepMinus_status3_orig = genps_p4().at(igen);
+                                        lepMinus_status3_orig_ = &(lepMinus_status3_orig);
 
                                         //status = 1 lepton
                                         lepMinus_status3_nDaughters_ = genps_lepdaughter_id().at(igen).size();
@@ -5158,6 +5181,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                     {
                                         nuMinus_status3_ = &(genps_p4().at(igen));
                                         nuMinus_status3_id_ = genps_id().at(igen);
+                                        nuMinus_status3_orig = genps_p4().at(igen);
+                                        nuMinus_status3_orig_ = &(nuMinus_status3_orig);
 
                                         //status = 1 neutrino
                                         for (unsigned int kk = 0; kk < genps_lepdaughter_id()[igen].size(); kk++)

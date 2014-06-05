@@ -508,15 +508,30 @@ class singleLeptonLooper
 	LorentzVector* nuMinus_status1_;
 	LorentzVector* topPlus_status1_;
 	LorentzVector* topMinus_status1_;
-	LorentzVector* WPlus_status1_;
-	LorentzVector* WMinus_status1_;
+	//LorentzVector* WPlus_status1_;
+	//LorentzVector* WMinus_status1_;
+    LorentzVector* WPlus_status3_orig_;
+    LorentzVector* WMinus_status3_orig_;
+    LorentzVector* topPlus_status3_orig_;
+    LorentzVector* topMinus_status3_orig_;
+    LorentzVector* lepPlus_status3_orig_;
+    LorentzVector* lepMinus_status3_orig_;
+    LorentzVector* nuPlus_status3_orig_;
+    LorentzVector* nuMinus_status3_orig_;
+
 
 	LorentzVector vt_stat1;
 	LorentzVector vtbar_stat1;
 	LorentzVector vb_stat1;
 	LorentzVector vbbar_stat1;
-	LorentzVector WPlus_status1_temp;
-	LorentzVector WMinus_status1_temp;
+	LorentzVector WPlus_status3_orig;
+	LorentzVector WMinus_status3_orig;
+	LorentzVector topPlus_status3_orig;
+	LorentzVector topMinus_status3_orig;
+	LorentzVector lepPlus_status3_orig;
+	LorentzVector lepMinus_status3_orig;
+	LorentzVector nuPlus_status3_orig;
+	LorentzVector nuMinus_status3_orig;
 	LorentzVector ttpair;
 
 	std::vector<int>   genps_pdgId_;
