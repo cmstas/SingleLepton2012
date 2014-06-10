@@ -5072,9 +5072,9 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
         already_seen_stat1.clear();
         for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
         {
-            DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
-            if ( is_duplicate_stat1(id) ) {b_dup_stat1++; continue;}
-            if ( is_duplicate_stat1_b(id) ) {cout<<"***********this should be impossible************"<<endl;}
+            DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+            if ( is_duplicate_stat1(ident) ) {b_dup_stat1++; continue;}
+            if ( is_duplicate_stat1_b(ident) ) {cout<<"***********this should be impossible************"<<endl;}
             //b_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vb_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
         }
@@ -5093,9 +5093,9 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
         already_seen_stat1.clear();
         for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
         {
-            DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
-            if ( is_duplicate_stat1(id) ) {bbar_dup_stat1++; continue;}
-            if ( is_duplicate_stat1_b(id) && ismcatnlo ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
+            DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+            if ( is_duplicate_stat1(ident) ) {bbar_dup_stat1++; continue;}
+            if ( is_duplicate_stat1_b(ident) && ismcatnlo ) {cout<<"***********bbar shares daughter with b************"<<endl; cout<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Px()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Py()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].Pz()<<" "<<cms2.genps_lepdaughter_p4()[igen][kk].E()<<endl;}
             //bbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vbbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
         }
@@ -5126,9 +5126,9 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       already_seen_stat1.clear();
       for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
       {
-          DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
-          if ( is_duplicate_stat1(id) ) {t_dup_stat1++; continue;}
-          if ( is_duplicate_stat1_t(id) ) {cout<<"***********this should be impossible************"<<endl;}
+          DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+          if ( is_duplicate_stat1(ident) ) {t_dup_stat1++; continue;}
+          if ( is_duplicate_stat1_t(ident) ) {cout<<"***********this should be impossible************"<<endl;}
           //t_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vt_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
       }
@@ -5150,9 +5150,9 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       already_seen_stat1.clear();
       for (unsigned int kk = 0; kk < cms2.genps_lepdaughter_id().at(igen).size(); kk++)
       {
-          DorkyStatus1Identifier id = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
-          if ( is_duplicate_stat1(id) ) {tbar_dup_stat1++; continue;}
-          if ( is_duplicate_stat1_t(id) && ismcatnlo ) {cout<<"***********tbar shares daughter with t************"<<endl;}
+          DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
+          if ( is_duplicate_stat1(ident) ) {tbar_dup_stat1++; continue;}
+          if ( is_duplicate_stat1_t(ident) && ismcatnlo ) {cout<<"***********tbar shares daughter with t************"<<endl;}
           //tbar_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vtbar_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
       }
