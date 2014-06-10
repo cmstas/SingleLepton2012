@@ -116,6 +116,8 @@ class singleLeptonLooper
 	float pmssmCrossSection( int run );
         void closeTree ();
         void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
+        bool isBHadronPdgId(int PdgId);
+        bool isBHadron(int igen);
 	//	float trackIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 , bool dovtxcut = false , float pt_thresh = 0.0);
 	std::vector<float> trackIsoPtRanges( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 );
 	std::vector<float> totalIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 );

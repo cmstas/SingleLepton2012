@@ -267,6 +267,13 @@ bool is_duplicate_stat1_b (const DorkyStatus1Identifier &id) {
   return !ret.second;
 }
 
+std::set<DorkyStatus1Identifier> already_seen_stat2_bhadron;
+bool is_duplicate_stat2_bhadron (const DorkyStatus1Identifier &id) {
+  std::pair<std::set<DorkyStatus1Identifier>::const_iterator, bool> ret =
+    already_seen_stat2_bhadron.insert(id);
+  return !ret.second;
+}
+
 //--------------------------------------------------------------------
 
 
@@ -1109,6 +1116,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
   float nmtot  = 0.;
   float nepass = 0.;
   float nmpass = 0.;
+
+  //temporary counters for testing
+  int np1 = 0;
+  int np3 = 0;
+  int nm1 = 0;
+  int nm3 = 0;
 
   if(g_createTree) makeTree(prefix, doFakeApp, frmode);
 
@@ -3327,6 +3340,33 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       htgen_    = 0;
 
       if( !isData ){
+
+        //match genjets with status=1 and 3 bs to test how different they are
+
+        int igjet_bPlus_status1 = -999;
+        int igjet_bPlus_status3 = -999;
+        int igjet_bMinus_status1 = -999;
+        int igjet_bMinus_status3 = -999;
+        double mindR_gjet_bPlus_status1 = 999;
+        double mindR_gjet_bPlus_status3 = 999;
+        double mindR_gjet_bMinus_status1 = 999;
+        double mindR_gjet_bMinus_status3 = 999;
+
+        for (unsigned int igjet = 0 ; igjet < genjets_p4().size() ; igjet++) {
+          LorentzVector vgjet = genjets_p4().at(igjet);
+          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status1_ ) < mindR_gjet_bPlus_status1) { mindR_gjet_bPlus_status1 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status1_ ); igjet_bPlus_status1 = igjet; }
+          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status3_ ) < mindR_gjet_bPlus_status3) { mindR_gjet_bPlus_status3 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status3_ ); igjet_bPlus_status3 = igjet; }
+          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status1_ ) < mindR_gjet_bMinus_status1) { mindR_gjet_bMinus_status1 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status1_ ); igjet_bMinus_status1 = igjet; }
+          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status3_ ) < mindR_gjet_bMinus_status3) { mindR_gjet_bMinus_status3 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status3_ ); igjet_bMinus_status3 = igjet; }
+        }
+
+        //cout<<ROOT::Math::VectorUtil::DeltaR( *bPlus_status3_ , *bPlus_status1_ ) <<endl;
+        //cout<<" "<<mindR_gjet_bPlus_status1<<" "<<mindR_gjet_bPlus_status3<<" "<<mindR_gjet_bMinus_status1<<" "<<mindR_gjet_bMinus_status3<<endl;
+        mindR_gjet_bPlus_status1<mindR_gjet_bPlus_status3 ? np1++:np3++;
+        mindR_gjet_bMinus_status1<mindR_gjet_bMinus_status3 ? nm1++:nm3++;
+        //cout<<np1<<" "<<np3<<" "<<nm1<<" "<<nm3<<endl;
+
+
 	for (unsigned int igjet = 0 ; igjet < genjets_p4().size() ; igjet++) {
 	    
 	  LorentzVector vgjet = genjets_p4().at(igjet);
@@ -4918,14 +4958,26 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   int b_dup_stat1 = 0;
   int bbar_dup_stat1 = 0;
 
+  int n_bhadrons = 0;
+
   already_seen_stat1_t.clear();
   already_seen_stat1_b.clear();
+  already_seen_stat2_bhadron.clear();
 
   for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) { 
 
     int id = genps_id().at(igen);
     int pid = abs( genps_id().at(igen) );
     int mothid = abs(genps_id_mother().at(igen));
+
+    //find final status=2 stable b-hadrons for use in genjet clustering
+    if( genps_status().at(igen) == 2 && isBHadron(igen) ) {
+      DorkyStatus1Identifier ident = { cms2.genps_id().at(igen), cms2.genps_p4().at(igen).Px(), cms2.genps_p4().at(igen).Py(), cms2.genps_p4().at(igen).Pz(), cms2.genps_p4().at(igen).E() };
+      if(  !is_duplicate_stat2_bhadron(ident) ) {
+        n_bhadrons++;
+        //cout<<genps_status().at(igen)<<" "<<n_bhadrons<<" "<<genps_p4().at(igen).Pt()<<" "<<id<<" "<<genps_id_mother().at(igen)<<endl;
+      }
+    }
 
 
     //For MC@NLO. Find first status=2 Ws, which are before FSR. Note, unlike the W the status=3 b is before FSR.
@@ -5480,3 +5532,40 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   }
 
 }
+
+bool singleLeptonLooper::isBHadronPdgId(int PdgId)
+{
+  //borrowed from https://github.com/cms-kr/KrAFT/blob/master/GeneratorTools/plugins/GhostGenParticleProducer.cc#L166
+  int absPdgId = abs(PdgId);
+  if ( absPdgId <= 100 ) return false; // Fundamental particles and MC internals
+  if ( absPdgId >= 1000000000 ) return false; // Nuclei, +-10LZZZAAAI
+
+  // General form of PDG ID is 7 digit form
+  // +- n nr nL nq1 nq2 nq3 nJ
+  //const int nJ = absPdgId % 10; // Spin
+  const int nq3 = (absPdgId / 10) % 10;
+  const int nq2 = (absPdgId / 100) % 10;
+  const int nq1 = (absPdgId / 1000) % 10;
+
+  if ( nq3 == 0 ) return false; // Diquarks
+  if ( nq1 == 0 and nq2 == 5 ) return true; // B mesons
+  if ( nq1 == 5 ) return true; // B baryons
+
+  return false;
+}
+
+
+bool singleLeptonLooper::isBHadron(int igen)
+{
+  if( genps_p4().at(igen).Pt()<5 ) return false; //Pt>5 required: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/ParticleLevelTopDefinitions
+  if ( !isBHadronPdgId( genps_id().at(igen) ) ) return false;
+  for (unsigned int kk = 0; kk < genps_lepdaughter_id().at(igen).size(); ++kk)
+  {
+    //cout<<genps_lepdaughter_id()[igen][kk]<<endl;
+    if(isBHadronPdgId(genps_lepdaughter_id()[igen][kk])) return false; //this doesn't work with the current ntuples because the daughters are the final status=1 particles rather than the immediate status=2 daughters: need to re-ntuplise
+  }
+
+  return true;
+}
+
+
