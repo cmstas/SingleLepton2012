@@ -1527,6 +1527,43 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       mttbar_   = -1;
       etattbar_ = -999;
       rapidityttbar_ = -999;
+
+      m_topminus_gen_ = -999;
+      m_topplus_gen_ = -999;
+      tt_mass_gen_ = -999;
+      ttRapidity_gen_ = -999;
+      ttRapidity2_gen_ = -999;
+      top_rapiditydiff_cms_gen_ = -999;
+      top_pseudorapiditydiff_cms_gen_ = -999;
+      top_rapiditydiff_Marco_gen_ = -999;
+      tt_pT_gen_ = -999;
+      top_costheta_cms_gen_ = -999;
+      lep_charge_asymmetry_gen_ = -999;
+      lep_azimuthal_asymmetry_gen_ = -999;
+      lep_azimuthal_asymmetry2_gen_ = -999;
+      lepPlus_costheta_cms_gen_ = -999;
+      lepMinus_costheta_cms_gen_ = -999;
+      top_spin_correlation_gen_ = -999;
+      lep_cos_opening_angle_gen_ = -999;
+
+      m_topminus_gen_origtops_ = -999;
+      m_topplus_gen_origtops_ = -999;
+      tt_mass_gen_origtops_ = -999;
+      ttRapidity_gen_origtops_ = -999;
+      ttRapidity2_gen_origtops_ = -999;
+      top_rapiditydiff_cms_gen_origtops_ = -999;
+      top_pseudorapiditydiff_cms_gen_origtops_ = -999;
+      top_rapiditydiff_Marco_gen_origtops_ = -999;
+      tt_pT_gen_origtops_ = -999;
+      top_costheta_cms_gen_origtops_ = -999;
+      lep_charge_asymmetry_gen_origtops_ = -999;
+      lep_azimuthal_asymmetry_gen_origtops_ = -999;
+      lep_azimuthal_asymmetry2_gen_origtops_ = -999;
+      lepPlus_costheta_cms_gen_origtops_ = -999;
+      lepMinus_costheta_cms_gen_origtops_ = -999;
+      top_spin_correlation_gen_origtops_ = -999;
+      lep_cos_opening_angle_gen_origtops_ = -999;
+
       t_        = 0;
       tbar_     = 0;
       ttbar_    = 0;
@@ -4004,6 +4041,43 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("maxpartonpt",     &maxpartonpt_,      "maxpartonpt/F");
   outTree->Branch("etattbar",        &etattbar_,         "etattbar/F");
   outTree->Branch("rapidityttbar",        &rapidityttbar_,         "rapidityttbar/F");
+
+  outTree->Branch("m_topminus_gen",  &m_topminus_gen_,  "m_topminus_gen/F");
+  outTree->Branch("m_topplus_gen",  &m_topplus_gen_,  "m_topplus_gen/F");
+  outTree->Branch("tt_mass_gen",  &tt_mass_gen_,  "tt_mass_gen/F");
+  outTree->Branch("ttRapidity_gen",  &ttRapidity_gen_,  "ttRapidity_gen/F");
+  outTree->Branch("ttRapidity2_gen",  &ttRapidity2_gen_,  "ttRapidity2_gen/F");
+  outTree->Branch("top_rapiditydiff_cms_gen",  &top_rapiditydiff_cms_gen_,  "top_rapiditydiff_cms_gen/F");
+  outTree->Branch("top_pseudorapiditydiff_cms_gen",  &top_pseudorapiditydiff_cms_gen_,  "top_pseudorapiditydiff_cms_gen/F");
+  outTree->Branch("top_rapiditydiff_Marco_gen",  &top_rapiditydiff_Marco_gen_,  "top_rapiditydiff_Marco_gen/F");
+  outTree->Branch("tt_pT_gen",  &tt_pT_gen_,  "tt_pT_gen/F");
+  outTree->Branch("top_costheta_cms_gen",  &top_costheta_cms_gen_,  "top_costheta_cms_gen/F");
+  outTree->Branch("lep_charge_asymmetry_gen",  &lep_charge_asymmetry_gen_,  "lep_charge_asymmetry_gen/F");
+  outTree->Branch("lep_azimuthal_asymmetry_gen",  &lep_azimuthal_asymmetry_gen_,  "lep_azimuthal_asymmetry_gen/F");
+  outTree->Branch("lep_azimuthal_asymmetry2_gen",  &lep_azimuthal_asymmetry2_gen_,  "lep_azimuthal_asymmetry2_gen/F");
+  outTree->Branch("lepPlus_costheta_cms_gen",  &lepPlus_costheta_cms_gen_,  "lepPlus_costheta_cms_gen/F");
+  outTree->Branch("lepMinus_costheta_cms_gen",  &lepMinus_costheta_cms_gen_,  "lepMinus_costheta_cms_gen/F");
+  outTree->Branch("top_spin_correlation_gen",  &top_spin_correlation_gen_,  "top_spin_correlation_gen/F");
+  outTree->Branch("lep_cos_opening_angle_gen",  &lep_cos_opening_angle_gen_,  "lep_cos_opening_angle_gen/F");
+  
+  outTree->Branch("m_topminus_gen_origtops",  &m_topminus_gen_origtops_,  "m_topminus_gen_origtops/F");
+  outTree->Branch("m_topplus_gen_origtops",  &m_topplus_gen_origtops_,  "m_topplus_gen_origtops/F");
+  outTree->Branch("tt_mass_gen_origtops",  &tt_mass_gen_origtops_,  "tt_mass_gen_origtops/F");
+  outTree->Branch("ttRapidity_gen_origtops",  &ttRapidity_gen_origtops_,  "ttRapidity_gen_origtops/F");
+  outTree->Branch("ttRapidity2_gen_origtops",  &ttRapidity2_gen_origtops_,  "ttRapidity2_gen_origtops/F");
+  outTree->Branch("top_rapiditydiff_cms_gen_origtops",  &top_rapiditydiff_cms_gen_origtops_,  "top_rapiditydiff_cms_gen_origtops/F");
+  outTree->Branch("top_pseudorapiditydiff_cms_gen_origtops",  &top_pseudorapiditydiff_cms_gen_origtops_,  "top_pseudorapiditydiff_cms_gen_origtops/F");
+  outTree->Branch("top_rapiditydiff_Marco_gen_origtops",  &top_rapiditydiff_Marco_gen_origtops_,  "top_rapiditydiff_Marco_gen_origtops/F");
+  outTree->Branch("tt_pT_gen_origtops",  &tt_pT_gen_origtops_,  "tt_pT_gen_origtops/F");
+  outTree->Branch("top_costheta_cms_gen_origtops",  &top_costheta_cms_gen_origtops_,  "top_costheta_cms_gen_origtops/F");
+  outTree->Branch("lep_charge_asymmetry_gen_origtops",  &lep_charge_asymmetry_gen_origtops_,  "lep_charge_asymmetry_gen_origtops/F");
+  outTree->Branch("lep_azimuthal_asymmetry_gen_origtops",  &lep_azimuthal_asymmetry_gen_origtops_,  "lep_azimuthal_asymmetry_gen_origtops/F");
+  outTree->Branch("lep_azimuthal_asymmetry2_gen_origtops",  &lep_azimuthal_asymmetry2_gen_origtops_,  "lep_azimuthal_asymmetry2_gen_origtops/F");
+  outTree->Branch("lepPlus_costheta_cms_gen_origtops",  &lepPlus_costheta_cms_gen_origtops_,  "lepPlus_costheta_cms_gen_origtops/F");
+  outTree->Branch("lepMinus_costheta_cms_gen_origtops",  &lepMinus_costheta_cms_gen_origtops_,  "lepMinus_costheta_cms_gen_origtops/F");
+  outTree->Branch("top_spin_correlation_gen_origtops",  &top_spin_correlation_gen_origtops_,  "top_spin_correlation_gen_origtops/F");
+  outTree->Branch("lep_cos_opening_angle_gen_origtops",  &lep_cos_opening_angle_gen_origtops_,  "lep_cos_opening_angle_gen_origtops/F");
+
   outTree->Branch("njetsoffset",     &njetsoffset_,      "njetsoffset/I");
   outTree->Branch("njetsuncor",      &njetsuncor_,       "njetsuncor/I");
   outTree->Branch("costhetaweight",  &costhetaweight_,   "costhetaweight/F");
@@ -5530,6 +5604,132 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     mcmln_ = (*mclep_+*mcnu_).mass();
     mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
   }
+
+  //calculate gen-level quantities
+  TLorentzVector topplus_genp_p4(0, 0, 0, 0), topminus_genp_p4(0, 0, 0, 0), lepPlus_gen(0, 0, 0, 0), lepMinus_gen(0, 0, 0, 0);
+  TLorentzVector cms_gen(0, 0, 0, 0);
+
+  topplus_genp_p4.SetXYZT(topPlus_status3_->x(),
+                  topPlus_status3_->y(),
+                  topPlus_status3_->z(),
+                  topPlus_status3_->t()
+                 );
+
+  topminus_genp_p4.SetXYZT(topMinus_status3_->x(),
+                  topMinus_status3_->y(),
+                  topMinus_status3_->z(),
+                  topMinus_status3_->t()
+                 );
+
+  lepPlus_gen.SetXYZT(lepPlus_status3_->x(),
+                  lepPlus_status3_->y(),
+                  lepPlus_status3_->z(),
+                  lepPlus_status3_->t()
+                 );
+
+  lepMinus_gen.SetXYZT(lepMinus_status3_->x(),
+                  lepMinus_status3_->y(),
+                  lepMinus_status3_->z(),
+                  lepMinus_status3_->t()
+                 );
+
+
+  m_topminus_gen_ = topminus_genp_p4.M();
+  m_topplus_gen_ = topplus_genp_p4.M();
+
+  tt_mass_gen_ = (topplus_genp_p4 + topminus_genp_p4).M();
+  ttRapidity_gen_ = topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity();
+  ttRapidity2_gen_ = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
+
+  top_rapiditydiff_cms_gen_ = (topplus_genp_p4.Rapidity() - topminus_genp_p4.Rapidity()) * (topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity());
+  top_pseudorapiditydiff_cms_gen_ = abs(topplus_genp_p4.Eta()) - abs(topminus_genp_p4.Eta());
+  top_rapiditydiff_Marco_gen_ = abs(topplus_genp_p4.Rapidity()) - abs(topminus_genp_p4.Rapidity());
+
+
+  cms_gen = topplus_genp_p4 + topminus_genp_p4;
+  tt_pT_gen_ = cms_gen.Pt();
+  topplus_genp_p4.Boost(-cms_gen.BoostVector());
+  topminus_genp_p4.Boost(-cms_gen.BoostVector());
+  top_costheta_cms_gen_ = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
+
+
+  lep_charge_asymmetry_gen_ = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
+  lep_azimuthal_asymmetry_gen_ = lepPlus_gen.DeltaPhi(lepMinus_gen);
+  lep_azimuthal_asymmetry2_gen_ = acos(cos(lep_azimuthal_asymmetry_gen_));
+
+  lepPlus_gen.Boost(-cms_gen.BoostVector());
+  lepPlus_gen.Boost(-topplus_genp_p4.BoostVector());
+  lepMinus_gen.Boost(-cms_gen.BoostVector());
+  lepMinus_gen.Boost(-topminus_genp_p4.BoostVector());
+
+  lepPlus_costheta_cms_gen_ = lepPlus_gen.Vect().Dot(topplus_genp_p4.Vect()) / (lepPlus_gen.Vect().Mag() * topplus_genp_p4.Vect().Mag());
+  lepMinus_costheta_cms_gen_ = lepMinus_gen.Vect().Dot(topminus_genp_p4.Vect()) / (lepMinus_gen.Vect().Mag() * topminus_genp_p4.Vect().Mag());
+
+  top_spin_correlation_gen_ = lepPlus_costheta_cms_gen_ * lepMinus_costheta_cms_gen_ ;
+  lep_cos_opening_angle_gen_ = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
+
+
+
+  //recalculate using original top
+  topplus_genp_p4.SetXYZT(topPlus_status3_orig_->x(),
+                  topPlus_status3_orig_->y(),
+                  topPlus_status3_orig_->z(),
+                  topPlus_status3_orig_->t()
+                 );
+
+  topminus_genp_p4.SetXYZT(topMinus_status3_orig_->x(),
+                  topMinus_status3_orig_->y(),
+                  topMinus_status3_orig_->z(),
+                  topMinus_status3_orig_->t()
+                 );
+
+  lepPlus_gen.SetXYZT(lepPlus_status3_->x(),
+                  lepPlus_status3_->y(),
+                  lepPlus_status3_->z(),
+                  lepPlus_status3_->t()
+                 );
+
+  lepMinus_gen.SetXYZT(lepMinus_status3_->x(),
+                  lepMinus_status3_->y(),
+                  lepMinus_status3_->z(),
+                  lepMinus_status3_->t()
+                 );
+
+
+  m_topminus_gen_origtops_ = topminus_genp_p4.M();
+  m_topplus_gen_origtops_ = topplus_genp_p4.M();
+
+  tt_mass_gen_origtops_ = (topplus_genp_p4 + topminus_genp_p4).M();
+  ttRapidity_gen_origtops_ = topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity();
+  ttRapidity2_gen_origtops_ = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
+
+  top_rapiditydiff_cms_gen_origtops_ = (topplus_genp_p4.Rapidity() - topminus_genp_p4.Rapidity()) * (topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity());
+  top_pseudorapiditydiff_cms_gen_origtops_ = abs(topplus_genp_p4.Eta()) - abs(topminus_genp_p4.Eta());
+  top_rapiditydiff_Marco_gen_origtops_ = abs(topplus_genp_p4.Rapidity()) - abs(topminus_genp_p4.Rapidity());
+
+
+  cms_gen = topplus_genp_p4 + topminus_genp_p4;
+  tt_pT_gen_origtops_ = cms_gen.Pt();
+  topplus_genp_p4.Boost(-cms_gen.BoostVector());
+  topminus_genp_p4.Boost(-cms_gen.BoostVector());
+  top_costheta_cms_gen_origtops_ = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
+
+
+  lep_charge_asymmetry_gen_origtops_ = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
+  lep_azimuthal_asymmetry_gen_origtops_ = lepPlus_gen.DeltaPhi(lepMinus_gen);
+  lep_azimuthal_asymmetry2_gen_origtops_ = acos(cos(lep_azimuthal_asymmetry_gen_origtops_));
+
+  lepPlus_gen.Boost(-cms_gen.BoostVector());
+  lepPlus_gen.Boost(-topplus_genp_p4.BoostVector());
+  lepMinus_gen.Boost(-cms_gen.BoostVector());
+  lepMinus_gen.Boost(-topminus_genp_p4.BoostVector());
+
+  lepPlus_costheta_cms_gen_origtops_ = lepPlus_gen.Vect().Dot(topplus_genp_p4.Vect()) / (lepPlus_gen.Vect().Mag() * topplus_genp_p4.Vect().Mag());
+  lepMinus_costheta_cms_gen_origtops_ = lepMinus_gen.Vect().Dot(topminus_genp_p4.Vect()) / (lepMinus_gen.Vect().Mag() * topminus_genp_p4.Vect().Mag());
+
+  top_spin_correlation_gen_origtops_ = lepPlus_costheta_cms_gen_origtops_ * lepMinus_costheta_cms_gen_origtops_ ;
+  lep_cos_opening_angle_gen_origtops_ = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
+
 
 }
 

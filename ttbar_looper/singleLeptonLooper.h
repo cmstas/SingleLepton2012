@@ -358,6 +358,43 @@ class singleLeptonLooper
 	Float_t mttbar_;
 	Float_t etattbar_;
 	Float_t rapidityttbar_;
+
+    Float_t m_topminus_gen_;
+    Float_t m_topplus_gen_;
+    Float_t tt_mass_gen_;
+    Float_t ttRapidity_gen_;
+    Float_t ttRapidity2_gen_;
+    Float_t top_rapiditydiff_cms_gen_;
+    Float_t top_pseudorapiditydiff_cms_gen_;
+    Float_t top_rapiditydiff_Marco_gen_;
+    Float_t tt_pT_gen_;
+    Float_t top_costheta_cms_gen_;
+    Float_t lep_charge_asymmetry_gen_;
+    Float_t lep_azimuthal_asymmetry_gen_;
+    Float_t lep_azimuthal_asymmetry2_gen_;
+    Float_t lepPlus_costheta_cms_gen_;
+    Float_t lepMinus_costheta_cms_gen_;
+    Float_t top_spin_correlation_gen_;
+    Float_t lep_cos_opening_angle_gen_;
+
+    Float_t m_topminus_gen_origtops_;
+    Float_t m_topplus_gen_origtops_;
+    Float_t tt_mass_gen_origtops_;
+    Float_t ttRapidity_gen_origtops_;
+    Float_t ttRapidity2_gen_origtops_;
+    Float_t top_rapiditydiff_cms_gen_origtops_;
+    Float_t top_pseudorapiditydiff_cms_gen_origtops_;
+    Float_t top_rapiditydiff_Marco_gen_origtops_;
+    Float_t tt_pT_gen_origtops_;
+    Float_t top_costheta_cms_gen_origtops_;
+    Float_t lep_charge_asymmetry_gen_origtops_;
+    Float_t lep_azimuthal_asymmetry_gen_origtops_;
+    Float_t lep_azimuthal_asymmetry2_gen_origtops_;
+    Float_t lepPlus_costheta_cms_gen_origtops_;
+    Float_t lepMinus_costheta_cms_gen_origtops_;
+    Float_t top_spin_correlation_gen_origtops_;
+    Float_t lep_cos_opening_angle_gen_origtops_;
+
 	Float_t mgcor_;
 	Int_t   wflav_;
 
