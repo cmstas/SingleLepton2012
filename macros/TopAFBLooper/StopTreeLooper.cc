@@ -1822,9 +1822,9 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("top_pseudorapiditydiff_cms_gen",      &top_pseudorapiditydiff_cms_gen, "top_pseudorapiditydiff_cms_gen/F"     );
     babyTree_->Branch("tt_mass_gen",           &tt_mass_gen,          "tt_mass_gen/F"              );
     //babyTree_->Branch("ttRapidity_gen",            &ttRapidity_gen,          "ttRapidity_gen/F"            );
-    babyTree_->Branch("lep_charge_asymmetry_gen",  &lep_charge_asymmetry_gen, "lep_charge_asymmetry_gen_/F" );
-    babyTree_->Branch("lep_azimuthal_asymmetry_gen",    &lep_azimuthal_asymmetry_gen,  "lep_azimuthal_asymmetry_gen_/F"   );
-    babyTree_->Branch("lep_azimuthal_asymmetry2_gen",    &lep_azimuthal_asymmetry2_gen,  "lep_azimuthal_asymmetry2_gen_/F"   );
+    babyTree_->Branch("lep_charge_asymmetry_gen",  &lep_charge_asymmetry_gen, "lep_charge_asymmetry_gen/F" );
+    babyTree_->Branch("lep_azimuthal_asymmetry_gen",    &lep_azimuthal_asymmetry_gen,  "lep_azimuthal_asymmetry_gen/F"   );
+    babyTree_->Branch("lep_azimuthal_asymmetry2_gen",    &lep_azimuthal_asymmetry2_gen,  "lep_azimuthal_asymmetry2_gen/F"   );
     babyTree_->Branch("top_spin_correlation_gen",  &top_spin_correlation_gen, "top_spin_correlation_gen/F"  );
     babyTree_->Branch("lep_cos_opening_angle_gen",  &lep_cos_opening_angle_gen, "lep_cos_opening_angle_gen/F"  );
     babyTree_->Branch("top_costheta_cms_gen",      &top_costheta_cms_gen,    "top_costheta_cms_gen/F"      );
