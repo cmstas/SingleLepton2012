@@ -6,8 +6,8 @@
 #include "TStopwatch.h"
 
 #include "Math/VectorUtil.h"
-#include "../Core/STOPT.h"
-#include "../Core/stopUtils.h"
+#include "STOPT.h"
+#include "stopUtils.h"
 #include "../Plotting/PlotUtilities.h"
 #include "../../Tools/BTagReshaping/BTagReshaping.h"
 #include "LHAPDF/LHAPDF.h"
@@ -607,6 +607,27 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 topminus_genp_p4.SetPtEtaPhiE(stopt.tbar().Pt(), stopt.tbar().Eta(), stopt.tbar().Phi(), stopt.tbar().E());
                 lepPlus_gen.SetPtEtaPhiE(stopt.lep_t().Pt(), stopt.lep_t().Eta(), stopt.lep_t().Phi(), stopt.lep_t().E());
                 lepMinus_gen.SetPtEtaPhiE(stopt.lep_tbar().Pt(), stopt.lep_tbar().Eta(), stopt.lep_tbar().Phi(), stopt.lep_tbar().E());
+
+
+                /*
+                //test values already stored in new babies
+                if(fabs(lep_charge_asymmetry_gen-stopt.lep_charge_asymmetry_gen())>1e-6) cout<<"problem with stored lep_charge_asymmetry_gen "<<fabs(lep_charge_asymmetry_gen-stopt.lep_charge_asymmetry_gen())<<endl;
+                if(fabs(lep_azimuthal_asymmetry_gen-stopt.lep_azimuthal_asymmetry_gen())>1e-6) cout<<"problem with stored lep_azimuthal_asymmetry_gen "<<fabs(lep_azimuthal_asymmetry_gen-stopt.lep_azimuthal_asymmetry_gen())<<endl;
+                if(fabs(lep_azimuthal_asymmetry2_gen-stopt.lep_azimuthal_asymmetry2_gen())>1e-6) cout<<"problem with stored lep_azimuthal_asymmetry2_gen "<<fabs(lep_azimuthal_asymmetry2_gen-stopt.lep_azimuthal_asymmetry2_gen())<<endl;
+                if(fabs(top_rapiditydiff_cms_gen-stopt.top_rapiditydiff_cms_gen())>1e-6) cout<<"problem with stored top_rapiditydiff_cms_gen "<<fabs(top_rapiditydiff_cms_gen-stopt.top_rapiditydiff_cms_gen())<<endl;
+                if(fabs(top_pseudorapiditydiff_cms_gen-stopt.top_pseudorapiditydiff_cms_gen())>1e-6) cout<<"problem with stored top_pseudorapiditydiff_cms_gen "<<fabs(top_pseudorapiditydiff_cms_gen-stopt.top_pseudorapiditydiff_cms_gen())<<endl;
+                if(fabs(top_rapiditydiff_Marco_gen-stopt.top_rapiditydiff_Marco_gen())>1e-6) cout<<"problem with stored top_rapiditydiff_Marco_gen "<<fabs(top_rapiditydiff_Marco_gen-stopt.top_rapiditydiff_Marco_gen())<<endl;
+                if(fabs(top_costheta_cms_gen-stopt.top_costheta_cms_gen())>1e-6) cout<<"problem with stored top_costheta_cms_gen "<<fabs(top_costheta_cms_gen-stopt.top_costheta_cms_gen())<<endl;
+                if(fabs(lepPlus_costheta_cms_gen-stopt.lepPlus_costheta_cms_gen())>1e-6) cout<<"problem with stored lepPlus_costheta_cms_gen "<<fabs(lepPlus_costheta_cms_gen-stopt.lepPlus_costheta_cms_gen())<<endl;
+                if(fabs(lepMinus_costheta_cms_gen-stopt.lepMinus_costheta_cms_gen())>1e-6) cout<<"problem with stored lepMinus_costheta_cms_gen "<<fabs(lepMinus_costheta_cms_gen-stopt.lepMinus_costheta_cms_gen())<<endl;
+                if(fabs(top_spin_correlation_gen-stopt.top_spin_correlation_gen())>1e-6) cout<<"problem with stored top_spin_correlation_gen "<<fabs(top_spin_correlation_gen-stopt.top_spin_correlation_gen())<<endl;
+                if(fabs(lep_cos_opening_angle_gen-stopt.lep_cos_opening_angle_gen())>1e-6) cout<<"problem with stored lep_cos_opening_angle_gen "<<fabs(lep_cos_opening_angle_gen-stopt.lep_cos_opening_angle_gen())<<endl;
+                if(fabs(tt_mass_gen-stopt.tt_mass_gen())>1e-6) cout<<"problem with stored tt_mass_gen "<<fabs(tt_mass_gen-stopt.tt_mass_gen())<<endl;
+                if(fabs(ttRapidity2_gen-stopt.ttRapidity2_gen())>1e-6) cout<<"problem with stored ttRapidity2_gen "<<fabs(ttRapidity2_gen-stopt.ttRapidity2_gen())<<endl;
+                if(fabs(tt_pT_gen-stopt.tt_pT_gen())>1e-6) cout<<"problem with stored tt_pT_gen "<<fabs(tt_pT_gen-stopt.tt_pT_gen())<<endl;
+                //if(fabs(top1_pt_gen-stopt.top1_pt_gen())>1e-6) cout<<"problem with stored top1_pt_gen "<<fabs(top1_pt_gen-stopt.top1_pt_gen())<<endl;
+                //if(fabs(top2_pt_gen-stopt.top2_pt_gen())>1e-6) cout<<"problem with stored top2_pt_gen "<<fabs(top2_pt_gen-stopt.top2_pt_gen())<<endl;
+                */
 
             }
 
