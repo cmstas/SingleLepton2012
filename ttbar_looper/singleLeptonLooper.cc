@@ -1652,6 +1652,11 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	if( prefix.EqualTo("ttotr") && nleps == 2           ) continue;
 	
   nbs_ = 0;
+  int ntops = 0;
+
+  for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) if( abs( genps_id().at(igen) ) == 6 && genps_status().at(igen) == 3 ) ntops++;
+
+  if ( ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
 
   fillgenlevel(ismcatnlo, nleps, ntaus);
   
@@ -5010,11 +5015,15 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   nuMinus_status3_orig.SetXYZT(0,0,0,0);
   ttpair.SetXYZT(0,0,0,0);
 
-  int ntops = 0;
-  int foundWPlus = 0;
-  int foundWMinus = 0;
+  //int ntops = 0;
+  int foundstat2WPlus = 0;
+  int foundstat2WMinus = 0;
+  int foundstat3WPlus = 0;
+  int foundstat3WMinus = 0;
   int foundbPlus = 0;
   int foundbMinus = 0;
+  int foundtopPlus = 0;
+  int foundtopMinus = 0;
   int ntopPlusDaughters = 0;
   int ntopMinusDaughters = 0;
 
@@ -5056,8 +5065,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
     //For MC@NLO. Find first status=2 Ws, which are before FSR. Note, unlike the W the status=3 b is before FSR.
     if( id == 24 ){
-      if( genps_status().at(igen) == 2 && !foundWPlus ) {
-        foundWPlus=1;
+      if( genps_status().at(igen) == 2 && !foundstat2WPlus ) {
+        foundstat2WPlus = 1;
         WPlus_status2.SetXYZT(genps_p4()[igen].x(),
                             genps_p4()[igen].y(),
                             genps_p4()[igen].z(),
@@ -5069,15 +5078,16 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                             genps_p4()[igen].t()
                            );
       }
-      if( genps_status().at(igen) == 3 ) {
+      if( genps_status().at(igen) == 3 && !foundstat3WPlus ) {
+        foundstat3WPlus = 1;
         WPlus_status3_ = &(genps_p4().at(igen));
         WPlus_status3_orig = genps_p4().at(igen);
         WPlus_status3_orig_ = &(WPlus_status3_orig);
       }
     }
     if( id == -24 ){
-      if( genps_status().at(igen) == 2 && !foundWMinus ) {
-        foundWMinus=1;
+      if( genps_status().at(igen) == 2 && !foundstat2WMinus ) {
+        foundstat2WMinus = 1;
         WMinus_status2.SetXYZT(genps_p4()[igen].x(),
                             genps_p4()[igen].y(),
                             genps_p4()[igen].z(),
@@ -5089,7 +5099,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                             genps_p4()[igen].t()
                            );
       }
-      if( genps_status().at(igen) == 3 ) {
+      if( genps_status().at(igen) == 3 && !foundstat3WMinus ) {
+        foundstat3WMinus = 1;
         WMinus_status3_ = &(genps_p4().at(igen));
         WMinus_status3_orig = genps_p4().at(igen);
         WMinus_status3_orig_ = &(WMinus_status3_orig);
@@ -5182,15 +5193,11 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
 
 
-
-
-
-
-
-    if( id == 6 ){
+    if( id == 6 && !foundtopPlus ){
+      foundtopPlus = 1;
       t_         = &(genps_p4().at(igen));
       ptt_       = genps_p4().at(igen).pt();
-      ntops++;
+      //ntops++;
 
       topPlus_status3_ = &(genps_p4().at(igen));
       topPlus_status3_orig = genps_p4().at(igen);
@@ -5211,10 +5218,11 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       //cout<<" "<<vt_stat1.Px()<<" "<<vt_stat1.Py()<<" "<<vt_stat1.Pz()<<" "<<vt_stat1.E()<<endl;
 
     }
-    if( id == -6 ){
+    if( id == -6 && !foundtopMinus ){
+      foundtopMinus = 1;
       tbar_      = &(genps_p4().at(igen));
       pttbar_    = genps_p4().at(igen).pt();
-      ntops++;
+      //ntops++;
 
       topMinus_status3_ = &(genps_p4().at(igen));
       topMinus_status3_orig = genps_p4().at(igen);
@@ -5418,7 +5426,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   }
 
 
-  if (ismcatnlo && ( *topPlus_status3_!=topPlus_status2 || *topMinus_status3_!=topMinus_status2 ) ) cout<<" final top different from status=3 top "<<endl; //no status=2 tops in pythia
+  if (ismcatnlo && ( *topPlus_status3_!=topPlus_status2 || *topMinus_status3_!=topMinus_status2 ) ) cout<<" final top different from status=3 top, ntopPlusDaughters: "<<ntopPlusDaughters<<" ntopMinusDaughters: "<<ntopMinusDaughters<<endl; //no status=2 tops in pythia
+  //if (ismcatnlo && ( ntops != 2 ) ) cout<<" ntops = "<<ntops<<" ntopPlusDaughters: "<<ntopPlusDaughters<<" ntopMinusDaughters: "<<ntopMinusDaughters<<endl; //no status=2 tops in pythia
 
 
   if(!foundbPlus || !foundbMinus) {
@@ -5561,7 +5570,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                    );
 
 
-    //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay. Note this means the effective top has lower mass. This is probably what we want for top polarisation, but not for charge asymmetry?
+    //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay. Note this means the effective top has lower mass. This is probably not what we want, because the hard FSR gluon is probably from the b (according to Mrenna).
     //if(ntopPlusDaughters>2) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<<topPlus_status3_->M()<<" "<<(WPlus_status2_T + bPlus_status3_).M()<<endl;
     //topPlus_status3_ = WPlus_status2 + bPlus_status3_; 
     topPlus_status3_->SetXYZT(WPlus_status2.X()+bPlus_status3_->X(),
@@ -5577,21 +5586,36 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                    );
 
     //check for error in calculation
-
-    if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 5e-2 || fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 5e-2 ) {
-      cout<<" Top daughters don't match top. Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<endl;
-      cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E()<<" "<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E()<<" W: "<<(lepPlus_status3_->E()+nuPlus_status3_->E()) - WPlus_status2_T.E()<<" "<<(lepMinus_status3_->E()+nuMinus_status3_->E()) - WMinus_status2_T.E()<<endl; //here we expect exact agreement
-      cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status2.E()<<" "<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
+    if (  fabs( (*lepPlus_status3_+*nuPlus_status3_).M() - WPlus_status2_T.M() ) > 1e-4  ) {   //the stat2 and 3 Ws can have slightly different masses - in that case just check their betas (Ws and tops will no longer exactly match)
+      if (  fabs( (*lepPlus_status3_+*nuPlus_status3_).Beta() - WPlus_status2_T.Beta() ) > 1e-4  ) cout<<"********* Inconsistent WPlus ***********"<<endl;
     }
-
+    else if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 1e-2 ) {
+      cout<<" Top daughters don't match top. Ndaughters_topPlus: "<<ntopPlusDaughters<<" lepPlusID: "<<lepPlus_status3_id_<<" evt: "<<evt_event()<<endl;
+      cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E()<<" W: "<<(lepPlus_status3_->E()+nuPlus_status3_->E()) - WPlus_status2_T.E()<<" mW: "<<(*lepPlus_status3_ + *nuPlus_status3_).M() - WPlus_status2_T.M()<<" gammaW: "<< WPlus_status2_T.Gamma() <<endl; //here we expect exact agreement
+      cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
+      cout<<" WPlus2 "<<WPlus_status2_T.Px()<<" "<<WPlus_status2_T.Py()<<" "<<WPlus_status2_T.Pz()<<" "<<WPlus_status2_T.M()<<endl;
+      cout<<" WPlus3 "<<WPlus_status3B.Px()<<" "<<WPlus_status3B.Py()<<" "<<WPlus_status3B.Pz()<<" "<<WPlus_status3B.M()<<endl;
+      cout<<" lep+nuPlus "<<(nuPlus_status3B+lepPlus_status3B).Px()<<" "<<(nuPlus_status3B+lepPlus_status3B).Py()<<" "<<(nuPlus_status3B+lepPlus_status3B).Pz()<<" "<<(nuPlus_status3B+lepPlus_status3B).M()<<endl;
+    }
+    if (  fabs( (*lepMinus_status3_+*nuMinus_status3_).M() - WMinus_status2_T.M() ) > 1e-4  ) {   //the stat2 and 3 Ws can have slightly different masses - in that case just check their betas (Ws and tops will no longer exactly match)
+      if (  fabs( (*lepMinus_status3_+*nuMinus_status3_).Beta() - WMinus_status2_T.Beta() ) > 1e-4  ) cout<<"********* Inconsistent WMinus ***********"<<endl;
+    }
+    else if( fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 1e-2 ) {
+      cout<<" Top daughters don't match top. Ndaughters_topMinus: "<<ntopMinusDaughters<<" lepMinusID: "<<lepMinus_status3_id_<<" evt: "<<evt_event()<<endl;
+      cout<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E()<<" W: "<<(lepMinus_status3_->E()+nuMinus_status3_->E()) - WMinus_status2_T.E()<<" mW: "<<(*lepMinus_status3_ + *nuMinus_status3_).M() - WMinus_status2_T.M()<<" gammaW: "<< WMinus_status2_T.Gamma() <<endl; //here we expect exact agreement
+      cout<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
+      cout<<" WMinus2 "<<WMinus_status2_T.Px()<<" "<<WMinus_status2_T.Py()<<" "<<WMinus_status2_T.Pz()<<" "<<WMinus_status2_T.M()<<endl;
+      cout<<" WMinus3 "<<WMinus_status3B.Px()<<" "<<WMinus_status3B.Py()<<" "<<WMinus_status3B.Pz()<<" "<<WMinus_status3B.M()<<endl;
+      cout<<" lep+nuMinus "<<(nuMinus_status3B+lepMinus_status3B).Px()<<" "<<(nuMinus_status3B+lepMinus_status3B).Py()<<" "<<(nuMinus_status3B+lepMinus_status3B).Pz()<<" "<<(nuMinus_status3B+lepMinus_status3B).M()<<endl;
+    }
 
     //if(ntaus==0) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" Ndaughters_topMinus: "<<ntopMinusDaughters<<" "<< topPlus_status3_->E() - topPlus_status1_->E() << " " << topMinus_status3_->E() - topMinus_status1_->E() <<endl;
 
   }
 
-  //count tops and only get two
+  //ntops = 2 is required before calling fillgenlevel
   // check explicitly for t and tbar, in case model has multiple tops etc
-  if (ntops==2 && topPlus_status3_ && topMinus_status3_) {
+  if (topPlus_status3_ && topMinus_status3_) {
     ttpair = *topPlus_status3_ + *topMinus_status3_;
     ttbar_    = &ttpair;
     ptttbar_  = ttbar_->pt();
