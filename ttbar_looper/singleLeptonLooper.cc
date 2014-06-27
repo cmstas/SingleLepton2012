@@ -2578,8 +2578,13 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	if(taus_pf_pfcandIndicies().at(indexTauMax15).size()>0) {
 	  int leadingPtCand_index=(taus_pf_pfcandIndicies().at(indexTauMax15)).at(0);
-	  pfTau15_leadPtcand_= &(pfcands_p4().at(leadingPtCand_index));
-	  pfTau15_leadPtcandID_= pfcands_particleId().at(leadingPtCand_index);
+
+    //add protection against very occasional crash when leadingPtCand_index >= pfcands_particleId().size() (e.g. evt 19698731 in mc@nlo ntuple_2979_1_0Bj.root)
+    //cout<<indexTauMax15<<" "<<leadingPtCand_index<<" "<<pfcands_particleId().size()<<" "<<pfcands_p4().size()<<endl;
+    //cout<<pfcands_particleId()[leadingPtCand_index]<<endl;
+    //cout<<pfcands_p4()[leadingPtCand_index]<<endl;
+	  if( leadingPtCand_index < pfcands_particleId().size() ) pfTau15_leadPtcand_= &(pfcands_p4().at(leadingPtCand_index));
+	  if( leadingPtCand_index < pfcands_particleId().size() ) pfTau15_leadPtcandID_= pfcands_particleId().at(leadingPtCand_index);
 
 	}
       }

@@ -217,6 +217,8 @@ void doAll(bool skipFWLite = true)
     //pickSkimIfExists(chtttest,"/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_8TeV-mcatnlo_Summer12_DR53X-PU_S10_START53_V7A-v1/V05-03-24/merged*123.root");
 
     pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/*.root");
+    //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_2979_1_0Bj.root");
+    //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_2980*.root");
     //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_1041_2_jPf.root");
     //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_1018_1_gyh.root");
     //pickSkimIfExists(chtttest,"particle_level_test/ntuple_1_1_GGJ_mcatnlo_nonslim_alldaughters_allstatus.root");
