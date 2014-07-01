@@ -1134,7 +1134,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
     bool ismcatnlo = false;
 
-    if(rootfilename.Contains("mcatnlo")) {
+    if(rootfilename.Contains("mcatnlo") || prefix.Contains("mcatnlo") ) {
       cout<<"Processing MC@NLO sample: using status=2 Ws (before FSR from b)"<<endl;
       ismcatnlo = true; 
     }
@@ -1621,15 +1621,15 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	qscale_ = genps_qScale();
 	
 	//store W flavor history
-	if (!prefix.Contains("mcatnlo")) {
+	//if (!prefix.Contains("mcatnlo")) {
 	  wflav_ = (int)genps_flavorHistoryFilterResult();
-	}
+	//}
 
 	//splitting ttbar into ttdil/ttotr
 	nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
   //cout<<prefix<<" "<<nels<<" "<<nmus<<" "<<ntaus<<endl;
 
-  if( nleps != 2 ) continue;  //temporary
+  if( nleps != 2 ) continue;  //temporary to avoid huge babies including ttsl
 	
 	nels_  = nels;
 	nmus_  = nmus;
@@ -1644,6 +1644,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	  if( nleps == 2 ) mgcor_ = 0.945;
 	}
 	if( prefix.Contains("powheg") ||
+      prefix.Contains("mcatnlo") ||
 	    prefix.Contains("sherpa") ) 
 	  mgcor_ = 1.0;
 
@@ -1656,7 +1657,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
   for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) if( abs( genps_id().at(igen) ) == 6 && genps_status().at(igen) == 3 ) ntops++;
 
-  if ( ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
+  if ( ismcatnlo && ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
+  else if ( ntops != 2 ) { cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; } 
 
   fillgenlevel(ismcatnlo, nleps, ntaus);
   
@@ -3388,31 +3390,33 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
       if( !isData ){
 
+        /*
         //match genjets with status=1 and 3 bs to test how different they are
+        if(nleps==2) {
+          int igjet_bPlus_status1 = -999;
+          int igjet_bPlus_status3 = -999;
+          int igjet_bMinus_status1 = -999;
+          int igjet_bMinus_status3 = -999;
+          double mindR_gjet_bPlus_status1 = 999;
+          double mindR_gjet_bPlus_status3 = 999;
+          double mindR_gjet_bMinus_status1 = 999;
+          double mindR_gjet_bMinus_status3 = 999;
 
-        int igjet_bPlus_status1 = -999;
-        int igjet_bPlus_status3 = -999;
-        int igjet_bMinus_status1 = -999;
-        int igjet_bMinus_status3 = -999;
-        double mindR_gjet_bPlus_status1 = 999;
-        double mindR_gjet_bPlus_status3 = 999;
-        double mindR_gjet_bMinus_status1 = 999;
-        double mindR_gjet_bMinus_status3 = 999;
+          for (unsigned int igjet = 0 ; igjet < genjets_p4().size() ; igjet++) {
+            LorentzVector vgjet = genjets_p4().at(igjet);
+            if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status1_ ) < mindR_gjet_bPlus_status1) { mindR_gjet_bPlus_status1 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status1_ ); igjet_bPlus_status1 = igjet; }
+            if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status3_ ) < mindR_gjet_bPlus_status3) { mindR_gjet_bPlus_status3 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status3_ ); igjet_bPlus_status3 = igjet; }
+            if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status1_ ) < mindR_gjet_bMinus_status1) { mindR_gjet_bMinus_status1 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status1_ ); igjet_bMinus_status1 = igjet; }
+            if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status3_ ) < mindR_gjet_bMinus_status3) { mindR_gjet_bMinus_status3 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status3_ ); igjet_bMinus_status3 = igjet; }
+          }
 
-        for (unsigned int igjet = 0 ; igjet < genjets_p4().size() ; igjet++) {
-          LorentzVector vgjet = genjets_p4().at(igjet);
-          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status1_ ) < mindR_gjet_bPlus_status1) { mindR_gjet_bPlus_status1 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status1_ ); igjet_bPlus_status1 = igjet; }
-          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status3_ ) < mindR_gjet_bPlus_status3) { mindR_gjet_bPlus_status3 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bPlus_status3_ ); igjet_bPlus_status3 = igjet; }
-          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status1_ ) < mindR_gjet_bMinus_status1) { mindR_gjet_bMinus_status1 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status1_ ); igjet_bMinus_status1 = igjet; }
-          if (ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status3_ ) < mindR_gjet_bMinus_status3) { mindR_gjet_bMinus_status3 = ROOT::Math::VectorUtil::DeltaR( vgjet , *bMinus_status3_ ); igjet_bMinus_status3 = igjet; }
+          //cout<<ROOT::Math::VectorUtil::DeltaR( *bPlus_status3_ , *bPlus_status1_ ) <<endl;
+          //cout<<" "<<mindR_gjet_bPlus_status1<<" "<<mindR_gjet_bPlus_status3<<" "<<mindR_gjet_bMinus_status1<<" "<<mindR_gjet_bMinus_status3<<endl;
+          mindR_gjet_bPlus_status1<mindR_gjet_bPlus_status3 ? np1++:np3++;
+          mindR_gjet_bMinus_status1<mindR_gjet_bMinus_status3 ? nm1++:nm3++;
+          //cout<<np1<<" "<<np3<<" "<<nm1<<" "<<nm3<<endl;
         }
-
-        //cout<<ROOT::Math::VectorUtil::DeltaR( *bPlus_status3_ , *bPlus_status1_ ) <<endl;
-        //cout<<" "<<mindR_gjet_bPlus_status1<<" "<<mindR_gjet_bPlus_status3<<" "<<mindR_gjet_bMinus_status1<<" "<<mindR_gjet_bMinus_status3<<endl;
-        mindR_gjet_bPlus_status1<mindR_gjet_bPlus_status3 ? np1++:np3++;
-        mindR_gjet_bMinus_status1<mindR_gjet_bMinus_status3 ? nm1++:nm3++;
-        //cout<<np1<<" "<<np3<<" "<<nm1<<" "<<nm3<<endl;
-
+        */
 
 	for (unsigned int igjet = 0 ; igjet < genjets_p4().size() ; igjet++) {
 	    
@@ -3597,7 +3601,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
 	weight_ = kFactor * evt_scale1fb() * lumi;
         //do a signed weight for mcatnlo
-        if ( prefix.Contains("mcatnlo") && genps_weight()<0) weight_ *= -1.;
+        if (ismcatnlo && genps_weight()<0) weight_ *= -1.;
+        //if (genps_weight()<0) weight_ *= -1.;
 
 	if( doTenPercent )	  weight_ *= 10;
 
@@ -5440,7 +5445,27 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     dumpDocLines();
   }
 
+  //ntops = 2 is required before calling fillgenlevel
+  // check explicitly for t and tbar, in case model has multiple tops etc
+  if (topPlus_status3_ && topMinus_status3_) {
+    ttpair = *topPlus_status3_ + *topMinus_status3_;
+    ttbar_    = &ttpair;
+    ptttbar_  = ttbar_->pt();
+    mttbar_   = ttbar_->mass();
+    etattbar_ = ttbar_->eta();
+    rapidityttbar_ = ttbar_->Rapidity();
+  }
+
+  if (foundlep && foundnu) {
+    mcmln_ = (*mclep_+*mcnu_).mass();
+    mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
+  }
+
+
+
   //if(ntaus>0) continue; //for testing particle-level
+
+  if(nleps!=2) return;
 
   //For MC@NLO. Boost status=3 W back to status=2
   if(ismcatnlo && nleps == 2) {
@@ -5618,21 +5643,6 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
   }
 
-  //ntops = 2 is required before calling fillgenlevel
-  // check explicitly for t and tbar, in case model has multiple tops etc
-  if (topPlus_status3_ && topMinus_status3_) {
-    ttpair = *topPlus_status3_ + *topMinus_status3_;
-    ttbar_    = &ttpair;
-    ptttbar_  = ttbar_->pt();
-    mttbar_   = ttbar_->mass();
-    etattbar_ = ttbar_->eta();
-    rapidityttbar_ = ttbar_->Rapidity();
-  }
-
-  if (foundlep && foundnu) {
-    mcmln_ = (*mclep_+*mcnu_).mass();
-    mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
-  }
 
   //calculate gen-level quantities
   TLorentzVector topplus_genp_p4(0, 0, 0, 0), topminus_genp_p4(0, 0, 0, 0), lepPlus_gen(0, 0, 0, 0), lepMinus_gen(0, 0, 0, 0);

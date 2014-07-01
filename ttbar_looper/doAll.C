@@ -106,7 +106,7 @@ void doAll(bool skipFWLite = true)
   bool runT2tt_few = 0;
   bool runT2bw     = 0;
   bool runT2bw_few = 0;
-  bool runtttest   = 1;
+  bool runtttest   = 0;
   bool runHHWWbb   = 0;
 
   bool rundata2012a      = 0;
@@ -126,7 +126,7 @@ void doAll(bool skipFWLite = true)
   bool runtt_massup  = 0;
   bool runtt_massdw  = 0;
   bool runtt_pythia  = 0;  
-  bool runtt_mcatnlo = 0;
+  bool runtt_mcatnlo = 1;
   bool runtt_powheg  = 0;
   bool runtt_notauola  = 0;
 
@@ -216,8 +216,8 @@ void doAll(bool skipFWLite = true)
     //pickSkimIfExists(chtttest,"/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v2/V05-03-25/merged_ntuple_74.root");
     //pickSkimIfExists(chtttest,"/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_8TeV-mcatnlo_Summer12_DR53X-PU_S10_START53_V7A-v1/V05-03-24/merged*123.root");
 
-    pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/*.root");
-    //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_2979_1_0Bj.root");
+    //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/*.root");
+    pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_2979_1_0Bj.root");
     //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_2980*.root");
     //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_1041_2_jPf.root");
     //pickSkimIfExists(chtttest,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/ntuple_1018_1_gyh.root");
@@ -283,13 +283,12 @@ void doAll(bool skipFWLite = true)
 
     pickSkimIfExists(chtt_pythia,"/nfs-7/userdata/cms2/TT_TuneZ2_7TeV-pythia6-tauola_Summer11-PU_S3_START42_V11-v2/V04-02-29/merged*root");
   }
+
   TChain* chtt_mcatnlo = new TChain("Events");
   if (runtt_mcatnlo) {
-    cout << "UPDATE 7 TeV TT MCATNLO SAMPLE!!!! QUITTING!!!" << endl;
-    exit(0);
-
-    pickSkimIfExists(chtt_mcatnlo,"/nfs-6/userdata/cms2/TT_TuneZ2_7TeV-mcatnlo_Fall11-PU_S6_START42_V14B-v1_genfix/V04-02-29/merged*root");
+    pickSkimIfExists(chtt_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/*.root");
   }
+
   TChain* chtt_powheg = new TChain("Events");
   if (runtt_powheg) {
     cout << "UPDATE 7 TeV TT POWHEG SAMPLE!!!! QUITTING!!!" << endl;
