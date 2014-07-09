@@ -27,6 +27,8 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
 
   int nbins = 60; //Number of bins for the asymmetry variable in the acceptance plots. 60 bins in the asymmetry variable makes more sense than 80 since we will be rebinning to 6 or 12 bins for the acceptance histograms
 
+  double pi = TMath::Pi();
+
   
   //the plots not differ by number of jets
   for (int i=0; i<4; i++) {
@@ -90,11 +92,11 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_gen[i][j]->GetXaxis()->SetTitle("|#eta_{l^{+}}| - |#eta_{l^{-}}|");
       hlepChargeAsym_gen[i][j]->Sumw2();
 
-      hlepAzimAsym_gen[i][j] = new TH1D(Form("%s_hlepAzimAsymGen_%s",prefix,suffix),Form("%s_lepAzimAsymGen_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793);
+      hlepAzimAsym_gen[i][j] = new TH1D(Form("%s_hlepAzimAsymGen_%s",prefix,suffix),Form("%s_lepAzimAsymGen_%s",prefix,suffix),nbins,-pi,pi);
       hlepAzimAsym_gen[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_gen[i][j]->Sumw2();
 
-      hlepAzimAsym2_gen[i][j] = new TH1D(Form("%s_hlepAzimAsym2Gen_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen_%s",prefix,suffix),nbins,0,3.141592653589793);
+      hlepAzimAsym2_gen[i][j] = new TH1D(Form("%s_hlepAzimAsym2Gen_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen_%s",prefix,suffix),nbins,0,pi);
       hlepAzimAsym2_gen[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_gen[i][j]->Sumw2();
 
@@ -143,12 +145,12 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepChargeAsym_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymGen2d_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793,120,0.,1200.);
+      hlepAzimAsym_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymGen2d_%s",prefix,suffix),nbins,-pi,pi,120,0.,1200.);
       hlepAzimAsym_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen2d_%s",prefix,suffix),nbins,0,3.141592653589793,120,0.,1200.);
+      hlepAzimAsym2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen2d_%s",prefix,suffix),nbins,0,pi,120,0.,1200.);
       hlepAzimAsym2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym2_gen2d[i][j]->Sumw2();
@@ -205,12 +207,12 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepChargeAsym_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttpTGen2d_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793,300,0.,300.);
+      hlepAzimAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttpTGen2d_%s",prefix,suffix),nbins,-pi,pi,300,0.,300.);
       hlepAzimAsym_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym2_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttpTGen2d_%s",prefix,suffix),nbins,0,3.141592653589793,300,0.,300.);
+      hlepAzimAsym2_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttpTGen2d_%s",prefix,suffix),nbins,0,pi,300,0.,300.);
       hlepAzimAsym2_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym2_ttpT_gen2d[i][j]->Sumw2();
@@ -267,12 +269,12 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793,300,0.,3.0);
+      hlepAzimAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-pi,pi,300,0.,3.0);
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym2_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),nbins,0,3.141592653589793,300,0.,3.0);
+      hlepAzimAsym2_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),nbins,0,pi,300,0.,3.0);
       hlepAzimAsym2_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepAzimAsym2_ttRapidity2_gen2d[i][j]->Sumw2();
@@ -335,7 +337,7 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepAzimAsymGenDiff[i][j]->GetXaxis()->SetTitle("cos(#Delta #phi_{l^{+}l^{-}}) (reco-gen)");
       hlepAzimAsymGenDiff[i][j]->Sumw2();
 
-      hlepAzimAsym2GenDiff[i][j] = new TH1D(Form("%s_hlepAzimAsym2GenDiff_%s",prefix,suffix),Form("%s_lepAzimAsym2GenDiff_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hlepAzimAsym2GenDiff[i][j] = new TH1D(Form("%s_hlepAzimAsym2GenDiff_%s",prefix,suffix),Form("%s_lepAzimAsym2GenDiff_%s",prefix,suffix),80,-pi,pi);
       hlepAzimAsym2GenDiff[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}} (reco-gen)");
       hlepAzimAsym2GenDiff[i][j]->Sumw2();
 
@@ -430,19 +432,19 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hjetAngleBetweenCMS[i][j]->GetXaxis()->SetTitle("cos( #alpha_{j1j2}^{t#bar{t}}) ");
       hjetAngleBetweenCMS[i][j]->Sumw2();
 
-      hlepPhi[i][j] = new TH1D(Form("%s_hlepPhi_%s",prefix,suffix),Form("%s_lepPhi_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hlepPhi[i][j] = new TH1D(Form("%s_hlepPhi_%s",prefix,suffix),Form("%s_lepPhi_%s",prefix,suffix),80,-pi,pi);
       hlepPhi[i][j]->GetXaxis()->SetTitle("Lepton #phi");
       hlepPhi[i][j]->Sumw2();
             
-      hlepPlusPhi[i][j] = new TH1D(Form("%s_hlepPlusPhi_%s",prefix,suffix),Form("%s_lepPlusPhi_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hlepPlusPhi[i][j] = new TH1D(Form("%s_hlepPlusPhi_%s",prefix,suffix),Form("%s_lepPlusPhi_%s",prefix,suffix),80,-pi,pi);
       hlepPlusPhi[i][j]->GetXaxis()->SetTitle("#phi_{l^{+}}");
       hlepPlusPhi[i][j]->Sumw2();
             
-      hlepMinusPhi[i][j] = new TH1D(Form("%s_hlepMinusPhi_%s",prefix,suffix),Form("%s_lepMinusPhi_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hlepMinusPhi[i][j] = new TH1D(Form("%s_hlepMinusPhi_%s",prefix,suffix),Form("%s_lepMinusPhi_%s",prefix,suffix),80,-pi,pi);
       hlepMinusPhi[i][j]->GetXaxis()->SetTitle("#phi_{l^{-}}");
       hlepMinusPhi[i][j]->Sumw2();
 
-      hjetPhi[i][j] = new TH1D(Form("%s_hjetPhi_%s",prefix,suffix),Form("%s_jetPhi_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hjetPhi[i][j] = new TH1D(Form("%s_hjetPhi_%s",prefix,suffix),Form("%s_jetPhi_%s",prefix,suffix),80,-pi,pi);
       hjetPhi[i][j]->GetXaxis()->SetTitle("Jet #phi");
       hjetPhi[i][j]->Sumw2();
 
@@ -469,11 +471,11 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
 
 
 
-      hlepAzimAsym[i][j] = new TH1D(Form("%s_hlepAzimAsym_%s",prefix,suffix),Form("%s_lepAzimAsym_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hlepAzimAsym[i][j] = new TH1D(Form("%s_hlepAzimAsym_%s",prefix,suffix),Form("%s_lepAzimAsym_%s",prefix,suffix),80,-pi,pi);
       hlepAzimAsym[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym[i][j]->Sumw2();
 
-      hlepAzimAsym2[i][j] = new TH1D(Form("%s_hlepAzimAsym2_%s",prefix,suffix),Form("%s_lepAzimAsym2_%s",prefix,suffix),80,0,3.141592653589793);
+      hlepAzimAsym2[i][j] = new TH1D(Form("%s_hlepAzimAsym2_%s",prefix,suffix),Form("%s_lepAzimAsym2_%s",prefix,suffix),80,0,pi);
       hlepAzimAsym2[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2[i][j]->Sumw2();
 
