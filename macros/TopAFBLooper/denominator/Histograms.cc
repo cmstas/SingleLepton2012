@@ -90,8 +90,8 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_gen[i][j]->GetXaxis()->SetTitle("|#eta_{l^{+}}| - |#eta_{l^{-}}|");
       hlepChargeAsym_gen[i][j]->Sumw2();
 
-      hlepAzimAsym_gen[i][j] = new TH1D(Form("%s_hlepAzimAsymGen_%s",prefix,suffix),Form("%s_lepAzimAsymGen_%s",prefix,suffix),nbins,-1,1);
-      hlepAzimAsym_gen[i][j]->GetXaxis()->SetTitle("cos(#Delta #phi_{l^{+}l^{-}})");
+      hlepAzimAsym_gen[i][j] = new TH1D(Form("%s_hlepAzimAsymGen_%s",prefix,suffix),Form("%s_lepAzimAsymGen_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793);
+      hlepAzimAsym_gen[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_gen[i][j]->Sumw2();
 
       hlepAzimAsym2_gen[i][j] = new TH1D(Form("%s_hlepAzimAsym2Gen_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen_%s",prefix,suffix),nbins,0,3.141592653589793);
@@ -143,8 +143,8 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepChargeAsym_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
-      hlepAzimAsym_gen2d[i][j]->GetXaxis()->SetTitle("cos(#Delta #phi_{l^{+}l^{-}})");
+      hlepAzimAsym_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymGen2d_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793,120,0.,1200.);
+      hlepAzimAsym_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym_gen2d[i][j]->Sumw2();
 
@@ -205,8 +205,8 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepChargeAsym_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
-      hlepAzimAsym_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#Delta #phi_{l^{+}l^{-}})");
+      hlepAzimAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttpTGen2d_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793,300,0.,300.);
+      hlepAzimAsym_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym_ttpT_gen2d[i][j]->Sumw2();
 
@@ -267,8 +267,8 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
-      hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#Delta #phi_{l^{+}l^{-}})");
+      hlepAzimAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-3.141592653589793,3.141592653589793,300,0.,3.0);
+      hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->Sumw2();
 
@@ -469,8 +469,8 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
 
 
 
-      hlepAzimAsym[i][j] = new TH1D(Form("%s_hlepAzimAsym_%s",prefix,suffix),Form("%s_lepAzimAsym_%s",prefix,suffix),80,-1,1);
-      hlepAzimAsym[i][j]->GetXaxis()->SetTitle("cos(#Delta #phi_{l^{+}l^{-}})");
+      hlepAzimAsym[i][j] = new TH1D(Form("%s_hlepAzimAsym_%s",prefix,suffix),Form("%s_lepAzimAsym_%s",prefix,suffix),80,-3.141592653589793,3.141592653589793);
+      hlepAzimAsym[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym[i][j]->Sumw2();
 
       hlepAzimAsym2[i][j] = new TH1D(Form("%s_hlepAzimAsym2_%s",prefix,suffix),Form("%s_lepAzimAsym2_%s",prefix,suffix),80,0,3.141592653589793);
