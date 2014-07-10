@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include "TH1D.h"
 #include "TMatrixD.h"
@@ -24,8 +25,8 @@ const int nbins1D=6;
 const int nbinsx2D=6; //Normal configuration: use 6 bins in x, before and after unfolding.
 const int nbinsx2Dalt = 12; //Alternate configuration: use 12 bins in x before unfolding, and 6 bins after.
 const int nbinsy2D=3;
-const int nbinsunwrapped = nbinsx2D*nbinsy2D;
-const int nbinsunwrappedalt = nbinsx2Dalt*nbinsy2D;
+//const int nbinsunwrapped = nbinsx2D*nbinsy2D;
+//const int nbinsunwrappedalt = nbinsx2Dalt*nbinsy2D;
 
 double xbins1D[nbins1D+1];
 double xbins2D[nbinsx2D+1];
@@ -586,8 +587,9 @@ void Initialize1DBinning(int iVar){
       acceptanceName="lepChargeAsym";
       asymlabel="A_{lepC}";
       xbins1D[0]=-2.0; xbins1D[1]=-0.8; xbins1D[2]=-0.4; xbins1D[3]=0.0; xbins1D[4]=0.4; xbins1D[5]=0.8; xbins1D[6]=2.0;
-      xbins2Dalt[0]=-2.0; xbins2Dalt[2]=-0.8; xbins2Dalt[4]=-0.4; xbins2Dalt[6]=0.0; xbins2Dalt[8]=0.4; xbins2Dalt[10]=0.8; xbins2Dalt[12]=2.0;
-      xbins2Dalt[1]=-1.4; xbins2Dalt[3]=-0.6; xbins2Dalt[5]=-0.2; xbins2Dalt[7]=0.2; xbins2Dalt[9]=0.6; xbins2Dalt[11]=1.4;
+      //xbins2Dalt[0]=-2.0; xbins2Dalt[2]=-0.8; xbins2Dalt[4]=-0.4; xbins2Dalt[6]=0.0; xbins2Dalt[8]=0.4; xbins2Dalt[10]=0.8; xbins2Dalt[12]=2.0;
+      //xbins2Dalt[1]=-1.4; xbins2Dalt[3]=-0.6; xbins2Dalt[5]=-0.2; xbins2Dalt[7]=0.2; xbins2Dalt[9]=0.6; xbins2Dalt[11]=1.4;
+      std::copy(bins_lepChargeAsym, bins_lepChargeAsym + nbinsx2Dalt + 1, xbins2Dalt);
 syst_corr[0] =  0.002297  ; stat_corr[0] =  0.005120  ; stat_uncorr[0] =  0.003483  ;
 syst_corr[1] =  0.002641  ; stat_corr[1] =  0.006879  ; stat_uncorr[1] =  0.004675  ;
 syst_corr[2] =  0.004607  ; stat_corr[2] =  0.007338  ; stat_uncorr[2] =  0.005284  ;
@@ -607,8 +609,9 @@ syst_corr[5] =  0.002847  ; stat_corr[5] =  0.004806  ; stat_uncorr[5] =  0.0035
       asymlabel="A_{#Delta#phi}";
       //Double_t pi = 3.141592653589793;
       xbins1D[0]=0.0; xbins1D[1]=4.*pi/20.; xbins1D[2]=7.*pi/20.; xbins1D[3]=10.*pi/20.; xbins1D[4]=13.*pi/20.; xbins1D[5]=16.*pi/20.; xbins1D[6]=pi;
-      xbins2Dalt[0]=0.0; xbins2Dalt[2]=4.*pi/20.; xbins2Dalt[4]=7.*pi/20.; xbins2Dalt[6]=10.*pi/20.; xbins2Dalt[8]=13.*pi/20.; xbins2Dalt[10]=16.*pi/20.; xbins2Dalt[12]=pi;
-      xbins2Dalt[1]=2.*pi/20.; xbins2Dalt[3]=5.5*pi/20.; xbins2Dalt[5]=8.5*pi/20.; xbins2Dalt[7]=11.5*pi/20.; xbins2Dalt[9]=14.5*pi/20.; xbins2Dalt[11]=18.*pi/20.;
+      //xbins2Dalt[0]=0.0; xbins2Dalt[2]=4.*pi/20.; xbins2Dalt[4]=7.*pi/20.; xbins2Dalt[6]=10.*pi/20.; xbins2Dalt[8]=13.*pi/20.; xbins2Dalt[10]=16.*pi/20.; xbins2Dalt[12]=pi;
+      //xbins2Dalt[1]=2.*pi/20.; xbins2Dalt[3]=5.5*pi/20.; xbins2Dalt[5]=8.5*pi/20.; xbins2Dalt[7]=11.5*pi/20.; xbins2Dalt[9]=14.5*pi/20.; xbins2Dalt[11]=18.*pi/20.;
+      std::copy(bins_lepAzimAsym2, bins_lepAzimAsym2 + nbinsx2Dalt + 1, xbins2Dalt);
 syst_corr[0] =  0.006053  ; stat_corr[0] =  0.007795  ; stat_uncorr[0] =  0.005697  ;
 syst_corr[1] =  0.005288  ; stat_corr[1] =  0.006603  ; stat_uncorr[1] =  0.004705  ;
 syst_corr[2] =  0.006699  ; stat_corr[2] =  0.006543  ; stat_uncorr[2] =  0.004353  ;
@@ -622,11 +625,12 @@ syst_corr[5] =  0.006443  ; stat_corr[5] =  0.008155  ; stat_uncorr[5] =  0.0063
     //   Top Polarization
     case 2:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l+})";
       acceptanceName="lepPlusCosTheta";
       asymlabel="A_{P+}";
-      xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      std::copy(bins_lepCosTheta, bins_lepCosTheta + nbins1D + 1, xbins1D);
 syst_corr[0] =  0.020616  ; stat_corr[0] =  0.024436  ; stat_uncorr[0] =  0.017748  ;
 syst_corr[1] =  0.013600  ; stat_corr[1] =  0.016636  ; stat_uncorr[1] =  0.012111  ;
 syst_corr[2] =  0.009425  ; stat_corr[2] =  0.018346  ; stat_uncorr[2] =  0.012860  ;
@@ -644,7 +648,8 @@ syst_corr[5] =  0.020242  ; stat_corr[5] =  0.024646  ; stat_uncorr[5] =  0.0168
       xaxislabel="cos(#theta_{l-})";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
-      xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      std::copy(bins_lepCosTheta, bins_lepCosTheta + nbins1D + 1, xbins1D);
 syst_corr[0] =  0.018580  ; stat_corr[0] =  0.024218  ; stat_uncorr[0] =  0.017780  ;
 syst_corr[1] =  0.007818  ; stat_corr[1] =  0.015829  ; stat_uncorr[1] =  0.012130  ;
 syst_corr[2] =  0.004938  ; stat_corr[2] =  0.017465  ; stat_uncorr[2] =  0.012852  ;
@@ -658,11 +663,12 @@ syst_corr[5] =  0.010887  ; stat_corr[5] =  0.021370  ; stat_uncorr[5] =  0.0171
     //   Top Polarization combining positively and negatively charged leptons
     case 4:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l})";
       acceptanceName="lepCosTheta";
       asymlabel="A_{P}";
-      xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      std::copy(bins_lepCosTheta, bins_lepCosTheta + nbins1D + 1, xbins1D);
 syst_corr[0] =  0.018822  ; stat_corr[0] =  0.016913  ; stat_uncorr[0] =  0.012560  ;
 syst_corr[1] =  0.009816  ; stat_corr[1] =  0.012074  ; stat_uncorr[1] =  0.008569  ;
 syst_corr[2] =  0.005198  ; stat_corr[2] =  0.012027  ; stat_uncorr[2] =  0.009090  ;
@@ -680,7 +686,8 @@ syst_corr[5] =  0.014313  ; stat_corr[5] =  0.017201  ; stat_uncorr[5] =  0.0119
       xaxislabel="cos(#theta_{l+})cos(#theta_{l-})";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
-      xbins1D[0]=-1.0; xbins1D[1]=-0.5; xbins1D[2]=-0.2; xbins1D[3]=0.0; xbins1D[4]=0.2; xbins1D[5]=0.5; xbins1D[6]=1.0;
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.5; xbins1D[2]=-0.2; xbins1D[3]=0.0; xbins1D[4]=0.2; xbins1D[5]=0.5; xbins1D[6]=1.0;
+      std::copy(bins_topSpinCorr, bins_topSpinCorr + nbins1D + 1, xbins1D);
 syst_corr[0] =  0.010485  ; stat_corr[0] =  0.014863  ; stat_uncorr[0] =  0.010240  ;
 syst_corr[1] =  0.022804  ; stat_corr[1] =  0.030016  ; stat_uncorr[1] =  0.020079  ;
 syst_corr[2] =  0.033008  ; stat_corr[2] =  0.043863  ; stat_uncorr[2] =  0.031697  ;
@@ -694,12 +701,13 @@ syst_corr[5] =  0.008816  ; stat_corr[5] =  0.011391  ; stat_uncorr[5] =  0.0076
     //   Top Asy III
     case 6:
     {
-      observablename="top_rapidtiydiff_Marco";
+      observablename="top_rapiditydiff_Marco";
       //xaxislabel="|y_{top}|-|y_{tbar}|";
       xaxislabel="#Delta|y_{t}|";
       acceptanceName="rapiditydiffMarco";
       asymlabel="A_{C}";
-      xbins1D[0]=-2.0; xbins1D[1]=-0.7; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.7; xbins1D[6]=2.0;
+      //xbins1D[0]=-2.0; xbins1D[1]=-0.7; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.7; xbins1D[6]=2.0;
+      std::copy(bins_rapiditydiffMarco, bins_rapiditydiffMarco + nbins1D + 1, xbins1D);
 syst_corr[0] =  0.004009  ; stat_corr[0] =  0.006765  ; stat_uncorr[0] =  0.004693  ;
 syst_corr[1] =  0.005596  ; stat_corr[1] =  0.011998  ; stat_uncorr[1] =  0.008558  ;
 syst_corr[2] =  0.007438  ; stat_corr[2] =  0.014062  ; stat_uncorr[2] =  0.010686  ;
@@ -717,7 +725,8 @@ syst_corr[5] =  0.002776  ; stat_corr[5] =  0.006236  ; stat_uncorr[5] =  0.0047
       xaxislabel="cos(#theta_{top})";
       acceptanceName="topCosTheta";
       asymlabel="A_{FB}";
-      xbins1D[0]=-1.0; xbins1D[1]=-0.7; xbins1D[2]=-0.4; xbins1D[3]=0.0; xbins1D[4]=0.4; xbins1D[5]=0.7; xbins1D[6]=1.0;
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.7; xbins1D[2]=-0.4; xbins1D[3]=0.0; xbins1D[4]=0.4; xbins1D[5]=0.7; xbins1D[6]=1.0;
+      std::copy(bins_topCosTheta, bins_topCosTheta + nbins1D + 1, xbins1D);
 syst_corr[0] =  0.018683  ; stat_corr[0] =  0.033209  ; stat_uncorr[0] =  0.024855  ;
 syst_corr[1] =  0.009716  ; stat_corr[1] =  0.013867  ; stat_uncorr[1] =  0.010505  ;
 syst_corr[2] =  0.006083  ; stat_corr[2] =  0.010515  ; stat_uncorr[2] =  0.008204  ;
@@ -728,14 +737,31 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       xmax1D= 1.0;
       break;
     }
-    //   Lepton Azimuthal Asymmetry
+    //   Lepton opening angle
     case 8:
     {
+      observablename="lep_cos_opening_angle";
+      xaxislabel="cos(#phi)";
+      acceptanceName="lepCosOpeningAngle";
+      asymlabel="A_{cos(#phi)}";
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
+      std::copy(bins_lepCosOpeningAngle, bins_lepCosOpeningAngle + nbins1D + 1, xbins1D);
+      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
+      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
+      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
+      xmin=-1.0;
+      xmax= 1.0;
+      break;
+    }
+    //   Lepton Azimuthal Asymmetry
+    case 9:
+    {
       observablename="lep_azimuthal_asymmetry";
-      xaxislabel="cos(#Delta#phi_{l+l-})";
+      xaxislabel="#Delta#phi_{l+l-}";
       acceptanceName="lepAzimAsym";
       asymlabel="A_{#Delta#phi}";
-      xbins1D[0]=-1.0; xbins1D[1]=-0.8; xbins1D[2]=-0.4; xbins1D[3]=0.0; xbins1D[4]=0.4; xbins1D[5]=0.8; xbins1D[6]=1.0;
+      //xbins1D[0]=-1.0; xbins1D[1]=-0.8; xbins1D[2]=-0.4; xbins1D[3]=0.0; xbins1D[4]=0.4; xbins1D[5]=0.8; xbins1D[6]=1.0;
+      std::copy(bins_lepAzimAsym, bins_lepAzimAsym + nbinsx2Dalt + 1, xbins2Dalt);
       stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
       stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
       syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
@@ -744,13 +770,14 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       break;
     }
     //   Top Asy I
-    case 9:
+    case 10:
     {
-      observablename="top_pseudorapidtiydiff_cms";
+      observablename="top_pseudorapiditydiff_cms";
       xaxislabel="|#eta_{t}|-|#eta_{#bar{t}}|";
       acceptanceName="pseudorapiditydiff";
       asymlabel="A_{C}";
-      xbins1D[0]=-2.0; xbins1D[1]=-1.0; xbins1D[2]=-0.5; xbins1D[3]=0.0; xbins1D[4]=0.5; xbins1D[5]=1.0; xbins1D[6]=2.0;
+      //xbins1D[0]=-2.0; xbins1D[1]=-1.0; xbins1D[2]=-0.5; xbins1D[3]=0.0; xbins1D[4]=0.5; xbins1D[5]=1.0; xbins1D[6]=2.0;
+      std::copy(bins_pseudorapiditydiff, bins_pseudorapiditydiff + nbins1D + 1, xbins1D);
       stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
       stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
       syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
@@ -759,13 +786,14 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       break;
     }
     //   Top Asy II
-    case 10:
+    case 11:
     {
-      observablename="top_rapidtiydiff_cms";
+      observablename="top_rapiditydiff_cms";
       xaxislabel="(y_{top}-y_{#bar{t}})(y_{top}+y_{#bar{t}})";
       acceptanceName="rapiditydiff";
       asymlabel="A_{C}";
-      xbins1D[0]=-2.0; xbins1D[1]=-0.8; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.8; xbins1D[6]=2.0;
+      //xbins1D[0]=-2.0; xbins1D[1]=-0.8; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.8; xbins1D[6]=2.0;
+      std::copy(bins_rapiditydiff, bins_rapiditydiff + nbins1D + 1, xbins1D);
       stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
       stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
       syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
@@ -833,7 +861,7 @@ syst_corr[2] =  0.020331  ; stat_corr[2] =  0.022368  ; stat_uncorr[2] =  0.0155
     //   Top Polarization
     case 2:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l+})";
       yaxislabel="M_{t#bar t}";
       acceptanceName="lepPlusCosTheta";
@@ -871,7 +899,7 @@ syst_corr[2] =  0.032852  ; stat_corr[2] =  0.033270  ; stat_uncorr[2] =  0.0239
       //   Top Polarization combining positively and negatively charged leptons
     case 4:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l})";
       yaxislabel="M_{t#bar t}";
       acceptanceName="lepCosTheta";
@@ -909,7 +937,7 @@ syst_corr[2] =  0.034279  ; stat_corr[2] =  0.048239  ; stat_uncorr[2] =  0.0340
     //   Top Asy III
     case 6:
     {
-      observablename="top_rapidtiydiff_Marco";
+      observablename="top_rapiditydiff_Marco";
       //xaxislabel="|y_{top}|-|y_{tbar}|";
       xaxislabel="#Delta|y_{t}|";
       yaxislabel="M_{t#bar t}";
@@ -964,7 +992,7 @@ syst_corr[2] =  0.009654  ; stat_corr[2] =  0.033674  ; stat_uncorr[2] =  0.0237
     //   Top Asy I
     case 9:
     {
-      observablename="top_pseudorapidtiydiff_cms";
+      observablename="top_pseudorapiditydiff_cms";
       xaxislabel="|#eta_{t}|-|#eta_{#bar{t}}|";
       yaxislabel="M_{t#bar t}";
       acceptanceName="pseudorapiditydiff";
@@ -980,7 +1008,7 @@ syst_corr[2] =  0.009654  ; stat_corr[2] =  0.033674  ; stat_uncorr[2] =  0.0237
     //   Top Asy II
     case 10:
     {
-      observablename="top_rapidtiydiff_cms";
+      observablename="top_rapiditydiff_cms";
       xaxislabel="(y_{top}-y_{#bar{t}})(y_{top}+y_{#bar{t}})";
       yaxislabel="M_{t#bar t}";
       acceptanceName="rapiditydiff";
@@ -1049,7 +1077,7 @@ syst_corr[2] =  0.021710  ; stat_corr[2] =  0.024488  ; stat_uncorr[2] =  0.0154
     //   Top Polarization
     case 2:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l+})";
       yaxislabel="p_{T,t#bar{t}}";
       acceptanceName="lepPlusCosTheta";
@@ -1087,7 +1115,7 @@ syst_corr[2] =  0.025551  ; stat_corr[2] =  0.036391  ; stat_uncorr[2] =  0.0258
       //   Top Polarization combining positively and negatively charged leptons
     case 4:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l})";
       yaxislabel="p_{T,t#bar{t}}";
       acceptanceName="lepCosTheta";
@@ -1125,7 +1153,7 @@ syst_corr[2] =  0.029763  ; stat_corr[2] =  0.048965  ; stat_uncorr[2] =  0.0368
     //   Top Asy III
     case 6:
     {
-      observablename="top_rapidtiydiff_Marco";
+      observablename="top_rapiditydiff_Marco";
       //xaxislabel="|y_{top}|-|y_{tbar}|";
       xaxislabel="#Delta|y_{t}|";
       yaxislabel="p_{T,t#bar{t}}";
@@ -1180,7 +1208,7 @@ syst_corr[2] =  0.012402  ; stat_corr[2] =  0.037342  ; stat_uncorr[2] =  0.0268
     //   Top Asy I
     case 9:
     {
-      observablename="top_pseudorapidtiydiff_cms";
+      observablename="top_pseudorapiditydiff_cms";
       xaxislabel="|#eta_{t}|-|#eta_{#bar{t}}|";
       yaxislabel="p_{T,t#bar{t}}";
       acceptanceName="pseudorapiditydiff";
@@ -1196,7 +1224,7 @@ syst_corr[2] =  0.012402  ; stat_corr[2] =  0.037342  ; stat_uncorr[2] =  0.0268
     //   Top Asy II
     case 10:
     {
-      observablename="top_rapidtiydiff_cms";
+      observablename="top_rapiditydiff_cms";
       xaxislabel="(y_{top}-y_{#bar{t}})(y_{top}+y_{#bar{t}})";
       yaxislabel="p_{T,t#bar{t}}";
       acceptanceName="rapiditydiff";
@@ -1265,7 +1293,7 @@ syst_corr[2] =  0.019025  ; stat_corr[2] =  0.019016  ; stat_uncorr[2] =  0.0150
     //   Top Polarization
     case 2:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l+})";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepPlusCosTheta";
@@ -1303,7 +1331,7 @@ syst_corr[2] =  0.027232  ; stat_corr[2] =  0.036324  ; stat_uncorr[2] =  0.0256
       //   Top Polarization combining positively and negatively charged leptons
     case 4:
     {
-      observablename="lep_costheta_cms";
+      observablename="lepPlus_costheta_cms";
       xaxislabel="cos(#theta_{l})";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepCosTheta";
@@ -1341,7 +1369,7 @@ syst_corr[2] =  0.034283  ; stat_corr[2] =  0.046582  ; stat_uncorr[2] =  0.0365
     //   Top Asy III
     case 6:
     {
-      observablename="top_rapidtiydiff_Marco";
+      observablename="top_rapiditydiff_Marco";
       //xaxislabel="|y_{top}|-|y_{tbar}|";
       xaxislabel="#Delta|y_{t}|";
       yaxislabel="|y_{t#bar{t}}|";
@@ -1396,7 +1424,7 @@ syst_corr[2] =  0.013820  ; stat_corr[2] =  0.036253  ; stat_uncorr[2] =  0.0252
     //   Top Asy I
     case 9:
     {
-      observablename="top_pseudorapidtiydiff_cms";
+      observablename="top_pseudorapiditydiff_cms";
       xaxislabel="|#eta_{t}|-|#eta_{#bar{t}}|";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="pseudorapiditydiff";
@@ -1412,7 +1440,7 @@ syst_corr[2] =  0.013820  ; stat_corr[2] =  0.036253  ; stat_uncorr[2] =  0.0252
     //   Top Asy II
     case 10:
     {
-      observablename="top_rapidtiydiff_cms";
+      observablename="top_rapiditydiff_cms";
       xaxislabel="(y_{top}-y_{#bar{t}})(y_{top}+y_{#bar{t}})";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="rapiditydiff";

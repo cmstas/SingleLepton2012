@@ -42,7 +42,7 @@ TString Region = "";
 Int_t kterm = 3; //for SVD
 Double_t tau = 0.005; //for TUnfold - this is a more reasonable default (1E-4 gives very little regularisation)
 bool doScanLCurve = false; //determine tau automatically when using unfoldingType=2, using scanLcurve (overrides value set above) - doesn't work very well
-Int_t nVars = 8;
+Int_t nVars = 12;
 Int_t includeSys = 0;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
 bool draw_truth_before_pT_reweighting = true; //turn this on when making the final plots for the paper (want to compare the data against the unweighted MC)
@@ -96,7 +96,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
 
-		if( iVar < 2 ) nbinsx_gen = nbins1D*2;
+		if( iVar < 2 || iVar == 9 ) nbinsx_gen = nbins1D*2;
 		else nbinsx_gen = nbins1D;
 
 		//nbinsx_reco = nbinsx_gen*2;
@@ -109,14 +109,20 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		recobins = new double[nbinsx_reco+1];
 
 		//Make gen binning array
-		for( int i=0; i<nbins1D; i++ ) {
-		  if( iVar<2 ) {
-			genbins[i*2] = xbins1D[i];
-			genbins[i*2 +1] = ( xbins1D[i] + xbins1D[i+1] )/2.;
-		  }
-		  else genbins[i] = xbins1D[i];
-		}
-		genbins[nbinsx_gen] = xbins1D[nbins1D];
+
+        if( iVar < 2 || iVar == 9 ) {
+          for( int i=0; i<=nbinsx2Dalt; i++ ) {
+            genbins[i] = xbins2Dalt[i];
+          }
+        }
+        else {
+          for( int i=0; i<=nbins1D; i++ ) {
+            genbins[i] = xbins1D[i];
+          }
+        }
+
+
+		//genbins[nbinsx_gen] = xbins1D[nbins1D];
 
 		//Make reco binning array
 		for( int i=0; i<nbinsx_gen; i++ ) {
