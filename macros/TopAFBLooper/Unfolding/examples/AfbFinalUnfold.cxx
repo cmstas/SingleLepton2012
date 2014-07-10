@@ -74,15 +74,19 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
     random->SetSeed(5);
 
 
-    const int nBkg = 7;
+    const int nBkg = 10;
+    const int nSig = 3;
     TString path = "../";
-    TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
+    TString dataroot[nSig] = {"data_diel_baby.root", "data_dimu_baby.root", "data_mueg_baby.root"};
+    //TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
+    TString bkgroot[nBkg] = {"DY1to4Jtot_baby.root", "diboson_baby.root", "tW_lepdl_baby.root", "tW_lepfake_baby.root", "tW_lepsl_baby.root", "triboson_baby.root", "ttV_baby.root", "ttfake_powheg_baby.root", "ttsl_powheg_baby.root", "w1to4jets_baby.root"};
+
     double bkgSF[nBkg] = {scalettotr, scalewjets, scaleDY, scaleDY, scaleDY, scaletw, scaleVV};
 
-    Float_t observable, observable_gen, ttmass, ttRapidity, tmass;
+    Float_t observable, observable_gen, ttmass, ttRapidity2, tmass;
     Float_t observableMinus, observableMinus_gen;
     Double_t weight;
-    Int_t Nsolns;
+    Int_t Nsolns = 1;
 
     for (Int_t iVar = 0; iVar < nVars; iVar++)
     {
@@ -163,9 +167,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         TChain *ch_data = new TChain("tree");
 
 
-        ch_data->Add(path + "data.root");
+        //ch_data->Add(path + "data.root");
+        for (int iSig = 0; iSig < nSig; ++iSig)
+        {
+            ch_data->Add(path + dataroot[iSig]);
+        }
 
-        ch_top->Add(path + "ttdil.root");
+        ch_top->Add(path + "ttdl_mcatnlo_smallTree_baby.root");
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
         {
@@ -177,9 +185,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         ch_data->SetBranchAddress(observablename,    &observable);
         if ( combineLepMinus ) ch_data->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
         ch_data->SetBranchAddress("weight", &weight);
-        ch_data->SetBranchAddress("Nsolns", &Nsolns);
+        //ch_data->SetBranchAddress("Nsolns", &Nsolns);
         ch_data->SetBranchAddress("tt_mass", &ttmass);
-        ch_data->SetBranchAddress("ttRapidity", &ttRapidity);
+        ch_data->SetBranchAddress("ttRapidity2", &ttRapidity2);
         ch_data->SetBranchAddress("t_mass", &tmass);
 
 
@@ -233,9 +241,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             ch_bkg[iBkg]->SetBranchAddress(observablename,    &observable);
             if ( combineLepMinus ) ch_bkg[iBkg]->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
             ch_bkg[iBkg]->SetBranchAddress("weight", &weight);
-            ch_bkg[iBkg]->SetBranchAddress("Nsolns", &Nsolns);
+            //ch_bkg[iBkg]->SetBranchAddress("Nsolns", &Nsolns);
             ch_bkg[iBkg]->SetBranchAddress("tt_mass", &ttmass);
-            ch_bkg[iBkg]->SetBranchAddress("ttRapidity", &ttRapidity);
+            ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &ttRapidity2);
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
 
             for (Int_t i = 0; i < ch_bkg[iBkg]->GetEntries(); i++)
@@ -289,9 +297,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
         if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms_gen",    &observableMinus_gen);
         ch_top->SetBranchAddress("weight", &weight);
-        ch_top->SetBranchAddress("Nsolns", &Nsolns);
+        //ch_top->SetBranchAddress("Nsolns", &Nsolns);
         ch_top->SetBranchAddress("tt_mass", &ttmass);
-        ch_top->SetBranchAddress("ttRapidity", &ttRapidity);
+        ch_top->SetBranchAddress("ttRapidity2", &ttRapidity2);
         ch_top->SetBranchAddress("t_mass", &tmass);
 
         for (Int_t i = 0; i < ch_top->GetEntries(); i++)
@@ -400,7 +408,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         leg0->AddEntry(hMeas,  "MC@NLO reco level", "F");
         leg0->AddEntry(hBkg,  "Background", "F");
         leg0->Draw();
-        c_reco->SaveAs("1D_Reco_" + acceptanceName + Region + ".eps");
+        c_reco->SaveAs("1D_Reco_" + acceptanceName + Region + ".pdf");
 
 
         if (unfoldingType == 0)
@@ -517,7 +525,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 		TMarker* m_rhoMin = new TMarker(bestlogtau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("1D_minimizeRho_" + acceptanceName + ".eps");
+		c_rhoAvg->SaveAs("1D_minimizeRho_" + acceptanceName + ".pdf");
 
 
         //m_unfoldE.Print("f=%1.5g ");
@@ -539,8 +547,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         hResp->GetXaxis()->SetTitle(xaxislabel);
         hResp->GetYaxis()->SetTitle(xaxislabel + "_{gen}");
         hResp->Draw("COLZ");
-        c_resp->SaveAs("1D_Response_" + acceptanceName + Region + ".eps");
-        //c_resp->SaveAs("Response_" + acceptanceName + Region + ".pdf");
+        //c_resp->SaveAs("1D_Response_" + acceptanceName + Region + ".eps");
+        c_resp->SaveAs("Response_" + acceptanceName + Region + ".pdf");
         //c_resp->SaveAs("Response_" + acceptanceName + Region + ".C");
         //c_resp->SaveAs("Response_" + acceptanceName + Region + ".root");
 
@@ -548,19 +556,19 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         hPurity->SetTitle("Purity;"+xaxislabel+";"+yaxislabel);
         hStability->SetTitle("Stability;"+xaxislabel+";"+yaxislabel);
         hPurity->Draw();
-        c_purstab->SaveAs("1D_purity_" + acceptanceName + ".svg");
+        c_purstab->SaveAs("1D_purity_" + acceptanceName + ".pdf");
         hStability->Draw();
-        c_purstab->SaveAs("1D_stability_" + acceptanceName + ".svg");
+        c_purstab->SaveAs("1D_stability_" + acceptanceName + ".pdf");
 		
 
-        TFile *file = new TFile("../acceptance/old_800_gensplit/accept_" + acceptanceName + ".root");
+        TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
         TH1D *acceptM = (TH1D *) file->Get("accept_" + acceptanceName);
         acceptM->Scale(1.0 / acceptM->Integral());
 
         TH1D *denominatorM = (TH1D *) file->Get("denominator_" + acceptanceName);
 
 
-        TFile *file_nopTreweighting = new TFile("../acceptance/mcnlo_nopTreweighting/accept_" + acceptanceName + ".root");
+        TFile *file_nopTreweighting = new TFile("../denominator/acceptance/mcnlo_nopTreweighting/accept_" + acceptanceName + ".root");
         TH1D *denominatorM_nopTreweighting_raw = (TH1D *) file_nopTreweighting->Get("denominator_" + acceptanceName);
 
 
@@ -866,8 +874,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         blah->SetTextAlign(11);
         pt1->Draw();
 
-		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + Region + ".eps");
-		//c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".pdf");
+		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + Region + ".eps");
+		c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".pdf");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".C");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".root");
 		

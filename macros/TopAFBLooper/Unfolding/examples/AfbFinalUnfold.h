@@ -37,6 +37,22 @@ Double_t stat_corr  [nbins1D]; //errors include syst error in the unfolding
 Double_t stat_uncorr[nbins1D]; //errors do not include syst error in the unfolding
 Double_t syst_corr  [nbins1D];
 
+
+//copied from acceptanceplots.C
+Double_t pi = TMath::Pi();
+// These get copied into the array called "bins"
+Double_t bins_lepChargeAsym[] =  { -2., -68./60., -48./60., -32./60., -20./60., -8./60., 0., 8./60., 20./60., 32./60., 48./60., 68./60., 2.};
+Double_t bins_lepAzimAsym2[] = {0., 5.*pi/60., 10.*pi/60., 15.*pi/60., 20.*pi/60., 25.*pi/60., 30.*pi/60., 35.*pi/60., 40.*pi/60., 45.*pi/60., 50.*pi/60., 55.*pi/60., pi};
+Double_t bins_lepAzimAsym[] = {-pi, -50.*pi/60., -40.*pi/60., -30.*pi/60., -20.*pi/60., -10.*pi/60.,  0., 10.*pi/60., 20.*pi/60., 30.*pi/60., 40.*pi/60., 50.*pi/60., pi};
+Double_t bins_topCosTheta[] = {-1., -0.7, -0.4, 0., 0.4, 0.7, 1.}; 
+Double_t bins_pseudorapiditydiff[] =  { -2., -1.0, -28./60., 0., 28./60., 1.0, 2.}; 
+Double_t bins_rapiditydiff[] =  { -2., -1.0, -20./60., 0., 20./60., 1.0, 2.}; 
+Double_t bins_rapiditydiffMarco[] =  { -2., -44./60., -20./60., 0., 20./60., 44./60., 2.}; 
+Double_t bins_lepCosTheta[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
+Double_t bins_topSpinCorr[] = {-1., -0.5, -0.2, 0., 0.2, 0.5, 1.}; 
+Double_t bins_lepCosOpeningAngle[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
+
+
 Float_t sign(Float_t t) 
 {
   if( t >= 0.0 )
@@ -589,7 +605,7 @@ syst_corr[5] =  0.002847  ; stat_corr[5] =  0.004806  ; stat_uncorr[5] =  0.0035
       xaxislabel="#Delta#phi_{l+l-}";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
-      Double_t pi = 3.141592653589793;
+      //Double_t pi = 3.141592653589793;
       xbins1D[0]=0.0; xbins1D[1]=4.*pi/20.; xbins1D[2]=7.*pi/20.; xbins1D[3]=10.*pi/20.; xbins1D[4]=13.*pi/20.; xbins1D[5]=16.*pi/20.; xbins1D[6]=pi;
       xbins2Dalt[0]=0.0; xbins2Dalt[2]=4.*pi/20.; xbins2Dalt[4]=7.*pi/20.; xbins2Dalt[6]=10.*pi/20.; xbins2Dalt[8]=13.*pi/20.; xbins2Dalt[10]=16.*pi/20.; xbins2Dalt[12]=pi;
       xbins2Dalt[1]=2.*pi/20.; xbins2Dalt[3]=5.5*pi/20.; xbins2Dalt[5]=8.5*pi/20.; xbins2Dalt[7]=11.5*pi/20.; xbins2Dalt[9]=14.5*pi/20.; xbins2Dalt[11]=18.*pi/20.;
@@ -800,7 +816,7 @@ syst_corr[2] =  0.008050  ; stat_corr[2] =  0.024319  ; stat_uncorr[2] =  0.0165
       yaxislabel="M_{t#bar t}";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
-      Double_t pi = 3.141592653589793;
+      //Double_t pi = 3.141592653589793;
       xbins2D[0]=0.0; xbins2D[1]=4.*pi/20.; xbins2D[2]=7.*pi/20.; xbins2D[3]=10.*pi/20.; xbins2D[4]=13.*pi/20.; xbins2D[5]=16.*pi/20.; xbins2D[6]=pi;
       xbins2Dalt[0]=0.0; xbins2Dalt[2]=4.*pi/20.; xbins2Dalt[4]=7.*pi/20.; xbins2Dalt[6]=10.*pi/20.; xbins2Dalt[8]=13.*pi/20.; xbins2Dalt[10]=16.*pi/20.; xbins2Dalt[12]=pi;
       xbins2Dalt[1]=2.*pi/20.; xbins2Dalt[3]=5.5*pi/20.; xbins2Dalt[5]=8.5*pi/20.; xbins2Dalt[7]=11.5*pi/20.; xbins2Dalt[9]=14.5*pi/20.; xbins2Dalt[11]=18.*pi/20.;
@@ -1018,7 +1034,7 @@ syst_corr[2] =  0.007788  ; stat_corr[2] =  0.022922  ; stat_uncorr[2] =  0.0156
       yaxislabel="p_{T,t#bar{t}}";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
-      Double_t pi = 3.141592653589793;
+      //Double_t pi = 3.141592653589793;
       xbins2D[0]=0.0; xbins2D[1]=4.*pi/20.; xbins2D[2]=7.*pi/20.; xbins2D[3]=10.*pi/20.; xbins2D[4]=13.*pi/20.; xbins2D[5]=16.*pi/20.; xbins2D[6]=pi;
       //ybins2D[0]=0.0; ybins2D[1]=24; ybins2D[2]=52.0; ybins2D[3]=100.0;
       ymin=ybins2D[0];
@@ -1234,7 +1250,7 @@ syst_corr[2] =  0.016189  ; stat_corr[2] =  0.020275  ; stat_uncorr[2] =  0.0155
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
-      Double_t pi = 3.141592653589793;
+      //Double_t pi = 3.141592653589793;
       xbins2D[0]=0.0; xbins2D[1]=4.*pi/20.; xbins2D[2]=7.*pi/20.; xbins2D[3]=10.*pi/20.; xbins2D[4]=13.*pi/20.; xbins2D[5]=16.*pi/20.; xbins2D[6]=pi;
       ybins2D=0.0; ybins2D[1]=0.3; ybins2D[2]=0.7; ybins2D[3]=1.5;
       ymin=ybins2D[0];
