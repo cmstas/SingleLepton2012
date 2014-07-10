@@ -109,7 +109,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
 
   Double_t pi = TMath::Pi();
   // These get copied into the array called "bins"
-  Double_t bins_lepChargeAsym[] =  { -2., -68./60, -48./60., -32./60., -20./60., -8./60., 0., 8./60., 20./60., 32./60., 48./60., 68./60., 2.};
+  Double_t bins_lepChargeAsym[] =  { -2., -68./60., -48./60., -32./60., -20./60., -8./60., 0., 8./60., 20./60., 32./60., 48./60., 68./60., 2.};
   //Double_t bins_lepChargeAsym[] =  { -2., -1.4, -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.4, 2.};
   //Double_t bins_lepChargeAsym[] =  { -2., -0.8, -0.4, 0., 0.4, 0.8, 2.};
   Double_t bins_lepAzimAsym2[] = {0., 5.*pi/60., 10.*pi/60., 15.*pi/60., 20.*pi/60., 25.*pi/60., 30.*pi/60., 35.*pi/60., 40.*pi/60., 45.*pi/60., 50.*pi/60., 55.*pi/60., pi};
