@@ -96,7 +96,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
 
-		if( iVar < 2 || iVar == 9 ) nbinsx_gen = nbins1D*2;
+		if( iVar < 2 || iVar == 9 ) nbinsx_gen = nbinsx2Dalt;
 		else nbinsx_gen = nbins1D;
 
 		//nbinsx_reco = nbinsx_gen*2;
@@ -121,8 +121,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
           }
         }
 
-
-		//genbins[nbinsx_gen] = xbins1D[nbins1D];
 
 		//Make reco binning array
 		for( int i=0; i<nbinsx_gen; i++ ) {
