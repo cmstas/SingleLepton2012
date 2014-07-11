@@ -3,6 +3,7 @@
 #include "TH1D.h"
 #include "TMatrixD.h"
 #include "TMath.h"
+#include "../../denominator/acceptanceplots.h" //import binning from acceptanceplots
 
 double xsection = 154.0*0.06451;
 
@@ -37,21 +38,6 @@ double ybins2D[nbinsy2D+1];
 Double_t stat_corr  [nbins1D]; //errors include syst error in the unfolding
 Double_t stat_uncorr[nbins1D]; //errors do not include syst error in the unfolding
 Double_t syst_corr  [nbins1D];
-
-
-//copied from acceptanceplots.C
-Double_t pi = TMath::Pi();
-// These get copied into the array called "bins"
-Double_t bins_lepChargeAsym[] =  { -2., -68./60., -48./60., -32./60., -20./60., -8./60., 0., 8./60., 20./60., 32./60., 48./60., 68./60., 2.};
-Double_t bins_lepAzimAsym2[] = {0., 5.*pi/60., 10.*pi/60., 15.*pi/60., 20.*pi/60., 25.*pi/60., 30.*pi/60., 35.*pi/60., 40.*pi/60., 45.*pi/60., 50.*pi/60., 55.*pi/60., pi};
-Double_t bins_lepAzimAsym[] = {-pi, -50.*pi/60., -40.*pi/60., -30.*pi/60., -20.*pi/60., -10.*pi/60.,  0., 10.*pi/60., 20.*pi/60., 30.*pi/60., 40.*pi/60., 50.*pi/60., pi};
-Double_t bins_topCosTheta[] = {-1., -0.7, -0.4, 0., 0.4, 0.7, 1.}; 
-Double_t bins_pseudorapiditydiff[] =  { -2., -1.0, -28./60., 0., 28./60., 1.0, 2.}; 
-Double_t bins_rapiditydiff[] =  { -2., -1.0, -20./60., 0., 20./60., 1.0, 2.}; 
-Double_t bins_rapiditydiffMarco[] =  { -2., -44./60., -20./60., 0., 20./60., 44./60., 2.}; 
-Double_t bins_lepCosTheta[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
-Double_t bins_topSpinCorr[] = {-1., -0.5, -0.2, 0., 0.2, 0.5, 1.}; 
-Double_t bins_lepCosOpeningAngle[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
 
 
 Float_t sign(Float_t t) 
