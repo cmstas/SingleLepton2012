@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > LorentzVector;
+typedef vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > > VofP4;
+
 class topAFB_looper
 {
 public:
@@ -19,6 +22,10 @@ public:
     void fillHistos(TH1D *h1[4][4], float value, double weight, int myType, int nJetsIdx, int Nsolns = 1);
     void fillHistos(TH2D *h2[4][4], float xvalue, float yvalue, double weight, int myType, int nJetsIdx, int Nsolns = 1);
     void fillHistos(TProfile *h2[4][4], float xvalue, float yvalue,  int myType, int nJetsIdx);
+    int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau);
+    void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
+    bool isBHadronPdgId(int PdgId);
+    bool isBHadron(int igen);
 
 private:
 
@@ -34,6 +41,8 @@ private:
     float   t_mass_;
     double weight_;
     Int_t Nsolns_;
+
+
     float massltb_;
     float massllb_;
     float dr_ltjet_gen_;
@@ -54,6 +63,7 @@ private:
     float top_pseudorapiditydiff_cms_    ;
     float lepPlus_costheta_cms_ ;
     float lepMinus_costheta_cms_ ;
+    /*
     float tt_mass_gen_ ;
     float ttRapidity_gen_ ;
     float ttRapidity2_gen_ ;
@@ -69,6 +79,7 @@ private:
     float top_rapiditydiff_cms_gen_    ;
     float top_rapiditydiff_Marco_gen_    ;
     float top_pseudorapiditydiff_cms_gen_;
+    */
 
     TH1D *hnJet[4][4];                   // Njet distributions
     TH1D *hnBtagJet[4][4];                   // NBTagjet distributions
@@ -239,6 +250,143 @@ private:
     TH1D *hmetOutDYEst[4][4];        // MET outside Z window for the DY Estimation
     TH1D *hdilMassWithMetDYEst[4][4];// Dilepton mass with MET requirement for DY estimation
     TH1D *hdilMassNoMetDYEst[4][4];  // Dilepton mass without MET requirement for DY estimation
+
+
+
+
+
+    // copied from singleLeptonLooper.h
+    Int_t lepPlus_status3_id_;
+    Int_t lepMinus_status3_id_;
+    Int_t lepPlus_status3_nDaughters_;
+    Int_t lepMinus_status3_nDaughters_;
+    Int_t nuPlus_status3_id_;
+    Int_t nuMinus_status3_id_;
+
+    Int_t   nbs_;
+    VofP4 genbs_;
+    VofP4 genqgs_;
+    Int_t   lep_t_id_;
+    Int_t   lep_tbar_id_;
+    LorentzVector*  mcnu_;
+    LorentzVector*  mclep_;
+    Float_t ptzgen_;
+    Float_t ptwgen_;
+
+    Int_t   npartons_;
+    Int_t   nwzpartons_;
+    Float_t maxpartonpt_;
+    Float_t ptt_;
+    Float_t pttbar_;
+    Float_t ptttbar_;
+    Float_t mttbar_;
+    Float_t etattbar_;
+    Float_t rapidityttbar_;
+
+    Float_t m_topminus_gen_;
+    Float_t m_topplus_gen_;
+    Float_t tt_mass_gen_;
+    Float_t ttRapidity_gen_;
+    Float_t ttRapidity2_gen_;
+    Float_t top_rapiditydiff_cms_gen_;
+    Float_t top_pseudorapiditydiff_cms_gen_;
+    Float_t top_rapiditydiff_Marco_gen_;
+    Float_t tt_pT_gen_;
+    Float_t top_costheta_cms_gen_;
+    Float_t lep_charge_asymmetry_gen_;
+    Float_t lep_azimuthal_asymmetry_gen_;
+    Float_t lep_azimuthal_asymmetry2_gen_;
+    Float_t lepPlus_costheta_cms_gen_;
+    Float_t lepMinus_costheta_cms_gen_;
+    Float_t top_spin_correlation_gen_;
+    Float_t lep_cos_opening_angle_gen_;
+
+    Float_t m_topminus_gen_origtops_;
+    Float_t m_topplus_gen_origtops_;
+    Float_t tt_mass_gen_origtops_;
+    Float_t ttRapidity_gen_origtops_;
+    Float_t ttRapidity2_gen_origtops_;
+    Float_t top_rapiditydiff_cms_gen_origtops_;
+    Float_t top_pseudorapiditydiff_cms_gen_origtops_;
+    Float_t top_rapiditydiff_Marco_gen_origtops_;
+    Float_t tt_pT_gen_origtops_;
+    Float_t top_costheta_cms_gen_origtops_;
+    Float_t lep_charge_asymmetry_gen_origtops_;
+    Float_t lep_azimuthal_asymmetry_gen_origtops_;
+    Float_t lep_azimuthal_asymmetry2_gen_origtops_;
+    Float_t lepPlus_costheta_cms_gen_origtops_;
+    Float_t lepMinus_costheta_cms_gen_origtops_;
+    Float_t top_spin_correlation_gen_origtops_;
+    Float_t lep_cos_opening_angle_gen_origtops_;
+
+    // assorted p4's
+    LorentzVector*  t_;   
+    LorentzVector*  tbar_;   
+    LorentzVector*  b_;   
+    LorentzVector*  bbar_;   
+    LorentzVector*  lep_t_;   
+    LorentzVector*  lep_tbar_;   
+    LorentzVector*  stop_t_;   
+    LorentzVector*  stop_tbar_;
+    LorentzVector*  neutralino_t_;   
+    LorentzVector*  neutralino_tbar_;    
+    LorentzVector*  genc1_;   
+    LorentzVector*  genn2_;
+    LorentzVector*  neutralino_c1_;   
+    LorentzVector*  neutralino_n2_;    
+    LorentzVector*  ttbar_;   
+    LorentzVector*  mlep_;   
+    LorentzVector*  mclep1_;   
+    LorentzVector*  mclep2_;   
+    LorentzVector*  mctaud1_;   
+    LorentzVector*  mctaud2_;  
+    LorentzVector*  mctaudvis1_;   
+    LorentzVector*  mctaudvis2_;  
+
+    LorentzVector* lepPlus_status3_;
+    LorentzVector* lepMinus_status3_;
+    LorentzVector* bPlus_status3_;
+    LorentzVector* bMinus_status3_;
+    LorentzVector* nuPlus_status3_;
+    LorentzVector* nuMinus_status3_;
+    LorentzVector* topPlus_status3_;
+    LorentzVector* topMinus_status3_;
+    LorentzVector* WPlus_status3_;
+    LorentzVector* WMinus_status3_;
+    LorentzVector* lepPlus_status1_;
+    LorentzVector* lepMinus_status1_;
+    LorentzVector* bPlus_status1_;
+    LorentzVector* bMinus_status1_;
+    LorentzVector* nuPlus_status1_;
+    LorentzVector* nuMinus_status1_;
+    LorentzVector* topPlus_status1_;
+    LorentzVector* topMinus_status1_;
+    //LorentzVector* WPlus_status1_;
+    //LorentzVector* WMinus_status1_;
+    LorentzVector* WPlus_status3_orig_;
+    LorentzVector* WMinus_status3_orig_;
+    LorentzVector* topPlus_status3_orig_;
+    LorentzVector* topMinus_status3_orig_;
+    LorentzVector* lepPlus_status3_orig_;
+    LorentzVector* lepMinus_status3_orig_;
+    LorentzVector* nuPlus_status3_orig_;
+    LorentzVector* nuMinus_status3_orig_;
+
+
+    LorentzVector vt_stat1;
+    LorentzVector vtbar_stat1;
+    LorentzVector vb_stat1;
+    LorentzVector vbbar_stat1;
+    LorentzVector WPlus_status3_orig;
+    LorentzVector WMinus_status3_orig;
+    LorentzVector topPlus_status3_orig;
+    LorentzVector topMinus_status3_orig;
+    LorentzVector lepPlus_status3_orig;
+    LorentzVector lepMinus_status3_orig;
+    LorentzVector nuPlus_status3_orig;
+    LorentzVector nuMinus_status3_orig;
+    LorentzVector ttpair;
+
 
 
 };

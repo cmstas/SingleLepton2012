@@ -115,6 +115,9 @@ class singleLeptonLooper
 	float c1n2CrossSection( float c1mass );
 	float pmssmCrossSection( int run );
         void closeTree ();
+        void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
+        bool isBHadronPdgId(int PdgId);
+        bool isBHadron(int igen);
 	//	float trackIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 , bool dovtxcut = false , float pt_thresh = 0.0);
 	std::vector<float> trackIsoPtRanges( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 );
 	std::vector<float> totalIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 );
@@ -152,6 +155,13 @@ class singleLeptonLooper
 	Int_t   eldup_;    
 
 	// MC truth lepton info
+  	Int_t lepPlus_status3_id_;
+  	Int_t lepMinus_status3_id_;
+  	Int_t lepPlus_status3_nDaughters_;
+  	Int_t lepMinus_status3_nDaughters_;
+  	Int_t nuPlus_status3_id_;
+  	Int_t nuMinus_status3_id_;
+
 	Int_t   mcid1_;    
 	Int_t   mcid2_;    
 	Int_t   lep_t_id_;
@@ -347,6 +357,44 @@ class singleLeptonLooper
 	Float_t ptttbar_;
 	Float_t mttbar_;
 	Float_t etattbar_;
+	Float_t rapidityttbar_;
+
+    Float_t m_topminus_gen_;
+    Float_t m_topplus_gen_;
+    Float_t tt_mass_gen_;
+    Float_t ttRapidity_gen_;
+    Float_t ttRapidity2_gen_;
+    Float_t top_rapiditydiff_cms_gen_;
+    Float_t top_pseudorapiditydiff_cms_gen_;
+    Float_t top_rapiditydiff_Marco_gen_;
+    Float_t tt_pT_gen_;
+    Float_t top_costheta_cms_gen_;
+    Float_t lep_charge_asymmetry_gen_;
+    Float_t lep_azimuthal_asymmetry_gen_;
+    Float_t lep_azimuthal_asymmetry2_gen_;
+    Float_t lepPlus_costheta_cms_gen_;
+    Float_t lepMinus_costheta_cms_gen_;
+    Float_t top_spin_correlation_gen_;
+    Float_t lep_cos_opening_angle_gen_;
+
+    Float_t m_topminus_gen_origtops_;
+    Float_t m_topplus_gen_origtops_;
+    Float_t tt_mass_gen_origtops_;
+    Float_t ttRapidity_gen_origtops_;
+    Float_t ttRapidity2_gen_origtops_;
+    Float_t top_rapiditydiff_cms_gen_origtops_;
+    Float_t top_pseudorapiditydiff_cms_gen_origtops_;
+    Float_t top_rapiditydiff_Marco_gen_origtops_;
+    Float_t tt_pT_gen_origtops_;
+    Float_t top_costheta_cms_gen_origtops_;
+    Float_t lep_charge_asymmetry_gen_origtops_;
+    Float_t lep_azimuthal_asymmetry_gen_origtops_;
+    Float_t lep_azimuthal_asymmetry2_gen_origtops_;
+    Float_t lepPlus_costheta_cms_gen_origtops_;
+    Float_t lepMinus_costheta_cms_gen_origtops_;
+    Float_t top_spin_correlation_gen_origtops_;
+    Float_t lep_cos_opening_angle_gen_origtops_;
+
 	Float_t mgcor_;
 	Int_t   wflav_;
 
@@ -480,6 +528,50 @@ class singleLeptonLooper
         LorentzVector*  jet_; 
 	LorentzVector*  mcnu_;
 	LorentzVector*  mclep_;
+
+	LorentzVector* lepPlus_status3_;
+	LorentzVector* lepMinus_status3_;
+	LorentzVector* bPlus_status3_;
+	LorentzVector* bMinus_status3_;
+	LorentzVector* nuPlus_status3_;
+	LorentzVector* nuMinus_status3_;
+	LorentzVector* topPlus_status3_;
+	LorentzVector* topMinus_status3_;
+	LorentzVector* WPlus_status3_;
+	LorentzVector* WMinus_status3_;
+	LorentzVector* lepPlus_status1_;
+	LorentzVector* lepMinus_status1_;
+	LorentzVector* bPlus_status1_;
+	LorentzVector* bMinus_status1_;
+	LorentzVector* nuPlus_status1_;
+	LorentzVector* nuMinus_status1_;
+	LorentzVector* topPlus_status1_;
+	LorentzVector* topMinus_status1_;
+	//LorentzVector* WPlus_status1_;
+	//LorentzVector* WMinus_status1_;
+    LorentzVector* WPlus_status3_orig_;
+    LorentzVector* WMinus_status3_orig_;
+    LorentzVector* topPlus_status3_orig_;
+    LorentzVector* topMinus_status3_orig_;
+    LorentzVector* lepPlus_status3_orig_;
+    LorentzVector* lepMinus_status3_orig_;
+    LorentzVector* nuPlus_status3_orig_;
+    LorentzVector* nuMinus_status3_orig_;
+
+
+	LorentzVector vt_stat1;
+	LorentzVector vtbar_stat1;
+	LorentzVector vb_stat1;
+	LorentzVector vbbar_stat1;
+	LorentzVector WPlus_status3_orig;
+	LorentzVector WMinus_status3_orig;
+	LorentzVector topPlus_status3_orig;
+	LorentzVector topMinus_status3_orig;
+	LorentzVector lepPlus_status3_orig;
+	LorentzVector lepMinus_status3_orig;
+	LorentzVector nuPlus_status3_orig;
+	LorentzVector nuMinus_status3_orig;
+	LorentzVector ttpair;
 
 	std::vector<int>   genps_pdgId_;
 	std::vector<int>   genps_firstMother_;
