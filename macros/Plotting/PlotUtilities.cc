@@ -235,8 +235,8 @@ void plot1D(string title, float xval, double weight, std::map<string, TH1F*> &al
   
 }
 
-void plot1DUnderOverFlow(string title, float xval, double weight, std::map<string, TH1D*> &allhistos, 
-      int numbinsx, float xmin, float xmax)  
+void plot1DUnderOverFlow(string title, double xval, double weight, std::map<string, TH1D*> &allhistos, 
+      int numbinsx, double xmin, double xmax)  
 {
   if (xval >= xmax) xval = xmax - (xmax-xmin)/double(numbinsx)/1000.;
   if (xval <= xmin) xval = xmin + (xmax-xmin)/double(numbinsx)/1000.;
@@ -402,8 +402,8 @@ void plot2D(string title, float xval, float yval, double weight, std::map<string
 
 }
 
-void plot2DUnderOverFlow(string title, float xval, float yval, double weight, std::map<string, TH2D*> &allhistos, 
-      int numbinsx, float xmin, float xmax, int numbinsy, float ymin, float ymax){
+void plot2DUnderOverFlow(string title, double xval, double yval, double weight, std::map<string, TH2D*> &allhistos, 
+      int numbinsx, double xmin, double xmax, int numbinsy, double ymin, double ymax){
 
   if (xval >= xmax) xval = xmax - (xmax-xmin)/double(numbinsx)/1000.;
   if (xval <= xmin) xval = xmin + (xmax-xmin)/double(numbinsx)/1000.;
