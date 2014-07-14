@@ -25,7 +25,21 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
   char suffixall[4][4]  = {"ee", "mm", "em", "all"};
   char njetCh[4][5]     = {"0j", "1j", "2j", "allj"};
 
-  int nbins = 60; //Number of bins for the asymmetry variable in the acceptance plots. 60 bins in the asymmetry variable makes more sense than 80 since we will be rebinning to 6 or 12 bins for the acceptance histograms
+  //Define binning. These numbers are copied from StopTreeLooper.cc.
+  int nbins = 240; //240 bins in the asymmetry variable makes more sense than 80 since it can be divided into 12 and we will be rebinning to 6 or 12 bins for the acceptance histograms
+
+  int nbinsmtt = 120;
+  int nbinsttpt = 300;
+  int nbinsttrapidity2 = 300;
+
+  double minmtt = 0.0;
+  double minttpt = 0.0;
+  double minttrapidity2 = 0.0;
+
+  double maxmtt = 1200.0;
+  double maxttpt = 300.0;
+  double maxttrapidity2 = 3.0;
+
 
   double pi = TMath::Pi();
 
@@ -140,186 +154,186 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
       
       
       //2d histos for asyms vs mass at gen level
-      hlepChargeAsym_gen2d[i][j] = new TH2D(Form("%s_hlepChargeAsymGen2d_%s",prefix,suffix),Form("%s_lepChargeAsymGen2d_%s",prefix,suffix),nbins,-2,2,120,0.,1200.);
+      hlepChargeAsym_gen2d[i][j] = new TH2D(Form("%s_hlepChargeAsymGen2d_%s",prefix,suffix),Form("%s_lepChargeAsymGen2d_%s",prefix,suffix),nbins,-2,2, nbinsmtt, minmtt, maxmtt);
       hlepChargeAsym_gen2d[i][j]->GetXaxis()->SetTitle("|#eta_{l^{+}}| - |#eta_{l^{-}}|");
       hlepChargeAsym_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepChargeAsym_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymGen2d_%s",prefix,suffix),nbins,-pi,pi,120,0.,1200.);
+      hlepAzimAsym_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymGen2d_%s",prefix,suffix),nbins,-pi,pi, nbinsmtt, minmtt, maxmtt);
       hlepAzimAsym_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen2d_%s",prefix,suffix),nbins,0,pi,120,0.,1200.);
+      hlepAzimAsym2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2Gen2d_%s",prefix,suffix),nbins,0,pi, nbinsmtt, minmtt, maxmtt);
       hlepAzimAsym2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym2_gen2d[i][j]->Sumw2();
 
-      htopSpinCorr_gen2d[i][j] = new TH2D(Form("%s_htopSpinCorrGen2d_%s",prefix,suffix),Form("%s_topSpinCorrGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
+      htopSpinCorr_gen2d[i][j] = new TH2D(Form("%s_htopSpinCorrGen2d_%s",prefix,suffix),Form("%s_topSpinCorrGen2d_%s",prefix,suffix),nbins,-1,1, nbinsmtt, minmtt, maxmtt);
       htopSpinCorr_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{+}}^{t}) #times cos(#theta_{l^{-}}^{#bar{t}} )");
       htopSpinCorr_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       htopSpinCorr_gen2d[i][j]->Sumw2();
 
-      hlepCosOpeningAngle_gen2d[i][j] = new TH2D(Form("%s_hlepCosOpeningAngleGen2d_%s",prefix,suffix),Form("%s_lepCosOpeningAngleGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
+      hlepCosOpeningAngle_gen2d[i][j] = new TH2D(Form("%s_hlepCosOpeningAngleGen2d_%s",prefix,suffix),Form("%s_lepCosOpeningAngleGen2d_%s",prefix,suffix),nbins,-1,1, nbinsmtt, minmtt, maxmtt);
       hlepCosOpeningAngle_gen2d[i][j]->GetXaxis()->SetTitle("cos(#phi)");
       hlepCosOpeningAngle_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepCosOpeningAngle_gen2d[i][j]->Sumw2();
       
-      htopCosTheta_gen2d[i][j] = new TH2D(Form("%s_htopCosThetaGen2d_%s",prefix,suffix),Form("%s_topCosThetaGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
+      htopCosTheta_gen2d[i][j] = new TH2D(Form("%s_htopCosThetaGen2d_%s",prefix,suffix),Form("%s_topCosThetaGen2d_%s",prefix,suffix),nbins,-1,1, nbinsmtt, minmtt, maxmtt);
       htopCosTheta_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{t}^{t#bar{t}})");
       htopCosTheta_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       htopCosTheta_gen2d[i][j]->Sumw2();
 
-      hlepCosTheta_gen2d[i][j] = new TH2D(Form("%s_hlepCosThetaGen2d_%s",prefix,suffix),Form("%s_lepCosThetaGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
+      hlepCosTheta_gen2d[i][j] = new TH2D(Form("%s_hlepCosThetaGen2d_%s",prefix,suffix),Form("%s_lepCosThetaGen2d_%s",prefix,suffix),nbins,-1,1, nbinsmtt, minmtt, maxmtt);
       hlepCosTheta_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l}^{t})");
       hlepCosTheta_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepCosTheta_gen2d[i][j]->Sumw2();
 
-      hlepPlusCosTheta_gen2d[i][j] = new TH2D(Form("%s_hlepPlusCosThetaGen2d_%s",prefix,suffix),Form("%s_lepPlusCosThetaGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
+      hlepPlusCosTheta_gen2d[i][j] = new TH2D(Form("%s_hlepPlusCosThetaGen2d_%s",prefix,suffix),Form("%s_lepPlusCosThetaGen2d_%s",prefix,suffix),nbins,-1,1, nbinsmtt, minmtt, maxmtt);
       hlepPlusCosTheta_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{+}}^{t})");
       hlepPlusCosTheta_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepPlusCosTheta_gen2d[i][j]->Sumw2();
       
-      hlepMinusCosTheta_gen2d[i][j] = new TH2D(Form("%s_hlepMinusCosThetaGen2d_%s",prefix,suffix),Form("%s_lepMinusCosThetaGen2d_%s",prefix,suffix),nbins,-1,1,120,0.,1200.);
+      hlepMinusCosTheta_gen2d[i][j] = new TH2D(Form("%s_hlepMinusCosThetaGen2d_%s",prefix,suffix),Form("%s_lepMinusCosThetaGen2d_%s",prefix,suffix),nbins,-1,1, nbinsmtt, minmtt, maxmtt);
       hlepMinusCosTheta_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{-}}^{#bar{t}})");
       hlepMinusCosTheta_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hlepMinusCosTheta_gen2d[i][j]->Sumw2();
             
-      hpseudorapiditydiff_gen2d[i][j] = new TH2D(Form("%s_hpseudorapiditydiffGen2d_%s",prefix,suffix),Form("%s_pseudorapiditydiffGen2d_%s",prefix,suffix),nbins,-2,2,120,0.,1200.);
+      hpseudorapiditydiff_gen2d[i][j] = new TH2D(Form("%s_hpseudorapiditydiffGen2d_%s",prefix,suffix),Form("%s_pseudorapiditydiffGen2d_%s",prefix,suffix),nbins,-2,2, nbinsmtt, minmtt, maxmtt);
       hpseudorapiditydiff_gen2d[i][j]->GetXaxis()->SetTitle("|#eta_{t}| - |#eta_{#bar{t}}|");
       hpseudorapiditydiff_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hpseudorapiditydiff_gen2d[i][j]->Sumw2();
       
-      hrapiditydiff_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffGen2d_%s",prefix,suffix),Form("%s_rapiditydiffGen2d_%s",prefix,suffix),nbins,-2,2,120,0.,1200.);
+      hrapiditydiff_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffGen2d_%s",prefix,suffix),Form("%s_rapiditydiffGen2d_%s",prefix,suffix),nbins,-2,2, nbinsmtt, minmtt, maxmtt);
       hrapiditydiff_gen2d[i][j]->GetXaxis()->SetTitle("(y_{t}-y_{#bar{t}}) #times (y_{t}+y_{#bar{t}})");
       hrapiditydiff_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hrapiditydiff_gen2d[i][j]->Sumw2();
       
-      hrapiditydiffMarco_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffMarcoGen2d_%s",prefix,suffix),Form("%s_rapiditydiffMarcoGen2d_%s",prefix,suffix),nbins,-2,2,120,0.,1200.);
+      hrapiditydiffMarco_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffMarcoGen2d_%s",prefix,suffix),Form("%s_rapiditydiffMarcoGen2d_%s",prefix,suffix),nbins,-2,2, nbinsmtt, minmtt, maxmtt);
       hrapiditydiffMarco_gen2d[i][j]->GetXaxis()->SetTitle("|y_{t}|-|y_{#bar{t}}|");
       hrapiditydiffMarco_gen2d[i][j]->GetYaxis()->SetTitle("M_{t#bar{t}} (GeV/c^{2})");
       hrapiditydiffMarco_gen2d[i][j]->Sumw2();
 
 
 
-      hlepChargeAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepChargeAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepChargeAsymttpTGen2d_%s",prefix,suffix),nbins,-2,2,300,0.,300.);
+      hlepChargeAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepChargeAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepChargeAsymttpTGen2d_%s",prefix,suffix),nbins,-2,2, nbinsttpt, minttpt, maxttpt);
       hlepChargeAsym_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("|#eta_{l^{+}}| - |#eta_{l^{-}}|");
       hlepChargeAsym_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepChargeAsym_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttpTGen2d_%s",prefix,suffix),nbins,-pi,pi,300,0.,300.);
+      hlepAzimAsym_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttpTGen2d_%s",prefix,suffix),nbins,-pi,pi, nbinsttpt, minttpt, maxttpt);
       hlepAzimAsym_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym2_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttpTGen2d_%s",prefix,suffix),nbins,0,pi,300,0.,300.);
+      hlepAzimAsym2_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttpTGen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttpTGen2d_%s",prefix,suffix),nbins,0,pi, nbinsttpt, minttpt, maxttpt);
       hlepAzimAsym2_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepAzimAsym2_ttpT_gen2d[i][j]->Sumw2();
 
-      htopSpinCorr_ttpT_gen2d[i][j] = new TH2D(Form("%s_htopSpinCorrttpTGen2d_%s",prefix,suffix),Form("%s_topSpinCorrttpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
+      htopSpinCorr_ttpT_gen2d[i][j] = new TH2D(Form("%s_htopSpinCorrttpTGen2d_%s",prefix,suffix),Form("%s_topSpinCorrttpTGen2d_%s",prefix,suffix),nbins,-1,1, nbinsttpt, minttpt, maxttpt);
       htopSpinCorr_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{+}}^{t}) #times cos(#theta_{l^{-}}^{#bar{t}} )");
       htopSpinCorr_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       htopSpinCorr_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepCosOpeningAngle_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepCosOpeningAnglettpTGen2d_%s",prefix,suffix),Form("%s_lepCosOpeningAnglettpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
+      hlepCosOpeningAngle_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepCosOpeningAnglettpTGen2d_%s",prefix,suffix),Form("%s_lepCosOpeningAnglettpTGen2d_%s",prefix,suffix),nbins,-1,1, nbinsttpt, minttpt, maxttpt);
       hlepCosOpeningAngle_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#phi)");
       hlepCosOpeningAngle_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepCosOpeningAngle_ttpT_gen2d[i][j]->Sumw2();
       
-      htopCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_htopCosThetattpTGen2d_%s",prefix,suffix),Form("%s_topCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
+      htopCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_htopCosThetattpTGen2d_%s",prefix,suffix),Form("%s_topCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1, nbinsttpt, minttpt, maxttpt);
       htopCosTheta_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{t}^{t#bar{t}})");
       htopCosTheta_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       htopCosTheta_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepCosThetattpTGen2d_%s",prefix,suffix),Form("%s_lepCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
+      hlepCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepCosThetattpTGen2d_%s",prefix,suffix),Form("%s_lepCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1, nbinsttpt, minttpt, maxttpt);
       hlepCosTheta_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l}^{t})");
       hlepCosTheta_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepCosTheta_ttpT_gen2d[i][j]->Sumw2();
 
-      hlepPlusCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepPlusCosThetattpTGen2d_%s",prefix,suffix),Form("%s_lepPlusCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
+      hlepPlusCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepPlusCosThetattpTGen2d_%s",prefix,suffix),Form("%s_lepPlusCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1, nbinsttpt, minttpt, maxttpt);
       hlepPlusCosTheta_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{+}}^{t})");
       hlepPlusCosTheta_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepPlusCosTheta_ttpT_gen2d[i][j]->Sumw2();
       
-      hlepMinusCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepMinusCosThetattpTGen2d_%s",prefix,suffix),Form("%s_lepMinusCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1,300,0.,300.);
+      hlepMinusCosTheta_ttpT_gen2d[i][j] = new TH2D(Form("%s_hlepMinusCosThetattpTGen2d_%s",prefix,suffix),Form("%s_lepMinusCosThetattpTGen2d_%s",prefix,suffix),nbins,-1,1, nbinsttpt, minttpt, maxttpt);
       hlepMinusCosTheta_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{-}}^{#bar{t}})");
       hlepMinusCosTheta_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hlepMinusCosTheta_ttpT_gen2d[i][j]->Sumw2();
             
-      hpseudorapiditydiff_ttpT_gen2d[i][j] = new TH2D(Form("%s_hpseudorapiditydiffttpTGen2d_%s",prefix,suffix),Form("%s_pseudorapiditydiffttpTGen2d_%s",prefix,suffix),nbins,-2,2,300,0.,300.);
+      hpseudorapiditydiff_ttpT_gen2d[i][j] = new TH2D(Form("%s_hpseudorapiditydiffttpTGen2d_%s",prefix,suffix),Form("%s_pseudorapiditydiffttpTGen2d_%s",prefix,suffix),nbins,-2,2, nbinsttpt, minttpt, maxttpt);
       hpseudorapiditydiff_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("|#eta_{t}| - |#eta_{#bar{t}}|");
       hpseudorapiditydiff_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hpseudorapiditydiff_ttpT_gen2d[i][j]->Sumw2();
       
-      hrapiditydiff_ttpT_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffttpTGen2d_%s",prefix,suffix),Form("%s_rapiditydiffttpTGen2d_%s",prefix,suffix),nbins,-2,2,300,0.,300.);
+      hrapiditydiff_ttpT_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffttpTGen2d_%s",prefix,suffix),Form("%s_rapiditydiffttpTGen2d_%s",prefix,suffix),nbins,-2,2, nbinsttpt, minttpt, maxttpt);
       hrapiditydiff_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("(y_{t}-y_{#bar{t}}) #times (y_{t}+y_{#bar{t}})");
       hrapiditydiff_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hrapiditydiff_ttpT_gen2d[i][j]->Sumw2();
       
-      hrapiditydiffMarco_ttpT_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffMarcottpTGen2d_%s",prefix,suffix),Form("%s_rapiditydiffMarcottpTGen2d_%s",prefix,suffix),nbins,-2,2,300,0.,300.);
+      hrapiditydiffMarco_ttpT_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffMarcottpTGen2d_%s",prefix,suffix),Form("%s_rapiditydiffMarcottpTGen2d_%s",prefix,suffix),nbins,-2,2, nbinsttpt, minttpt, maxttpt);
       hrapiditydiffMarco_ttpT_gen2d[i][j]->GetXaxis()->SetTitle("|y_{t}|-|y_{#bar{t}}|");
       hrapiditydiffMarco_ttpT_gen2d[i][j]->GetYaxis()->SetTitle("pT_{t#bar{t}} (GeV/c^{2})");
       hrapiditydiffMarco_ttpT_gen2d[i][j]->Sumw2();
 
 
     
-      hlepChargeAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepChargeAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepChargeAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2,300,0.,3.0);
+      hlepChargeAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepChargeAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepChargeAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("|#eta_{l^{+}}| - |#eta_{l^{-}}|");
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepChargeAsym_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-pi,pi,300,0.,3.0);
+      hlepAzimAsym_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsymttRapidity2Gen2d_%s",prefix,suffix),nbins,-pi,pi, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepAzimAsym_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepAzimAsym2_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),nbins,0,pi,300,0.,3.0);
+      hlepAzimAsym2_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepAzimAsym2ttRapidity2Gen2d_%s",prefix,suffix),nbins,0,pi, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepAzimAsym2_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("#Delta #phi_{l^{+}l^{-}}");
       hlepAzimAsym2_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepAzimAsym2_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      htopSpinCorr_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_htopSpinCorrttRapidity2Gen2d_%s",prefix,suffix),Form("%s_topSpinCorrttRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
+      htopSpinCorr_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_htopSpinCorrttRapidity2Gen2d_%s",prefix,suffix),Form("%s_topSpinCorrttRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       htopSpinCorr_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{+}}^{t}) #times cos(#theta_{l^{-}}^{#bar{t}} )");
       htopSpinCorr_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       htopSpinCorr_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepCosOpeningAngle_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepCosOpeningAnglettRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepCosOpeningAnglettRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
+      hlepCosOpeningAngle_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepCosOpeningAnglettRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepCosOpeningAnglettRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepCosOpeningAngle_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#phi)");
       hlepCosOpeningAngle_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepCosOpeningAngle_ttRapidity2_gen2d[i][j]->Sumw2();
       
-      htopCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_htopCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_topCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
+      htopCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_htopCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_topCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       htopCosTheta_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{t}^{t#bar{t}})");
       htopCosTheta_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       htopCosTheta_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
+      hlepCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepCosTheta_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l}^{t})");
       hlepCosTheta_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepCosTheta_ttRapidity2_gen2d[i][j]->Sumw2();
 
-      hlepPlusCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepPlusCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepPlusCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
+      hlepPlusCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepPlusCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepPlusCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepPlusCosTheta_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{+}}^{t})");
       hlepPlusCosTheta_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepPlusCosTheta_ttRapidity2_gen2d[i][j]->Sumw2();
       
-      hlepMinusCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepMinusCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepMinusCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1,300,0.,3.0);
+      hlepMinusCosTheta_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hlepMinusCosThetattRapidity2Gen2d_%s",prefix,suffix),Form("%s_lepMinusCosThetattRapidity2Gen2d_%s",prefix,suffix),nbins,-1,1, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hlepMinusCosTheta_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("cos(#theta_{l^{-}}^{#bar{t}})");
       hlepMinusCosTheta_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hlepMinusCosTheta_ttRapidity2_gen2d[i][j]->Sumw2();
             
-      hpseudorapiditydiff_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hpseudorapiditydiffttRapidity2Gen2d_%s",prefix,suffix),Form("%s_pseudorapiditydiffttRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2,300,0.,3.0);
+      hpseudorapiditydiff_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hpseudorapiditydiffttRapidity2Gen2d_%s",prefix,suffix),Form("%s_pseudorapiditydiffttRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hpseudorapiditydiff_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("|#eta_{t}| - |#eta_{#bar{t}}|");
       hpseudorapiditydiff_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hpseudorapiditydiff_ttRapidity2_gen2d[i][j]->Sumw2();
       
-      hrapiditydiff_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffttRapidity2Gen2d_%s",prefix,suffix),Form("%s_rapiditydiffttRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2,300,0.,3.0);
+      hrapiditydiff_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffttRapidity2Gen2d_%s",prefix,suffix),Form("%s_rapiditydiffttRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hrapiditydiff_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("(y_{t}-y_{#bar{t}}) #times (y_{t}+y_{#bar{t}})");
       hrapiditydiff_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hrapiditydiff_ttRapidity2_gen2d[i][j]->Sumw2();
       
-      hrapiditydiffMarco_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffMarcottRapidity2Gen2d_%s",prefix,suffix),Form("%s_rapiditydiffMarcottRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2,300,0.,3.0);
+      hrapiditydiffMarco_ttRapidity2_gen2d[i][j] = new TH2D(Form("%s_hrapiditydiffMarcottRapidity2Gen2d_%s",prefix,suffix),Form("%s_rapiditydiffMarcottRapidity2Gen2d_%s",prefix,suffix),nbins,-2,2, nbinsttrapidity2, minttrapidity2, maxttrapidity2);
       hrapiditydiffMarco_ttRapidity2_gen2d[i][j]->GetXaxis()->SetTitle("|y_{t}|-|y_{#bar{t}}|");
       hrapiditydiffMarco_ttRapidity2_gen2d[i][j]->GetYaxis()->SetTitle("|y_{t#bar{t}}|");
       hrapiditydiffMarco_ttRapidity2_gen2d[i][j]->Sumw2();
