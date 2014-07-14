@@ -167,9 +167,10 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
   cout<<"Denominator has "<<hdenominator->GetNbinsX()<<" bins from "<<hdenominator->GetXaxis()->GetXmin()<<" to "<<hdenominator->GetXaxis()->GetXmax()<<endl;
   cout<<"Using "<<nbinsx<<" bins from "<<bins[0]<<" to "<<bins[nbinsx]<<endl;
 
-  if(hnumerator->GetNbinsX()!=hdenominator->GetNbinsX()) cout<<"***numerator and denominator do not match***"<<endl;
-  if(hnumerator->GetXaxis()->GetXmax()!=hdenominator->GetXaxis()->GetXmax()) cout<<"***numerator and denominator do not match***"<<endl;
-  if(hnumerator->GetXaxis()->GetXmin()!=hdenominator->GetXaxis()->GetXmin()) cout<<"***numerator and denominator do not match***"<<endl;
+  if(hnumerator->GetNbinsX()!=hdenominator->GetNbinsX()) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetNbinsX()<<" "<<hdenominator->GetNbinsX()<<" "<<hnumerator->GetNbinsX()-hdenominator->GetNbinsX()<<endl;
+  if(hnumerator->GetXaxis()->GetXmax()!=hdenominator->GetXaxis()->GetXmax()) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetXmax()<<" "<<hdenominator->GetXaxis()->GetXmax()<<" "<<hnumerator->GetXaxis()->GetXmax()-hdenominator->GetXaxis()->GetXmax()<<endl;
+  if(hnumerator->GetXaxis()->GetXmin()!=hdenominator->GetXaxis()->GetXmin()) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetXmin()<<" "<<hdenominator->GetXaxis()->GetXmin()<<" "<<hnumerator->GetXaxis()->GetXmin()-hdenominator->GetXaxis()->GetXmin()<<endl;
+  if(hnumerator->GetXaxis()->GetBinCenter(1)!=hdenominator->GetXaxis()->GetBinCenter(1)) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetBinCenter(1)<<" "<<hdenominator->GetXaxis()->GetBinCenter(1)<<" "<<hnumerator->GetXaxis()->GetBinCenter(1)-hdenominator->GetXaxis()->GetBinCenter(1)<<endl;
 
 
   hnumerator = (TH1D*) hnumerator->Rebin(nbinsx,Form("numerator_%s", histname.Data()),bins);
