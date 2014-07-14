@@ -170,7 +170,11 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
   if(hnumerator->GetNbinsX()!=hdenominator->GetNbinsX()) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetNbinsX()<<" "<<hdenominator->GetNbinsX()<<" "<<hnumerator->GetNbinsX()-hdenominator->GetNbinsX()<<endl;
   if(hnumerator->GetXaxis()->GetXmax()!=hdenominator->GetXaxis()->GetXmax()) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetXmax()<<" "<<hdenominator->GetXaxis()->GetXmax()<<" "<<hnumerator->GetXaxis()->GetXmax()-hdenominator->GetXaxis()->GetXmax()<<endl;
   if(hnumerator->GetXaxis()->GetXmin()!=hdenominator->GetXaxis()->GetXmin()) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetXmin()<<" "<<hdenominator->GetXaxis()->GetXmin()<<" "<<hnumerator->GetXaxis()->GetXmin()-hdenominator->GetXaxis()->GetXmin()<<endl;
-  if(hnumerator->GetXaxis()->GetBinCenter(1)!=hdenominator->GetXaxis()->GetBinCenter(1)) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetBinCenter(1)<<" "<<hdenominator->GetXaxis()->GetBinCenter(1)<<" "<<hnumerator->GetXaxis()->GetBinCenter(1)-hdenominator->GetXaxis()->GetBinCenter(1)<<endl;
+  if(hnumerator->GetXaxis()->GetBinWidth(1)!=hdenominator->GetXaxis()->GetBinWidth(1)) cout<<"***numerator and denominator binning does not match*** "<<hnumerator->GetXaxis()->GetBinWidth(1)<<" "<<hdenominator->GetXaxis()->GetBinWidth(1)<<" "<<hnumerator->GetXaxis()->GetBinWidth(1)-hdenominator->GetXaxis()->GetBinWidth(1)<<endl;
+  for (int i = 1; i < nbinsx; ++i)
+  {
+    if( fabs((bins[i+1]-bins[i])/hdenominator->GetXaxis()->GetBinWidth(1) - int(1e-12 + (bins[i+1]-bins[i])/hdenominator->GetXaxis()->GetBinWidth(1)) ) > 1e-12) cout<<"***numerator and denominator bin edges do not align*** "<<(bins[i+1]-bins[i])/hdenominator->GetXaxis()->GetBinWidth(1)<<endl;
+  }
 
 
   hnumerator = (TH1D*) hnumerator->Rebin(nbinsx,Form("numerator_%s", histname.Data()),bins);
