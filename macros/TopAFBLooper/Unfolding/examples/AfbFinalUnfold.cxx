@@ -99,8 +99,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		if( iVar < 2 || iVar == 9 ) nbinsx_gen = nbinsx2Dalt;
 		else nbinsx_gen = nbins1D;
 
-		//nbinsx_reco = nbinsx_gen*2;
-		nbinsx_reco = nbinsx_gen;
+		nbinsx_reco = nbinsx_gen*2;
+		//nbinsx_reco = nbinsx_gen;
 
 		double* genbins;
 		double* recobins;
@@ -149,7 +149,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         TH1D *hData_bkgSub;
 
-		delete[] genbins;
+		//delete[] genbins;
 		delete[] recobins;
 
         hData->Sumw2();
@@ -358,12 +358,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             //if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
         }
 
-		for( int i=1; i<=nbinsx_gen; i++ ) {
-		  hPurity->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hMeas->GetBinContent(i) );
-		  hStability->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hTrue->GetBinContent(i) );
-		}
+        if( nbinsx_gen == nbinsx_reco ) {
+        	for( int i=1; i<=nbinsx_gen; i++ ) {
+        	  hPurity->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hMeas->GetBinContent(i) );
+        	  hStability->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hTrue->GetBinContent(i) );
+        	}
+        }
+        else if( 2*nbinsx_gen == nbinsx_reco ) {
+            for( int i=1; i<=nbinsx_gen; i++ ) {
+              hPurity->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / (hMeas->GetBinContent(2*i)+hMeas->GetBinContent(2*i-1)) );
+              hStability->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / hTrue->GetBinContent(i) );
+            }
+        }
 
-		if( nbinsx_gen != nbinsx_reco ) cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
+
+		if( nbinsx_gen != nbinsx_reco && 2*nbinsx_gen != nbinsx_reco ) cout << "\n***WARNING: Purity and stability plots are broken!!!\n" << endl;
 
 
         RooUnfoldResponse response (hMeas, hTrue, hTrue_vs_Meas);
@@ -618,6 +627,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         TProfile *theoryProfileCorr = new TProfile("thprofilecorrelated", "correlated data from theory file", nbinsx_gen, genbins);
         TProfile *theoryProfileUnCorr = new TProfile("thprofileuncorrelated", "uncorrelated data from theory file", nbinsx_gen, genbins);
+        delete[] genbins;
 
         if (observablename == "lep_azimuthal_asymmetry2")
         {
@@ -857,8 +867,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             leg2->SetBorderSize(0);
             leg2->SetFillStyle(0);
             leg2->SetTextSize(0.032);
-            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(SM, #mu=^{}m_{t})}", "L");
-            leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(uncorrelated, #mu=^{}m_{t})}", "L");
+            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(7 TeV SM, #mu=^{}m_{t})}", "L");
+            leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(7 TeV uncorrelated, #mu=^{}m_{t})}", "L");
             leg2->Draw();
         }
 
@@ -872,8 +882,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         pt1->SetFillStyle(0);
 
         TText *blah;
-        //blah = pt1->AddText("CMS Preliminary, 5.0 fb^{-1} at  #sqrt{s}=7 TeV");
-        blah = pt1->AddText("CMS, 5.0 fb^{-1} at  #sqrt{s}=7 TeV");
+        //blah = pt1->AddText("CMS Preliminary, 19.5 fb^{-1} at  #sqrt{s}=8 TeV");
+        blah = pt1->AddText("CMS, 19.5 fb^{-1} at  #sqrt{s}=8 TeV");
         blah->SetTextSize(0.032);
         blah->SetTextAlign(11);
         pt1->Draw();
