@@ -13,8 +13,8 @@
 #include "LHAPDF/LHAPDF.h"
 
 #include "TROOT.h"
-#include "TH1F.h"
-#include "TH2F.h"
+#include "TH1D.h"
+#include "TH2D.h"
 #include "TChainElement.h"
 #include "TFile.h"
 #include "TMath.h"
@@ -117,16 +117,16 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     cout << "[StopTreeLooper::loop] setting up histos" << endl;
 
-    std::map<std::string, TH1F *> h_1d;
+    std::map<std::string, TH1D *> h_1d;
     //also for control regions
-    std::map<std::string, TH1F *> h_1d_cr1, h_1d_cr2, h_1d_cr3, h_1d_cr4;
+    std::map<std::string, TH1D *> h_1d_cr1, h_1d_cr2, h_1d_cr3, h_1d_cr4;
     //for signal region
-    std::map<std::string, TH1F *> h_1d_sig;
-    std::map<std::string, TH2F *> h_2d_sig;
+    std::map<std::string, TH1D *> h_1d_sig;
+    std::map<std::string, TH2D *> h_2d_sig;
     //for ttbar dilepton njets distribution
-    std::map<std::string, TH1F *> h_1d_nj;
+    std::map<std::string, TH1D *> h_1d_nj;
     //z sample for yields etc
-    std::map<std::string, TH1F *> h_1d_z;
+    std::map<std::string, TH1D *> h_1d_z;
 
     //-----------------------------------
     // PU reweighting based on true PU
@@ -253,8 +253,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                               ( stopt.weight() * 19.5 * puweight );
             if (!name.Contains("lmg")) evtweight *= stopt.mgcor();
 
-            plot1D("h_vtx",       stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
-            plot1D("h_vtxweight",     puweight, evtweight, h_1d, 41, -4., 4.);
+            plot1DUnderOverFlow("h_vtx",       stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
+            plot1DUnderOverFlow("h_vtxweight",     puweight, evtweight, h_1d, 41, -4., 4.);
 
             //----------------------------------------------------------------------------
             // apply preselection:
@@ -784,7 +784,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 {
 
                   //invariant mass - basic check of inclusive distribution
-                  plot1D("h_z_dilmass"+flav_tag_dl, stopt.dilmass(), evtweight*trigweight_dl, h_1d_z,  30 , 76 , 106);
+                  plot1DUnderOverFlow("h_z_dilmass"+flav_tag_dl, stopt.dilmass(), evtweight*trigweight_dl, h_1d_z,  30 , 76 , 106);
 
                   if ( fabs( stopt.dilmass() - 91.) < 10. )
                     {
@@ -794,9 +794,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                       //        <<" run: "<<stopt.run()<<" lumi: "<<stopt.lumi()<<" event: "<<stopt.event()<<endl;
 
                       //z peak plots
-                      plot1D("h_z_njets"    +flav_tag_dl, min(n_jets,4),  evtweight*trigweight_dl, h_1d_z, 5,0,5);
-                      plot1D("h_z_njets_all"+flav_tag_dl, min(n_jets,9),  evtweight*trigweight_dl, h_1d_z, 10, 0, 10);
-                      plot1D("h_z_nbjets"   +flav_tag_dl, min(n_bjets,3), evtweight*trigweight_dl, h_1d_z, 4, 0, 4);
+                      plot1DUnderOverFlow("h_z_njets"    +flav_tag_dl, min(n_jets,4),  evtweight*trigweight_dl, h_1d_z, 5,0,5);
+                      plot1DUnderOverFlow("h_z_njets_all"+flav_tag_dl, min(n_jets,9),  evtweight*trigweight_dl, h_1d_z, 10, 0, 10);
+                      plot1DUnderOverFlow("h_z_nbjets"   +flav_tag_dl, min(n_bjets,3), evtweight*trigweight_dl, h_1d_z, 4, 0, 4);
                       makeZPlots( evtweight*trigweight_dl, h_1d_z, "", flav_tag_dl );
 
                       // Add stricter 3rd lepton veto
@@ -848,7 +848,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TFile outfile(m_outfilename_.c_str(), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving histograms to %s\n", m_outfilename_.c_str());
 
-    std::map<std::string, TH1F *>::iterator it1d;
+    std::map<std::string, TH1D *>::iterator it1d;
     for (it1d = h_1d.begin(); it1d != h_1d.end(); it1d++)
     {
         it1d->second->Write();
@@ -861,14 +861,14 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TFile outfile_sig(Form("SIG%s", m_outfilename_.c_str()), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving SIG histograms to %s\n", m_outfilename_.c_str());
 
-    std::map<std::string, TH1F *>::iterator it1d_sig;
+    std::map<std::string, TH1D *>::iterator it1d_sig;
     for (it1d_sig = h_1d_sig.begin(); it1d_sig != h_1d_sig.end(); it1d_sig++)
     {
         it1d_sig->second->Write();
         delete it1d_sig->second;
     }
 
-    std::map<std::string, TH2F *>::iterator it2d_sig;
+    std::map<std::string, TH2D *>::iterator it2d_sig;
     for (it2d_sig = h_2d_sig.begin(); it2d_sig != h_2d_sig.end(); it2d_sig++)
     {
         it2d_sig->second->Write();
@@ -884,7 +884,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       TFile outfile_cr1(Form("CR1%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR1 histograms to %s\n", m_outfilename_.c_str());
 
-      std::map<std::string, TH1F*>::iterator it1d_cr1;
+      std::map<std::string, TH1D*>::iterator it1d_cr1;
       for(it1d_cr1=h_1d_cr1.begin(); it1d_cr1!=h_1d_cr1.end(); it1d_cr1++) {
         it1d_cr1->second->Write();
         delete it1d_cr1->second;
@@ -896,7 +896,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       TFile outfile_cr2(Form("CR2%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR2 histograms to %s\n", m_outfilename_.c_str());
 
-      std::map<std::string, TH1F*>::iterator it1d_cr2;
+      std::map<std::string, TH1D*>::iterator it1d_cr2;
       for(it1d_cr2=h_1d_cr2.begin(); it1d_cr2!=h_1d_cr2.end(); it1d_cr2++) {
         it1d_cr2->second->Write();
         delete it1d_cr2->second;
@@ -908,7 +908,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       TFile outfile_cr4(Form("CR4%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR4 histograms to %s\n", m_outfilename_.c_str());
 
-      std::map<std::string, TH1F*>::iterator it1d_cr4;
+      std::map<std::string, TH1D*>::iterator it1d_cr4;
       for(it1d_cr4=h_1d_cr4.begin(); it1d_cr4!=h_1d_cr4.end(); it1d_cr4++) {
         it1d_cr4->second->Write();
         delete it1d_cr4->second;
@@ -920,7 +920,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       TFile outfile_cr3(Form("CR3%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR3 histograms to %s\n", m_outfilename_.c_str());
 
-      std::map<std::string, TH1F*>::iterator it1d_cr3;
+      std::map<std::string, TH1D*>::iterator it1d_cr3;
       for(it1d_cr3=h_1d_cr3.begin(); it1d_cr3!=h_1d_cr3.end(); it1d_cr3++) {
         it1d_cr3->second->Write();
         delete it1d_cr3->second;
@@ -932,7 +932,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TFile outfile_nj(Form("NJ%s", m_outfilename_.c_str()), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving NJ histograms to %s\n", m_outfilename_.c_str());
 
-    std::map<std::string, TH1F *>::iterator it1d_nj;
+    std::map<std::string, TH1D *>::iterator it1d_nj;
     for (it1d_nj = h_1d_nj.begin(); it1d_nj != h_1d_nj.end(); it1d_nj++)
     {
         it1d_nj->second->Write();
@@ -945,7 +945,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       TFile outfile_z(Form("Z%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving Z histograms to %s\n", m_outfilename_.c_str());
 
-      std::map<std::string, TH1F*>::iterator it1d_z;
+      std::map<std::string, TH1D*>::iterator it1d_z;
       for(it1d_z=h_1d_z.begin(); it1d_z!=h_1d_z.end(); it1d_z++) {
         it1d_z->second->Write();
         delete it1d_z->second;
@@ -967,7 +967,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
 
 
-void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *> &h_1d,
+void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1D *> &h_1d,
                                    string tag_selection, string flav_tag)
 {
 
@@ -1105,7 +1105,7 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1F *
 
 
 
-void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *> &h_1d, std::map<std::string, TH2F *> &h_2d,
+void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                                    string tag_selection, string flav_tag)
 {
 
@@ -1204,7 +1204,7 @@ void StopTreeLooper::makeAccPlots( float evtweight, std::map<std::string, TH1F *
 
 
 
-void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *> &h_1d, std::map<std::string, TH2F *> &h_2d,
+void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                                   string tag_selection, string flav_tag)
 {
 
@@ -1474,18 +1474,18 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1F *>
 
 
 
-void StopTreeLooper::makeNJPlots( float evtweight, std::map<std::string, TH1F *> &h_1d,
+void StopTreeLooper::makeNJPlots( float evtweight, std::map<std::string, TH1D *> &h_1d,
                                   string tag_selection, string flav_tag )
 {
 
-    plot1D("h_njets"    + tag_selection,          min(n_jets, 4), evtweight, h_1d, 4, 1, 5);
-    plot1D("h_njets"    + tag_selection + flav_tag, min(n_jets, 4), evtweight, h_1d, 4, 1, 5);
-    plot1D("h_njets_all" + tag_selection,          min(n_jets, 8), evtweight, h_1d, 7, 1, 8);
-    plot1D("h_njets_all" + tag_selection + flav_tag, min(n_jets, 8), evtweight, h_1d, 7, 1, 8);
+    plot1DUnderOverFlow("h_njets"    + tag_selection,          min(n_jets, 4), evtweight, h_1d, 4, 1, 5);
+    plot1DUnderOverFlow("h_njets"    + tag_selection + flav_tag, min(n_jets, 4), evtweight, h_1d, 4, 1, 5);
+    plot1DUnderOverFlow("h_njets_all" + tag_selection,          min(n_jets, 8), evtweight, h_1d, 7, 1, 8);
+    plot1DUnderOverFlow("h_njets_all" + tag_selection + flav_tag, min(n_jets, 8), evtweight, h_1d, 7, 1, 8);
 
 }
 
-void StopTreeLooper::makeZPlots( float evtweight, std::map<std::string, TH1F *> &h_1d,
+void StopTreeLooper::makeZPlots( float evtweight, std::map<std::string, TH1D *> &h_1d,
                                  string tag_selection, string flav_tag )
 {
 
@@ -1497,29 +1497,29 @@ void StopTreeLooper::makeZPlots( float evtweight, std::map<std::string, TH1F *> 
 
     string lep1type =  abs(stopt.id1()) == 13 ? "h_muo" : "h_ele";
     string lep2type =  abs(stopt.id2()) == 13 ? "h_muo" : "h_ele";
-    plot1D(lep1type + "pt" + tag_selection + flav_tag, min(stopt.lep1().Pt(), (float)199.99), evtweight, h_1d, 40, 20, 200);
-    plot1D(lep2type + "pt" + tag_selection + flav_tag, min(stopt.lep2().Pt(), (float)199.99), evtweight, h_1d, 40, 20, 200);
+    plot1DUnderOverFlow(lep1type + "pt" + tag_selection + flav_tag, min(stopt.lep1().Pt(), (float)199.99), evtweight, h_1d, 40, 20, 200);
+    plot1DUnderOverFlow(lep2type + "pt" + tag_selection + flav_tag, min(stopt.lep2().Pt(), (float)199.99), evtweight, h_1d, 40, 20, 200);
 
-    plot1D("h_z_leppt"  + tag_selection + flav_tag, min(stopt.lep1().Pt(), (float)299.99), evtweight, h_1d, 50, 20., 300.);
-    plot1D("h_z_lepeta" + tag_selection + flav_tag, stopt.lep1().Eta(), evtweight, h_1d, 24, -2.4, 2.4);
-    plot1D("h_z_lep2pt" + tag_selection + flav_tag, min(stopt.lep2().Pt(), (float)199.99), evtweight, h_1d, 50, 20., 200.);
-    plot1D("h_z_lep2eta" + tag_selection + flav_tag, stopt.lep2().Eta(), evtweight, h_1d, 24, -2.4, 2.4);
+    plot1DUnderOverFlow("h_z_leppt"  + tag_selection + flav_tag, min(stopt.lep1().Pt(), (float)299.99), evtweight, h_1d, 50, 20., 300.);
+    plot1DUnderOverFlow("h_z_lepeta" + tag_selection + flav_tag, stopt.lep1().Eta(), evtweight, h_1d, 24, -2.4, 2.4);
+    plot1DUnderOverFlow("h_z_lep2pt" + tag_selection + flav_tag, min(stopt.lep2().Pt(), (float)199.99), evtweight, h_1d, 50, 20., 200.);
+    plot1DUnderOverFlow("h_z_lep2eta" + tag_selection + flav_tag, stopt.lep2().Eta(), evtweight, h_1d, 24, -2.4, 2.4);
 
     float dphi_metlep = getdphi(stopt.lep1().Phi(), t1metphicorrphi);
-    plot1D("h_z_dphi_metl" + tag_selection + flav_tag, dphi_metlep, evtweight, h_1d, 15, 0., 3.14159);
+    plot1DUnderOverFlow("h_z_dphi_metl" + tag_selection + flav_tag, dphi_metlep, evtweight, h_1d, 15, 0., 3.14159);
 
     if ( n_jets < 1 ) return;
-    plot1D("h_z_j1pt" + tag_selection + flav_tag, min(jets.at(0).Pt(), (float)399.99), evtweight, h_1d, 20, 30., 400.);
-    plot1D("h_z_j1eta" + tag_selection + flav_tag, jets.at(0).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
+    plot1DUnderOverFlow("h_z_j1pt" + tag_selection + flav_tag, min(jets.at(0).Pt(), (float)399.99), evtweight, h_1d, 20, 30., 400.);
+    plot1DUnderOverFlow("h_z_j1eta" + tag_selection + flav_tag, jets.at(0).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
     if ( n_jets < 2 ) return;
-    plot1D("h_z_j2pt" + tag_selection + flav_tag, min(jets.at(1).Pt(), (float)299.99), evtweight, h_1d, 20, 30., 300.);
-    plot1D("h_z_j2eta" + tag_selection + flav_tag, jets.at(1).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
+    plot1DUnderOverFlow("h_z_j2pt" + tag_selection + flav_tag, min(jets.at(1).Pt(), (float)299.99), evtweight, h_1d, 20, 30., 300.);
+    plot1DUnderOverFlow("h_z_j2eta" + tag_selection + flav_tag, jets.at(1).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
     if ( n_jets < 3 ) return;
-    plot1D("h_z_j3pt" + tag_selection + flav_tag, min(jets.at(2).Pt(), (float)199.99), evtweight, h_1d, 20, 30., 200.);
-    plot1D("h_z_j3eta" + tag_selection + flav_tag, jets.at(2).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
+    plot1DUnderOverFlow("h_z_j3pt" + tag_selection + flav_tag, min(jets.at(2).Pt(), (float)199.99), evtweight, h_1d, 20, 30., 200.);
+    plot1DUnderOverFlow("h_z_j3eta" + tag_selection + flav_tag, jets.at(2).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
     if ( n_jets < 4 ) return;
-    plot1D("h_z_j4pt" + tag_selection + flav_tag, min(jets.at(3).Pt(), (float)119.99), evtweight, h_1d, 20, 30., 120.);
-    plot1D("h_z_j4eta" + tag_selection + flav_tag, jets.at(3).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
+    plot1DUnderOverFlow("h_z_j4pt" + tag_selection + flav_tag, min(jets.at(3).Pt(), (float)119.99), evtweight, h_1d, 20, 30., 120.);
+    plot1DUnderOverFlow("h_z_j4eta" + tag_selection + flav_tag, jets.at(3).Eta(), evtweight, h_1d, 24, -2.4, 2.4);
 
 }
 

@@ -4,8 +4,8 @@
 #include "TChain.h"
 #include "TFile.h"
 #include "TString.h"
-#include "TH1F.h"
-#include "TH2F.h"
+#include "TH1D.h"
+#include "TH2D.h"
 #include "TLorentzVector.h"
 
 #include <iostream>
@@ -29,21 +29,21 @@ public:
     void loop(TChain *chain, TString name);
 
     //plotting
-    void makeSIGPlots(float evtweight, std::map<std::string, TH1F *> &h_1d,
+    void makeSIGPlots(float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag );
-    void makettPlots(float evtweight, std::map<std::string, TH1F *> &h_1d, std::map<std::string, TH2F *> &h_2d,
+    void makettPlots(float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                      string tag_selection, string flav_tag );
-    void makeAccPlots(float evtweight, std::map<std::string, TH1F *> &h_1d, std::map<std::string, TH2F *> &h_2d,
+    void makeAccPlots(float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                       string tag_selection, string flav_tag );
-    void makeCR1Plots(float evtweight, std::map<std::string, TH1F *> &h_1d,
+    void makeCR1Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag );
-    void makeCR2Plots(float evtweight, std::map<std::string, TH1F *> &h_1d,
+    void makeCR2Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag_dl );
-    void makeCR3Plots(float evtweight, std::map<std::string, TH1F *> &h_1d,
+    void makeCR3Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag_dl );
-    void makeNJPlots( float evtweight, std::map<std::string, TH1F *> &h_1d,
+    void makeNJPlots( float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag );
-    void makeZPlots(  float evtweight, std::map<std::string, TH1F *> &h_1d,
+    void makeZPlots(  float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag );
 
     //ttbar solver
