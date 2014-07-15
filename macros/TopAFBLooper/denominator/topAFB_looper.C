@@ -199,10 +199,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
     unsigned int nEvents = chain->GetEntries();
     nEventsChain = nEvents;
     unsigned int nEventsTotal = 0;
-    double nEvents_noCuts = 0;
-    double nEvents_noCuts_dil = 0;
-    ULong64_t nEvents_noCuts_novtxweight = 0;
-    ULong64_t nEvents_noCuts_novtxweight_dil = 0;
+    ULong64_t nEvents_noCuts = 0;
+    ULong64_t nEvents_noCuts_dil = 0;
+    ULong64_t nEvents_noCuts_nonegweight = 0;
+    ULong64_t nEvents_noCuts_nonegweight_dil = 0;
     double nSelectedEvents = 0;
     unsigned int npreSelectedEvents = 0;
     unsigned int npreSelectedEvents_genmatch1 = 0;
@@ -501,9 +501,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
             //tau decay cosTheta* weighting
             if (weighttaudecay && (prefix == "ttdil" || prefix == "ttotr")  && ntaus > 0) weight *= weight_taudecay;
 
-            nEvents_noCuts_novtxweight += 1;
-            if (isData) nEvents_noCuts += 1.;
-            else  nEvents_noCuts += ndavtxweight;
+            nEvents_noCuts_nonegweight += 1;
+            if (genps_weight()>0) nEvents_noCuts += 1;
+            else if (genps_weight()<0) nEvents_noCuts -= 1;
+            else cout<<"ambiguous genps_weight()"<<endl;
 
             if (prefix == "ttdil"    &&  nleps != 2) continue;
             if (prefix == "ttotr"    &&  nleps == 2) continue;
@@ -511,9 +512,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
             if (prefix == "DYmm"     &&  nmus != 2) continue;
             if (prefix == "DYtautau" &&  ntaus != 2) continue;
 
-            nEvents_noCuts_novtxweight_dil += 1;
-            if (isData) nEvents_noCuts_dil += 1.;
-            else  nEvents_noCuts_dil += ndavtxweight;
+            nEvents_noCuts_nonegweight_dil += 1;
+            if (genps_weight()>0) nEvents_noCuts_dil += 1;
+            else if (genps_weight()<0) nEvents_noCuts_dil -= 1;
+            else cout<<"ambiguous genps_weight() in dilepton event"<<endl;
 
 
             if (true)
@@ -943,8 +945,8 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
         } // closes loop over events
 
-        if (applyNoCuts) cout << "number of events (no cuts) before and after vertex weighting              =  " << nEvents_noCuts_novtxweight << "   " << nEvents_noCuts << endl;
-        if (applyNoCuts) cout << "number of dilepton events (no cuts) before and after vertex weighting              =  " << nEvents_noCuts_novtxweight_dil << "   " << nEvents_noCuts_dil << endl;
+        if (applyNoCuts) cout << "number of events (no cuts) with and without accounting for negative weights              =  " << nEvents_noCuts_nonegweight << "   " << nEvents_noCuts << endl;
+        if (applyNoCuts) cout << "number of dilepton events (no cuts) with and without accounting for negative weights              =  " << nEvents_noCuts_nonegweight_dil << "   " << nEvents_noCuts_dil << endl;
 
         //float nEvents_primary = cms2.evt_nEvts();
         //cout << "acceptance                       =  " << (1.0*nSelectedEvents)/(nEvents_primary*kFactor * evt_scale1fb() * lumi) <<endl;
