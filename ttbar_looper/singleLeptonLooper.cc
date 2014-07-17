@@ -5514,7 +5514,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                     nuPlus_status3_->t()
                    );
 
-
+    //Explicitly undoing the status2 to status3 boost from FSR, by working in the status2 rest frame. Note, this is equivalent (confirmed by the commented out code below) to working in the top rest frame, where Herwig ensures the status=2 and status=3 3-vectors are aligned.
     WPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
 
     lepPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
@@ -5526,6 +5526,67 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
     WPlus_status3B.Boost(-WPlus_status3B.BoostVector());
     WPlus_status3B.Boost(WPlus_status2_T.BoostVector());
+
+/*
+    //cout<<" lepPlus3B "<<lepPlus_status3B.Px()<<" "<<lepPlus_status3B.Py()<<" "<<lepPlus_status3B.Pz()<<" "<<lepPlus_status3B.M()<<endl;
+    //cout<<" nuPlus3B "<<nuPlus_status3B.Px()<<" "<<nuPlus_status3B.Py()<<" "<<nuPlus_status3B.Pz()<<" "<<nuPlus_status3B.M()<<endl;
+
+    //WPlus
+    TLorentzVector topPlus_status3_T;
+    topPlus_status3_T.SetXYZT(topPlus_status3_->x(),
+                    topPlus_status3_->y(),
+                    topPlus_status3_->z(),
+                    topPlus_status3_->t()
+                   );
+    TLorentzVector WPlus_status3B2;
+    WPlus_status3B2.SetXYZT(WPlus_status3_->x(),
+                    WPlus_status3_->y(),
+                    WPlus_status3_->z(),
+                    WPlus_status3_->t()
+                   );
+    TLorentzVector lepPlus_status3B2;
+    lepPlus_status3B2.SetXYZT(lepPlus_status3_->x(),
+                    lepPlus_status3_->y(),
+                    lepPlus_status3_->z(),
+                    lepPlus_status3_->t()
+                   );
+    TLorentzVector nuPlus_status3B2;
+    nuPlus_status3B2.SetXYZT(nuPlus_status3_->x(),
+                    nuPlus_status3_->y(),
+                    nuPlus_status3_->z(),
+                    nuPlus_status3_->t()
+                   );
+
+
+    WPlus_status2_T.Boost(-topPlus_status3_T.BoostVector());
+
+    WPlus_status3B2.Boost(-topPlus_status3_T.BoostVector());
+    //WPlus_status3B2.Boost(-WPlus_status2_T.BoostVector());
+
+    lepPlus_status3B2.Boost(-topPlus_status3_T.BoostVector());
+    //lepPlus_status3B2.Boost(-WPlus_status2_T.BoostVector());
+    lepPlus_status3B2.Boost(-WPlus_status3B2.BoostVector());
+    lepPlus_status3B2.Boost(WPlus_status2_T.BoostVector());
+    lepPlus_status3B2.Boost(topPlus_status3_T.BoostVector());
+    nuPlus_status3B2.Boost(-topPlus_status3_T.BoostVector());
+    //nuPlus_status3B2.Boost(-WPlus_status2_T.BoostVector());
+    nuPlus_status3B2.Boost(-WPlus_status3B2.BoostVector());
+    nuPlus_status3B2.Boost(WPlus_status2_T.BoostVector());
+    nuPlus_status3B2.Boost(topPlus_status3_T.BoostVector());
+
+    WPlus_status3B2.Boost(-WPlus_status3B2.BoostVector());
+    WPlus_status3B2.Boost(WPlus_status2_T.BoostVector());
+    WPlus_status3B2.Boost(topPlus_status3_T.BoostVector());
+
+    WPlus_status2_T.Boost(topPlus_status3_T.BoostVector());
+
+    if( fabs(lepPlus_status3B.Px() - lepPlus_status3B2.Px()) > 1e-4 || fabs(lepPlus_status3B.Py() - lepPlus_status3B2.Py()) > 1e-4 || fabs(lepPlus_status3B.Pz() - lepPlus_status3B2.Pz()) > 1e-4 || fabs(lepPlus_status3B.M() - lepPlus_status3B2.M()) > 1e-4) cout<<" lepPlus3Bdelta "<<lepPlus_status3B.Px() - lepPlus_status3B2.Px()<<" "<<lepPlus_status3B.Py() - lepPlus_status3B2.Py()<<" "<<lepPlus_status3B.Pz() - lepPlus_status3B2.Pz()<<" "<<lepPlus_status3B.M() - lepPlus_status3B2.M()<<" ntopPlusDaughters: "<<ntopPlusDaughters<<endl;
+    if( fabs(nuPlus_status3B.Px() - nuPlus_status3B2.Px()) > 1e-4 || fabs(nuPlus_status3B.Py() - nuPlus_status3B2.Py()) > 1e-4 || fabs(nuPlus_status3B.Pz() - nuPlus_status3B2.Pz()) > 1e-4 || fabs(nuPlus_status3B.M() - nuPlus_status3B2.M()) > 1e-4) cout<<" nuPlus3Bdelta "<<nuPlus_status3B.Px() - nuPlus_status3B2.Px()<<" "<<nuPlus_status3B.Py() - nuPlus_status3B2.Py()<<" "<<nuPlus_status3B.Pz() - nuPlus_status3B2.Pz()<<" "<<nuPlus_status3B.M() - nuPlus_status3B2.M()<<" ntopPlusDaughters: "<<ntopPlusDaughters<<endl;
+
+*/
+
+
+
 
 
     //WMinus
