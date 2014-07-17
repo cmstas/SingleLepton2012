@@ -1,0 +1,11 @@
+#ignore compiled C++
+*.d
+*.o
+*.so
+
+#ignore ROOT files
+*.root
+
+#ignore other repositories checked out in here
+CORE
+Tools
