@@ -27,23 +27,23 @@ namespace Stop {
 	float &lepMinus_costheta_cms_gen() { return stopt.lepMinus_costheta_cms_gen(); }
 	float &top_spin_correlation_gen() { return stopt.top_spin_correlation_gen(); }
 	float &lep_cos_opening_angle_gen() { return stopt.lep_cos_opening_angle_gen(); }
-	float &m_topminus_gen_origtops() { return stopt.m_topminus_gen_origtops(); }
-	float &m_topplus_gen_origtops() { return stopt.m_topplus_gen_origtops(); }
-	float &tt_mass_gen_origtops() { return stopt.tt_mass_gen_origtops(); }
-	float &ttRapidity_gen_origtops() { return stopt.ttRapidity_gen_origtops(); }
-	float &ttRapidity2_gen_origtops() { return stopt.ttRapidity2_gen_origtops(); }
-	float &top_rapiditydiff_cms_gen_origtops() { return stopt.top_rapiditydiff_cms_gen_origtops(); }
-	float &top_pseudorapiditydiff_cms_gen_origtops() { return stopt.top_pseudorapiditydiff_cms_gen_origtops(); }
-	float &top_rapiditydiff_Marco_gen_origtops() { return stopt.top_rapiditydiff_Marco_gen_origtops(); }
-	float &tt_pT_gen_origtops() { return stopt.tt_pT_gen_origtops(); }
-	float &top_costheta_cms_gen_origtops() { return stopt.top_costheta_cms_gen_origtops(); }
-	float &lep_charge_asymmetry_gen_origtops() { return stopt.lep_charge_asymmetry_gen_origtops(); }
-	float &lep_azimuthal_asymmetry_gen_origtops() { return stopt.lep_azimuthal_asymmetry_gen_origtops(); }
-	float &lep_azimuthal_asymmetry2_gen_origtops() { return stopt.lep_azimuthal_asymmetry2_gen_origtops(); }
-	float &lepPlus_costheta_cms_gen_origtops() { return stopt.lepPlus_costheta_cms_gen_origtops(); }
-	float &lepMinus_costheta_cms_gen_origtops() { return stopt.lepMinus_costheta_cms_gen_origtops(); }
-	float &top_spin_correlation_gen_origtops() { return stopt.top_spin_correlation_gen_origtops(); }
-	float &lep_cos_opening_angle_gen_origtops() { return stopt.lep_cos_opening_angle_gen_origtops(); }
+	float &m_topminus_gen_origleps() { return stopt.m_topminus_gen_origleps(); }
+	float &m_topplus_gen_origleps() { return stopt.m_topplus_gen_origleps(); }
+	float &tt_mass_gen_origleps() { return stopt.tt_mass_gen_origleps(); }
+	float &ttRapidity_gen_origleps() { return stopt.ttRapidity_gen_origleps(); }
+	float &ttRapidity2_gen_origleps() { return stopt.ttRapidity2_gen_origleps(); }
+	float &top_rapiditydiff_cms_gen_origleps() { return stopt.top_rapiditydiff_cms_gen_origleps(); }
+	float &top_pseudorapiditydiff_cms_gen_origleps() { return stopt.top_pseudorapiditydiff_cms_gen_origleps(); }
+	float &top_rapiditydiff_Marco_gen_origleps() { return stopt.top_rapiditydiff_Marco_gen_origleps(); }
+	float &tt_pT_gen_origleps() { return stopt.tt_pT_gen_origleps(); }
+	float &top_costheta_cms_gen_origleps() { return stopt.top_costheta_cms_gen_origleps(); }
+	float &lep_charge_asymmetry_gen_origleps() { return stopt.lep_charge_asymmetry_gen_origleps(); }
+	float &lep_azimuthal_asymmetry_gen_origleps() { return stopt.lep_azimuthal_asymmetry_gen_origleps(); }
+	float &lep_azimuthal_asymmetry2_gen_origleps() { return stopt.lep_azimuthal_asymmetry2_gen_origleps(); }
+	float &lepPlus_costheta_cms_gen_origleps() { return stopt.lepPlus_costheta_cms_gen_origleps(); }
+	float &lepMinus_costheta_cms_gen_origleps() { return stopt.lepMinus_costheta_cms_gen_origleps(); }
+	float &top_spin_correlation_gen_origleps() { return stopt.top_spin_correlation_gen_origleps(); }
+	float &lep_cos_opening_angle_gen_origleps() { return stopt.lep_cos_opening_angle_gen_origleps(); }
 
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &b() { return stopt.b(); }
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &bbar() { return stopt.bbar(); }
@@ -67,8 +67,8 @@ namespace Stop {
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status1() { return stopt.topMinus_status1(); }
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &WPlus_status3_orig() { return stopt.WPlus_status3_orig(); }
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &WMinus_status3_orig() { return stopt.WMinus_status3_orig(); }
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topPlus_status3_orig() { return stopt.topPlus_status3_orig(); }
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status3_orig() { return stopt.topMinus_status3_orig(); }
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topPlus_status3_bW() { return stopt.topPlus_status3_bW(); }
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status3_bW() { return stopt.topMinus_status3_bW(); }
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &lepPlus_status3_orig() { return stopt.lepPlus_status3_orig(); }
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &lepMinus_status3_orig() { return stopt.lepMinus_status3_orig(); }
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &nuPlus_status3_orig() { return stopt.nuPlus_status3_orig(); }
