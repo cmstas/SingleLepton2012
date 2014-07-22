@@ -677,19 +677,28 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             else tag_zcut = "_ignore";
 
             //flavor types
+            channel = -999;
             string flav_tag_sl;
             if ( abs(stopt.id1()) == 13 ) flav_tag_sl = "_muo";
             else if ( abs(stopt.id1()) == 11 ) flav_tag_sl = "_ele";
             else flav_tag_sl = "_mysterysl";
             string flav_tag_dl;
-            if      ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 13 )
+            if      ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 13 ) {
                 flav_tag_dl = "_dimu";
-            else if ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 11 )
+                channel = 1;
+            }
+            else if ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 11 ) {
                 flav_tag_dl = "_diel";
-            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 13 )
+                channel = 0;
+            }
+            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 13 ) {
                 flav_tag_dl = "_muel";
-            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 11 )
+                channel = 2;
+            }
+            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 11 ) {
                 flav_tag_dl = "_elmu";
+                channel = 2;
+            }
             else flav_tag_dl = "_mysterydl";
             string basic_flav_tag_dl = flav_tag_dl;
             if ( abs(stopt.id1()) != abs(stopt.id2()) && flav_tag_dl != "_mysterydl" ) basic_flav_tag_dl = "_mueg";
@@ -1837,6 +1846,7 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("run",                   &run,                 "run/I"                  );
     babyTree_->Branch("ls",                    &ls,                  "ls/I"                   );
     babyTree_->Branch("evt",                   &evt,                 "evt/I"                  );
+    babyTree_->Branch("channel",                &channel,              "channel/I"               );
     babyTree_->Branch("t_mass",                &m_top,              "t_mass/F"               );
     babyTree_->Branch("weight",                &weight,              "weight/D"               );
     //babyTree_->Branch("Nsolns",                &Nsolns_,              "Nsolns/I"               );
