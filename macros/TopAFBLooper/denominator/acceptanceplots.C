@@ -12,8 +12,8 @@
 #include "TLatex.h"
 #include "TMath.h"
 #include <fstream>
-#include "../tdrStyle.C"
-#include "../CommonFunctions.C"
+#include "tdrStyle.C"
+#include "CommonFunctions.C"
 #include "acceptanceplots.h"
 #include <vector>
 

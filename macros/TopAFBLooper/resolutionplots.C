@@ -9,8 +9,8 @@
 #include "TPaveText.h"
 #include "TLatex.h"
 #include <fstream>
-#include "tdrStyle.C"
-#include "CommonFunctions.C"
+#include "denominator/tdrStyle.C"
+#include "denominator/CommonFunctions.C"
 #include <vector>
 
 using namespace std;
