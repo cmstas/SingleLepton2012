@@ -386,11 +386,15 @@ void singleLeptonLooper::InitBaby(){
 
   // MC truth info
   lepPlus_status3_id_ = -9999;
+  lepPlus_status1_id_ = -9999;
   lepMinus_status3_id_ = -9999;
+  lepMinus_status1_id_ = -9999;
   lepPlus_status3_nDaughters_ = -9999;
   lepMinus_status3_nDaughters_ = -9999;
   nuPlus_status3_id_ = -9999;
+  nuPlus_status1_id_ = -9999;
   nuMinus_status3_id_ = -9999;
+  nuMinus_status1_id_ = -9999;
 
   mcid1_	= -1;
   mcid2_	= -1;
@@ -438,6 +442,7 @@ void singleLeptonLooper::InitBaby(){
   nmus_		= -1;
   ntaus_	= -1;
   nleps_	= -1;
+  ntops_  = -1;
   nbs_	        = -1;
   ptjetraw_	= -9999.;
   ptjet23_	= -9999.;
@@ -1518,6 +1523,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       int nmus       =  0;
       int ntaus      =  0;
       int nleps      =  0;
+      int ntops      =  0;
 
       ptwgen_   = -1;
       ptzgen_   = -1;
@@ -1628,14 +1634,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	//splitting ttbar into ttdil/ttotr
 	nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
   //cout<<prefix<<" "<<nels<<" "<<nmus<<" "<<ntaus<<endl;
-
-  if( nleps != 2 ) continue;  //temporary to avoid huge babies including ttsl
 	
 	nels_  = nels;
 	nmus_  = nmus;
 	ntaus_ = ntaus;
 	nleps_ = nleps;
-
+  
 	// this is a weight which corrects for the wrong MG W->lnu BF
 	if( prefix.Contains("ttall") ||
 	    prefix.Contains("tt_") ){
@@ -1651,16 +1655,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	if( prefix.EqualTo("ttem")  && ( nels + nmus ) != 2 ) continue;
 	if( prefix.EqualTo("ttdil") && nleps != 2           ) continue;
 	if( prefix.EqualTo("ttotr") && nleps == 2           ) continue;
-	
+
   nbs_ = 0;
-  int ntops = 0;
-
   for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) if( abs( genps_id().at(igen) ) == 6 && genps_status().at(igen) == 3 ) ntops++;
+  ntops_ = ntops;
 
-  if ( ismcatnlo && ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
-  else if ( ntops != 2 ) { cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; } 
+  if ( ntops != 2 ) cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; 
 
-  fillgenlevel(ismcatnlo, nleps, ntaus);
+  //if( !(nleps == 2 && ntops == 2) ) continue;  //temporary to avoid huge babies including ttsl
+
+  fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
   
 	// if( npartons_ > 0 ){
 	//   cout << endl << endl;
@@ -4387,6 +4391,7 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("nmus",             &nmus_,             "nmus/I");  
   outTree->Branch("ntaus",            &ntaus_,            "ntaus/I");  
   outTree->Branch("nleps",            &nleps_,            "nleps/I");  
+  outTree->Branch("ntops",            &ntops_,            "ntops/I");  
   outTree->Branch("nbs",              &nbs_,              "nbs/I");  
   outTree->Branch("dphijm",           &dphijm_,           "dphijm/F");  
   outTree->Branch("ptjetraw",         &ptjetraw_,         "ptjetraw/F");  
@@ -4395,11 +4400,15 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("ptjetO23",         &ptjetO23_,         "ptjetO23/F");  
   //outTree->Branch("cosphijz",         &cosphijz_,         "cosphijz/F");
   outTree->Branch("lepPlus_status3_id",  &lepPlus_status3_id_,  "lepPlus_status3_id/I");
+  outTree->Branch("lepPlus_status1_id",  &lepPlus_status1_id_,  "lepPlus_status1_id/I");
   outTree->Branch("lepMinus_status3_id",  &lepMinus_status3_id_,  "lepMinus_status3_id/I");
+  outTree->Branch("lepMinus_status1_id",  &lepMinus_status1_id_,  "lepMinus_status1_id/I");
   outTree->Branch("lepPlus_status3_nDaughters",  &lepPlus_status3_nDaughters_,  "lepPlus_status3_nDaughters/I");
   outTree->Branch("lepMinus_status3_nDaughters",  &lepMinus_status3_nDaughters_,  "lepMinus_status3_nDaughters/I");
   outTree->Branch("nuPlus_status3_id",  &nuPlus_status3_id_,  "nuPlus_status3_id/I");
+  outTree->Branch("nuPlus_status1_id",  &nuPlus_status1_id_,  "nuPlus_status1_id/I");
   outTree->Branch("nuMinus_status3_id",  &nuMinus_status3_id_,  "nuMinus_status3_id/I");
+  outTree->Branch("nuMinus_status1_id",  &nuMinus_status1_id_,  "nuMinus_status1_id/I");
   outTree->Branch("mcid1",            &mcid1_,            "mcid1/I");  
   outTree->Branch("mcdr1",            &mcdr1_,            "mcdr1/F");  
   outTree->Branch("mcdecay1",         &mcdecay1_,         "mcdecay1/I");  
@@ -5005,7 +5014,7 @@ int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau){
 }
 
 
-void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
+void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops) {
 
   TLorentzVector WPlus_status2_T(0, 0, 0, 0), WMinus_status2_T(0, 0, 0, 0);
   LorentzVector WPlus_status2(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0);
@@ -5271,7 +5280,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == -11 || daughterID == -13 )
                                             {
                                                 lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -5291,7 +5301,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -5315,7 +5326,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == 11 || daughterID == 13 )
                                             {
                                                 lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -5335,7 +5347,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -5445,9 +5458,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     dumpDocLines();
   }
 
-  //ntops = 2 is required before calling fillgenlevel
   // check explicitly for t and tbar, in case model has multiple tops etc
-  if (topPlus_status3_ && topMinus_status3_) {
+  if (topPlus_status3_ && topMinus_status3_ && ntops==2) {
     ttpair = *topPlus_status3_ + *topMinus_status3_;
     ttbar_    = &ttpair;
     ptttbar_  = ttbar_->pt();
@@ -5461,14 +5473,11 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
   }
 
-
-
-  //if(ntaus>0) continue; //for testing particle-level
-
-  if(nleps!=2) return;
+  //remainder of function is only for ttdl
+  if( !(nleps==2 && ntops==2) ) return; //in MC@NLO there are a few events with 4 tops that cause a crash
 
   //For MC@NLO. Boost status=3 W back to status=2
-  if(ismcatnlo && nleps == 2) {
+  if(ismcatnlo) {
     //if(ntaus==0 && (*lepPlus_status1_!=*lepPlus_status3_ || *lepMinus_status1_!=*lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
 
     topPlus_status1_ = &(vt_stat1);

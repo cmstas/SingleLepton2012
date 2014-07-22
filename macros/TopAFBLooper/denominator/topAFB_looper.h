@@ -23,7 +23,7 @@ public:
     void fillHistos(TH2D *h2[4][4], float xvalue, float yvalue, double weight, int myType, int nJetsIdx, int Nsolns = 1);
     void fillHistos(TProfile *h2[4][4], float xvalue, float yvalue,  int myType, int nJetsIdx);
     int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau);
-    void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
+    void fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops);
     bool isBHadronPdgId(int PdgId);
     bool isBHadron(int igen);
 
@@ -257,11 +257,15 @@ private:
 
     // copied from singleLeptonLooper.h
     Int_t lepPlus_status3_id_;
+    Int_t lepPlus_status1_id_;
     Int_t lepMinus_status3_id_;
+    Int_t lepMinus_status1_id_;
     Int_t lepPlus_status3_nDaughters_;
     Int_t lepMinus_status3_nDaughters_;
     Int_t nuPlus_status3_id_;
+    Int_t nuPlus_status1_id_;
     Int_t nuMinus_status3_id_;
+    Int_t nuMinus_status1_id_;
 
     Int_t   nbs_;
     VofP4 genbs_;

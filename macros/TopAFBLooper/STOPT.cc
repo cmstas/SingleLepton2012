@@ -3,11 +3,15 @@ STOPT stopt;
 namespace Stop {
 	
 	int &lepPlus_status3_id() { return stopt.lepPlus_status3_id(); }
+	int &lepPlus_status1_id() { return stopt.lepPlus_status1_id(); }
 	int &lepMinus_status3_id() { return stopt.lepMinus_status3_id(); }
+	int &lepMinus_status1_id() { return stopt.lepMinus_status1_id(); }
 	int &lepPlus_status3_nDaughters() { return stopt.lepPlus_status3_nDaughters(); }
 	int &lepMinus_status3_nDaughters() { return stopt.lepMinus_status3_nDaughters(); }
 	int &nuPlus_status3_id() { return stopt.nuPlus_status3_id(); }
+	int &nuPlus_status1_id() { return stopt.nuPlus_status1_id(); }
 	int &nuMinus_status3_id() { return stopt.nuMinus_status3_id(); }
+	int &nuMinus_status1_id() { return stopt.nuMinus_status1_id(); }
 
 	float &rapidityttbar() { return stopt.rapidityttbar(); }
 	float &m_topminus_gen() { return stopt.m_topminus_gen(); }
@@ -364,6 +368,7 @@ namespace Stop {
 	int &nmus() { return stopt.nmus(); }
 	int &ntaus() { return stopt.ntaus(); }
 	int &nleps() { return stopt.nleps(); }
+	int &ntops() { return stopt.ntops(); }
 	int &nbs() { return stopt.nbs(); }
 	float &dphijm() { return stopt.dphijm(); }
 	float &ptjetraw() { return stopt.ptjetraw(); }

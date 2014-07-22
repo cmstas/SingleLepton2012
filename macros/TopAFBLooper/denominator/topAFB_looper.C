@@ -812,10 +812,15 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                     for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) if( abs( genps_id().at(igen) ) == 6 && genps_status().at(igen) == 3 ) ntops++;
 
-                    if ( ismcatnlo && ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
-                    else if ( ntops != 2 ) { cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; } 
+                    if ( ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //only events with 2 tops count as ttdl
 
-                    fillgenlevel(ismcatnlo, nleps, ntaus);
+                    fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
+
+                    if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 11 ) myType = 0;
+                    else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 11 ) myType = 2;
+                    else if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 13 ) myType = 2;
+                    else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 13 ) myType = 1;
+                    else cout<<"indeterminate dilepton type: "<<lepPlus_status1_id_<<" "<<lepMinus_status1_id_<<endl;
 
 /* confirmed fillgenlevel gives same results
                     if(m_topminus_gen-m_topminus_gen_origleps_!=0) cout<<m_topminus_gen-m_topminus_gen_origleps_<<endl;
@@ -1092,7 +1097,7 @@ int topAFB_looper::leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuo
 
 //below this line is a direct copy and paste from singleLeptonLooper.cc (with mcmtln_ and mcmln_ commented out)
 
-void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
+void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops) {
 
   TLorentzVector WPlus_status2_T(0, 0, 0, 0), WMinus_status2_T(0, 0, 0, 0);
   LorentzVector WPlus_status2(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0);
@@ -1358,7 +1363,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == -11 || daughterID == -13 )
                                             {
                                                 lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -1378,7 +1384,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -1402,7 +1409,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == 11 || daughterID == 13 )
                                             {
                                                 lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -1422,7 +1430,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -1532,9 +1541,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     dumpDocLines();
   }
 
-  //ntops = 2 is required before calling fillgenlevel
   // check explicitly for t and tbar, in case model has multiple tops etc
-  if (topPlus_status3_ && topMinus_status3_) {
+  if (topPlus_status3_ && topMinus_status3_ && ntops==2) {
     ttpair = *topPlus_status3_ + *topMinus_status3_;
     ttbar_    = &ttpair;
     ptttbar_  = ttbar_->pt();
@@ -1548,14 +1556,11 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 //    mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
 //  }
 
-
-
-  //if(ntaus>0) continue; //for testing particle-level
-
-  if(nleps!=2) return;
+  //remainder of function is only for ttdl
+  if( !(nleps==2 && ntops==2) ) return; //in MC@NLO there are a few events with 4 tops that cause a crash
 
   //For MC@NLO. Boost status=3 W back to status=2
-  if(ismcatnlo && nleps == 2) {
+  if(ismcatnlo) {
     //if(ntaus==0 && (*lepPlus_status1_!=*lepPlus_status3_ || *lepMinus_status1_!=*lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
 
     topPlus_status1_ = &(vt_stat1);

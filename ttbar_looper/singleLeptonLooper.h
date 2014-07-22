@@ -115,7 +115,7 @@ class singleLeptonLooper
 	float c1n2CrossSection( float c1mass );
 	float pmssmCrossSection( int run );
         void closeTree ();
-        void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
+        void fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops);
         bool isBHadronPdgId(int PdgId);
         bool isBHadron(int igen);
 	//	float trackIso( int thisPf , float coneR = 0.3 , float dz_thresh = 0.05 , bool dovtxcut = false , float pt_thresh = 0.0);
@@ -156,11 +156,15 @@ class singleLeptonLooper
 
 	// MC truth lepton info
   	Int_t lepPlus_status3_id_;
+  	Int_t lepPlus_status1_id_;
   	Int_t lepMinus_status3_id_;
+  	Int_t lepMinus_status1_id_;
   	Int_t lepPlus_status3_nDaughters_;
   	Int_t lepMinus_status3_nDaughters_;
   	Int_t nuPlus_status3_id_;
+  	Int_t nuPlus_status1_id_;
   	Int_t nuMinus_status3_id_;
+  	Int_t nuMinus_status1_id_;
 
 	Int_t   mcid1_;    
 	Int_t   mcid2_;    
@@ -843,6 +847,7 @@ class singleLeptonLooper
 	Int_t   nmus_;
 	Int_t   ntaus_;
 	Int_t   nleps_;
+	Int_t   ntops_;
 	Int_t   nbs_;
 	Float_t nvtxweight_;
 	Float_t n3dvtxweight_;

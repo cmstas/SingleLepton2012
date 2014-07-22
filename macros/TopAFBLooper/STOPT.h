@@ -21,9 +21,15 @@ protected:
 	int lepPlus_status3_id_;
 	TBranch *lepPlus_status3_id_branch;
 	bool lepPlus_status3_id_isLoaded;
+	int lepPlus_status1_id_;
+	TBranch *lepPlus_status1_id_branch;
+	bool lepPlus_status1_id_isLoaded;
 	int lepMinus_status3_id_;
 	TBranch *lepMinus_status3_id_branch;
 	bool lepMinus_status3_id_isLoaded;
+	int lepMinus_status1_id_;
+	TBranch *lepMinus_status1_id_branch;
+	bool lepMinus_status1_id_isLoaded;
 	int lepPlus_status3_nDaughters_;
 	TBranch *lepPlus_status3_nDaughters_branch;
 	bool lepPlus_status3_nDaughters_isLoaded;
@@ -33,9 +39,15 @@ protected:
 	int nuPlus_status3_id_;
 	TBranch *nuPlus_status3_id_branch;
 	bool nuPlus_status3_id_isLoaded;
+	int nuPlus_status1_id_;
+	TBranch *nuPlus_status1_id_branch;
+	bool nuPlus_status1_id_isLoaded;
 	int nuMinus_status3_id_;
 	TBranch *nuMinus_status3_id_branch;
 	bool nuMinus_status3_id_isLoaded;
+	int nuMinus_status1_id_;
+	TBranch *nuMinus_status1_id_branch;
+	bool nuMinus_status1_id_isLoaded;
 	float rapidityttbar_;
 	TBranch *rapidityttbar_branch;
 	bool rapidityttbar_isLoaded;
@@ -1098,6 +1110,9 @@ protected:
 	int	nleps_;
 	TBranch *nleps_branch;
 	bool nleps_isLoaded;
+	int	ntops_;
+	TBranch *ntops_branch;
+	bool ntops_isLoaded;
 	int	nbs_;
 	TBranch *nbs_branch;
 	bool nbs_isLoaded;
@@ -1855,10 +1870,20 @@ void Init(TTree *tree) {
 		lepPlus_status3_id_branch = tree->GetBranch("lepPlus_status3_id");
 		if (lepPlus_status3_id_branch) {lepPlus_status3_id_branch->SetAddress(&lepPlus_status3_id_);}
 	}
+	lepPlus_status1_id_branch = 0;
+	if (tree->GetBranch("lepPlus_status1_id") != 0) {
+		lepPlus_status1_id_branch = tree->GetBranch("lepPlus_status1_id");
+		if (lepPlus_status1_id_branch) {lepPlus_status1_id_branch->SetAddress(&lepPlus_status1_id_);}
+	}
 	lepMinus_status3_id_branch = 0;
 	if (tree->GetBranch("lepMinus_status3_id") != 0) {
 		lepMinus_status3_id_branch = tree->GetBranch("lepMinus_status3_id");
 		if (lepMinus_status3_id_branch) {lepMinus_status3_id_branch->SetAddress(&lepMinus_status3_id_);}
+	}
+	lepMinus_status1_id_branch = 0;
+	if (tree->GetBranch("lepMinus_status1_id") != 0) {
+		lepMinus_status1_id_branch = tree->GetBranch("lepMinus_status1_id");
+		if (lepMinus_status1_id_branch) {lepMinus_status1_id_branch->SetAddress(&lepMinus_status1_id_);}
 	}
 	lepPlus_status3_nDaughters_branch = 0;
 	if (tree->GetBranch("lepPlus_status3_nDaughters") != 0) {
@@ -1875,10 +1900,20 @@ void Init(TTree *tree) {
 		nuPlus_status3_id_branch = tree->GetBranch("nuPlus_status3_id");
 		if (nuPlus_status3_id_branch) {nuPlus_status3_id_branch->SetAddress(&nuPlus_status3_id_);}
 	}
+	nuPlus_status1_id_branch = 0;
+	if (tree->GetBranch("nuPlus_status1_id") != 0) {
+		nuPlus_status1_id_branch = tree->GetBranch("nuPlus_status1_id");
+		if (nuPlus_status1_id_branch) {nuPlus_status1_id_branch->SetAddress(&nuPlus_status1_id_);}
+	}
 	nuMinus_status3_id_branch = 0;
 	if (tree->GetBranch("nuMinus_status3_id") != 0) {
 		nuMinus_status3_id_branch = tree->GetBranch("nuMinus_status3_id");
 		if (nuMinus_status3_id_branch) {nuMinus_status3_id_branch->SetAddress(&nuMinus_status3_id_);}
+	}
+	nuMinus_status1_id_branch = 0;
+	if (tree->GetBranch("nuMinus_status1_id") != 0) {
+		nuMinus_status1_id_branch = tree->GetBranch("nuMinus_status1_id");
+		if (nuMinus_status1_id_branch) {nuMinus_status1_id_branch->SetAddress(&nuMinus_status1_id_);}
 	}
 	rapidityttbar_branch = 0;
 	if (tree->GetBranch("rapidityttbar") != 0) {
@@ -3977,6 +4012,11 @@ void Init(TTree *tree) {
 		nleps_branch = tree->GetBranch("nleps");
 		if (nleps_branch) {nleps_branch->SetAddress(&nleps_);}
 	}
+	ntops_branch = 0;
+	if (tree->GetBranch("ntops") != 0) {
+		ntops_branch = tree->GetBranch("ntops");
+		if (ntops_branch) {ntops_branch->SetAddress(&ntops_);}
+	}
 	nbs_branch = 0;
 	if (tree->GetBranch("nbs") != 0) {
 		nbs_branch = tree->GetBranch("nbs");
@@ -4905,11 +4945,15 @@ void GetEntry(unsigned int idx)
 		index = idx;
 
 		lepPlus_status3_id_isLoaded = false;
+		lepPlus_status1_id_isLoaded = false;
 		lepMinus_status3_id_isLoaded = false;
+		lepMinus_status1_id_isLoaded = false;
 		lepPlus_status3_nDaughters_isLoaded = false;
 		lepMinus_status3_nDaughters_isLoaded = false;
 		nuPlus_status3_id_isLoaded = false;
+		nuPlus_status1_id_isLoaded = false;
 		nuMinus_status3_id_isLoaded = false;
+		nuMinus_status1_id_isLoaded = false;
 		rapidityttbar_isLoaded = false;
 		m_topminus_gen_isLoaded = false;
 		m_topplus_gen_isLoaded = false;
@@ -5264,6 +5308,7 @@ void GetEntry(unsigned int idx)
 		nmus_isLoaded = false;
 		ntaus_isLoaded = false;
 		nleps_isLoaded = false;
+		ntops_isLoaded = false;
 		nbs_isLoaded = false;
 		dphijm_isLoaded = false;
 		ptjetraw_isLoaded = false;
@@ -5520,11 +5565,15 @@ void LoadAllBranches()
 	// load all branches
 {
 	if (lepPlus_status3_id_branch != 0) lepPlus_status3_id();
+	if (lepPlus_status1_id_branch != 0) lepPlus_status1_id();
 	if (lepMinus_status3_id_branch != 0) lepMinus_status3_id();
+	if (lepMinus_status1_id_branch != 0) lepMinus_status1_id();
 	if (lepPlus_status3_nDaughters_branch != 0) lepPlus_status3_nDaughters();
 	if (lepMinus_status3_nDaughters_branch != 0) lepMinus_status3_nDaughters();
 	if (nuPlus_status3_id_branch != 0) nuPlus_status3_id();
+	if (nuPlus_status1_id_branch != 0) nuPlus_status1_id();
 	if (nuMinus_status3_id_branch != 0) nuMinus_status3_id();
+	if (nuMinus_status1_id_branch != 0) nuMinus_status1_id();
 	if (rapidityttbar_branch != 0) rapidityttbar();
 	if (m_topminus_gen_branch != 0) m_topminus_gen();
 	if (m_topplus_gen_branch != 0) m_topplus_gen();
@@ -5879,6 +5928,7 @@ void LoadAllBranches()
 	if (nmus_branch != 0) nmus();
 	if (ntaus_branch != 0) ntaus();
 	if (nleps_branch != 0) nleps();
+	if (ntops_branch != 0) ntops();
 	if (nbs_branch != 0) nbs();
 	if (dphijm_branch != 0) dphijm();
 	if (ptjetraw_branch != 0) ptjetraw();
@@ -6145,6 +6195,19 @@ void LoadAllBranches()
 		}
 		return lepPlus_status3_id_;
 	}
+	int &lepPlus_status1_id()
+	{
+		if (not lepPlus_status1_id_isLoaded) {
+			if (lepPlus_status1_id_branch != 0) {
+				lepPlus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch lepPlus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			lepPlus_status1_id_isLoaded = true;
+		}
+		return lepPlus_status1_id_;
+	}
 	int &lepMinus_status3_id()
 	{
 		if (not lepMinus_status3_id_isLoaded) {
@@ -6157,6 +6220,19 @@ void LoadAllBranches()
 			lepMinus_status3_id_isLoaded = true;
 		}
 		return lepMinus_status3_id_;
+	}
+	int &lepMinus_status1_id()
+	{
+		if (not lepMinus_status1_id_isLoaded) {
+			if (lepMinus_status1_id_branch != 0) {
+				lepMinus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch lepMinus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			lepMinus_status1_id_isLoaded = true;
+		}
+		return lepMinus_status1_id_;
 	}
 	int &lepPlus_status3_nDaughters()
 	{
@@ -6197,6 +6273,19 @@ void LoadAllBranches()
 		}
 		return nuPlus_status3_id_;
 	}
+	int &nuPlus_status1_id()
+	{
+		if (not nuPlus_status1_id_isLoaded) {
+			if (nuPlus_status1_id_branch != 0) {
+				nuPlus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch nuPlus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			nuPlus_status1_id_isLoaded = true;
+		}
+		return nuPlus_status1_id_;
+	}
 	int &nuMinus_status3_id()
 	{
 		if (not nuMinus_status3_id_isLoaded) {
@@ -6209,6 +6298,19 @@ void LoadAllBranches()
 			nuMinus_status3_id_isLoaded = true;
 		}
 		return nuMinus_status3_id_;
+	}
+	int &nuMinus_status1_id()
+	{
+		if (not nuMinus_status1_id_isLoaded) {
+			if (nuMinus_status1_id_branch != 0) {
+				nuMinus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch nuMinus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			nuMinus_status1_id_isLoaded = true;
+		}
+		return nuMinus_status1_id_;
 	}
 	float &rapidityttbar()
 	{
@@ -10803,6 +10905,19 @@ void LoadAllBranches()
 		}
 		return nleps_;
 	}
+	int &ntops()
+	{
+		if (not ntops_isLoaded) {
+			if (ntops_branch != 0) {
+				ntops_branch->GetEntry(index);
+			} else { 
+				printf("branch ntops_branch does not exist!\n");
+				exit(1);
+			}
+			ntops_isLoaded = true;
+		}
+		return ntops_;
+	}
 	int &nbs()
 	{
 		if (not nbs_isLoaded) {
@@ -14082,11 +14197,15 @@ extern STOPT stopt;
 
 namespace Stop {
 	int &lepPlus_status3_id();
+	int &lepPlus_status1_id();
 	int &lepMinus_status3_id();
+	int &lepMinus_status1_id();
 	int &lepPlus_status3_nDaughters();
 	int &lepMinus_status3_nDaughters();
 	int &nuPlus_status3_id();
+	int &nuPlus_status1_id();
 	int &nuMinus_status3_id();
+	int &nuMinus_status1_id();
 	float &rapidityttbar();
 	float &m_topminus_gen();
 	float &m_topplus_gen();
@@ -14441,6 +14560,7 @@ namespace Stop {
 	int &nmus();
 	int &ntaus();
 	int &nleps();
+	int &ntops();
 	int &nbs();
 	float &dphijm();
 	float &ptjetraw();
