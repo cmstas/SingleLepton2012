@@ -23,7 +23,7 @@ public:
     void fillHistos(TH2D *h2[4][4], float xvalue, float yvalue, double weight, int myType, int nJetsIdx, int Nsolns = 1);
     void fillHistos(TProfile *h2[4][4], float xvalue, float yvalue,  int myType, int nJetsIdx);
     int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau);
-    void fillgenlevel(bool ismcatnlo, int nleps, int ntaus);
+    void fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops);
     bool isBHadronPdgId(int PdgId);
     bool isBHadron(int igen);
 
@@ -257,11 +257,15 @@ private:
 
     // copied from singleLeptonLooper.h
     Int_t lepPlus_status3_id_;
+    Int_t lepPlus_status1_id_;
     Int_t lepMinus_status3_id_;
+    Int_t lepMinus_status1_id_;
     Int_t lepPlus_status3_nDaughters_;
     Int_t lepMinus_status3_nDaughters_;
     Int_t nuPlus_status3_id_;
+    Int_t nuPlus_status1_id_;
     Int_t nuMinus_status3_id_;
+    Int_t nuMinus_status1_id_;
 
     Int_t   nbs_;
     VofP4 genbs_;
@@ -301,23 +305,23 @@ private:
     Float_t top_spin_correlation_gen_;
     Float_t lep_cos_opening_angle_gen_;
 
-    Float_t m_topminus_gen_origtops_;
-    Float_t m_topplus_gen_origtops_;
-    Float_t tt_mass_gen_origtops_;
-    Float_t ttRapidity_gen_origtops_;
-    Float_t ttRapidity2_gen_origtops_;
-    Float_t top_rapiditydiff_cms_gen_origtops_;
-    Float_t top_pseudorapiditydiff_cms_gen_origtops_;
-    Float_t top_rapiditydiff_Marco_gen_origtops_;
-    Float_t tt_pT_gen_origtops_;
-    Float_t top_costheta_cms_gen_origtops_;
-    Float_t lep_charge_asymmetry_gen_origtops_;
-    Float_t lep_azimuthal_asymmetry_gen_origtops_;
-    Float_t lep_azimuthal_asymmetry2_gen_origtops_;
-    Float_t lepPlus_costheta_cms_gen_origtops_;
-    Float_t lepMinus_costheta_cms_gen_origtops_;
-    Float_t top_spin_correlation_gen_origtops_;
-    Float_t lep_cos_opening_angle_gen_origtops_;
+    Float_t m_topminus_gen_origleps_;
+    Float_t m_topplus_gen_origleps_;
+    Float_t tt_mass_gen_origleps_;
+    Float_t ttRapidity_gen_origleps_;
+    Float_t ttRapidity2_gen_origleps_;
+    Float_t top_rapiditydiff_cms_gen_origleps_;
+    Float_t top_pseudorapiditydiff_cms_gen_origleps_;
+    Float_t top_rapiditydiff_Marco_gen_origleps_;
+    Float_t tt_pT_gen_origleps_;
+    Float_t top_costheta_cms_gen_origleps_;
+    Float_t lep_charge_asymmetry_gen_origleps_;
+    Float_t lep_azimuthal_asymmetry_gen_origleps_;
+    Float_t lep_azimuthal_asymmetry2_gen_origleps_;
+    Float_t lepPlus_costheta_cms_gen_origleps_;
+    Float_t lepMinus_costheta_cms_gen_origleps_;
+    Float_t top_spin_correlation_gen_origleps_;
+    Float_t lep_cos_opening_angle_gen_origleps_;
 
     // assorted p4's
     LorentzVector*  t_;   
@@ -365,8 +369,8 @@ private:
     //LorentzVector* WMinus_status1_;
     LorentzVector* WPlus_status3_orig_;
     LorentzVector* WMinus_status3_orig_;
-    LorentzVector* topPlus_status3_orig_;
-    LorentzVector* topMinus_status3_orig_;
+    LorentzVector* topPlus_status3_bW_;
+    LorentzVector* topMinus_status3_bW_;
     LorentzVector* lepPlus_status3_orig_;
     LorentzVector* lepMinus_status3_orig_;
     LorentzVector* nuPlus_status3_orig_;
@@ -379,8 +383,8 @@ private:
     LorentzVector vbbar_stat1;
     LorentzVector WPlus_status3_orig;
     LorentzVector WMinus_status3_orig;
-    LorentzVector topPlus_status3_orig;
-    LorentzVector topMinus_status3_orig;
+    LorentzVector topPlus_status3_bW;
+    LorentzVector topMinus_status3_bW;
     LorentzVector lepPlus_status3_orig;
     LorentzVector lepMinus_status3_orig;
     LorentzVector nuPlus_status3_orig;

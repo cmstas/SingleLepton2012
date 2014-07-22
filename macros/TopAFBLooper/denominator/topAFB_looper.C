@@ -199,10 +199,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
     unsigned int nEvents = chain->GetEntries();
     nEventsChain = nEvents;
     unsigned int nEventsTotal = 0;
-    double nEvents_noCuts = 0;
-    double nEvents_noCuts_dil = 0;
-    ULong64_t nEvents_noCuts_novtxweight = 0;
-    ULong64_t nEvents_noCuts_novtxweight_dil = 0;
+    ULong64_t nEvents_noCuts = 0;
+    ULong64_t nEvents_noCuts_dil = 0;
+    ULong64_t nEvents_noCuts_nonegweight = 0;
+    ULong64_t nEvents_noCuts_nonegweight_dil = 0;
     double nSelectedEvents = 0;
     unsigned int npreSelectedEvents = 0;
     unsigned int npreSelectedEvents_genmatch1 = 0;
@@ -501,9 +501,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
             //tau decay cosTheta* weighting
             if (weighttaudecay && (prefix == "ttdil" || prefix == "ttotr")  && ntaus > 0) weight *= weight_taudecay;
 
-            nEvents_noCuts_novtxweight += 1;
-            if (isData) nEvents_noCuts += 1.;
-            else  nEvents_noCuts += ndavtxweight;
+            nEvents_noCuts_nonegweight += 1;
+            if (genps_weight()>0) nEvents_noCuts += 1;
+            else if (genps_weight()<0) nEvents_noCuts -= 1;
+            else cout<<"ambiguous genps_weight()"<<endl;
 
             if (prefix == "ttdil"    &&  nleps != 2) continue;
             if (prefix == "ttotr"    &&  nleps == 2) continue;
@@ -511,9 +512,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
             if (prefix == "DYmm"     &&  nmus != 2) continue;
             if (prefix == "DYtautau" &&  ntaus != 2) continue;
 
-            nEvents_noCuts_novtxweight_dil += 1;
-            if (isData) nEvents_noCuts_dil += 1.;
-            else  nEvents_noCuts_dil += ndavtxweight;
+            nEvents_noCuts_nonegweight_dil += 1;
+            if (genps_weight()>0) nEvents_noCuts_dil += 1;
+            else if (genps_weight()<0) nEvents_noCuts_dil -= 1;
+            else cout<<"ambiguous genps_weight() in dilepton event"<<endl;
 
 
             if (true)
@@ -810,49 +812,54 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                     for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) if( abs( genps_id().at(igen) ) == 6 && genps_status().at(igen) == 3 ) ntops++;
 
-                    if ( ismcatnlo && ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
-                    else if ( ntops != 2 ) { cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; } 
+                    if ( ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //only events with 2 tops count as ttdl
 
-                    fillgenlevel(ismcatnlo, nleps, ntaus);
+                    fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
+
+                    if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 11 ) myType = 0;
+                    else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 11 ) myType = 2;
+                    else if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 13 ) myType = 2;
+                    else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 13 ) myType = 1;
+                    else cout<<"indeterminate dilepton type: "<<lepPlus_status1_id_<<" "<<lepMinus_status1_id_<<endl;
 
 /* confirmed fillgenlevel gives same results
-                    if(m_topminus_gen-m_topminus_gen_origtops_!=0) cout<<m_topminus_gen-m_topminus_gen_origtops_<<endl;
-                    if(m_topplus_gen-m_topplus_gen_origtops_!=0) cout<<m_topplus_gen-m_topplus_gen_origtops_<<endl;
-                    if(tt_mass_gen-tt_mass_gen_origtops_!=0) cout<<tt_mass_gen-tt_mass_gen_origtops_<<endl;
-                    if(ttRapidity_gen-ttRapidity_gen_origtops_!=0) cout<<ttRapidity_gen-ttRapidity_gen_origtops_<<endl;
-                    if(ttRapidity2_gen-ttRapidity2_gen_origtops_!=0) cout<<ttRapidity2_gen-ttRapidity2_gen_origtops_<<endl;
-                    if(top_rapiditydiff_cms_gen-top_rapiditydiff_cms_gen_origtops_!=0) cout<<top_rapiditydiff_cms_gen-top_rapiditydiff_cms_gen_origtops_<<endl;
-                    if(top_pseudorapiditydiff_cms_gen-top_pseudorapiditydiff_cms_gen_origtops_!=0) cout<<top_pseudorapiditydiff_cms_gen-top_pseudorapiditydiff_cms_gen_origtops_<<endl;
-                    if(top_rapiditydiff_Marco_gen-top_rapiditydiff_Marco_gen_origtops_!=0) cout<<top_rapiditydiff_Marco_gen-top_rapiditydiff_Marco_gen_origtops_<<endl;
-                    if(tt_pT_gen-tt_pT_gen_origtops_!=0) cout<<tt_pT_gen-tt_pT_gen_origtops_<<endl;
-                    if(top_costheta_cms_gen-top_costheta_cms_gen_origtops_!=0) cout<<top_costheta_cms_gen-top_costheta_cms_gen_origtops_<<endl;
-                    if(lep_charge_asymmetry_gen-lep_charge_asymmetry_gen_origtops_!=0) cout<<lep_charge_asymmetry_gen-lep_charge_asymmetry_gen_origtops_<<endl;
-                    if(lep_azimuthal_asymmetry_gen-lep_azimuthal_asymmetry_gen_origtops_!=0) cout<<lep_azimuthal_asymmetry_gen-lep_azimuthal_asymmetry_gen_origtops_<<endl;
-                    if(lep_azimuthal_asymmetry2_gen-lep_azimuthal_asymmetry2_gen_origtops_!=0) cout<<lep_azimuthal_asymmetry2_gen-lep_azimuthal_asymmetry2_gen_origtops_<<endl;
-                    if(lepPlus_costheta_cms_gen-lepPlus_costheta_cms_gen_origtops_!=0) cout<<lepPlus_costheta_cms_gen-lepPlus_costheta_cms_gen_origtops_<<endl;
-                    if(lepMinus_costheta_cms_gen-lepMinus_costheta_cms_gen_origtops_!=0) cout<<lepMinus_costheta_cms_gen-lepMinus_costheta_cms_gen_origtops_<<endl;
-                    if(top_spin_correlation_gen-top_spin_correlation_gen_origtops_!=0) cout<<top_spin_correlation_gen-top_spin_correlation_gen_origtops_<<endl;
-                    if(lep_cos_opening_angle_gen-lep_cos_opening_angle_gen_origtops_!=0) cout<<lep_cos_opening_angle_gen-lep_cos_opening_angle_gen_origtops_<<endl;
+                    if(m_topminus_gen-m_topminus_gen_origleps_!=0) cout<<m_topminus_gen-m_topminus_gen_origleps_<<endl;
+                    if(m_topplus_gen-m_topplus_gen_origleps_!=0) cout<<m_topplus_gen-m_topplus_gen_origleps_<<endl;
+                    if(tt_mass_gen-tt_mass_gen_origleps_!=0) cout<<tt_mass_gen-tt_mass_gen_origleps_<<endl;
+                    if(ttRapidity_gen-ttRapidity_gen_origleps_!=0) cout<<ttRapidity_gen-ttRapidity_gen_origleps_<<endl;
+                    if(ttRapidity2_gen-ttRapidity2_gen_origleps_!=0) cout<<ttRapidity2_gen-ttRapidity2_gen_origleps_<<endl;
+                    if(top_rapiditydiff_cms_gen-top_rapiditydiff_cms_gen_origleps_!=0) cout<<top_rapiditydiff_cms_gen-top_rapiditydiff_cms_gen_origleps_<<endl;
+                    if(top_pseudorapiditydiff_cms_gen-top_pseudorapiditydiff_cms_gen_origleps_!=0) cout<<top_pseudorapiditydiff_cms_gen-top_pseudorapiditydiff_cms_gen_origleps_<<endl;
+                    if(top_rapiditydiff_Marco_gen-top_rapiditydiff_Marco_gen_origleps_!=0) cout<<top_rapiditydiff_Marco_gen-top_rapiditydiff_Marco_gen_origleps_<<endl;
+                    if(tt_pT_gen-tt_pT_gen_origleps_!=0) cout<<tt_pT_gen-tt_pT_gen_origleps_<<endl;
+                    if(top_costheta_cms_gen-top_costheta_cms_gen_origleps_!=0) cout<<top_costheta_cms_gen-top_costheta_cms_gen_origleps_<<endl;
+                    if(lep_charge_asymmetry_gen-lep_charge_asymmetry_gen_origleps_!=0) cout<<lep_charge_asymmetry_gen-lep_charge_asymmetry_gen_origleps_<<endl;
+                    if(lep_azimuthal_asymmetry_gen-lep_azimuthal_asymmetry_gen_origleps_!=0) cout<<lep_azimuthal_asymmetry_gen-lep_azimuthal_asymmetry_gen_origleps_<<endl;
+                    if(lep_azimuthal_asymmetry2_gen-lep_azimuthal_asymmetry2_gen_origleps_!=0) cout<<lep_azimuthal_asymmetry2_gen-lep_azimuthal_asymmetry2_gen_origleps_<<endl;
+                    if(lepPlus_costheta_cms_gen-lepPlus_costheta_cms_gen_origleps_!=0) cout<<lepPlus_costheta_cms_gen-lepPlus_costheta_cms_gen_origleps_<<endl;
+                    if(lepMinus_costheta_cms_gen-lepMinus_costheta_cms_gen_origleps_!=0) cout<<lepMinus_costheta_cms_gen-lepMinus_costheta_cms_gen_origleps_<<endl;
+                    if(top_spin_correlation_gen-top_spin_correlation_gen_origleps_!=0) cout<<top_spin_correlation_gen-top_spin_correlation_gen_origleps_<<endl;
+                    if(lep_cos_opening_angle_gen-lep_cos_opening_angle_gen_origleps_!=0) cout<<lep_cos_opening_angle_gen-lep_cos_opening_angle_gen_origleps_<<endl;
 */
 
 
-                    m_topminus_gen = m_topminus_gen_origtops_;
-                    m_topplus_gen = m_topplus_gen_origtops_;
-                    tt_mass_gen = tt_mass_gen_origtops_;
-                    ttRapidity_gen = ttRapidity_gen_origtops_;
-                    ttRapidity2_gen = ttRapidity2_gen_origtops_;
-                    top_rapiditydiff_cms_gen = top_rapiditydiff_cms_gen_origtops_;
-                    top_pseudorapiditydiff_cms_gen = top_pseudorapiditydiff_cms_gen_origtops_;
-                    top_rapiditydiff_Marco_gen = top_rapiditydiff_Marco_gen_origtops_;
-                    tt_pT_gen = tt_pT_gen_origtops_;
-                    top_costheta_cms_gen = top_costheta_cms_gen_origtops_;
-                    lep_charge_asymmetry_gen = lep_charge_asymmetry_gen_origtops_;
-                    lep_azimuthal_asymmetry_gen = lep_azimuthal_asymmetry_gen_origtops_;
-                    lep_azimuthal_asymmetry2_gen = lep_azimuthal_asymmetry2_gen_origtops_;
-                    lepPlus_costheta_cms_gen = lepPlus_costheta_cms_gen_origtops_;
-                    lepMinus_costheta_cms_gen = lepMinus_costheta_cms_gen_origtops_;
-                    top_spin_correlation_gen = top_spin_correlation_gen_origtops_;
-                    lep_cos_opening_angle_gen = lep_cos_opening_angle_gen_origtops_;
+                    m_topminus_gen = m_topminus_gen_;
+                    m_topplus_gen = m_topplus_gen_;
+                    tt_mass_gen = tt_mass_gen_;
+                    ttRapidity_gen = ttRapidity_gen_;
+                    ttRapidity2_gen = ttRapidity2_gen_;
+                    top_rapiditydiff_cms_gen = top_rapiditydiff_cms_gen_;
+                    top_pseudorapiditydiff_cms_gen = top_pseudorapiditydiff_cms_gen_;
+                    top_rapiditydiff_Marco_gen = top_rapiditydiff_Marco_gen_;
+                    tt_pT_gen = tt_pT_gen_;
+                    top_costheta_cms_gen = top_costheta_cms_gen_;
+                    lep_charge_asymmetry_gen = lep_charge_asymmetry_gen_;
+                    lep_azimuthal_asymmetry_gen = lep_azimuthal_asymmetry_gen_;
+                    lep_azimuthal_asymmetry2_gen = lep_azimuthal_asymmetry2_gen_;
+                    lepPlus_costheta_cms_gen = lepPlus_costheta_cms_gen_;
+                    lepMinus_costheta_cms_gen = lepMinus_costheta_cms_gen_;
+                    top_spin_correlation_gen = top_spin_correlation_gen_;
+                    lep_cos_opening_angle_gen = lep_cos_opening_angle_gen_;
 
 
                     fillHistos( htopMass_plus_gen, m_topplus_gen ,  weight, myType, jetBin, Nsolns);
@@ -943,8 +950,8 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
         } // closes loop over events
 
-        if (applyNoCuts) cout << "number of events (no cuts) before and after vertex weighting              =  " << nEvents_noCuts_novtxweight << "   " << nEvents_noCuts << endl;
-        if (applyNoCuts) cout << "number of dilepton events (no cuts) before and after vertex weighting              =  " << nEvents_noCuts_novtxweight_dil << "   " << nEvents_noCuts_dil << endl;
+        if (applyNoCuts) cout << "number of events (no cuts) with and without accounting for negative weights              =  " << nEvents_noCuts_nonegweight << "   " << nEvents_noCuts << endl;
+        if (applyNoCuts) cout << "number of dilepton events (no cuts) with and without accounting for negative weights              =  " << nEvents_noCuts_nonegweight_dil << "   " << nEvents_noCuts_dil << endl;
 
         //float nEvents_primary = cms2.evt_nEvts();
         //cout << "acceptance                       =  " << (1.0*nSelectedEvents)/(nEvents_primary*kFactor * evt_scale1fb() * lumi) <<endl;
@@ -1090,7 +1097,7 @@ int topAFB_looper::leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuo
 
 //below this line is a direct copy and paste from singleLeptonLooper.cc (with mcmtln_ and mcmln_ commented out)
 
-void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
+void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops) {
 
   TLorentzVector WPlus_status2_T(0, 0, 0, 0), WMinus_status2_T(0, 0, 0, 0);
   LorentzVector WPlus_status2(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0);
@@ -1102,8 +1109,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   vbbar_stat1.SetXYZT(0,0,0,0);
   WPlus_status3_orig.SetXYZT(0,0,0,0);
   WMinus_status3_orig.SetXYZT(0,0,0,0);
-  topPlus_status3_orig.SetXYZT(0,0,0,0);
-  topMinus_status3_orig.SetXYZT(0,0,0,0);
+  topPlus_status3_bW.SetXYZT(0,0,0,0);
+  topMinus_status3_bW.SetXYZT(0,0,0,0);
   lepPlus_status3_orig.SetXYZT(0,0,0,0);
   lepMinus_status3_orig.SetXYZT(0,0,0,0);
   nuPlus_status3_orig.SetXYZT(0,0,0,0);
@@ -1295,8 +1302,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       //ntops++;
 
       topPlus_status3_ = &(genps_p4().at(igen));
-      topPlus_status3_orig = genps_p4().at(igen);
-      topPlus_status3_orig_ = &(topPlus_status3_orig);
+      topPlus_status3_bW = genps_p4().at(igen);
+      topPlus_status3_bW_ = &(topPlus_status3_bW);
 
       //Create status=1 top. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -1320,8 +1327,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       //ntops++;
 
       topMinus_status3_ = &(genps_p4().at(igen));
-      topMinus_status3_orig = genps_p4().at(igen);
-      topMinus_status3_orig_ = &(topMinus_status3_orig);
+      topMinus_status3_bW = genps_p4().at(igen);
+      topMinus_status3_bW_ = &(topMinus_status3_bW);
 
       //Create status=1 tbar. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -1356,7 +1363,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == -11 || daughterID == -13 )
                                             {
                                                 lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -1376,7 +1384,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -1400,7 +1409,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == 11 || daughterID == 13 )
                                             {
                                                 lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -1420,7 +1430,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -1530,9 +1541,8 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     dumpDocLines();
   }
 
-  //ntops = 2 is required before calling fillgenlevel
   // check explicitly for t and tbar, in case model has multiple tops etc
-  if (topPlus_status3_ && topMinus_status3_) {
+  if (topPlus_status3_ && topMinus_status3_ && ntops==2) {
     ttpair = *topPlus_status3_ + *topMinus_status3_;
     ttbar_    = &ttpair;
     ptttbar_  = ttbar_->pt();
@@ -1546,14 +1556,11 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 //    mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
 //  }
 
-
-
-  //if(ntaus>0) continue; //for testing particle-level
-
-  if(nleps!=2) return;
+  //remainder of function is only for ttdl
+  if( !(nleps==2 && ntops==2) ) return; //in MC@NLO there are a few events with 4 tops that cause a crash
 
   //For MC@NLO. Boost status=3 W back to status=2
-  if(ismcatnlo && nleps == 2) {
+  if(ismcatnlo) {
     //if(ntaus==0 && (*lepPlus_status1_!=*lepPlus_status3_ || *lepMinus_status1_!=*lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
 
     topPlus_status1_ = &(vt_stat1);
@@ -1688,13 +1695,13 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay. Note this means the effective top has lower mass. This is probably not what we want, because the hard FSR gluon is probably from the b (according to Mrenna).
     //if(ntopPlusDaughters>2) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<<topPlus_status3_->M()<<" "<<(WPlus_status2_T + bPlus_status3_).M()<<endl;
     //topPlus_status3_ = WPlus_status2 + bPlus_status3_; 
-    topPlus_status3_->SetXYZT(WPlus_status2.X()+bPlus_status3_->X(),
+    topPlus_status3_bW_->SetXYZT(WPlus_status2.X()+bPlus_status3_->X(),
                     WPlus_status2.Y()+bPlus_status3_->Y(),
                     WPlus_status2.Z()+bPlus_status3_->Z(),
                     WPlus_status2.T()+bPlus_status3_->T()
                    );
     //topMinus_status3_ = WMinus_status2 + bMinus_status3_;
-    topMinus_status3_->SetXYZT(WMinus_status2.X()+bMinus_status3_->X(),
+    topMinus_status3_bW_->SetXYZT(WMinus_status2.X()+bMinus_status3_->X(),
                     WMinus_status2.Y()+bMinus_status3_->Y(),
                     WMinus_status2.Z()+bMinus_status3_->Z(),
                     WMinus_status2.T()+bMinus_status3_->T()
@@ -1704,7 +1711,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     if (  fabs( (*lepPlus_status3_+*nuPlus_status3_).M() - WPlus_status2_T.M() ) > 1e-4  ) {   //the stat2 and 3 Ws can have slightly different masses - in that case just check their betas (Ws and tops will no longer exactly match)
       if (  fabs( (*lepPlus_status3_+*nuPlus_status3_).Beta() - WPlus_status2_T.Beta() ) > 1e-4  ) cout<<"********* Inconsistent WPlus ***********"<<endl;
     }
-    else if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 1e-2 ) {
+    else if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 1e-2 && ntopPlusDaughters == 2 ) {
       cout<<" Top daughters don't match top. Ndaughters_topPlus: "<<ntopPlusDaughters<<" lepPlusID: "<<lepPlus_status3_id_<<" evt: "<<evt_event()<<endl;
       cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E()<<" W: "<<(lepPlus_status3_->E()+nuPlus_status3_->E()) - WPlus_status2_T.E()<<" mW: "<<(*lepPlus_status3_ + *nuPlus_status3_).M() - WPlus_status2_T.M()<<" gammaW: "<< WPlus_status2_T.Gamma() <<endl; //here we expect exact agreement
       cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
@@ -1715,7 +1722,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     if (  fabs( (*lepMinus_status3_+*nuMinus_status3_).M() - WMinus_status2_T.M() ) > 1e-4  ) {   //the stat2 and 3 Ws can have slightly different masses - in that case just check their betas (Ws and tops will no longer exactly match)
       if (  fabs( (*lepMinus_status3_+*nuMinus_status3_).Beta() - WMinus_status2_T.Beta() ) > 1e-4  ) cout<<"********* Inconsistent WMinus ***********"<<endl;
     }
-    else if( fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 1e-2 ) {
+    else if( fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 1e-2 && ntopMinusDaughters == 2 ) {
       cout<<" Top daughters don't match top. Ndaughters_topMinus: "<<ntopMinusDaughters<<" lepMinusID: "<<lepMinus_status3_id_<<" evt: "<<evt_event()<<endl;
       cout<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E()<<" W: "<<(lepMinus_status3_->E()+nuMinus_status3_->E()) - WMinus_status2_T.E()<<" mW: "<<(*lepMinus_status3_ + *nuMinus_status3_).M() - WMinus_status2_T.M()<<" gammaW: "<< WMinus_status2_T.Gamma() <<endl; //here we expect exact agreement
       cout<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
@@ -1794,65 +1801,65 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
 
 
-  //recalculate using original top
-  topplus_genp_p4.SetXYZT(topPlus_status3_orig_->x(),
-                  topPlus_status3_orig_->y(),
-                  topPlus_status3_orig_->z(),
-                  topPlus_status3_orig_->t()
+  //recalculate using original leptons
+  topplus_genp_p4.SetXYZT(topPlus_status3_->x(),
+                  topPlus_status3_->y(),
+                  topPlus_status3_->z(),
+                  topPlus_status3_->t()
                  );
 
-  topminus_genp_p4.SetXYZT(topMinus_status3_orig_->x(),
-                  topMinus_status3_orig_->y(),
-                  topMinus_status3_orig_->z(),
-                  topMinus_status3_orig_->t()
+  topminus_genp_p4.SetXYZT(topMinus_status3_->x(),
+                  topMinus_status3_->y(),
+                  topMinus_status3_->z(),
+                  topMinus_status3_->t()
                  );
 
-  lepPlus_gen.SetXYZT(lepPlus_status3_->x(),
-                  lepPlus_status3_->y(),
-                  lepPlus_status3_->z(),
-                  lepPlus_status3_->t()
+  lepPlus_gen.SetXYZT(lepPlus_status3_orig_->x(),
+                  lepPlus_status3_orig_->y(),
+                  lepPlus_status3_orig_->z(),
+                  lepPlus_status3_orig_->t()
                  );
 
-  lepMinus_gen.SetXYZT(lepMinus_status3_->x(),
-                  lepMinus_status3_->y(),
-                  lepMinus_status3_->z(),
-                  lepMinus_status3_->t()
+  lepMinus_gen.SetXYZT(lepMinus_status3_orig_->x(),
+                  lepMinus_status3_orig_->y(),
+                  lepMinus_status3_orig_->z(),
+                  lepMinus_status3_orig_->t()
                  );
 
 
-  m_topminus_gen_origtops_ = topminus_genp_p4.M();
-  m_topplus_gen_origtops_ = topplus_genp_p4.M();
+  m_topminus_gen_origleps_ = topminus_genp_p4.M();
+  m_topplus_gen_origleps_ = topplus_genp_p4.M();
 
-  tt_mass_gen_origtops_ = (topplus_genp_p4 + topminus_genp_p4).M();
-  ttRapidity_gen_origtops_ = topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity();
-  ttRapidity2_gen_origtops_ = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
+  tt_mass_gen_origleps_ = (topplus_genp_p4 + topminus_genp_p4).M();
+  ttRapidity_gen_origleps_ = topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity();
+  ttRapidity2_gen_origleps_ = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
 
-  top_rapiditydiff_cms_gen_origtops_ = (topplus_genp_p4.Rapidity() - topminus_genp_p4.Rapidity()) * (topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity());
-  top_pseudorapiditydiff_cms_gen_origtops_ = abs(topplus_genp_p4.Eta()) - abs(topminus_genp_p4.Eta());
-  top_rapiditydiff_Marco_gen_origtops_ = abs(topplus_genp_p4.Rapidity()) - abs(topminus_genp_p4.Rapidity());
+  top_rapiditydiff_cms_gen_origleps_ = (topplus_genp_p4.Rapidity() - topminus_genp_p4.Rapidity()) * (topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity());
+  top_pseudorapiditydiff_cms_gen_origleps_ = abs(topplus_genp_p4.Eta()) - abs(topminus_genp_p4.Eta());
+  top_rapiditydiff_Marco_gen_origleps_ = abs(topplus_genp_p4.Rapidity()) - abs(topminus_genp_p4.Rapidity());
 
 
   cms_gen = topplus_genp_p4 + topminus_genp_p4;
-  tt_pT_gen_origtops_ = cms_gen.Pt();
+  tt_pT_gen_origleps_ = cms_gen.Pt();
   topplus_genp_p4.Boost(-cms_gen.BoostVector());
   topminus_genp_p4.Boost(-cms_gen.BoostVector());
-  top_costheta_cms_gen_origtops_ = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
+  top_costheta_cms_gen_origleps_ = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
 
 
-  lep_charge_asymmetry_gen_origtops_ = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
-  lep_azimuthal_asymmetry_gen_origtops_ = lepPlus_gen.DeltaPhi(lepMinus_gen);
-  lep_azimuthal_asymmetry2_gen_origtops_ = acos(cos(lep_azimuthal_asymmetry_gen_origtops_));
+  lep_charge_asymmetry_gen_origleps_ = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
+  lep_azimuthal_asymmetry_gen_origleps_ = lepPlus_gen.DeltaPhi(lepMinus_gen);
+  lep_azimuthal_asymmetry2_gen_origleps_ = acos(cos(lep_azimuthal_asymmetry_gen_origleps_));
 
   lepPlus_gen.Boost(-cms_gen.BoostVector());
   lepPlus_gen.Boost(-topplus_genp_p4.BoostVector());
   lepMinus_gen.Boost(-cms_gen.BoostVector());
   lepMinus_gen.Boost(-topminus_genp_p4.BoostVector());
 
-  lepPlus_costheta_cms_gen_origtops_ = lepPlus_gen.Vect().Dot(topplus_genp_p4.Vect()) / (lepPlus_gen.Vect().Mag() * topplus_genp_p4.Vect().Mag());
-  lepMinus_costheta_cms_gen_origtops_ = lepMinus_gen.Vect().Dot(topminus_genp_p4.Vect()) / (lepMinus_gen.Vect().Mag() * topminus_genp_p4.Vect().Mag());
+  lepPlus_costheta_cms_gen_origleps_ = lepPlus_gen.Vect().Dot(topplus_genp_p4.Vect()) / (lepPlus_gen.Vect().Mag() * topplus_genp_p4.Vect().Mag());
+  lepMinus_costheta_cms_gen_origleps_ = lepMinus_gen.Vect().Dot(topminus_genp_p4.Vect()) / (lepMinus_gen.Vect().Mag() * topminus_genp_p4.Vect().Mag());
 
-  top_spin_correlation_gen_origtops_ = lepPlus_costheta_cms_gen_origtops_ * lepMinus_costheta_cms_gen_origtops_ ;
-  lep_cos_opening_angle_gen_origtops_ = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
+  top_spin_correlation_gen_origleps_ = lepPlus_costheta_cms_gen_origleps_ * lepMinus_costheta_cms_gen_origleps_ ;
+  lep_cos_opening_angle_gen_origleps_ = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
 
 
 }

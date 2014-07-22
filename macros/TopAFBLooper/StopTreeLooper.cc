@@ -562,8 +562,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             {
 
                 //use original status=3 tops
-                topplus_genp_p4.SetPtEtaPhiE(stopt.topPlus_status3_orig().Pt(), stopt.topPlus_status3_orig().Eta(), stopt.topPlus_status3_orig().Phi(), stopt.topPlus_status3_orig().E());
-                topminus_genp_p4.SetPtEtaPhiE(stopt.topMinus_status3_orig().Pt(), stopt.topMinus_status3_orig().Eta(), stopt.topMinus_status3_orig().Phi(), stopt.topMinus_status3_orig().E());
+                topplus_genp_p4.SetPtEtaPhiE(stopt.topPlus_status3().Pt(), stopt.topPlus_status3().Eta(), stopt.topPlus_status3().Phi(), stopt.topPlus_status3().E());
+                topminus_genp_p4.SetPtEtaPhiE(stopt.topMinus_status3().Pt(), stopt.topMinus_status3().Eta(), stopt.topMinus_status3().Phi(), stopt.topMinus_status3().E());
 
                 //use leptons corrected to level before FSR from b
                 lepPlus_gen.SetPtEtaPhiE(stopt.lepPlus_status3().Pt(), stopt.lepPlus_status3().Eta(), stopt.lepPlus_status3().Phi(), stopt.lepPlus_status3().E());
@@ -614,41 +614,41 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
 
                 //test values already stored in new babies
-                if(fabs(lep_charge_asymmetry_gen  -  stopt.lep_charge_asymmetry_gen_origtops())>1e-2 && fabs(1.-lep_charge_asymmetry_gen/stopt.lep_charge_asymmetry_gen_origtops())>1e-2) cout<<"problem with stored lep_charge_asymmetry_gen "<<fabs(1.-lep_charge_asymmetry_gen/stopt.lep_charge_asymmetry_gen_origtops())<<" "<<stopt.lep_charge_asymmetry_gen_origtops()<<" "<<lep_charge_asymmetry_gen<<endl;
-                if(fabs(lep_azimuthal_asymmetry_gen  -  stopt.lep_azimuthal_asymmetry_gen_origtops())>1e-2 && fabs(1.-lep_azimuthal_asymmetry_gen/stopt.lep_azimuthal_asymmetry_gen_origtops())>1e-2) cout<<"problem with stored lep_azimuthal_asymmetry_gen "<<fabs(1.-lep_azimuthal_asymmetry_gen/stopt.lep_azimuthal_asymmetry_gen_origtops())<<" "<<stopt.lep_azimuthal_asymmetry_gen_origtops()<<" "<<lep_azimuthal_asymmetry_gen<<endl;
-                if(fabs(lep_azimuthal_asymmetry2_gen  -  stopt.lep_azimuthal_asymmetry2_gen_origtops())>1e-2 && fabs(1.-lep_azimuthal_asymmetry2_gen/stopt.lep_azimuthal_asymmetry2_gen_origtops())>1e-2) cout<<"problem with stored lep_azimuthal_asymmetry2_gen "<<fabs(1.-lep_azimuthal_asymmetry2_gen/stopt.lep_azimuthal_asymmetry2_gen_origtops())<<" "<<stopt.lep_azimuthal_asymmetry2_gen_origtops()<<" "<<lep_azimuthal_asymmetry2_gen<<endl;
-                if(fabs(top_rapiditydiff_cms_gen  -  stopt.top_rapiditydiff_cms_gen_origtops())>1e-2 && fabs(1.-top_rapiditydiff_cms_gen/stopt.top_rapiditydiff_cms_gen_origtops())>1e-2) cout<<"problem with stored top_rapiditydiff_cms_gen "<<fabs(1.-top_rapiditydiff_cms_gen/stopt.top_rapiditydiff_cms_gen_origtops())<<" "<<stopt.top_rapiditydiff_cms_gen_origtops()<<" "<<top_rapiditydiff_cms_gen<<endl;
-                if(fabs(top_pseudorapiditydiff_cms_gen  -  stopt.top_pseudorapiditydiff_cms_gen_origtops())>1e-2 && fabs(1.-top_pseudorapiditydiff_cms_gen/stopt.top_pseudorapiditydiff_cms_gen_origtops())>1e-2) cout<<"problem with stored top_pseudorapiditydiff_cms_gen "<<fabs(1.-top_pseudorapiditydiff_cms_gen/stopt.top_pseudorapiditydiff_cms_gen_origtops())<<" "<<stopt.top_pseudorapiditydiff_cms_gen_origtops()<<" "<<top_pseudorapiditydiff_cms_gen<<endl;
-                if(fabs(top_rapiditydiff_Marco_gen  -  stopt.top_rapiditydiff_Marco_gen_origtops())>1e-2 && fabs(1.-top_rapiditydiff_Marco_gen/stopt.top_rapiditydiff_Marco_gen_origtops())>1e-2) cout<<"problem with stored top_rapiditydiff_Marco_gen "<<fabs(1.-top_rapiditydiff_Marco_gen/stopt.top_rapiditydiff_Marco_gen_origtops())<<" "<<stopt.top_rapiditydiff_Marco_gen_origtops()<<" "<<top_rapiditydiff_Marco_gen<<endl;
-                if(fabs(top_costheta_cms_gen  -  stopt.top_costheta_cms_gen_origtops())>1e-2 && fabs(1.-top_costheta_cms_gen/stopt.top_costheta_cms_gen_origtops())>1e-2) cout<<"problem with stored top_costheta_cms_gen "<<fabs(1.-top_costheta_cms_gen/stopt.top_costheta_cms_gen_origtops())<<" "<<stopt.top_costheta_cms_gen_origtops()<<" "<<top_costheta_cms_gen<<endl;
-                if(fabs(lepPlus_costheta_cms_gen  -  stopt.lepPlus_costheta_cms_gen_origtops())>1e-2 && fabs(1.-lepPlus_costheta_cms_gen/stopt.lepPlus_costheta_cms_gen_origtops())>1e-2) cout<<"problem with stored lepPlus_costheta_cms_gen "<<fabs(1.-lepPlus_costheta_cms_gen/stopt.lepPlus_costheta_cms_gen_origtops())<<" "<<stopt.lepPlus_costheta_cms_gen_origtops()<<" "<<lepPlus_costheta_cms_gen<<endl;
-                if(fabs(lepMinus_costheta_cms_gen  -  stopt.lepMinus_costheta_cms_gen_origtops())>1e-2 && fabs(1.-lepMinus_costheta_cms_gen/stopt.lepMinus_costheta_cms_gen_origtops())>1e-2) cout<<"problem with stored lepMinus_costheta_cms_gen "<<fabs(1.-lepMinus_costheta_cms_gen/stopt.lepMinus_costheta_cms_gen_origtops())<<" "<<stopt.lepMinus_costheta_cms_gen_origtops()<<" "<<lepMinus_costheta_cms_gen<<endl;
-                if(fabs(top_spin_correlation_gen  -  stopt.top_spin_correlation_gen_origtops())>1e-2 && fabs(1.-top_spin_correlation_gen/stopt.top_spin_correlation_gen_origtops())>1e-2) cout<<"problem with stored top_spin_correlation_gen "<<fabs(1.-top_spin_correlation_gen/stopt.top_spin_correlation_gen_origtops())<<" "<<stopt.top_spin_correlation_gen_origtops()<<" "<<top_spin_correlation_gen<<endl;
-                if(fabs(lep_cos_opening_angle_gen  -  stopt.lep_cos_opening_angle_gen_origtops())>1e-2 && fabs(1.-lep_cos_opening_angle_gen/stopt.lep_cos_opening_angle_gen_origtops())>1e-2) cout<<"problem with stored lep_cos_opening_angle_gen "<<fabs(1.-lep_cos_opening_angle_gen/stopt.lep_cos_opening_angle_gen_origtops())<<" "<<stopt.lep_cos_opening_angle_gen_origtops()<<" "<<lep_cos_opening_angle_gen<<endl;
-                if(fabs(tt_mass_gen  -  stopt.tt_mass_gen_origtops())>1e-2 && fabs(1.-tt_mass_gen/stopt.tt_mass_gen_origtops())>1e-2) cout<<"problem with stored tt_mass_gen "<<fabs(1.-tt_mass_gen/stopt.tt_mass_gen_origtops())<<" "<<stopt.tt_mass_gen_origtops()<<" "<<tt_mass_gen<<endl;
-                if(fabs(ttRapidity2_gen  -  stopt.ttRapidity2_gen_origtops())>1e-2 && fabs(1.-ttRapidity2_gen/stopt.ttRapidity2_gen_origtops())>1e-2) cout<<"problem with stored ttRapidity2_gen "<<fabs(1.-ttRapidity2_gen/stopt.ttRapidity2_gen_origtops())<<" "<<stopt.ttRapidity2_gen_origtops()<<" "<<ttRapidity2_gen<<endl;
-                if(fabs(tt_pT_gen  -  stopt.tt_pT_gen_origtops())>1e-2 && fabs(1.-tt_pT_gen/stopt.tt_pT_gen_origtops())>1e-2) cout<<"problem with stored tt_pT_gen "<<fabs(1.-tt_pT_gen/stopt.tt_pT_gen_origtops())<<" "<<stopt.tt_pT_gen_origtops()<<" "<<tt_pT_gen<<endl;
+                if(fabs(lep_charge_asymmetry_gen  -  stopt.lep_charge_asymmetry_gen())>1e-2 && fabs(1.-lep_charge_asymmetry_gen/stopt.lep_charge_asymmetry_gen())>1e-2) cout<<"problem with stored lep_charge_asymmetry_gen "<<fabs(1.-lep_charge_asymmetry_gen/stopt.lep_charge_asymmetry_gen())<<" "<<stopt.lep_charge_asymmetry_gen()<<" "<<lep_charge_asymmetry_gen<<endl;
+                if(fabs(lep_azimuthal_asymmetry_gen  -  stopt.lep_azimuthal_asymmetry_gen())>1e-2 && fabs(1.-lep_azimuthal_asymmetry_gen/stopt.lep_azimuthal_asymmetry_gen())>1e-2) cout<<"problem with stored lep_azimuthal_asymmetry_gen "<<fabs(1.-lep_azimuthal_asymmetry_gen/stopt.lep_azimuthal_asymmetry_gen())<<" "<<stopt.lep_azimuthal_asymmetry_gen()<<" "<<lep_azimuthal_asymmetry_gen<<endl;
+                if(fabs(lep_azimuthal_asymmetry2_gen  -  stopt.lep_azimuthal_asymmetry2_gen())>1e-2 && fabs(1.-lep_azimuthal_asymmetry2_gen/stopt.lep_azimuthal_asymmetry2_gen())>1e-2) cout<<"problem with stored lep_azimuthal_asymmetry2_gen "<<fabs(1.-lep_azimuthal_asymmetry2_gen/stopt.lep_azimuthal_asymmetry2_gen())<<" "<<stopt.lep_azimuthal_asymmetry2_gen()<<" "<<lep_azimuthal_asymmetry2_gen<<endl;
+                if(fabs(top_rapiditydiff_cms_gen  -  stopt.top_rapiditydiff_cms_gen())>1e-2 && fabs(1.-top_rapiditydiff_cms_gen/stopt.top_rapiditydiff_cms_gen())>1e-2) cout<<"problem with stored top_rapiditydiff_cms_gen "<<fabs(1.-top_rapiditydiff_cms_gen/stopt.top_rapiditydiff_cms_gen())<<" "<<stopt.top_rapiditydiff_cms_gen()<<" "<<top_rapiditydiff_cms_gen<<endl;
+                if(fabs(top_pseudorapiditydiff_cms_gen  -  stopt.top_pseudorapiditydiff_cms_gen())>1e-2 && fabs(1.-top_pseudorapiditydiff_cms_gen/stopt.top_pseudorapiditydiff_cms_gen())>1e-2) cout<<"problem with stored top_pseudorapiditydiff_cms_gen "<<fabs(1.-top_pseudorapiditydiff_cms_gen/stopt.top_pseudorapiditydiff_cms_gen())<<" "<<stopt.top_pseudorapiditydiff_cms_gen()<<" "<<top_pseudorapiditydiff_cms_gen<<endl;
+                if(fabs(top_rapiditydiff_Marco_gen  -  stopt.top_rapiditydiff_Marco_gen())>1e-2 && fabs(1.-top_rapiditydiff_Marco_gen/stopt.top_rapiditydiff_Marco_gen())>1e-2) cout<<"problem with stored top_rapiditydiff_Marco_gen "<<fabs(1.-top_rapiditydiff_Marco_gen/stopt.top_rapiditydiff_Marco_gen())<<" "<<stopt.top_rapiditydiff_Marco_gen()<<" "<<top_rapiditydiff_Marco_gen<<endl;
+                if(fabs(top_costheta_cms_gen  -  stopt.top_costheta_cms_gen())>1e-2 && fabs(1.-top_costheta_cms_gen/stopt.top_costheta_cms_gen())>1e-2) cout<<"problem with stored top_costheta_cms_gen "<<fabs(1.-top_costheta_cms_gen/stopt.top_costheta_cms_gen())<<" "<<stopt.top_costheta_cms_gen()<<" "<<top_costheta_cms_gen<<endl;
+                if(fabs(lepPlus_costheta_cms_gen  -  stopt.lepPlus_costheta_cms_gen())>1e-2 && fabs(1.-lepPlus_costheta_cms_gen/stopt.lepPlus_costheta_cms_gen())>1e-2) cout<<"problem with stored lepPlus_costheta_cms_gen "<<fabs(1.-lepPlus_costheta_cms_gen/stopt.lepPlus_costheta_cms_gen())<<" "<<stopt.lepPlus_costheta_cms_gen()<<" "<<lepPlus_costheta_cms_gen<<endl;
+                if(fabs(lepMinus_costheta_cms_gen  -  stopt.lepMinus_costheta_cms_gen())>1e-2 && fabs(1.-lepMinus_costheta_cms_gen/stopt.lepMinus_costheta_cms_gen())>1e-2) cout<<"problem with stored lepMinus_costheta_cms_gen "<<fabs(1.-lepMinus_costheta_cms_gen/stopt.lepMinus_costheta_cms_gen())<<" "<<stopt.lepMinus_costheta_cms_gen()<<" "<<lepMinus_costheta_cms_gen<<endl;
+                if(fabs(top_spin_correlation_gen  -  stopt.top_spin_correlation_gen())>1e-2 && fabs(1.-top_spin_correlation_gen/stopt.top_spin_correlation_gen())>1e-2) cout<<"problem with stored top_spin_correlation_gen "<<fabs(1.-top_spin_correlation_gen/stopt.top_spin_correlation_gen())<<" "<<stopt.top_spin_correlation_gen()<<" "<<top_spin_correlation_gen<<endl;
+                if(fabs(lep_cos_opening_angle_gen  -  stopt.lep_cos_opening_angle_gen())>1e-2 && fabs(1.-lep_cos_opening_angle_gen/stopt.lep_cos_opening_angle_gen())>1e-2) cout<<"problem with stored lep_cos_opening_angle_gen "<<fabs(1.-lep_cos_opening_angle_gen/stopt.lep_cos_opening_angle_gen())<<" "<<stopt.lep_cos_opening_angle_gen()<<" "<<lep_cos_opening_angle_gen<<endl;
+                if(fabs(tt_mass_gen  -  stopt.tt_mass_gen())>1e-2 && fabs(1.-tt_mass_gen/stopt.tt_mass_gen())>1e-2) cout<<"problem with stored tt_mass_gen "<<fabs(1.-tt_mass_gen/stopt.tt_mass_gen())<<" "<<stopt.tt_mass_gen()<<" "<<tt_mass_gen<<endl;
+                if(fabs(ttRapidity2_gen  -  stopt.ttRapidity2_gen())>1e-2 && fabs(1.-ttRapidity2_gen/stopt.ttRapidity2_gen())>1e-2) cout<<"problem with stored ttRapidity2_gen "<<fabs(1.-ttRapidity2_gen/stopt.ttRapidity2_gen())<<" "<<stopt.ttRapidity2_gen()<<" "<<ttRapidity2_gen<<endl;
+                if(fabs(tt_pT_gen  -  stopt.tt_pT_gen())>1e-2 && fabs(1.-tt_pT_gen/stopt.tt_pT_gen())>1e-2) cout<<"problem with stored tt_pT_gen "<<fabs(1.-tt_pT_gen/stopt.tt_pT_gen())<<" "<<stopt.tt_pT_gen()<<" "<<tt_pT_gen<<endl;
                 //if(fabs(top1_pt_gen  -  stopt.topPlus_status3().Pt())>1e-2 && fabs(1.-top1_pt_gen/stopt.topPlus_status3().Pt())>1e-2) cout<<"problem with stored top1_pt_gen "<<fabs(1.-top1_pt_gen/stopt.topPlus_status3().Pt())<<" "<<stopt.topPlus_status3().Pt()<<" "<<top1_pt_gen<<endl;
                 //if(fabs(top2_pt_gen  -  stopt.topMinus_status3().Pt())>1e-2 && fabs(1.-top2_pt_gen/stopt.topMinus_status3().Pt())>1e-2) cout<<"problem with stored top2_pt_gen "<<fabs(1.-top2_pt_gen/stopt.topMinus_status3().Pt())<<" "<<stopt.topMinus_status3().Pt()<<" "<<top2_pt_gen<<endl;
-                if(fabs(stopt.topPlus_status3_orig().Pt()  -  stopt.ptt())>1e-2 && fabs(1.-stopt.topPlus_status3_orig().Pt()/stopt.ptt())>1e-2) cout<<"problem with stored stopt.topPlus_status3_orig().Pt() "<<fabs(1.-stopt.topPlus_status3_orig().Pt()/stopt.ptt())<<" "<<stopt.ptt()<<" "<<stopt.topPlus_status3_orig().Pt()<<endl;
-                if(fabs(stopt.topMinus_status3_orig().Pt()  -  stopt.pttbar())>1e-2 && fabs(1.-stopt.topMinus_status3_orig().Pt()/stopt.pttbar())>1e-2) cout<<"problem with stored stopt.topMinus_status3_orig().Pt() "<<fabs(1.-stopt.topMinus_status3_orig().Pt()/stopt.pttbar())<<" "<<stopt.pttbar()<<" "<<stopt.topMinus_status3_orig().Pt()<<endl;
+                if(fabs(stopt.topPlus_status3().Pt()  -  stopt.ptt())>1e-2 && fabs(1.-stopt.topPlus_status3().Pt()/stopt.ptt())>1e-2) cout<<"problem with stored stopt.topPlus_status3().Pt() "<<fabs(1.-stopt.topPlus_status3().Pt()/stopt.ptt())<<" "<<stopt.ptt()<<" "<<stopt.topPlus_status3().Pt()<<endl;
+                if(fabs(stopt.topMinus_status3().Pt()  -  stopt.pttbar())>1e-2 && fabs(1.-stopt.topMinus_status3().Pt()/stopt.pttbar())>1e-2) cout<<"problem with stored stopt.topMinus_status3().Pt() "<<fabs(1.-stopt.topMinus_status3().Pt()/stopt.pttbar())<<" "<<stopt.pttbar()<<" "<<stopt.topMinus_status3().Pt()<<endl;
                 */
 
 
-                lep_charge_asymmetry_gen = stopt.lep_charge_asymmetry_gen_origtops();
-                lep_azimuthal_asymmetry_gen = stopt.lep_azimuthal_asymmetry_gen_origtops();
-                lep_azimuthal_asymmetry2_gen = stopt.lep_azimuthal_asymmetry2_gen_origtops();
-                tt_mass_gen = stopt.tt_mass_gen_origtops();
-                ttRapidity2_gen = stopt.ttRapidity2_gen_origtops();
-                top_rapiditydiff_cms_gen = stopt.top_rapiditydiff_cms_gen_origtops();
-                top_pseudorapiditydiff_cms_gen = stopt.top_pseudorapiditydiff_cms_gen_origtops();
-                top_rapiditydiff_Marco_gen = stopt.top_rapiditydiff_Marco_gen_origtops();
-                tt_pT_gen = stopt.tt_pT_gen_origtops();
-                top_costheta_cms_gen = stopt.top_costheta_cms_gen_origtops();
-                lepPlus_costheta_cms_gen = stopt.lepPlus_costheta_cms_gen_origtops();
-                lepMinus_costheta_cms_gen = stopt.lepMinus_costheta_cms_gen_origtops();
-                top_spin_correlation_gen = stopt.top_spin_correlation_gen_origtops();
-                lep_cos_opening_angle_gen = stopt.lep_cos_opening_angle_gen_origtops();
+                lep_charge_asymmetry_gen = stopt.lep_charge_asymmetry_gen();
+                lep_azimuthal_asymmetry_gen = stopt.lep_azimuthal_asymmetry_gen();
+                lep_azimuthal_asymmetry2_gen = stopt.lep_azimuthal_asymmetry2_gen();
+                tt_mass_gen = stopt.tt_mass_gen();
+                ttRapidity2_gen = stopt.ttRapidity2_gen();
+                top_rapiditydiff_cms_gen = stopt.top_rapiditydiff_cms_gen();
+                top_pseudorapiditydiff_cms_gen = stopt.top_pseudorapiditydiff_cms_gen();
+                top_rapiditydiff_Marco_gen = stopt.top_rapiditydiff_Marco_gen();
+                tt_pT_gen = stopt.tt_pT_gen();
+                top_costheta_cms_gen = stopt.top_costheta_cms_gen();
+                lepPlus_costheta_cms_gen = stopt.lepPlus_costheta_cms_gen();
+                lepMinus_costheta_cms_gen = stopt.lepMinus_costheta_cms_gen();
+                top_spin_correlation_gen = stopt.top_spin_correlation_gen();
+                lep_cos_opening_angle_gen = stopt.lep_cos_opening_angle_gen();
 
                 top1_pt_gen =  topplus_genp_p4.Pt();
                 top2_pt_gen =  topminus_genp_p4.Pt();
@@ -677,19 +677,28 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             else tag_zcut = "_ignore";
 
             //flavor types
+            channel = -999;
             string flav_tag_sl;
             if ( abs(stopt.id1()) == 13 ) flav_tag_sl = "_muo";
             else if ( abs(stopt.id1()) == 11 ) flav_tag_sl = "_ele";
             else flav_tag_sl = "_mysterysl";
             string flav_tag_dl;
-            if      ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 13 )
+            if      ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 13 ) {
                 flav_tag_dl = "_dimu";
-            else if ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 11 )
+                channel = 1;
+            }
+            else if ( abs(stopt.id1()) == abs(stopt.id2()) && abs(stopt.id1()) == 11 ) {
                 flav_tag_dl = "_diel";
-            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 13 )
+                channel = 0;
+            }
+            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 13 ) {
                 flav_tag_dl = "_muel";
-            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 11 )
+                channel = 2;
+            }
+            else if ( abs(stopt.id1()) != abs(stopt.id2()) && abs(stopt.id1()) == 11 ) {
                 flav_tag_dl = "_elmu";
+                channel = 2;
+            }
             else flav_tag_dl = "_mysterydl";
             string basic_flav_tag_dl = flav_tag_dl;
             if ( abs(stopt.id1()) != abs(stopt.id2()) && flav_tag_dl != "_mysterydl" ) basic_flav_tag_dl = "_mueg";
@@ -1837,6 +1846,7 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("run",                   &run,                 "run/I"                  );
     babyTree_->Branch("ls",                    &ls,                  "ls/I"                   );
     babyTree_->Branch("evt",                   &evt,                 "evt/I"                  );
+    babyTree_->Branch("channel",                &channel,              "channel/I"               );
     babyTree_->Branch("t_mass",                &m_top,              "t_mass/F"               );
     babyTree_->Branch("weight",                &weight,              "weight/D"               );
     //babyTree_->Branch("Nsolns",                &Nsolns_,              "Nsolns/I"               );
