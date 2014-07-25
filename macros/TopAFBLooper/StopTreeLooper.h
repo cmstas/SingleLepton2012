@@ -98,6 +98,7 @@ private:
     Int_t   run;
     Int_t   ls;
     Int_t   evt;
+    Int_t   channel;
     double weight;
 
     float lep_charge_asymmetry;

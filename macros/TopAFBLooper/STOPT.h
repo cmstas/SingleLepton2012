@@ -21,9 +21,15 @@ protected:
 	int lepPlus_status3_id_;
 	TBranch *lepPlus_status3_id_branch;
 	bool lepPlus_status3_id_isLoaded;
+	int lepPlus_status1_id_;
+	TBranch *lepPlus_status1_id_branch;
+	bool lepPlus_status1_id_isLoaded;
 	int lepMinus_status3_id_;
 	TBranch *lepMinus_status3_id_branch;
 	bool lepMinus_status3_id_isLoaded;
+	int lepMinus_status1_id_;
+	TBranch *lepMinus_status1_id_branch;
+	bool lepMinus_status1_id_isLoaded;
 	int lepPlus_status3_nDaughters_;
 	TBranch *lepPlus_status3_nDaughters_branch;
 	bool lepPlus_status3_nDaughters_isLoaded;
@@ -33,9 +39,15 @@ protected:
 	int nuPlus_status3_id_;
 	TBranch *nuPlus_status3_id_branch;
 	bool nuPlus_status3_id_isLoaded;
+	int nuPlus_status1_id_;
+	TBranch *nuPlus_status1_id_branch;
+	bool nuPlus_status1_id_isLoaded;
 	int nuMinus_status3_id_;
 	TBranch *nuMinus_status3_id_branch;
 	bool nuMinus_status3_id_isLoaded;
+	int nuMinus_status1_id_;
+	TBranch *nuMinus_status1_id_branch;
+	bool nuMinus_status1_id_isLoaded;
 	float rapidityttbar_;
 	TBranch *rapidityttbar_branch;
 	bool rapidityttbar_isLoaded;
@@ -90,57 +102,57 @@ protected:
 	float lep_cos_opening_angle_gen_;
 	TBranch *lep_cos_opening_angle_gen_branch;
 	bool lep_cos_opening_angle_gen_isLoaded;
-	float m_topminus_gen_origtops_;
-	TBranch *m_topminus_gen_origtops_branch;
-	bool m_topminus_gen_origtops_isLoaded;
-	float m_topplus_gen_origtops_;
-	TBranch *m_topplus_gen_origtops_branch;
-	bool m_topplus_gen_origtops_isLoaded;
-	float tt_mass_gen_origtops_;
-	TBranch *tt_mass_gen_origtops_branch;
-	bool tt_mass_gen_origtops_isLoaded;
-	float ttRapidity_gen_origtops_;
-	TBranch *ttRapidity_gen_origtops_branch;
-	bool ttRapidity_gen_origtops_isLoaded;
-	float ttRapidity2_gen_origtops_;
-	TBranch *ttRapidity2_gen_origtops_branch;
-	bool ttRapidity2_gen_origtops_isLoaded;
-	float top_rapiditydiff_cms_gen_origtops_;
-	TBranch *top_rapiditydiff_cms_gen_origtops_branch;
-	bool top_rapiditydiff_cms_gen_origtops_isLoaded;
-	float top_pseudorapiditydiff_cms_gen_origtops_;
-	TBranch *top_pseudorapiditydiff_cms_gen_origtops_branch;
-	bool top_pseudorapiditydiff_cms_gen_origtops_isLoaded;
-	float top_rapiditydiff_Marco_gen_origtops_;
-	TBranch *top_rapiditydiff_Marco_gen_origtops_branch;
-	bool top_rapiditydiff_Marco_gen_origtops_isLoaded;
-	float tt_pT_gen_origtops_;
-	TBranch *tt_pT_gen_origtops_branch;
-	bool tt_pT_gen_origtops_isLoaded;
-	float top_costheta_cms_gen_origtops_;
-	TBranch *top_costheta_cms_gen_origtops_branch;
-	bool top_costheta_cms_gen_origtops_isLoaded;
-	float lep_charge_asymmetry_gen_origtops_;
-	TBranch *lep_charge_asymmetry_gen_origtops_branch;
-	bool lep_charge_asymmetry_gen_origtops_isLoaded;
-	float lep_azimuthal_asymmetry_gen_origtops_;
-	TBranch *lep_azimuthal_asymmetry_gen_origtops_branch;
-	bool lep_azimuthal_asymmetry_gen_origtops_isLoaded;
-	float lep_azimuthal_asymmetry2_gen_origtops_;
-	TBranch *lep_azimuthal_asymmetry2_gen_origtops_branch;
-	bool lep_azimuthal_asymmetry2_gen_origtops_isLoaded;
-	float lepPlus_costheta_cms_gen_origtops_;
-	TBranch *lepPlus_costheta_cms_gen_origtops_branch;
-	bool lepPlus_costheta_cms_gen_origtops_isLoaded;
-	float lepMinus_costheta_cms_gen_origtops_;
-	TBranch *lepMinus_costheta_cms_gen_origtops_branch;
-	bool lepMinus_costheta_cms_gen_origtops_isLoaded;
-	float top_spin_correlation_gen_origtops_;
-	TBranch *top_spin_correlation_gen_origtops_branch;
-	bool top_spin_correlation_gen_origtops_isLoaded;
-	float lep_cos_opening_angle_gen_origtops_;
-	TBranch *lep_cos_opening_angle_gen_origtops_branch;
-	bool lep_cos_opening_angle_gen_origtops_isLoaded;
+	float m_topminus_gen_origleps_;
+	TBranch *m_topminus_gen_origleps_branch;
+	bool m_topminus_gen_origleps_isLoaded;
+	float m_topplus_gen_origleps_;
+	TBranch *m_topplus_gen_origleps_branch;
+	bool m_topplus_gen_origleps_isLoaded;
+	float tt_mass_gen_origleps_;
+	TBranch *tt_mass_gen_origleps_branch;
+	bool tt_mass_gen_origleps_isLoaded;
+	float ttRapidity_gen_origleps_;
+	TBranch *ttRapidity_gen_origleps_branch;
+	bool ttRapidity_gen_origleps_isLoaded;
+	float ttRapidity2_gen_origleps_;
+	TBranch *ttRapidity2_gen_origleps_branch;
+	bool ttRapidity2_gen_origleps_isLoaded;
+	float top_rapiditydiff_cms_gen_origleps_;
+	TBranch *top_rapiditydiff_cms_gen_origleps_branch;
+	bool top_rapiditydiff_cms_gen_origleps_isLoaded;
+	float top_pseudorapiditydiff_cms_gen_origleps_;
+	TBranch *top_pseudorapiditydiff_cms_gen_origleps_branch;
+	bool top_pseudorapiditydiff_cms_gen_origleps_isLoaded;
+	float top_rapiditydiff_Marco_gen_origleps_;
+	TBranch *top_rapiditydiff_Marco_gen_origleps_branch;
+	bool top_rapiditydiff_Marco_gen_origleps_isLoaded;
+	float tt_pT_gen_origleps_;
+	TBranch *tt_pT_gen_origleps_branch;
+	bool tt_pT_gen_origleps_isLoaded;
+	float top_costheta_cms_gen_origleps_;
+	TBranch *top_costheta_cms_gen_origleps_branch;
+	bool top_costheta_cms_gen_origleps_isLoaded;
+	float lep_charge_asymmetry_gen_origleps_;
+	TBranch *lep_charge_asymmetry_gen_origleps_branch;
+	bool lep_charge_asymmetry_gen_origleps_isLoaded;
+	float lep_azimuthal_asymmetry_gen_origleps_;
+	TBranch *lep_azimuthal_asymmetry_gen_origleps_branch;
+	bool lep_azimuthal_asymmetry_gen_origleps_isLoaded;
+	float lep_azimuthal_asymmetry2_gen_origleps_;
+	TBranch *lep_azimuthal_asymmetry2_gen_origleps_branch;
+	bool lep_azimuthal_asymmetry2_gen_origleps_isLoaded;
+	float lepPlus_costheta_cms_gen_origleps_;
+	TBranch *lepPlus_costheta_cms_gen_origleps_branch;
+	bool lepPlus_costheta_cms_gen_origleps_isLoaded;
+	float lepMinus_costheta_cms_gen_origleps_;
+	TBranch *lepMinus_costheta_cms_gen_origleps_branch;
+	bool lepMinus_costheta_cms_gen_origleps_isLoaded;
+	float top_spin_correlation_gen_origleps_;
+	TBranch *top_spin_correlation_gen_origleps_branch;
+	bool top_spin_correlation_gen_origleps_isLoaded;
+	float lep_cos_opening_angle_gen_origleps_;
+	TBranch *lep_cos_opening_angle_gen_origleps_branch;
+	bool lep_cos_opening_angle_gen_origleps_isLoaded;
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *b_;
 	TBranch *b_branch;
 	bool b_isLoaded;
@@ -207,12 +219,12 @@ protected:
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *WMinus_status3_orig_;
 	TBranch *WMinus_status3_orig_branch;
 	bool WMinus_status3_orig_isLoaded;
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *topPlus_status3_orig_;
-	TBranch *topPlus_status3_orig_branch;
-	bool topPlus_status3_orig_isLoaded;
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *topMinus_status3_orig_;
-	TBranch *topMinus_status3_orig_branch;
-	bool topMinus_status3_orig_isLoaded;
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *topPlus_status3_bW_;
+	TBranch *topPlus_status3_bW_branch;
+	bool topPlus_status3_bW_isLoaded;
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *topMinus_status3_bW_;
+	TBranch *topMinus_status3_bW_branch;
+	bool topMinus_status3_bW_isLoaded;
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > *lepPlus_status3_orig_;
 	TBranch *lepPlus_status3_orig_branch;
 	bool lepPlus_status3_orig_isLoaded;
@@ -1098,6 +1110,9 @@ protected:
 	int	nleps_;
 	TBranch *nleps_branch;
 	bool nleps_isLoaded;
+	int	ntops_;
+	TBranch *ntops_branch;
+	bool ntops_isLoaded;
 	int	nbs_;
 	TBranch *nbs_branch;
 	bool nbs_isLoaded;
@@ -1855,10 +1870,20 @@ void Init(TTree *tree) {
 		lepPlus_status3_id_branch = tree->GetBranch("lepPlus_status3_id");
 		if (lepPlus_status3_id_branch) {lepPlus_status3_id_branch->SetAddress(&lepPlus_status3_id_);}
 	}
+	lepPlus_status1_id_branch = 0;
+	if (tree->GetBranch("lepPlus_status1_id") != 0) {
+		lepPlus_status1_id_branch = tree->GetBranch("lepPlus_status1_id");
+		if (lepPlus_status1_id_branch) {lepPlus_status1_id_branch->SetAddress(&lepPlus_status1_id_);}
+	}
 	lepMinus_status3_id_branch = 0;
 	if (tree->GetBranch("lepMinus_status3_id") != 0) {
 		lepMinus_status3_id_branch = tree->GetBranch("lepMinus_status3_id");
 		if (lepMinus_status3_id_branch) {lepMinus_status3_id_branch->SetAddress(&lepMinus_status3_id_);}
+	}
+	lepMinus_status1_id_branch = 0;
+	if (tree->GetBranch("lepMinus_status1_id") != 0) {
+		lepMinus_status1_id_branch = tree->GetBranch("lepMinus_status1_id");
+		if (lepMinus_status1_id_branch) {lepMinus_status1_id_branch->SetAddress(&lepMinus_status1_id_);}
 	}
 	lepPlus_status3_nDaughters_branch = 0;
 	if (tree->GetBranch("lepPlus_status3_nDaughters") != 0) {
@@ -1875,10 +1900,20 @@ void Init(TTree *tree) {
 		nuPlus_status3_id_branch = tree->GetBranch("nuPlus_status3_id");
 		if (nuPlus_status3_id_branch) {nuPlus_status3_id_branch->SetAddress(&nuPlus_status3_id_);}
 	}
+	nuPlus_status1_id_branch = 0;
+	if (tree->GetBranch("nuPlus_status1_id") != 0) {
+		nuPlus_status1_id_branch = tree->GetBranch("nuPlus_status1_id");
+		if (nuPlus_status1_id_branch) {nuPlus_status1_id_branch->SetAddress(&nuPlus_status1_id_);}
+	}
 	nuMinus_status3_id_branch = 0;
 	if (tree->GetBranch("nuMinus_status3_id") != 0) {
 		nuMinus_status3_id_branch = tree->GetBranch("nuMinus_status3_id");
 		if (nuMinus_status3_id_branch) {nuMinus_status3_id_branch->SetAddress(&nuMinus_status3_id_);}
+	}
+	nuMinus_status1_id_branch = 0;
+	if (tree->GetBranch("nuMinus_status1_id") != 0) {
+		nuMinus_status1_id_branch = tree->GetBranch("nuMinus_status1_id");
+		if (nuMinus_status1_id_branch) {nuMinus_status1_id_branch->SetAddress(&nuMinus_status1_id_);}
 	}
 	rapidityttbar_branch = 0;
 	if (tree->GetBranch("rapidityttbar") != 0) {
@@ -1970,90 +2005,90 @@ void Init(TTree *tree) {
 		lep_cos_opening_angle_gen_branch = tree->GetBranch("lep_cos_opening_angle_gen");
 		if (lep_cos_opening_angle_gen_branch) {lep_cos_opening_angle_gen_branch->SetAddress(&lep_cos_opening_angle_gen_);}
 	}
-	m_topminus_gen_origtops_branch = 0;
-	if (tree->GetBranch("m_topminus_gen_origtops") != 0) {
-		m_topminus_gen_origtops_branch = tree->GetBranch("m_topminus_gen_origtops");
-		if (m_topminus_gen_origtops_branch) {m_topminus_gen_origtops_branch->SetAddress(&m_topminus_gen_origtops_);}
+	m_topminus_gen_origleps_branch = 0;
+	if (tree->GetBranch("m_topminus_gen_origleps") != 0) {
+		m_topminus_gen_origleps_branch = tree->GetBranch("m_topminus_gen_origleps");
+		if (m_topminus_gen_origleps_branch) {m_topminus_gen_origleps_branch->SetAddress(&m_topminus_gen_origleps_);}
 	}
-	m_topplus_gen_origtops_branch = 0;
-	if (tree->GetBranch("m_topplus_gen_origtops") != 0) {
-		m_topplus_gen_origtops_branch = tree->GetBranch("m_topplus_gen_origtops");
-		if (m_topplus_gen_origtops_branch) {m_topplus_gen_origtops_branch->SetAddress(&m_topplus_gen_origtops_);}
+	m_topplus_gen_origleps_branch = 0;
+	if (tree->GetBranch("m_topplus_gen_origleps") != 0) {
+		m_topplus_gen_origleps_branch = tree->GetBranch("m_topplus_gen_origleps");
+		if (m_topplus_gen_origleps_branch) {m_topplus_gen_origleps_branch->SetAddress(&m_topplus_gen_origleps_);}
 	}
-	tt_mass_gen_origtops_branch = 0;
-	if (tree->GetBranch("tt_mass_gen_origtops") != 0) {
-		tt_mass_gen_origtops_branch = tree->GetBranch("tt_mass_gen_origtops");
-		if (tt_mass_gen_origtops_branch) {tt_mass_gen_origtops_branch->SetAddress(&tt_mass_gen_origtops_);}
+	tt_mass_gen_origleps_branch = 0;
+	if (tree->GetBranch("tt_mass_gen_origleps") != 0) {
+		tt_mass_gen_origleps_branch = tree->GetBranch("tt_mass_gen_origleps");
+		if (tt_mass_gen_origleps_branch) {tt_mass_gen_origleps_branch->SetAddress(&tt_mass_gen_origleps_);}
 	}
-	ttRapidity_gen_origtops_branch = 0;
-	if (tree->GetBranch("ttRapidity_gen_origtops") != 0) {
-		ttRapidity_gen_origtops_branch = tree->GetBranch("ttRapidity_gen_origtops");
-		if (ttRapidity_gen_origtops_branch) {ttRapidity_gen_origtops_branch->SetAddress(&ttRapidity_gen_origtops_);}
+	ttRapidity_gen_origleps_branch = 0;
+	if (tree->GetBranch("ttRapidity_gen_origleps") != 0) {
+		ttRapidity_gen_origleps_branch = tree->GetBranch("ttRapidity_gen_origleps");
+		if (ttRapidity_gen_origleps_branch) {ttRapidity_gen_origleps_branch->SetAddress(&ttRapidity_gen_origleps_);}
 	}
-	ttRapidity2_gen_origtops_branch = 0;
-	if (tree->GetBranch("ttRapidity2_gen_origtops") != 0) {
-		ttRapidity2_gen_origtops_branch = tree->GetBranch("ttRapidity2_gen_origtops");
-		if (ttRapidity2_gen_origtops_branch) {ttRapidity2_gen_origtops_branch->SetAddress(&ttRapidity2_gen_origtops_);}
+	ttRapidity2_gen_origleps_branch = 0;
+	if (tree->GetBranch("ttRapidity2_gen_origleps") != 0) {
+		ttRapidity2_gen_origleps_branch = tree->GetBranch("ttRapidity2_gen_origleps");
+		if (ttRapidity2_gen_origleps_branch) {ttRapidity2_gen_origleps_branch->SetAddress(&ttRapidity2_gen_origleps_);}
 	}
-	top_rapiditydiff_cms_gen_origtops_branch = 0;
-	if (tree->GetBranch("top_rapiditydiff_cms_gen_origtops") != 0) {
-		top_rapiditydiff_cms_gen_origtops_branch = tree->GetBranch("top_rapiditydiff_cms_gen_origtops");
-		if (top_rapiditydiff_cms_gen_origtops_branch) {top_rapiditydiff_cms_gen_origtops_branch->SetAddress(&top_rapiditydiff_cms_gen_origtops_);}
+	top_rapiditydiff_cms_gen_origleps_branch = 0;
+	if (tree->GetBranch("top_rapiditydiff_cms_gen_origleps") != 0) {
+		top_rapiditydiff_cms_gen_origleps_branch = tree->GetBranch("top_rapiditydiff_cms_gen_origleps");
+		if (top_rapiditydiff_cms_gen_origleps_branch) {top_rapiditydiff_cms_gen_origleps_branch->SetAddress(&top_rapiditydiff_cms_gen_origleps_);}
 	}
-	top_pseudorapiditydiff_cms_gen_origtops_branch = 0;
-	if (tree->GetBranch("top_pseudorapiditydiff_cms_gen_origtops") != 0) {
-		top_pseudorapiditydiff_cms_gen_origtops_branch = tree->GetBranch("top_pseudorapiditydiff_cms_gen_origtops");
-		if (top_pseudorapiditydiff_cms_gen_origtops_branch) {top_pseudorapiditydiff_cms_gen_origtops_branch->SetAddress(&top_pseudorapiditydiff_cms_gen_origtops_);}
+	top_pseudorapiditydiff_cms_gen_origleps_branch = 0;
+	if (tree->GetBranch("top_pseudorapiditydiff_cms_gen_origleps") != 0) {
+		top_pseudorapiditydiff_cms_gen_origleps_branch = tree->GetBranch("top_pseudorapiditydiff_cms_gen_origleps");
+		if (top_pseudorapiditydiff_cms_gen_origleps_branch) {top_pseudorapiditydiff_cms_gen_origleps_branch->SetAddress(&top_pseudorapiditydiff_cms_gen_origleps_);}
 	}
-	top_rapiditydiff_Marco_gen_origtops_branch = 0;
-	if (tree->GetBranch("top_rapiditydiff_Marco_gen_origtops") != 0) {
-		top_rapiditydiff_Marco_gen_origtops_branch = tree->GetBranch("top_rapiditydiff_Marco_gen_origtops");
-		if (top_rapiditydiff_Marco_gen_origtops_branch) {top_rapiditydiff_Marco_gen_origtops_branch->SetAddress(&top_rapiditydiff_Marco_gen_origtops_);}
+	top_rapiditydiff_Marco_gen_origleps_branch = 0;
+	if (tree->GetBranch("top_rapiditydiff_Marco_gen_origleps") != 0) {
+		top_rapiditydiff_Marco_gen_origleps_branch = tree->GetBranch("top_rapiditydiff_Marco_gen_origleps");
+		if (top_rapiditydiff_Marco_gen_origleps_branch) {top_rapiditydiff_Marco_gen_origleps_branch->SetAddress(&top_rapiditydiff_Marco_gen_origleps_);}
 	}
-	tt_pT_gen_origtops_branch = 0;
-	if (tree->GetBranch("tt_pT_gen_origtops") != 0) {
-		tt_pT_gen_origtops_branch = tree->GetBranch("tt_pT_gen_origtops");
-		if (tt_pT_gen_origtops_branch) {tt_pT_gen_origtops_branch->SetAddress(&tt_pT_gen_origtops_);}
+	tt_pT_gen_origleps_branch = 0;
+	if (tree->GetBranch("tt_pT_gen_origleps") != 0) {
+		tt_pT_gen_origleps_branch = tree->GetBranch("tt_pT_gen_origleps");
+		if (tt_pT_gen_origleps_branch) {tt_pT_gen_origleps_branch->SetAddress(&tt_pT_gen_origleps_);}
 	}
-	top_costheta_cms_gen_origtops_branch = 0;
-	if (tree->GetBranch("top_costheta_cms_gen_origtops") != 0) {
-		top_costheta_cms_gen_origtops_branch = tree->GetBranch("top_costheta_cms_gen_origtops");
-		if (top_costheta_cms_gen_origtops_branch) {top_costheta_cms_gen_origtops_branch->SetAddress(&top_costheta_cms_gen_origtops_);}
+	top_costheta_cms_gen_origleps_branch = 0;
+	if (tree->GetBranch("top_costheta_cms_gen_origleps") != 0) {
+		top_costheta_cms_gen_origleps_branch = tree->GetBranch("top_costheta_cms_gen_origleps");
+		if (top_costheta_cms_gen_origleps_branch) {top_costheta_cms_gen_origleps_branch->SetAddress(&top_costheta_cms_gen_origleps_);}
 	}
-	lep_charge_asymmetry_gen_origtops_branch = 0;
-	if (tree->GetBranch("lep_charge_asymmetry_gen_origtops") != 0) {
-		lep_charge_asymmetry_gen_origtops_branch = tree->GetBranch("lep_charge_asymmetry_gen_origtops");
-		if (lep_charge_asymmetry_gen_origtops_branch) {lep_charge_asymmetry_gen_origtops_branch->SetAddress(&lep_charge_asymmetry_gen_origtops_);}
+	lep_charge_asymmetry_gen_origleps_branch = 0;
+	if (tree->GetBranch("lep_charge_asymmetry_gen_origleps") != 0) {
+		lep_charge_asymmetry_gen_origleps_branch = tree->GetBranch("lep_charge_asymmetry_gen_origleps");
+		if (lep_charge_asymmetry_gen_origleps_branch) {lep_charge_asymmetry_gen_origleps_branch->SetAddress(&lep_charge_asymmetry_gen_origleps_);}
 	}
-	lep_azimuthal_asymmetry_gen_origtops_branch = 0;
-	if (tree->GetBranch("lep_azimuthal_asymmetry_gen_origtops") != 0) {
-		lep_azimuthal_asymmetry_gen_origtops_branch = tree->GetBranch("lep_azimuthal_asymmetry_gen_origtops");
-		if (lep_azimuthal_asymmetry_gen_origtops_branch) {lep_azimuthal_asymmetry_gen_origtops_branch->SetAddress(&lep_azimuthal_asymmetry_gen_origtops_);}
+	lep_azimuthal_asymmetry_gen_origleps_branch = 0;
+	if (tree->GetBranch("lep_azimuthal_asymmetry_gen_origleps") != 0) {
+		lep_azimuthal_asymmetry_gen_origleps_branch = tree->GetBranch("lep_azimuthal_asymmetry_gen_origleps");
+		if (lep_azimuthal_asymmetry_gen_origleps_branch) {lep_azimuthal_asymmetry_gen_origleps_branch->SetAddress(&lep_azimuthal_asymmetry_gen_origleps_);}
 	}
-	lep_azimuthal_asymmetry2_gen_origtops_branch = 0;
-	if (tree->GetBranch("lep_azimuthal_asymmetry2_gen_origtops") != 0) {
-		lep_azimuthal_asymmetry2_gen_origtops_branch = tree->GetBranch("lep_azimuthal_asymmetry2_gen_origtops");
-		if (lep_azimuthal_asymmetry2_gen_origtops_branch) {lep_azimuthal_asymmetry2_gen_origtops_branch->SetAddress(&lep_azimuthal_asymmetry2_gen_origtops_);}
+	lep_azimuthal_asymmetry2_gen_origleps_branch = 0;
+	if (tree->GetBranch("lep_azimuthal_asymmetry2_gen_origleps") != 0) {
+		lep_azimuthal_asymmetry2_gen_origleps_branch = tree->GetBranch("lep_azimuthal_asymmetry2_gen_origleps");
+		if (lep_azimuthal_asymmetry2_gen_origleps_branch) {lep_azimuthal_asymmetry2_gen_origleps_branch->SetAddress(&lep_azimuthal_asymmetry2_gen_origleps_);}
 	}
-	lepPlus_costheta_cms_gen_origtops_branch = 0;
-	if (tree->GetBranch("lepPlus_costheta_cms_gen_origtops") != 0) {
-		lepPlus_costheta_cms_gen_origtops_branch = tree->GetBranch("lepPlus_costheta_cms_gen_origtops");
-		if (lepPlus_costheta_cms_gen_origtops_branch) {lepPlus_costheta_cms_gen_origtops_branch->SetAddress(&lepPlus_costheta_cms_gen_origtops_);}
+	lepPlus_costheta_cms_gen_origleps_branch = 0;
+	if (tree->GetBranch("lepPlus_costheta_cms_gen_origleps") != 0) {
+		lepPlus_costheta_cms_gen_origleps_branch = tree->GetBranch("lepPlus_costheta_cms_gen_origleps");
+		if (lepPlus_costheta_cms_gen_origleps_branch) {lepPlus_costheta_cms_gen_origleps_branch->SetAddress(&lepPlus_costheta_cms_gen_origleps_);}
 	}
-	lepMinus_costheta_cms_gen_origtops_branch = 0;
-	if (tree->GetBranch("lepMinus_costheta_cms_gen_origtops") != 0) {
-		lepMinus_costheta_cms_gen_origtops_branch = tree->GetBranch("lepMinus_costheta_cms_gen_origtops");
-		if (lepMinus_costheta_cms_gen_origtops_branch) {lepMinus_costheta_cms_gen_origtops_branch->SetAddress(&lepMinus_costheta_cms_gen_origtops_);}
+	lepMinus_costheta_cms_gen_origleps_branch = 0;
+	if (tree->GetBranch("lepMinus_costheta_cms_gen_origleps") != 0) {
+		lepMinus_costheta_cms_gen_origleps_branch = tree->GetBranch("lepMinus_costheta_cms_gen_origleps");
+		if (lepMinus_costheta_cms_gen_origleps_branch) {lepMinus_costheta_cms_gen_origleps_branch->SetAddress(&lepMinus_costheta_cms_gen_origleps_);}
 	}
-	top_spin_correlation_gen_origtops_branch = 0;
-	if (tree->GetBranch("top_spin_correlation_gen_origtops") != 0) {
-		top_spin_correlation_gen_origtops_branch = tree->GetBranch("top_spin_correlation_gen_origtops");
-		if (top_spin_correlation_gen_origtops_branch) {top_spin_correlation_gen_origtops_branch->SetAddress(&top_spin_correlation_gen_origtops_);}
+	top_spin_correlation_gen_origleps_branch = 0;
+	if (tree->GetBranch("top_spin_correlation_gen_origleps") != 0) {
+		top_spin_correlation_gen_origleps_branch = tree->GetBranch("top_spin_correlation_gen_origleps");
+		if (top_spin_correlation_gen_origleps_branch) {top_spin_correlation_gen_origleps_branch->SetAddress(&top_spin_correlation_gen_origleps_);}
 	}
-	lep_cos_opening_angle_gen_origtops_branch = 0;
-	if (tree->GetBranch("lep_cos_opening_angle_gen_origtops") != 0) {
-		lep_cos_opening_angle_gen_origtops_branch = tree->GetBranch("lep_cos_opening_angle_gen_origtops");
-		if (lep_cos_opening_angle_gen_origtops_branch) {lep_cos_opening_angle_gen_origtops_branch->SetAddress(&lep_cos_opening_angle_gen_origtops_);}
+	lep_cos_opening_angle_gen_origleps_branch = 0;
+	if (tree->GetBranch("lep_cos_opening_angle_gen_origleps") != 0) {
+		lep_cos_opening_angle_gen_origleps_branch = tree->GetBranch("lep_cos_opening_angle_gen_origleps");
+		if (lep_cos_opening_angle_gen_origleps_branch) {lep_cos_opening_angle_gen_origleps_branch->SetAddress(&lep_cos_opening_angle_gen_origleps_);}
 	}
 	b_branch = 0;
 	if (tree->GetBranch("b") != 0) {
@@ -2165,15 +2200,15 @@ void Init(TTree *tree) {
 		WMinus_status3_orig_branch = tree->GetBranch("WMinus_status3_orig");
 		if (WMinus_status3_orig_branch) {WMinus_status3_orig_branch->SetAddress(&WMinus_status3_orig_);}
 	}
-	topPlus_status3_orig_branch = 0;
-	if (tree->GetBranch("topPlus_status3_orig") != 0) {
-		topPlus_status3_orig_branch = tree->GetBranch("topPlus_status3_orig");
-		if (topPlus_status3_orig_branch) {topPlus_status3_orig_branch->SetAddress(&topPlus_status3_orig_);}
+	topPlus_status3_bW_branch = 0;
+	if (tree->GetBranch("topPlus_status3_bW") != 0) {
+		topPlus_status3_bW_branch = tree->GetBranch("topPlus_status3_bW");
+		if (topPlus_status3_bW_branch) {topPlus_status3_bW_branch->SetAddress(&topPlus_status3_bW_);}
 	}
-	topMinus_status3_orig_branch = 0;
-	if (tree->GetBranch("topMinus_status3_orig") != 0) {
-		topMinus_status3_orig_branch = tree->GetBranch("topMinus_status3_orig");
-		if (topMinus_status3_orig_branch) {topMinus_status3_orig_branch->SetAddress(&topMinus_status3_orig_);}
+	topMinus_status3_bW_branch = 0;
+	if (tree->GetBranch("topMinus_status3_bW") != 0) {
+		topMinus_status3_bW_branch = tree->GetBranch("topMinus_status3_bW");
+		if (topMinus_status3_bW_branch) {topMinus_status3_bW_branch->SetAddress(&topMinus_status3_bW_);}
 	}
 	lepPlus_status3_orig_branch = 0;
 	if (tree->GetBranch("lepPlus_status3_orig") != 0) {
@@ -3977,6 +4012,11 @@ void Init(TTree *tree) {
 		nleps_branch = tree->GetBranch("nleps");
 		if (nleps_branch) {nleps_branch->SetAddress(&nleps_);}
 	}
+	ntops_branch = 0;
+	if (tree->GetBranch("ntops") != 0) {
+		ntops_branch = tree->GetBranch("ntops");
+		if (ntops_branch) {ntops_branch->SetAddress(&ntops_);}
+	}
 	nbs_branch = 0;
 	if (tree->GetBranch("nbs") != 0) {
 		nbs_branch = tree->GetBranch("nbs");
@@ -4905,11 +4945,15 @@ void GetEntry(unsigned int idx)
 		index = idx;
 
 		lepPlus_status3_id_isLoaded = false;
+		lepPlus_status1_id_isLoaded = false;
 		lepMinus_status3_id_isLoaded = false;
+		lepMinus_status1_id_isLoaded = false;
 		lepPlus_status3_nDaughters_isLoaded = false;
 		lepMinus_status3_nDaughters_isLoaded = false;
 		nuPlus_status3_id_isLoaded = false;
+		nuPlus_status1_id_isLoaded = false;
 		nuMinus_status3_id_isLoaded = false;
+		nuMinus_status1_id_isLoaded = false;
 		rapidityttbar_isLoaded = false;
 		m_topminus_gen_isLoaded = false;
 		m_topplus_gen_isLoaded = false;
@@ -4928,23 +4972,23 @@ void GetEntry(unsigned int idx)
 		lepMinus_costheta_cms_gen_isLoaded = false;
 		top_spin_correlation_gen_isLoaded = false;
 		lep_cos_opening_angle_gen_isLoaded = false;
-		m_topminus_gen_origtops_isLoaded = false;
-		m_topplus_gen_origtops_isLoaded = false;
-		tt_mass_gen_origtops_isLoaded = false;
-		ttRapidity_gen_origtops_isLoaded = false;
-		ttRapidity2_gen_origtops_isLoaded = false;
-		top_rapiditydiff_cms_gen_origtops_isLoaded = false;
-		top_pseudorapiditydiff_cms_gen_origtops_isLoaded = false;
-		top_rapiditydiff_Marco_gen_origtops_isLoaded = false;
-		tt_pT_gen_origtops_isLoaded = false;
-		top_costheta_cms_gen_origtops_isLoaded = false;
-		lep_charge_asymmetry_gen_origtops_isLoaded = false;
-		lep_azimuthal_asymmetry_gen_origtops_isLoaded = false;
-		lep_azimuthal_asymmetry2_gen_origtops_isLoaded = false;
-		lepPlus_costheta_cms_gen_origtops_isLoaded = false;
-		lepMinus_costheta_cms_gen_origtops_isLoaded = false;
-		top_spin_correlation_gen_origtops_isLoaded = false;
-		lep_cos_opening_angle_gen_origtops_isLoaded = false;
+		m_topminus_gen_origleps_isLoaded = false;
+		m_topplus_gen_origleps_isLoaded = false;
+		tt_mass_gen_origleps_isLoaded = false;
+		ttRapidity_gen_origleps_isLoaded = false;
+		ttRapidity2_gen_origleps_isLoaded = false;
+		top_rapiditydiff_cms_gen_origleps_isLoaded = false;
+		top_pseudorapiditydiff_cms_gen_origleps_isLoaded = false;
+		top_rapiditydiff_Marco_gen_origleps_isLoaded = false;
+		tt_pT_gen_origleps_isLoaded = false;
+		top_costheta_cms_gen_origleps_isLoaded = false;
+		lep_charge_asymmetry_gen_origleps_isLoaded = false;
+		lep_azimuthal_asymmetry_gen_origleps_isLoaded = false;
+		lep_azimuthal_asymmetry2_gen_origleps_isLoaded = false;
+		lepPlus_costheta_cms_gen_origleps_isLoaded = false;
+		lepMinus_costheta_cms_gen_origleps_isLoaded = false;
+		top_spin_correlation_gen_origleps_isLoaded = false;
+		lep_cos_opening_angle_gen_origleps_isLoaded = false;
 		b_isLoaded = false;
 		bbar_isLoaded = false;
 		lepPlus_status3_isLoaded = false;
@@ -4967,8 +5011,8 @@ void GetEntry(unsigned int idx)
 		topMinus_status1_isLoaded = false;
 		WPlus_status3_orig_isLoaded = false;
 		WMinus_status3_orig_isLoaded = false;
-		topPlus_status3_orig_isLoaded = false;
-		topMinus_status3_orig_isLoaded = false;
+		topPlus_status3_bW_isLoaded = false;
+		topMinus_status3_bW_isLoaded = false;
 		lepPlus_status3_orig_isLoaded = false;
 		lepMinus_status3_orig_isLoaded = false;
 		nuPlus_status3_orig_isLoaded = false;
@@ -5264,6 +5308,7 @@ void GetEntry(unsigned int idx)
 		nmus_isLoaded = false;
 		ntaus_isLoaded = false;
 		nleps_isLoaded = false;
+		ntops_isLoaded = false;
 		nbs_isLoaded = false;
 		dphijm_isLoaded = false;
 		ptjetraw_isLoaded = false;
@@ -5520,11 +5565,15 @@ void LoadAllBranches()
 	// load all branches
 {
 	if (lepPlus_status3_id_branch != 0) lepPlus_status3_id();
+	if (lepPlus_status1_id_branch != 0) lepPlus_status1_id();
 	if (lepMinus_status3_id_branch != 0) lepMinus_status3_id();
+	if (lepMinus_status1_id_branch != 0) lepMinus_status1_id();
 	if (lepPlus_status3_nDaughters_branch != 0) lepPlus_status3_nDaughters();
 	if (lepMinus_status3_nDaughters_branch != 0) lepMinus_status3_nDaughters();
 	if (nuPlus_status3_id_branch != 0) nuPlus_status3_id();
+	if (nuPlus_status1_id_branch != 0) nuPlus_status1_id();
 	if (nuMinus_status3_id_branch != 0) nuMinus_status3_id();
+	if (nuMinus_status1_id_branch != 0) nuMinus_status1_id();
 	if (rapidityttbar_branch != 0) rapidityttbar();
 	if (m_topminus_gen_branch != 0) m_topminus_gen();
 	if (m_topplus_gen_branch != 0) m_topplus_gen();
@@ -5543,23 +5592,23 @@ void LoadAllBranches()
 	if (lepMinus_costheta_cms_gen_branch != 0) lepMinus_costheta_cms_gen();
 	if (top_spin_correlation_gen_branch != 0) top_spin_correlation_gen();
 	if (lep_cos_opening_angle_gen_branch != 0) lep_cos_opening_angle_gen();
-	if (m_topminus_gen_origtops_branch != 0) m_topminus_gen_origtops();
-	if (m_topplus_gen_origtops_branch != 0) m_topplus_gen_origtops();
-	if (tt_mass_gen_origtops_branch != 0) tt_mass_gen_origtops();
-	if (ttRapidity_gen_origtops_branch != 0) ttRapidity_gen_origtops();
-	if (ttRapidity2_gen_origtops_branch != 0) ttRapidity2_gen_origtops();
-	if (top_rapiditydiff_cms_gen_origtops_branch != 0) top_rapiditydiff_cms_gen_origtops();
-	if (top_pseudorapiditydiff_cms_gen_origtops_branch != 0) top_pseudorapiditydiff_cms_gen_origtops();
-	if (top_rapiditydiff_Marco_gen_origtops_branch != 0) top_rapiditydiff_Marco_gen_origtops();
-	if (tt_pT_gen_origtops_branch != 0) tt_pT_gen_origtops();
-	if (top_costheta_cms_gen_origtops_branch != 0) top_costheta_cms_gen_origtops();
-	if (lep_charge_asymmetry_gen_origtops_branch != 0) lep_charge_asymmetry_gen_origtops();
-	if (lep_azimuthal_asymmetry_gen_origtops_branch != 0) lep_azimuthal_asymmetry_gen_origtops();
-	if (lep_azimuthal_asymmetry2_gen_origtops_branch != 0) lep_azimuthal_asymmetry2_gen_origtops();
-	if (lepPlus_costheta_cms_gen_origtops_branch != 0) lepPlus_costheta_cms_gen_origtops();
-	if (lepMinus_costheta_cms_gen_origtops_branch != 0) lepMinus_costheta_cms_gen_origtops();
-	if (top_spin_correlation_gen_origtops_branch != 0) top_spin_correlation_gen_origtops();
-	if (lep_cos_opening_angle_gen_origtops_branch != 0) lep_cos_opening_angle_gen_origtops();
+	if (m_topminus_gen_origleps_branch != 0) m_topminus_gen_origleps();
+	if (m_topplus_gen_origleps_branch != 0) m_topplus_gen_origleps();
+	if (tt_mass_gen_origleps_branch != 0) tt_mass_gen_origleps();
+	if (ttRapidity_gen_origleps_branch != 0) ttRapidity_gen_origleps();
+	if (ttRapidity2_gen_origleps_branch != 0) ttRapidity2_gen_origleps();
+	if (top_rapiditydiff_cms_gen_origleps_branch != 0) top_rapiditydiff_cms_gen_origleps();
+	if (top_pseudorapiditydiff_cms_gen_origleps_branch != 0) top_pseudorapiditydiff_cms_gen_origleps();
+	if (top_rapiditydiff_Marco_gen_origleps_branch != 0) top_rapiditydiff_Marco_gen_origleps();
+	if (tt_pT_gen_origleps_branch != 0) tt_pT_gen_origleps();
+	if (top_costheta_cms_gen_origleps_branch != 0) top_costheta_cms_gen_origleps();
+	if (lep_charge_asymmetry_gen_origleps_branch != 0) lep_charge_asymmetry_gen_origleps();
+	if (lep_azimuthal_asymmetry_gen_origleps_branch != 0) lep_azimuthal_asymmetry_gen_origleps();
+	if (lep_azimuthal_asymmetry2_gen_origleps_branch != 0) lep_azimuthal_asymmetry2_gen_origleps();
+	if (lepPlus_costheta_cms_gen_origleps_branch != 0) lepPlus_costheta_cms_gen_origleps();
+	if (lepMinus_costheta_cms_gen_origleps_branch != 0) lepMinus_costheta_cms_gen_origleps();
+	if (top_spin_correlation_gen_origleps_branch != 0) top_spin_correlation_gen_origleps();
+	if (lep_cos_opening_angle_gen_origleps_branch != 0) lep_cos_opening_angle_gen_origleps();
 	if (b_branch != 0) b();
 	if (bbar_branch != 0) bbar();
 	if (lepPlus_status3_branch != 0) lepPlus_status3();
@@ -5582,8 +5631,8 @@ void LoadAllBranches()
 	if (topMinus_status1_branch != 0) topMinus_status1();
 	if (WPlus_status3_orig_branch != 0) WPlus_status3_orig();
 	if (WMinus_status3_orig_branch != 0) WMinus_status3_orig();
-	if (topPlus_status3_orig_branch != 0) topPlus_status3_orig();
-	if (topMinus_status3_orig_branch != 0) topMinus_status3_orig();
+	if (topPlus_status3_bW_branch != 0) topPlus_status3_bW();
+	if (topMinus_status3_bW_branch != 0) topMinus_status3_bW();
 	if (lepPlus_status3_orig_branch != 0) lepPlus_status3_orig();
 	if (lepMinus_status3_orig_branch != 0) lepMinus_status3_orig();
 	if (nuPlus_status3_orig_branch != 0) nuPlus_status3_orig();
@@ -5879,6 +5928,7 @@ void LoadAllBranches()
 	if (nmus_branch != 0) nmus();
 	if (ntaus_branch != 0) ntaus();
 	if (nleps_branch != 0) nleps();
+	if (ntops_branch != 0) ntops();
 	if (nbs_branch != 0) nbs();
 	if (dphijm_branch != 0) dphijm();
 	if (ptjetraw_branch != 0) ptjetraw();
@@ -6145,6 +6195,19 @@ void LoadAllBranches()
 		}
 		return lepPlus_status3_id_;
 	}
+	int &lepPlus_status1_id()
+	{
+		if (not lepPlus_status1_id_isLoaded) {
+			if (lepPlus_status1_id_branch != 0) {
+				lepPlus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch lepPlus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			lepPlus_status1_id_isLoaded = true;
+		}
+		return lepPlus_status1_id_;
+	}
 	int &lepMinus_status3_id()
 	{
 		if (not lepMinus_status3_id_isLoaded) {
@@ -6157,6 +6220,19 @@ void LoadAllBranches()
 			lepMinus_status3_id_isLoaded = true;
 		}
 		return lepMinus_status3_id_;
+	}
+	int &lepMinus_status1_id()
+	{
+		if (not lepMinus_status1_id_isLoaded) {
+			if (lepMinus_status1_id_branch != 0) {
+				lepMinus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch lepMinus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			lepMinus_status1_id_isLoaded = true;
+		}
+		return lepMinus_status1_id_;
 	}
 	int &lepPlus_status3_nDaughters()
 	{
@@ -6197,6 +6273,19 @@ void LoadAllBranches()
 		}
 		return nuPlus_status3_id_;
 	}
+	int &nuPlus_status1_id()
+	{
+		if (not nuPlus_status1_id_isLoaded) {
+			if (nuPlus_status1_id_branch != 0) {
+				nuPlus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch nuPlus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			nuPlus_status1_id_isLoaded = true;
+		}
+		return nuPlus_status1_id_;
+	}
 	int &nuMinus_status3_id()
 	{
 		if (not nuMinus_status3_id_isLoaded) {
@@ -6209,6 +6298,19 @@ void LoadAllBranches()
 			nuMinus_status3_id_isLoaded = true;
 		}
 		return nuMinus_status3_id_;
+	}
+	int &nuMinus_status1_id()
+	{
+		if (not nuMinus_status1_id_isLoaded) {
+			if (nuMinus_status1_id_branch != 0) {
+				nuMinus_status1_id_branch->GetEntry(index);
+			} else {
+				printf("branch nuMinus_status1_id_branch does not exist!\n");
+				exit(1);
+			}
+			nuMinus_status1_id_isLoaded = true;
+		}
+		return nuMinus_status1_id_;
 	}
 	float &rapidityttbar()
 	{
@@ -6444,226 +6546,226 @@ void LoadAllBranches()
 		}
 		return lep_cos_opening_angle_gen_;
 	}
-	float &m_topminus_gen_origtops()
+	float &m_topminus_gen_origleps()
 	{
-		if (not m_topminus_gen_origtops_isLoaded) {
-			if (m_topminus_gen_origtops_branch != 0) {
-				m_topminus_gen_origtops_branch->GetEntry(index);
+		if (not m_topminus_gen_origleps_isLoaded) {
+			if (m_topminus_gen_origleps_branch != 0) {
+				m_topminus_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch m_topminus_gen_origtops_branch does not exist!\n");
+				printf("branch m_topminus_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			m_topminus_gen_origtops_isLoaded = true;
+			m_topminus_gen_origleps_isLoaded = true;
 		}
-		return m_topminus_gen_origtops_;
+		return m_topminus_gen_origleps_;
 	}
-	float &m_topplus_gen_origtops()
+	float &m_topplus_gen_origleps()
 	{
-		if (not m_topplus_gen_origtops_isLoaded) {
-			if (m_topplus_gen_origtops_branch != 0) {
-				m_topplus_gen_origtops_branch->GetEntry(index);
+		if (not m_topplus_gen_origleps_isLoaded) {
+			if (m_topplus_gen_origleps_branch != 0) {
+				m_topplus_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch m_topplus_gen_origtops_branch does not exist!\n");
+				printf("branch m_topplus_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			m_topplus_gen_origtops_isLoaded = true;
+			m_topplus_gen_origleps_isLoaded = true;
 		}
-		return m_topplus_gen_origtops_;
+		return m_topplus_gen_origleps_;
 	}
-	float &tt_mass_gen_origtops()
+	float &tt_mass_gen_origleps()
 	{
-		if (not tt_mass_gen_origtops_isLoaded) {
-			if (tt_mass_gen_origtops_branch != 0) {
-				tt_mass_gen_origtops_branch->GetEntry(index);
+		if (not tt_mass_gen_origleps_isLoaded) {
+			if (tt_mass_gen_origleps_branch != 0) {
+				tt_mass_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch tt_mass_gen_origtops_branch does not exist!\n");
+				printf("branch tt_mass_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			tt_mass_gen_origtops_isLoaded = true;
+			tt_mass_gen_origleps_isLoaded = true;
 		}
-		return tt_mass_gen_origtops_;
+		return tt_mass_gen_origleps_;
 	}
-	float &ttRapidity_gen_origtops()
+	float &ttRapidity_gen_origleps()
 	{
-		if (not ttRapidity_gen_origtops_isLoaded) {
-			if (ttRapidity_gen_origtops_branch != 0) {
-				ttRapidity_gen_origtops_branch->GetEntry(index);
+		if (not ttRapidity_gen_origleps_isLoaded) {
+			if (ttRapidity_gen_origleps_branch != 0) {
+				ttRapidity_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch ttRapidity_gen_origtops_branch does not exist!\n");
+				printf("branch ttRapidity_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			ttRapidity_gen_origtops_isLoaded = true;
+			ttRapidity_gen_origleps_isLoaded = true;
 		}
-		return ttRapidity_gen_origtops_;
+		return ttRapidity_gen_origleps_;
 	}
-	float &ttRapidity2_gen_origtops()
+	float &ttRapidity2_gen_origleps()
 	{
-		if (not ttRapidity2_gen_origtops_isLoaded) {
-			if (ttRapidity2_gen_origtops_branch != 0) {
-				ttRapidity2_gen_origtops_branch->GetEntry(index);
+		if (not ttRapidity2_gen_origleps_isLoaded) {
+			if (ttRapidity2_gen_origleps_branch != 0) {
+				ttRapidity2_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch ttRapidity2_gen_origtops_branch does not exist!\n");
+				printf("branch ttRapidity2_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			ttRapidity2_gen_origtops_isLoaded = true;
+			ttRapidity2_gen_origleps_isLoaded = true;
 		}
-		return ttRapidity2_gen_origtops_;
+		return ttRapidity2_gen_origleps_;
 	}
-	float &top_rapiditydiff_cms_gen_origtops()
+	float &top_rapiditydiff_cms_gen_origleps()
 	{
-		if (not top_rapiditydiff_cms_gen_origtops_isLoaded) {
-			if (top_rapiditydiff_cms_gen_origtops_branch != 0) {
-				top_rapiditydiff_cms_gen_origtops_branch->GetEntry(index);
+		if (not top_rapiditydiff_cms_gen_origleps_isLoaded) {
+			if (top_rapiditydiff_cms_gen_origleps_branch != 0) {
+				top_rapiditydiff_cms_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch top_rapiditydiff_cms_gen_origtops_branch does not exist!\n");
+				printf("branch top_rapiditydiff_cms_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			top_rapiditydiff_cms_gen_origtops_isLoaded = true;
+			top_rapiditydiff_cms_gen_origleps_isLoaded = true;
 		}
-		return top_rapiditydiff_cms_gen_origtops_;
+		return top_rapiditydiff_cms_gen_origleps_;
 	}
-	float &top_pseudorapiditydiff_cms_gen_origtops()
+	float &top_pseudorapiditydiff_cms_gen_origleps()
 	{
-		if (not top_pseudorapiditydiff_cms_gen_origtops_isLoaded) {
-			if (top_pseudorapiditydiff_cms_gen_origtops_branch != 0) {
-				top_pseudorapiditydiff_cms_gen_origtops_branch->GetEntry(index);
+		if (not top_pseudorapiditydiff_cms_gen_origleps_isLoaded) {
+			if (top_pseudorapiditydiff_cms_gen_origleps_branch != 0) {
+				top_pseudorapiditydiff_cms_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch top_pseudorapiditydiff_cms_gen_origtops_branch does not exist!\n");
+				printf("branch top_pseudorapiditydiff_cms_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			top_pseudorapiditydiff_cms_gen_origtops_isLoaded = true;
+			top_pseudorapiditydiff_cms_gen_origleps_isLoaded = true;
 		}
-		return top_pseudorapiditydiff_cms_gen_origtops_;
+		return top_pseudorapiditydiff_cms_gen_origleps_;
 	}
-	float &top_rapiditydiff_Marco_gen_origtops()
+	float &top_rapiditydiff_Marco_gen_origleps()
 	{
-		if (not top_rapiditydiff_Marco_gen_origtops_isLoaded) {
-			if (top_rapiditydiff_Marco_gen_origtops_branch != 0) {
-				top_rapiditydiff_Marco_gen_origtops_branch->GetEntry(index);
+		if (not top_rapiditydiff_Marco_gen_origleps_isLoaded) {
+			if (top_rapiditydiff_Marco_gen_origleps_branch != 0) {
+				top_rapiditydiff_Marco_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch top_rapiditydiff_Marco_gen_origtops_branch does not exist!\n");
+				printf("branch top_rapiditydiff_Marco_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			top_rapiditydiff_Marco_gen_origtops_isLoaded = true;
+			top_rapiditydiff_Marco_gen_origleps_isLoaded = true;
 		}
-		return top_rapiditydiff_Marco_gen_origtops_;
+		return top_rapiditydiff_Marco_gen_origleps_;
 	}
-	float &tt_pT_gen_origtops()
+	float &tt_pT_gen_origleps()
 	{
-		if (not tt_pT_gen_origtops_isLoaded) {
-			if (tt_pT_gen_origtops_branch != 0) {
-				tt_pT_gen_origtops_branch->GetEntry(index);
+		if (not tt_pT_gen_origleps_isLoaded) {
+			if (tt_pT_gen_origleps_branch != 0) {
+				tt_pT_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch tt_pT_gen_origtops_branch does not exist!\n");
+				printf("branch tt_pT_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			tt_pT_gen_origtops_isLoaded = true;
+			tt_pT_gen_origleps_isLoaded = true;
 		}
-		return tt_pT_gen_origtops_;
+		return tt_pT_gen_origleps_;
 	}
-	float &top_costheta_cms_gen_origtops()
+	float &top_costheta_cms_gen_origleps()
 	{
-		if (not top_costheta_cms_gen_origtops_isLoaded) {
-			if (top_costheta_cms_gen_origtops_branch != 0) {
-				top_costheta_cms_gen_origtops_branch->GetEntry(index);
+		if (not top_costheta_cms_gen_origleps_isLoaded) {
+			if (top_costheta_cms_gen_origleps_branch != 0) {
+				top_costheta_cms_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch top_costheta_cms_gen_origtops_branch does not exist!\n");
+				printf("branch top_costheta_cms_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			top_costheta_cms_gen_origtops_isLoaded = true;
+			top_costheta_cms_gen_origleps_isLoaded = true;
 		}
-		return top_costheta_cms_gen_origtops_;
+		return top_costheta_cms_gen_origleps_;
 	}
-	float &lep_charge_asymmetry_gen_origtops()
+	float &lep_charge_asymmetry_gen_origleps()
 	{
-		if (not lep_charge_asymmetry_gen_origtops_isLoaded) {
-			if (lep_charge_asymmetry_gen_origtops_branch != 0) {
-				lep_charge_asymmetry_gen_origtops_branch->GetEntry(index);
+		if (not lep_charge_asymmetry_gen_origleps_isLoaded) {
+			if (lep_charge_asymmetry_gen_origleps_branch != 0) {
+				lep_charge_asymmetry_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch lep_charge_asymmetry_gen_origtops_branch does not exist!\n");
+				printf("branch lep_charge_asymmetry_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			lep_charge_asymmetry_gen_origtops_isLoaded = true;
+			lep_charge_asymmetry_gen_origleps_isLoaded = true;
 		}
-		return lep_charge_asymmetry_gen_origtops_;
+		return lep_charge_asymmetry_gen_origleps_;
 	}
-	float &lep_azimuthal_asymmetry_gen_origtops()
+	float &lep_azimuthal_asymmetry_gen_origleps()
 	{
-		if (not lep_azimuthal_asymmetry_gen_origtops_isLoaded) {
-			if (lep_azimuthal_asymmetry_gen_origtops_branch != 0) {
-				lep_azimuthal_asymmetry_gen_origtops_branch->GetEntry(index);
+		if (not lep_azimuthal_asymmetry_gen_origleps_isLoaded) {
+			if (lep_azimuthal_asymmetry_gen_origleps_branch != 0) {
+				lep_azimuthal_asymmetry_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch lep_azimuthal_asymmetry_gen_origtops_branch does not exist!\n");
+				printf("branch lep_azimuthal_asymmetry_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			lep_azimuthal_asymmetry_gen_origtops_isLoaded = true;
+			lep_azimuthal_asymmetry_gen_origleps_isLoaded = true;
 		}
-		return lep_azimuthal_asymmetry_gen_origtops_;
+		return lep_azimuthal_asymmetry_gen_origleps_;
 	}
-	float &lep_azimuthal_asymmetry2_gen_origtops()
+	float &lep_azimuthal_asymmetry2_gen_origleps()
 	{
-		if (not lep_azimuthal_asymmetry2_gen_origtops_isLoaded) {
-			if (lep_azimuthal_asymmetry2_gen_origtops_branch != 0) {
-				lep_azimuthal_asymmetry2_gen_origtops_branch->GetEntry(index);
+		if (not lep_azimuthal_asymmetry2_gen_origleps_isLoaded) {
+			if (lep_azimuthal_asymmetry2_gen_origleps_branch != 0) {
+				lep_azimuthal_asymmetry2_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch lep_azimuthal_asymmetry2_gen_origtops_branch does not exist!\n");
+				printf("branch lep_azimuthal_asymmetry2_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			lep_azimuthal_asymmetry2_gen_origtops_isLoaded = true;
+			lep_azimuthal_asymmetry2_gen_origleps_isLoaded = true;
 		}
-		return lep_azimuthal_asymmetry2_gen_origtops_;
+		return lep_azimuthal_asymmetry2_gen_origleps_;
 	}
-	float &lepPlus_costheta_cms_gen_origtops()
+	float &lepPlus_costheta_cms_gen_origleps()
 	{
-		if (not lepPlus_costheta_cms_gen_origtops_isLoaded) {
-			if (lepPlus_costheta_cms_gen_origtops_branch != 0) {
-				lepPlus_costheta_cms_gen_origtops_branch->GetEntry(index);
+		if (not lepPlus_costheta_cms_gen_origleps_isLoaded) {
+			if (lepPlus_costheta_cms_gen_origleps_branch != 0) {
+				lepPlus_costheta_cms_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch lepPlus_costheta_cms_gen_origtops_branch does not exist!\n");
+				printf("branch lepPlus_costheta_cms_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			lepPlus_costheta_cms_gen_origtops_isLoaded = true;
+			lepPlus_costheta_cms_gen_origleps_isLoaded = true;
 		}
-		return lepPlus_costheta_cms_gen_origtops_;
+		return lepPlus_costheta_cms_gen_origleps_;
 	}
-	float &lepMinus_costheta_cms_gen_origtops()
+	float &lepMinus_costheta_cms_gen_origleps()
 	{
-		if (not lepMinus_costheta_cms_gen_origtops_isLoaded) {
-			if (lepMinus_costheta_cms_gen_origtops_branch != 0) {
-				lepMinus_costheta_cms_gen_origtops_branch->GetEntry(index);
+		if (not lepMinus_costheta_cms_gen_origleps_isLoaded) {
+			if (lepMinus_costheta_cms_gen_origleps_branch != 0) {
+				lepMinus_costheta_cms_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch lepMinus_costheta_cms_gen_origtops_branch does not exist!\n");
+				printf("branch lepMinus_costheta_cms_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			lepMinus_costheta_cms_gen_origtops_isLoaded = true;
+			lepMinus_costheta_cms_gen_origleps_isLoaded = true;
 		}
-		return lepMinus_costheta_cms_gen_origtops_;
+		return lepMinus_costheta_cms_gen_origleps_;
 	}
-	float &top_spin_correlation_gen_origtops()
+	float &top_spin_correlation_gen_origleps()
 	{
-		if (not top_spin_correlation_gen_origtops_isLoaded) {
-			if (top_spin_correlation_gen_origtops_branch != 0) {
-				top_spin_correlation_gen_origtops_branch->GetEntry(index);
+		if (not top_spin_correlation_gen_origleps_isLoaded) {
+			if (top_spin_correlation_gen_origleps_branch != 0) {
+				top_spin_correlation_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch top_spin_correlation_gen_origtops_branch does not exist!\n");
+				printf("branch top_spin_correlation_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			top_spin_correlation_gen_origtops_isLoaded = true;
+			top_spin_correlation_gen_origleps_isLoaded = true;
 		}
-		return top_spin_correlation_gen_origtops_;
+		return top_spin_correlation_gen_origleps_;
 	}
-	float &lep_cos_opening_angle_gen_origtops()
+	float &lep_cos_opening_angle_gen_origleps()
 	{
-		if (not lep_cos_opening_angle_gen_origtops_isLoaded) {
-			if (lep_cos_opening_angle_gen_origtops_branch != 0) {
-				lep_cos_opening_angle_gen_origtops_branch->GetEntry(index);
+		if (not lep_cos_opening_angle_gen_origleps_isLoaded) {
+			if (lep_cos_opening_angle_gen_origleps_branch != 0) {
+				lep_cos_opening_angle_gen_origleps_branch->GetEntry(index);
 			} else {
-				printf("branch lep_cos_opening_angle_gen_origtops_branch does not exist!\n");
+				printf("branch lep_cos_opening_angle_gen_origleps_branch does not exist!\n");
 				exit(1);
 			}
-			lep_cos_opening_angle_gen_origtops_isLoaded = true;
+			lep_cos_opening_angle_gen_origleps_isLoaded = true;
 		}
-		return lep_cos_opening_angle_gen_origtops_;
+		return lep_cos_opening_angle_gen_origleps_;
 	}
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &b()
 	{
@@ -6951,31 +7053,31 @@ void LoadAllBranches()
 		}
 		return *WMinus_status3_orig_;
 	}
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topPlus_status3_orig()
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topPlus_status3_bW()
 	{
-		if (not topPlus_status3_orig_isLoaded) {
-			if (topPlus_status3_orig_branch != 0) {
-				topPlus_status3_orig_branch->GetEntry(index);
+		if (not topPlus_status3_bW_isLoaded) {
+			if (topPlus_status3_bW_branch != 0) {
+				topPlus_status3_bW_branch->GetEntry(index);
 			} else {
-				printf("branch topPlus_status3_orig_branch does not exist!\n");
+				printf("branch topPlus_status3_bW_branch does not exist!\n");
 				exit(1);
 			}
-			topPlus_status3_orig_isLoaded = true;
+			topPlus_status3_bW_isLoaded = true;
 		}
-		return *topPlus_status3_orig_;
+		return *topPlus_status3_bW_;
 	}
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status3_orig()
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status3_bW()
 	{
-		if (not topMinus_status3_orig_isLoaded) {
-			if (topMinus_status3_orig_branch != 0) {
-				topMinus_status3_orig_branch->GetEntry(index);
+		if (not topMinus_status3_bW_isLoaded) {
+			if (topMinus_status3_bW_branch != 0) {
+				topMinus_status3_bW_branch->GetEntry(index);
 			} else {
-				printf("branch topMinus_status3_orig_branch does not exist!\n");
+				printf("branch topMinus_status3_bW_branch does not exist!\n");
 				exit(1);
 			}
-			topMinus_status3_orig_isLoaded = true;
+			topMinus_status3_bW_isLoaded = true;
 		}
-		return *topMinus_status3_orig_;
+		return *topMinus_status3_bW_;
 	}
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &lepPlus_status3_orig()
 	{
@@ -10803,6 +10905,19 @@ void LoadAllBranches()
 		}
 		return nleps_;
 	}
+	int &ntops()
+	{
+		if (not ntops_isLoaded) {
+			if (ntops_branch != 0) {
+				ntops_branch->GetEntry(index);
+			} else { 
+				printf("branch ntops_branch does not exist!\n");
+				exit(1);
+			}
+			ntops_isLoaded = true;
+		}
+		return ntops_;
+	}
 	int &nbs()
 	{
 		if (not nbs_isLoaded) {
@@ -14082,11 +14197,15 @@ extern STOPT stopt;
 
 namespace Stop {
 	int &lepPlus_status3_id();
+	int &lepPlus_status1_id();
 	int &lepMinus_status3_id();
+	int &lepMinus_status1_id();
 	int &lepPlus_status3_nDaughters();
 	int &lepMinus_status3_nDaughters();
 	int &nuPlus_status3_id();
+	int &nuPlus_status1_id();
 	int &nuMinus_status3_id();
+	int &nuMinus_status1_id();
 	float &rapidityttbar();
 	float &m_topminus_gen();
 	float &m_topplus_gen();
@@ -14105,23 +14224,23 @@ namespace Stop {
 	float &lepMinus_costheta_cms_gen();
 	float &top_spin_correlation_gen();
 	float &lep_cos_opening_angle_gen();
-	float &m_topminus_gen_origtops();
-	float &m_topplus_gen_origtops();
-	float &tt_mass_gen_origtops();
-	float &ttRapidity_gen_origtops();
-	float &ttRapidity2_gen_origtops();
-	float &top_rapiditydiff_cms_gen_origtops();
-	float &top_pseudorapiditydiff_cms_gen_origtops();
-	float &top_rapiditydiff_Marco_gen_origtops();
-	float &tt_pT_gen_origtops();
-	float &top_costheta_cms_gen_origtops();
-	float &lep_charge_asymmetry_gen_origtops();
-	float &lep_azimuthal_asymmetry_gen_origtops();
-	float &lep_azimuthal_asymmetry2_gen_origtops();
-	float &lepPlus_costheta_cms_gen_origtops();
-	float &lepMinus_costheta_cms_gen_origtops();
-	float &top_spin_correlation_gen_origtops();
-	float &lep_cos_opening_angle_gen_origtops();
+	float &m_topminus_gen_origleps();
+	float &m_topplus_gen_origleps();
+	float &tt_mass_gen_origleps();
+	float &ttRapidity_gen_origleps();
+	float &ttRapidity2_gen_origleps();
+	float &top_rapiditydiff_cms_gen_origleps();
+	float &top_pseudorapiditydiff_cms_gen_origleps();
+	float &top_rapiditydiff_Marco_gen_origleps();
+	float &tt_pT_gen_origleps();
+	float &top_costheta_cms_gen_origleps();
+	float &lep_charge_asymmetry_gen_origleps();
+	float &lep_azimuthal_asymmetry_gen_origleps();
+	float &lep_azimuthal_asymmetry2_gen_origleps();
+	float &lepPlus_costheta_cms_gen_origleps();
+	float &lepMinus_costheta_cms_gen_origleps();
+	float &top_spin_correlation_gen_origleps();
+	float &lep_cos_opening_angle_gen_origleps();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &b();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &bbar();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &lepPlus_status3();
@@ -14144,8 +14263,8 @@ namespace Stop {
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status1();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &WPlus_status3_orig();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &WMinus_status3_orig();
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topPlus_status3_orig();
-	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status3_orig();
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topPlus_status3_bW();
+	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &topMinus_status3_bW();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &lepPlus_status3_orig();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &lepMinus_status3_orig();
 	ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > &nuPlus_status3_orig();
@@ -14441,6 +14560,7 @@ namespace Stop {
 	int &nmus();
 	int &ntaus();
 	int &nleps();
+	int &ntops();
 	int &nbs();
 	float &dphijm();
 	float &ptjetraw();

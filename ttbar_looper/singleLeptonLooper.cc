@@ -386,11 +386,15 @@ void singleLeptonLooper::InitBaby(){
 
   // MC truth info
   lepPlus_status3_id_ = -9999;
+  lepPlus_status1_id_ = -9999;
   lepMinus_status3_id_ = -9999;
+  lepMinus_status1_id_ = -9999;
   lepPlus_status3_nDaughters_ = -9999;
   lepMinus_status3_nDaughters_ = -9999;
   nuPlus_status3_id_ = -9999;
+  nuPlus_status1_id_ = -9999;
   nuMinus_status3_id_ = -9999;
+  nuMinus_status1_id_ = -9999;
 
   mcid1_	= -1;
   mcid2_	= -1;
@@ -438,6 +442,7 @@ void singleLeptonLooper::InitBaby(){
   nmus_		= -1;
   ntaus_	= -1;
   nleps_	= -1;
+  ntops_  = -1;
   nbs_	        = -1;
   ptjetraw_	= -9999.;
   ptjet23_	= -9999.;
@@ -1518,6 +1523,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       int nmus       =  0;
       int ntaus      =  0;
       int nleps      =  0;
+      int ntops      =  0;
 
       ptwgen_   = -1;
       ptzgen_   = -1;
@@ -1546,23 +1552,23 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       top_spin_correlation_gen_ = -999;
       lep_cos_opening_angle_gen_ = -999;
 
-      m_topminus_gen_origtops_ = -999;
-      m_topplus_gen_origtops_ = -999;
-      tt_mass_gen_origtops_ = -999;
-      ttRapidity_gen_origtops_ = -999;
-      ttRapidity2_gen_origtops_ = -999;
-      top_rapiditydiff_cms_gen_origtops_ = -999;
-      top_pseudorapiditydiff_cms_gen_origtops_ = -999;
-      top_rapiditydiff_Marco_gen_origtops_ = -999;
-      tt_pT_gen_origtops_ = -999;
-      top_costheta_cms_gen_origtops_ = -999;
-      lep_charge_asymmetry_gen_origtops_ = -999;
-      lep_azimuthal_asymmetry_gen_origtops_ = -999;
-      lep_azimuthal_asymmetry2_gen_origtops_ = -999;
-      lepPlus_costheta_cms_gen_origtops_ = -999;
-      lepMinus_costheta_cms_gen_origtops_ = -999;
-      top_spin_correlation_gen_origtops_ = -999;
-      lep_cos_opening_angle_gen_origtops_ = -999;
+      m_topminus_gen_origleps_ = -999;
+      m_topplus_gen_origleps_ = -999;
+      tt_mass_gen_origleps_ = -999;
+      ttRapidity_gen_origleps_ = -999;
+      ttRapidity2_gen_origleps_ = -999;
+      top_rapiditydiff_cms_gen_origleps_ = -999;
+      top_pseudorapiditydiff_cms_gen_origleps_ = -999;
+      top_rapiditydiff_Marco_gen_origleps_ = -999;
+      tt_pT_gen_origleps_ = -999;
+      top_costheta_cms_gen_origleps_ = -999;
+      lep_charge_asymmetry_gen_origleps_ = -999;
+      lep_azimuthal_asymmetry_gen_origleps_ = -999;
+      lep_azimuthal_asymmetry2_gen_origleps_ = -999;
+      lepPlus_costheta_cms_gen_origleps_ = -999;
+      lepMinus_costheta_cms_gen_origleps_ = -999;
+      top_spin_correlation_gen_origleps_ = -999;
+      lep_cos_opening_angle_gen_origleps_ = -999;
 
       t_        = 0;
       tbar_     = 0;
@@ -1600,8 +1606,8 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
       //WMinus_status1_ = 0;
       WPlus_status3_orig_ = 0;
       WMinus_status3_orig_ = 0;
-      topPlus_status3_orig_ = 0;
-      topMinus_status3_orig_ = 0;
+      topPlus_status3_bW_ = 0;
+      topMinus_status3_bW_ = 0;
       lepPlus_status3_orig_ = 0;
       lepMinus_status3_orig_ = 0;
       nuPlus_status3_orig_ = 0;
@@ -1628,14 +1634,12 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	//splitting ttbar into ttdil/ttotr
 	nleps = leptonGenpCount_lepTauDecays_status3only(nels, nmus, ntaus);
   //cout<<prefix<<" "<<nels<<" "<<nmus<<" "<<ntaus<<endl;
-
-  if( nleps != 2 ) continue;  //temporary to avoid huge babies including ttsl
 	
 	nels_  = nels;
 	nmus_  = nmus;
 	ntaus_ = ntaus;
 	nleps_ = nleps;
-
+  
 	// this is a weight which corrects for the wrong MG W->lnu BF
 	if( prefix.Contains("ttall") ||
 	    prefix.Contains("tt_") ){
@@ -1651,16 +1655,16 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	if( prefix.EqualTo("ttem")  && ( nels + nmus ) != 2 ) continue;
 	if( prefix.EqualTo("ttdil") && nleps != 2           ) continue;
 	if( prefix.EqualTo("ttotr") && nleps == 2           ) continue;
-	
+
   nbs_ = 0;
-  int ntops = 0;
-
   for ( int igen = 0 ; igen < (int)genps_id().size() ; igen++ ) if( abs( genps_id().at(igen) ) == 6 && genps_status().at(igen) == 3 ) ntops++;
+  ntops_ = ntops;
 
-  if ( ismcatnlo && ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //event with 4 tops was causing a crash
-  else if ( ntops != 2 ) { cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; } 
+  if ( ntops != 2 ) cout<<"*** WARNING: event with ntops = "<<ntops<<" ***"<<endl; 
 
-  fillgenlevel(ismcatnlo, nleps, ntaus);
+  //if( !(nleps == 2 && ntops == 2) ) continue;  //temporary to avoid huge babies including ttsl
+
+  fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
   
 	// if( npartons_ > 0 ){
 	//   cout << endl << endl;
@@ -4075,23 +4079,23 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("top_spin_correlation_gen",  &top_spin_correlation_gen_,  "top_spin_correlation_gen/F");
   outTree->Branch("lep_cos_opening_angle_gen",  &lep_cos_opening_angle_gen_,  "lep_cos_opening_angle_gen/F");
   
-  outTree->Branch("m_topminus_gen_origtops",  &m_topminus_gen_origtops_,  "m_topminus_gen_origtops/F");
-  outTree->Branch("m_topplus_gen_origtops",  &m_topplus_gen_origtops_,  "m_topplus_gen_origtops/F");
-  outTree->Branch("tt_mass_gen_origtops",  &tt_mass_gen_origtops_,  "tt_mass_gen_origtops/F");
-  outTree->Branch("ttRapidity_gen_origtops",  &ttRapidity_gen_origtops_,  "ttRapidity_gen_origtops/F");
-  outTree->Branch("ttRapidity2_gen_origtops",  &ttRapidity2_gen_origtops_,  "ttRapidity2_gen_origtops/F");
-  outTree->Branch("top_rapiditydiff_cms_gen_origtops",  &top_rapiditydiff_cms_gen_origtops_,  "top_rapiditydiff_cms_gen_origtops/F");
-  outTree->Branch("top_pseudorapiditydiff_cms_gen_origtops",  &top_pseudorapiditydiff_cms_gen_origtops_,  "top_pseudorapiditydiff_cms_gen_origtops/F");
-  outTree->Branch("top_rapiditydiff_Marco_gen_origtops",  &top_rapiditydiff_Marco_gen_origtops_,  "top_rapiditydiff_Marco_gen_origtops/F");
-  outTree->Branch("tt_pT_gen_origtops",  &tt_pT_gen_origtops_,  "tt_pT_gen_origtops/F");
-  outTree->Branch("top_costheta_cms_gen_origtops",  &top_costheta_cms_gen_origtops_,  "top_costheta_cms_gen_origtops/F");
-  outTree->Branch("lep_charge_asymmetry_gen_origtops",  &lep_charge_asymmetry_gen_origtops_,  "lep_charge_asymmetry_gen_origtops/F");
-  outTree->Branch("lep_azimuthal_asymmetry_gen_origtops",  &lep_azimuthal_asymmetry_gen_origtops_,  "lep_azimuthal_asymmetry_gen_origtops/F");
-  outTree->Branch("lep_azimuthal_asymmetry2_gen_origtops",  &lep_azimuthal_asymmetry2_gen_origtops_,  "lep_azimuthal_asymmetry2_gen_origtops/F");
-  outTree->Branch("lepPlus_costheta_cms_gen_origtops",  &lepPlus_costheta_cms_gen_origtops_,  "lepPlus_costheta_cms_gen_origtops/F");
-  outTree->Branch("lepMinus_costheta_cms_gen_origtops",  &lepMinus_costheta_cms_gen_origtops_,  "lepMinus_costheta_cms_gen_origtops/F");
-  outTree->Branch("top_spin_correlation_gen_origtops",  &top_spin_correlation_gen_origtops_,  "top_spin_correlation_gen_origtops/F");
-  outTree->Branch("lep_cos_opening_angle_gen_origtops",  &lep_cos_opening_angle_gen_origtops_,  "lep_cos_opening_angle_gen_origtops/F");
+  outTree->Branch("m_topminus_gen_origleps",  &m_topminus_gen_origleps_,  "m_topminus_gen_origleps/F");
+  outTree->Branch("m_topplus_gen_origleps",  &m_topplus_gen_origleps_,  "m_topplus_gen_origleps/F");
+  outTree->Branch("tt_mass_gen_origleps",  &tt_mass_gen_origleps_,  "tt_mass_gen_origleps/F");
+  outTree->Branch("ttRapidity_gen_origleps",  &ttRapidity_gen_origleps_,  "ttRapidity_gen_origleps/F");
+  outTree->Branch("ttRapidity2_gen_origleps",  &ttRapidity2_gen_origleps_,  "ttRapidity2_gen_origleps/F");
+  outTree->Branch("top_rapiditydiff_cms_gen_origleps",  &top_rapiditydiff_cms_gen_origleps_,  "top_rapiditydiff_cms_gen_origleps/F");
+  outTree->Branch("top_pseudorapiditydiff_cms_gen_origleps",  &top_pseudorapiditydiff_cms_gen_origleps_,  "top_pseudorapiditydiff_cms_gen_origleps/F");
+  outTree->Branch("top_rapiditydiff_Marco_gen_origleps",  &top_rapiditydiff_Marco_gen_origleps_,  "top_rapiditydiff_Marco_gen_origleps/F");
+  outTree->Branch("tt_pT_gen_origleps",  &tt_pT_gen_origleps_,  "tt_pT_gen_origleps/F");
+  outTree->Branch("top_costheta_cms_gen_origleps",  &top_costheta_cms_gen_origleps_,  "top_costheta_cms_gen_origleps/F");
+  outTree->Branch("lep_charge_asymmetry_gen_origleps",  &lep_charge_asymmetry_gen_origleps_,  "lep_charge_asymmetry_gen_origleps/F");
+  outTree->Branch("lep_azimuthal_asymmetry_gen_origleps",  &lep_azimuthal_asymmetry_gen_origleps_,  "lep_azimuthal_asymmetry_gen_origleps/F");
+  outTree->Branch("lep_azimuthal_asymmetry2_gen_origleps",  &lep_azimuthal_asymmetry2_gen_origleps_,  "lep_azimuthal_asymmetry2_gen_origleps/F");
+  outTree->Branch("lepPlus_costheta_cms_gen_origleps",  &lepPlus_costheta_cms_gen_origleps_,  "lepPlus_costheta_cms_gen_origleps/F");
+  outTree->Branch("lepMinus_costheta_cms_gen_origleps",  &lepMinus_costheta_cms_gen_origleps_,  "lepMinus_costheta_cms_gen_origleps/F");
+  outTree->Branch("top_spin_correlation_gen_origleps",  &top_spin_correlation_gen_origleps_,  "top_spin_correlation_gen_origleps/F");
+  outTree->Branch("lep_cos_opening_angle_gen_origleps",  &lep_cos_opening_angle_gen_origleps_,  "lep_cos_opening_angle_gen_origleps/F");
 
   outTree->Branch("njetsoffset",     &njetsoffset_,      "njetsoffset/I");
   outTree->Branch("njetsuncor",      &njetsuncor_,       "njetsuncor/I");
@@ -4387,6 +4391,7 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("nmus",             &nmus_,             "nmus/I");  
   outTree->Branch("ntaus",            &ntaus_,            "ntaus/I");  
   outTree->Branch("nleps",            &nleps_,            "nleps/I");  
+  outTree->Branch("ntops",            &ntops_,            "ntops/I");  
   outTree->Branch("nbs",              &nbs_,              "nbs/I");  
   outTree->Branch("dphijm",           &dphijm_,           "dphijm/F");  
   outTree->Branch("ptjetraw",         &ptjetraw_,         "ptjetraw/F");  
@@ -4395,11 +4400,15 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   outTree->Branch("ptjetO23",         &ptjetO23_,         "ptjetO23/F");  
   //outTree->Branch("cosphijz",         &cosphijz_,         "cosphijz/F");
   outTree->Branch("lepPlus_status3_id",  &lepPlus_status3_id_,  "lepPlus_status3_id/I");
+  outTree->Branch("lepPlus_status1_id",  &lepPlus_status1_id_,  "lepPlus_status1_id/I");
   outTree->Branch("lepMinus_status3_id",  &lepMinus_status3_id_,  "lepMinus_status3_id/I");
+  outTree->Branch("lepMinus_status1_id",  &lepMinus_status1_id_,  "lepMinus_status1_id/I");
   outTree->Branch("lepPlus_status3_nDaughters",  &lepPlus_status3_nDaughters_,  "lepPlus_status3_nDaughters/I");
   outTree->Branch("lepMinus_status3_nDaughters",  &lepMinus_status3_nDaughters_,  "lepMinus_status3_nDaughters/I");
   outTree->Branch("nuPlus_status3_id",  &nuPlus_status3_id_,  "nuPlus_status3_id/I");
+  outTree->Branch("nuPlus_status1_id",  &nuPlus_status1_id_,  "nuPlus_status1_id/I");
   outTree->Branch("nuMinus_status3_id",  &nuMinus_status3_id_,  "nuMinus_status3_id/I");
+  outTree->Branch("nuMinus_status1_id",  &nuMinus_status1_id_,  "nuMinus_status1_id/I");
   outTree->Branch("mcid1",            &mcid1_,            "mcid1/I");  
   outTree->Branch("mcdr1",            &mcdr1_,            "mcdr1/F");  
   outTree->Branch("mcdecay1",         &mcdecay1_,         "mcdecay1/I");  
@@ -4648,8 +4657,8 @@ void singleLeptonLooper::makeTree(const TString& prefix, bool doFakeApp, FREnum 
   //outTree->Branch("WMinus_status1", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status1_ );
   outTree->Branch("WPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WPlus_status3_orig_ );
   outTree->Branch("WMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &WMinus_status3_orig_ );
-  outTree->Branch("topPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topPlus_status3_orig_ );
-  outTree->Branch("topMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topMinus_status3_orig_ );
+  outTree->Branch("topPlus_status3_bW", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topPlus_status3_bW_ );
+  outTree->Branch("topMinus_status3_bW", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &topMinus_status3_bW_ );
   outTree->Branch("lepPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepPlus_status3_orig_ );
   outTree->Branch("lepMinus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &lepMinus_status3_orig_ );
   outTree->Branch("nuPlus_status3_orig", "ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >", &nuPlus_status3_orig_ );
@@ -5005,7 +5014,7 @@ int leptonGenpCount_lepTauDecays_status3only(int &nele, int &nmuon, int &ntau){
 }
 
 
-void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
+void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops) {
 
   TLorentzVector WPlus_status2_T(0, 0, 0, 0), WMinus_status2_T(0, 0, 0, 0);
   LorentzVector WPlus_status2(0, 0, 0, 0), WMinus_status2(0, 0, 0, 0);
@@ -5017,8 +5026,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
   vbbar_stat1.SetXYZT(0,0,0,0);
   WPlus_status3_orig.SetXYZT(0,0,0,0);
   WMinus_status3_orig.SetXYZT(0,0,0,0);
-  topPlus_status3_orig.SetXYZT(0,0,0,0);
-  topMinus_status3_orig.SetXYZT(0,0,0,0);
+  topPlus_status3_bW.SetXYZT(0,0,0,0);
+  topMinus_status3_bW.SetXYZT(0,0,0,0);
   lepPlus_status3_orig.SetXYZT(0,0,0,0);
   lepMinus_status3_orig.SetXYZT(0,0,0,0);
   nuPlus_status3_orig.SetXYZT(0,0,0,0);
@@ -5210,8 +5219,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       //ntops++;
 
       topPlus_status3_ = &(genps_p4().at(igen));
-      topPlus_status3_orig = genps_p4().at(igen);
-      topPlus_status3_orig_ = &(topPlus_status3_orig);
+      topPlus_status3_bW = genps_p4().at(igen);
+      topPlus_status3_bW_ = &(topPlus_status3_bW);
 
       //Create status=1 top. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -5235,8 +5244,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
       //ntops++;
 
       topMinus_status3_ = &(genps_p4().at(igen));
-      topMinus_status3_orig = genps_p4().at(igen);
-      topMinus_status3_orig_ = &(topMinus_status3_orig);
+      topMinus_status3_bW = genps_p4().at(igen);
+      topMinus_status3_bW_ = &(topMinus_status3_bW);
 
       //Create status=1 tbar. This only works properly for mc@nlo+herwig.
       already_seen_stat1.clear();
@@ -5271,7 +5280,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == -11 || daughterID == -13 )
                                             {
                                                 lepPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -5291,7 +5301,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuPlus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuPlus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -5315,7 +5326,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == 11 || daughterID == 13 )
                                             {
                                                 lepMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                lepMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                             //need to add all status=1 photons in a DR<0.1 cone around the lepton.
                                         }
@@ -5335,7 +5347,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                                             if ( daughterID == genps_id()[igen] )
                                             {
                                                 nuMinus_status1_ = &(genps_lepdaughter_p4()[igen][kk]);
-                                                continue;
+                                                nuMinus_status1_id_ = daughterID;
+                                                break;
                                             }
                                         }
 
@@ -5445,9 +5458,8 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     dumpDocLines();
   }
 
-  //ntops = 2 is required before calling fillgenlevel
   // check explicitly for t and tbar, in case model has multiple tops etc
-  if (topPlus_status3_ && topMinus_status3_) {
+  if (topPlus_status3_ && topMinus_status3_ && ntops==2) {
     ttpair = *topPlus_status3_ + *topMinus_status3_;
     ttbar_    = &ttpair;
     ptttbar_  = ttbar_->pt();
@@ -5461,14 +5473,11 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     mcmtln_ = getMT( mclep_->Pt() , mclep_->Phi() , mcnu_->Pt() , mcnu_->Phi() );
   }
 
-
-
-  //if(ntaus>0) continue; //for testing particle-level
-
-  if(nleps!=2) return;
+  //remainder of function is only for ttdl
+  if( !(nleps==2 && ntops==2) ) return; //in MC@NLO there are a few events with 4 tops that cause a crash
 
   //For MC@NLO. Boost status=3 W back to status=2
-  if(ismcatnlo && nleps == 2) {
+  if(ismcatnlo) {
     //if(ntaus==0 && (*lepPlus_status1_!=*lepPlus_status3_ || *lepMinus_status1_!=*lepMinus_status3_) ) cout<<" status 1 and 3 leptons not identical "<<lepPlus_status3_->E()-lepPlus_status1_->E()<<" "<<lepMinus_status3_->E()-lepMinus_status1_->E()<<endl;
 
     topPlus_status1_ = &(vt_stat1);
@@ -5514,7 +5523,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
                     nuPlus_status3_->t()
                    );
 
-
+    //Explicitly undoing the status2 to status3 boost from FSR, by working in the status2 rest frame. Note, this is equivalent (confirmed by the commented out code below) to working in the top rest frame, where Herwig ensures the status=2 and status=3 3-vectors are aligned.
     WPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
 
     lepPlus_status3B.Boost(-WPlus_status2_T.BoostVector());
@@ -5526,6 +5535,67 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
     WPlus_status3B.Boost(-WPlus_status3B.BoostVector());
     WPlus_status3B.Boost(WPlus_status2_T.BoostVector());
+
+/*
+    //cout<<" lepPlus3B "<<lepPlus_status3B.Px()<<" "<<lepPlus_status3B.Py()<<" "<<lepPlus_status3B.Pz()<<" "<<lepPlus_status3B.M()<<endl;
+    //cout<<" nuPlus3B "<<nuPlus_status3B.Px()<<" "<<nuPlus_status3B.Py()<<" "<<nuPlus_status3B.Pz()<<" "<<nuPlus_status3B.M()<<endl;
+
+    //WPlus
+    TLorentzVector topPlus_status3_T;
+    topPlus_status3_T.SetXYZT(topPlus_status3_->x(),
+                    topPlus_status3_->y(),
+                    topPlus_status3_->z(),
+                    topPlus_status3_->t()
+                   );
+    TLorentzVector WPlus_status3B2;
+    WPlus_status3B2.SetXYZT(WPlus_status3_->x(),
+                    WPlus_status3_->y(),
+                    WPlus_status3_->z(),
+                    WPlus_status3_->t()
+                   );
+    TLorentzVector lepPlus_status3B2;
+    lepPlus_status3B2.SetXYZT(lepPlus_status3_->x(),
+                    lepPlus_status3_->y(),
+                    lepPlus_status3_->z(),
+                    lepPlus_status3_->t()
+                   );
+    TLorentzVector nuPlus_status3B2;
+    nuPlus_status3B2.SetXYZT(nuPlus_status3_->x(),
+                    nuPlus_status3_->y(),
+                    nuPlus_status3_->z(),
+                    nuPlus_status3_->t()
+                   );
+
+
+    WPlus_status2_T.Boost(-topPlus_status3_T.BoostVector());
+
+    WPlus_status3B2.Boost(-topPlus_status3_T.BoostVector());
+    //WPlus_status3B2.Boost(-WPlus_status2_T.BoostVector());
+
+    lepPlus_status3B2.Boost(-topPlus_status3_T.BoostVector());
+    //lepPlus_status3B2.Boost(-WPlus_status2_T.BoostVector());
+    lepPlus_status3B2.Boost(-WPlus_status3B2.BoostVector());
+    lepPlus_status3B2.Boost(WPlus_status2_T.BoostVector());
+    lepPlus_status3B2.Boost(topPlus_status3_T.BoostVector());
+    nuPlus_status3B2.Boost(-topPlus_status3_T.BoostVector());
+    //nuPlus_status3B2.Boost(-WPlus_status2_T.BoostVector());
+    nuPlus_status3B2.Boost(-WPlus_status3B2.BoostVector());
+    nuPlus_status3B2.Boost(WPlus_status2_T.BoostVector());
+    nuPlus_status3B2.Boost(topPlus_status3_T.BoostVector());
+
+    WPlus_status3B2.Boost(-WPlus_status3B2.BoostVector());
+    WPlus_status3B2.Boost(WPlus_status2_T.BoostVector());
+    WPlus_status3B2.Boost(topPlus_status3_T.BoostVector());
+
+    WPlus_status2_T.Boost(topPlus_status3_T.BoostVector());
+
+    if( fabs(lepPlus_status3B.Px() - lepPlus_status3B2.Px()) > 1e-4 || fabs(lepPlus_status3B.Py() - lepPlus_status3B2.Py()) > 1e-4 || fabs(lepPlus_status3B.Pz() - lepPlus_status3B2.Pz()) > 1e-4 || fabs(lepPlus_status3B.M() - lepPlus_status3B2.M()) > 1e-4) cout<<" lepPlus3Bdelta "<<lepPlus_status3B.Px() - lepPlus_status3B2.Px()<<" "<<lepPlus_status3B.Py() - lepPlus_status3B2.Py()<<" "<<lepPlus_status3B.Pz() - lepPlus_status3B2.Pz()<<" "<<lepPlus_status3B.M() - lepPlus_status3B2.M()<<" ntopPlusDaughters: "<<ntopPlusDaughters<<endl;
+    if( fabs(nuPlus_status3B.Px() - nuPlus_status3B2.Px()) > 1e-4 || fabs(nuPlus_status3B.Py() - nuPlus_status3B2.Py()) > 1e-4 || fabs(nuPlus_status3B.Pz() - nuPlus_status3B2.Pz()) > 1e-4 || fabs(nuPlus_status3B.M() - nuPlus_status3B2.M()) > 1e-4) cout<<" nuPlus3Bdelta "<<nuPlus_status3B.Px() - nuPlus_status3B2.Px()<<" "<<nuPlus_status3B.Py() - nuPlus_status3B2.Py()<<" "<<nuPlus_status3B.Pz() - nuPlus_status3B2.Pz()<<" "<<nuPlus_status3B.M() - nuPlus_status3B2.M()<<" ntopPlusDaughters: "<<ntopPlusDaughters<<endl;
+
+*/
+
+
+
 
 
     //WMinus
@@ -5603,13 +5673,13 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     //also recompute status=3 tops due to presence of events in MC@NLO with gluon FSR in the top decay. Note this means the effective top has lower mass. This is probably not what we want, because the hard FSR gluon is probably from the b (according to Mrenna).
     //if(ntopPlusDaughters>2) cout<< " Ndaughters_topPlus: "<<ntopPlusDaughters<<" "<<topPlus_status3_->M()<<" "<<(WPlus_status2_T + bPlus_status3_).M()<<endl;
     //topPlus_status3_ = WPlus_status2 + bPlus_status3_; 
-    topPlus_status3_->SetXYZT(WPlus_status2.X()+bPlus_status3_->X(),
+    topPlus_status3_bW_->SetXYZT(WPlus_status2.X()+bPlus_status3_->X(),
                     WPlus_status2.Y()+bPlus_status3_->Y(),
                     WPlus_status2.Z()+bPlus_status3_->Z(),
                     WPlus_status2.T()+bPlus_status3_->T()
                    );
     //topMinus_status3_ = WMinus_status2 + bMinus_status3_;
-    topMinus_status3_->SetXYZT(WMinus_status2.X()+bMinus_status3_->X(),
+    topMinus_status3_bW_->SetXYZT(WMinus_status2.X()+bMinus_status3_->X(),
                     WMinus_status2.Y()+bMinus_status3_->Y(),
                     WMinus_status2.Z()+bMinus_status3_->Z(),
                     WMinus_status2.T()+bMinus_status3_->T()
@@ -5619,7 +5689,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     if (  fabs( (*lepPlus_status3_+*nuPlus_status3_).M() - WPlus_status2_T.M() ) > 1e-4  ) {   //the stat2 and 3 Ws can have slightly different masses - in that case just check their betas (Ws and tops will no longer exactly match)
       if (  fabs( (*lepPlus_status3_+*nuPlus_status3_).Beta() - WPlus_status2_T.Beta() ) > 1e-4  ) cout<<"********* Inconsistent WPlus ***********"<<endl;
     }
-    else if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 1e-2 ) {
+    else if( fabs( (bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E() ) > 1e-2 && ntopPlusDaughters == 2 ) {
       cout<<" Top daughters don't match top. Ndaughters_topPlus: "<<ntopPlusDaughters<<" lepPlusID: "<<lepPlus_status3_id_<<" evt: "<<evt_event()<<endl;
       cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status3_->E()<<" W: "<<(lepPlus_status3_->E()+nuPlus_status3_->E()) - WPlus_status2_T.E()<<" mW: "<<(*lepPlus_status3_ + *nuPlus_status3_).M() - WPlus_status2_T.M()<<" gammaW: "<< WPlus_status2_T.Gamma() <<endl; //here we expect exact agreement
       cout<<(bPlus_status3_->E()+lepPlus_status3_->E()+nuPlus_status3_->E()) - topPlus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
@@ -5630,7 +5700,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
     if (  fabs( (*lepMinus_status3_+*nuMinus_status3_).M() - WMinus_status2_T.M() ) > 1e-4  ) {   //the stat2 and 3 Ws can have slightly different masses - in that case just check their betas (Ws and tops will no longer exactly match)
       if (  fabs( (*lepMinus_status3_+*nuMinus_status3_).Beta() - WMinus_status2_T.Beta() ) > 1e-4  ) cout<<"********* Inconsistent WMinus ***********"<<endl;
     }
-    else if( fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 1e-2 ) {
+    else if( fabs( (bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E() ) > 1e-2 && ntopMinusDaughters == 2 ) {
       cout<<" Top daughters don't match top. Ndaughters_topMinus: "<<ntopMinusDaughters<<" lepMinusID: "<<lepMinus_status3_id_<<" evt: "<<evt_event()<<endl;
       cout<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status3_->E()<<" W: "<<(lepMinus_status3_->E()+nuMinus_status3_->E()) - WMinus_status2_T.E()<<" mW: "<<(*lepMinus_status3_ + *nuMinus_status3_).M() - WMinus_status2_T.M()<<" gammaW: "<< WMinus_status2_T.Gamma() <<endl; //here we expect exact agreement
       cout<<(bMinus_status3_->E()+lepMinus_status3_->E()+nuMinus_status3_->E()) - topMinus_status2.E()<<endl; //here we expect a difference when Ndaughters!=2
@@ -5709,65 +5779,65 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus) {
 
 
 
-  //recalculate using original top
-  topplus_genp_p4.SetXYZT(topPlus_status3_orig_->x(),
-                  topPlus_status3_orig_->y(),
-                  topPlus_status3_orig_->z(),
-                  topPlus_status3_orig_->t()
+  //recalculate using original leptons
+  topplus_genp_p4.SetXYZT(topPlus_status3_->x(),
+                  topPlus_status3_->y(),
+                  topPlus_status3_->z(),
+                  topPlus_status3_->t()
                  );
 
-  topminus_genp_p4.SetXYZT(topMinus_status3_orig_->x(),
-                  topMinus_status3_orig_->y(),
-                  topMinus_status3_orig_->z(),
-                  topMinus_status3_orig_->t()
+  topminus_genp_p4.SetXYZT(topMinus_status3_->x(),
+                  topMinus_status3_->y(),
+                  topMinus_status3_->z(),
+                  topMinus_status3_->t()
                  );
 
-  lepPlus_gen.SetXYZT(lepPlus_status3_->x(),
-                  lepPlus_status3_->y(),
-                  lepPlus_status3_->z(),
-                  lepPlus_status3_->t()
+  lepPlus_gen.SetXYZT(lepPlus_status3_orig_->x(),
+                  lepPlus_status3_orig_->y(),
+                  lepPlus_status3_orig_->z(),
+                  lepPlus_status3_orig_->t()
                  );
 
-  lepMinus_gen.SetXYZT(lepMinus_status3_->x(),
-                  lepMinus_status3_->y(),
-                  lepMinus_status3_->z(),
-                  lepMinus_status3_->t()
+  lepMinus_gen.SetXYZT(lepMinus_status3_orig_->x(),
+                  lepMinus_status3_orig_->y(),
+                  lepMinus_status3_orig_->z(),
+                  lepMinus_status3_orig_->t()
                  );
 
 
-  m_topminus_gen_origtops_ = topminus_genp_p4.M();
-  m_topplus_gen_origtops_ = topplus_genp_p4.M();
+  m_topminus_gen_origleps_ = topminus_genp_p4.M();
+  m_topplus_gen_origleps_ = topplus_genp_p4.M();
 
-  tt_mass_gen_origtops_ = (topplus_genp_p4 + topminus_genp_p4).M();
-  ttRapidity_gen_origtops_ = topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity();
-  ttRapidity2_gen_origtops_ = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
+  tt_mass_gen_origleps_ = (topplus_genp_p4 + topminus_genp_p4).M();
+  ttRapidity_gen_origleps_ = topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity();
+  ttRapidity2_gen_origleps_ = (topplus_genp_p4 + topminus_genp_p4).Rapidity();
 
-  top_rapiditydiff_cms_gen_origtops_ = (topplus_genp_p4.Rapidity() - topminus_genp_p4.Rapidity()) * (topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity());
-  top_pseudorapiditydiff_cms_gen_origtops_ = abs(topplus_genp_p4.Eta()) - abs(topminus_genp_p4.Eta());
-  top_rapiditydiff_Marco_gen_origtops_ = abs(topplus_genp_p4.Rapidity()) - abs(topminus_genp_p4.Rapidity());
+  top_rapiditydiff_cms_gen_origleps_ = (topplus_genp_p4.Rapidity() - topminus_genp_p4.Rapidity()) * (topplus_genp_p4.Rapidity() + topminus_genp_p4.Rapidity());
+  top_pseudorapiditydiff_cms_gen_origleps_ = abs(topplus_genp_p4.Eta()) - abs(topminus_genp_p4.Eta());
+  top_rapiditydiff_Marco_gen_origleps_ = abs(topplus_genp_p4.Rapidity()) - abs(topminus_genp_p4.Rapidity());
 
 
   cms_gen = topplus_genp_p4 + topminus_genp_p4;
-  tt_pT_gen_origtops_ = cms_gen.Pt();
+  tt_pT_gen_origleps_ = cms_gen.Pt();
   topplus_genp_p4.Boost(-cms_gen.BoostVector());
   topminus_genp_p4.Boost(-cms_gen.BoostVector());
-  top_costheta_cms_gen_origtops_ = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
+  top_costheta_cms_gen_origleps_ = topplus_genp_p4.Vect().Dot(cms_gen.Vect()) / (topplus_genp_p4.Vect().Mag() * cms_gen.Vect().Mag());
 
 
-  lep_charge_asymmetry_gen_origtops_ = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
-  lep_azimuthal_asymmetry_gen_origtops_ = lepPlus_gen.DeltaPhi(lepMinus_gen);
-  lep_azimuthal_asymmetry2_gen_origtops_ = acos(cos(lep_azimuthal_asymmetry_gen_origtops_));
+  lep_charge_asymmetry_gen_origleps_ = abs(lepPlus_gen.Eta()) - abs(lepMinus_gen.Eta());
+  lep_azimuthal_asymmetry_gen_origleps_ = lepPlus_gen.DeltaPhi(lepMinus_gen);
+  lep_azimuthal_asymmetry2_gen_origleps_ = acos(cos(lep_azimuthal_asymmetry_gen_origleps_));
 
   lepPlus_gen.Boost(-cms_gen.BoostVector());
   lepPlus_gen.Boost(-topplus_genp_p4.BoostVector());
   lepMinus_gen.Boost(-cms_gen.BoostVector());
   lepMinus_gen.Boost(-topminus_genp_p4.BoostVector());
 
-  lepPlus_costheta_cms_gen_origtops_ = lepPlus_gen.Vect().Dot(topplus_genp_p4.Vect()) / (lepPlus_gen.Vect().Mag() * topplus_genp_p4.Vect().Mag());
-  lepMinus_costheta_cms_gen_origtops_ = lepMinus_gen.Vect().Dot(topminus_genp_p4.Vect()) / (lepMinus_gen.Vect().Mag() * topminus_genp_p4.Vect().Mag());
+  lepPlus_costheta_cms_gen_origleps_ = lepPlus_gen.Vect().Dot(topplus_genp_p4.Vect()) / (lepPlus_gen.Vect().Mag() * topplus_genp_p4.Vect().Mag());
+  lepMinus_costheta_cms_gen_origleps_ = lepMinus_gen.Vect().Dot(topminus_genp_p4.Vect()) / (lepMinus_gen.Vect().Mag() * topminus_genp_p4.Vect().Mag());
 
-  top_spin_correlation_gen_origtops_ = lepPlus_costheta_cms_gen_origtops_ * lepMinus_costheta_cms_gen_origtops_ ;
-  lep_cos_opening_angle_gen_origtops_ = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
+  top_spin_correlation_gen_origleps_ = lepPlus_costheta_cms_gen_origleps_ * lepMinus_costheta_cms_gen_origleps_ ;
+  lep_cos_opening_angle_gen_origleps_ = lepPlus_gen.Vect().Dot(lepMinus_gen.Vect()) / (lepPlus_gen.Vect().Mag() * lepMinus_gen.Vect().Mag());
 
 
 }

@@ -633,14 +633,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		
 
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
-        TH1D *acceptM = (TH1D *) file->Get("accept_" + acceptanceName);
+        TH1D *acceptM = (TH1D *) file->Get("accept_" + acceptanceName + "_all");
         acceptM->Scale(1.0 / acceptM->Integral());
 
-        TH1D *denominatorM = (TH1D *) file->Get("denominator_" + acceptanceName);
+        TH1D *denominatorM = (TH1D *) file->Get("denominator_" + acceptanceName + "_all");
 
 
         TFile *file_nopTreweighting = new TFile("../denominator/acceptance/mcnlo_nopTreweighting/accept_" + acceptanceName + ".root");
-        TH1D *denominatorM_nopTreweighting_raw = (TH1D *) file_nopTreweighting->Get("denominator_" + acceptanceName);
+        TH1D *denominatorM_nopTreweighting_raw = (TH1D *) file_nopTreweighting->Get("denominator_" + acceptanceName + "_all");
 
 
 

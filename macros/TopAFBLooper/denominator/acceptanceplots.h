@@ -19,7 +19,20 @@ Double_t bins_rapiditydiffMarco[] =  { -2., -44./60., -20./60., 0., 20./60., 44.
 //Double_t bins_rapiditydiffMarco[] =  { -2., -0.7, -0.3, 0., 0.3, 0.7, 2.}; 
 Double_t bins_lepCosTheta[] = {-1., -2./3., -1./3., 0., 1./3., 2./3., 1.};
 //Double_t bins_lepCosTheta[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
-Double_t bins_topSpinCorr[] = {-1., -0.4, -8./60., 0., 8./60., 0.4, 1.}; 
+Double_t bins_topSpinCorr[] = {-1., -0.4, -10./60., 0., 10./60., 0.4, 1.}; 
 //Double_t bins_topSpinCorr[] = {-1., -0.5, -0.2, 0., 0.2, 0.5, 1.}; 
 Double_t bins_lepCosOpeningAngle[] = {-1., -2./3., -1./3., 0., 1./3., 2./3., 1.}; 
 //Double_t bins_lepCosOpeningAngle[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
+
+
+//minimum bin width should not be smaller than guide from resolution plots (TopAFBLooper/resolutionplots.sh)
+//approximate resolution for lepChargeAsym: ~0
+//approximate resolution for lepAzimAsym2: ~0
+//approximate resolution for lepAzimAsym: ~0
+//approximate resolution for topCosTheta: 0.14
+//approximate resolution for pseudorapiditydiff: 0.41 
+//approximate resolution for rapiditydiff: 0.35
+//approximate resolution for rapiditydiffMarco: 0.34
+//approximate resolution for lepCosTheta: 0.17
+//approximate resolution for topSpinCorr: 0.15
+//approximate resolution for lepCosOpeningAngle: 0.18
