@@ -16,15 +16,27 @@
 
 using namespace std;
 
-TH1F* hnumerator;
-TH1F* hdenominator;
-TH1F* hacceptance;
-TH2F* hnumerator2d;
-TH2F* hdenominator2d;
-//TH2F* hacceptance2d;
-TH2F* hnumerator2drebinned;
-TH2F* hdenominator2drebinned;
-TH2F* hacceptance2drebinned;
+TH1F* hmueg;
+TH1F* hdimu;
+TH1F* hdiel;
+
+TH1F* hmueg_numerator;
+TH1F* hdimu_numerator;
+TH1F* hdiel_numerator;
+TH1F* hmueg_denominator;
+TH1F* hdimu_denominator;
+TH1F* hdiel_denominator;
+TH1F* hmueg_acceptance;
+TH1F* hdimu_acceptance;
+TH1F* hdiel_acceptance;
+
+
+TH2F* hmueg2d;
+TH2F* hdimu2d;
+//TH2F* hdiel2d;
+TH2F* hmueg2drebinned;
+TH2F* hdimu2drebinned;
+TH2F* hdiel2drebinned;
 
 void GetAfb(TH1F* h, Double_t &afb, Double_t  &afberr){
  
@@ -50,7 +62,6 @@ void GetAfb(TH1F* h, Double_t &afb, Double_t  &afberr){
 
 }
 
-//void comparisonplots(TString histname = "topSpinCorrGen", bool drawnorm = true, TString FName1 = "denominator_powheg_stat1/results/hist_noCuts.root", TString FName2 = "denominator_powhegscfix_stat1/results/hist_noCuts.root", TString FName3 = "denominator_mcatnlo/results/hist_noCuts.root"){
 void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm = true) {
   setTDRStyle();
 
@@ -59,15 +70,46 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
   std::cout << "Opening " << FName1.Data() << "\n";
   TFile *f_1         = TFile::Open(FName1.Data());  
 
-  hacceptance = (TH1F*)f_1->Get(Form("accept_%s_diel", histname.Data()));
+  hdiel = (TH1F*)f_1->Get(Form("accept_%s_diel", histname.Data()));
 
-  hnumerator = (TH1F*)f_1->Get(Form("accept_%s_mueg", histname.Data())); 
+  hmueg = (TH1F*)f_1->Get(Form("accept_%s_mueg", histname.Data())); 
 
-  hdenominator = (TH1F*)f_1->Get(Form("accept_%s_dimu", histname.Data()));
+  hdimu = (TH1F*)f_1->Get(Form("accept_%s_dimu", histname.Data()));
   
+
+  hdiel_numerator = (TH1F*)f_1->Get(Form("numerator_finebins_%s_diel", histname.Data()));
+
+  hmueg_numerator = (TH1F*)f_1->Get(Form("numerator_finebins_%s_mueg", histname.Data())); 
+
+  hdimu_numerator = (TH1F*)f_1->Get(Form("numerator_finebins_%s_dimu", histname.Data()));
+
+  hdiel_denominator = (TH1F*)f_1->Get(Form("denominator_finebins_%s_diel", histname.Data()));
+
+  hmueg_denominator = (TH1F*)f_1->Get(Form("denominator_finebins_%s_mueg", histname.Data())); 
+
+  hdimu_denominator = (TH1F*)f_1->Get(Form("denominator_finebins_%s_dimu", histname.Data()));
+
+
+  hdiel_acceptance =  (TH1F*) hdiel_numerator->Clone(Form("diel_%s",histname.Data()));
+  hdiel_acceptance->SetTitle(histname.Data());
+  hdiel_acceptance->Reset();
+
+  hmueg_acceptance =  (TH1F*) hmueg_numerator->Clone(Form("mueg_%s",histname.Data()));
+  hmueg_acceptance->SetTitle(histname.Data());
+  hmueg_acceptance->Reset();
+
+  hdimu_acceptance =  (TH1F*) hdimu_numerator->Clone(Form("dimu_%s",histname.Data()));
+  hdimu_acceptance->SetTitle(histname.Data());
+  hdimu_acceptance->Reset();
+
+  hdiel_acceptance->Divide(hdiel_numerator,hdiel_denominator,1., 1.);
+  hmueg_acceptance->Divide(hmueg_numerator,hmueg_denominator,1., 1.);
+  hdimu_acceptance->Divide(hdimu_numerator,hdimu_denominator,1., 1.);
+
+
   std::cout << "Opened " << Form("accept_%s_mueg", histname.Data()) <<"\n";
 
-  //hacceptance->Print();
+  //hdiel->Print();
   
   Double_t pi = 3.141592653589793;
 
@@ -75,24 +117,24 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
 /*  
   if(histname.Contains("lepChargeAsym") ||  histname.Contains("rapiditydiff")) {
 
-  	hnumerator = (TH1F*) hnumerator->Rebin(6,Form("numerator_%s", histname.Data()),bins1);
-  	hdenominator = (TH1F*) hdenominator->Rebin(6,Form("denominator_%s", histname.Data()),bins1);
+  	hmueg = (TH1F*) hmueg->Rebin(6,Form("numerator_%s", histname.Data()),bins1);
+  	hdimu = (TH1F*) hdimu->Rebin(6,Form("denominator_%s", histname.Data()),bins1);
 
-  	hnumerator2drebinned = new TH2F(Form("numerator_%s_mtt", histname.Data()),Form("numerator_%s_mtt", histname.Data()),2,bins1forMtt,3, binsMtt);
-  	TAxis *xaxis = hnumerator2d->GetXaxis();
-  	TAxis *yaxis = hnumerator2d->GetYaxis();
+  	hmueg2drebinned = new TH2F(Form("numerator_%s_mtt", histname.Data()),Form("numerator_%s_mtt", histname.Data()),2,bins1forMtt,3, binsMtt);
+  	TAxis *xaxis = hmueg2d->GetXaxis();
+  	TAxis *yaxis = hmueg2d->GetYaxis();
   	for (int j=1;j<=yaxis->GetNbins();j++) {
   		for (int i=1;i<=xaxis->GetNbins();i++) {
-  			hnumerator2drebinned->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hnumerator2d->GetBinContent(i,j));
+  			hmueg2drebinned->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hmueg2d->GetBinContent(i,j));
   		}
   	}
   	
-  	hdenominator2drebinned = new TH2F(Form("denominator_%s_mtt", histname.Data()),Form("denominator_%s_mtt", histname.Data()),2,bins1forMtt,3, binsMtt);
-  	TAxis *xaxisd = hdenominator2d->GetXaxis();
-  	TAxis *yaxisd = hdenominator2d->GetYaxis();
+  	hdimu2drebinned = new TH2F(Form("denominator_%s_mtt", histname.Data()),Form("denominator_%s_mtt", histname.Data()),2,bins1forMtt,3, binsMtt);
+  	TAxis *xaxisd = hdimu2d->GetXaxis();
+  	TAxis *yaxisd = hdimu2d->GetYaxis();
   	for (int j=1;j<=yaxisd->GetNbins();j++) {
   		for (int i=1;i<=xaxisd->GetNbins();i++) {
-  			hdenominator2drebinned->Fill(xaxisd->GetBinCenter(i),yaxisd->GetBinCenter(j), hdenominator2d->GetBinContent(i,j));
+  			hdimu2drebinned->Fill(xaxisd->GetBinCenter(i),yaxisd->GetBinCenter(j), hdimu2d->GetBinContent(i,j));
   		}
   	}
   	
@@ -100,24 +142,24 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
   
   else  if(histname.Contains("lepAzimAsym2") ) {
 
-  	hnumerator = (TH1F*) hnumerator->Rebin(6,Form("numerator_%s", histname.Data()),bins3);
-  	hdenominator = (TH1F*) hdenominator->Rebin(6,Form("denominator_%s", histname.Data()),bins3);
+  	hmueg = (TH1F*) hmueg->Rebin(6,Form("numerator_%s", histname.Data()),bins3);
+  	hdimu = (TH1F*) hdimu->Rebin(6,Form("denominator_%s", histname.Data()),bins3);
 
-  	hnumerator2drebinned = new TH2F(Form("numerator_%s_mtt", histname.Data()),Form("numerator_%s_mtt", histname.Data()),2,bins3forMtt,3, binsMtt);
-  	TAxis *xaxis = hnumerator2d->GetXaxis();
-  	TAxis *yaxis = hnumerator2d->GetYaxis();
+  	hmueg2drebinned = new TH2F(Form("numerator_%s_mtt", histname.Data()),Form("numerator_%s_mtt", histname.Data()),2,bins3forMtt,3, binsMtt);
+  	TAxis *xaxis = hmueg2d->GetXaxis();
+  	TAxis *yaxis = hmueg2d->GetYaxis();
   	for (int j=1;j<=yaxis->GetNbins();j++) {
   		for (int i=1;i<=xaxis->GetNbins();i++) {
-  			hnumerator2drebinned->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hnumerator2d->GetBinContent(i,j));
+  			hmueg2drebinned->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hmueg2d->GetBinContent(i,j));
   		}
   	}
   	
-  	hdenominator2drebinned = new TH2F(Form("denominator_%s_mtt", histname.Data()),Form("denominator_%s_mtt", histname.Data()),2,bins3forMtt,3, binsMtt);
-  	TAxis *xaxisd = hdenominator2d->GetXaxis();
-  	TAxis *yaxisd = hdenominator2d->GetYaxis();
+  	hdimu2drebinned = new TH2F(Form("denominator_%s_mtt", histname.Data()),Form("denominator_%s_mtt", histname.Data()),2,bins3forMtt,3, binsMtt);
+  	TAxis *xaxisd = hdimu2d->GetXaxis();
+  	TAxis *yaxisd = hdimu2d->GetYaxis();
   	for (int j=1;j<=yaxisd->GetNbins();j++) {
   		for (int i=1;i<=xaxisd->GetNbins();i++) {
-  			hdenominator2drebinned->Fill(xaxisd->GetBinCenter(i),yaxisd->GetBinCenter(j), hdenominator2d->GetBinContent(i,j));
+  			hdimu2drebinned->Fill(xaxisd->GetBinCenter(i),yaxisd->GetBinCenter(j), hdimu2d->GetBinContent(i,j));
   		}
   	}
   	
@@ -129,24 +171,24 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
   
   if(true) {
  	
-  	hnumerator = (TH1F*) hnumerator->Rebin(6,Form("numerator_%s", histname.Data()),bins2);
-  	hdenominator = (TH1F*) hdenominator->Rebin(6,Form("denominator_%s", histname.Data()),bins2);
+  	hmueg = (TH1F*) hmueg->Rebin(6,Form("numerator_%s", histname.Data()),bins2);
+  	hdimu = (TH1F*) hdimu->Rebin(6,Form("denominator_%s", histname.Data()),bins2);
   	
-    	hnumerator2drebinned = new TH2F(Form("numerator_%s_mtt", histname.Data()),Form("numerator_%s_mtt", histname.Data()),2,bins2forMtt,3, binsMtt);
-  	TAxis *xaxis = hnumerator2d->GetXaxis();
-  	TAxis *yaxis = hnumerator2d->GetYaxis();
+    	hmueg2drebinned = new TH2F(Form("numerator_%s_mtt", histname.Data()),Form("numerator_%s_mtt", histname.Data()),2,bins2forMtt,3, binsMtt);
+  	TAxis *xaxis = hmueg2d->GetXaxis();
+  	TAxis *yaxis = hmueg2d->GetYaxis();
   	for (int j=1;j<=yaxis->GetNbins();j++) {
   		for (int i=1;i<=xaxis->GetNbins();i++) {
-  			hnumerator2drebinned->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hnumerator2d->GetBinContent(i,j));
+  			hmueg2drebinned->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hmueg2d->GetBinContent(i,j));
   		}
   	}
   	
-  	hdenominator2drebinned = new TH2F(Form("denominator_%s_mtt", histname.Data()),Form("denominator_%s_mtt", histname.Data()),2,bins2forMtt,3, binsMtt);
-  	TAxis *xaxisd = hdenominator2d->GetXaxis();
-  	TAxis *yaxisd = hdenominator2d->GetYaxis();
+  	hdimu2drebinned = new TH2F(Form("denominator_%s_mtt", histname.Data()),Form("denominator_%s_mtt", histname.Data()),2,bins2forMtt,3, binsMtt);
+  	TAxis *xaxisd = hdimu2d->GetXaxis();
+  	TAxis *yaxisd = hdimu2d->GetYaxis();
   	for (int j=1;j<=yaxisd->GetNbins();j++) {
   		for (int i=1;i<=xaxisd->GetNbins();i++) {
-  			hdenominator2drebinned->Fill(xaxisd->GetBinCenter(i),yaxisd->GetBinCenter(j), hdenominator2d->GetBinContent(i,j));
+  			hdimu2drebinned->Fill(xaxisd->GetBinCenter(i),yaxisd->GetBinCenter(j), hdimu2d->GetBinContent(i,j));
   		}
   	}
     	
@@ -160,117 +202,137 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
   double Asym1err,Asym2err,Asym3err;
 /*
     if(histname.Contains("topSpinCorr")){
-      Asym1 = hacceptance->GetMean();
-      Asym2 = hnumerator->GetMean();
-      Asym3 = hdenominator->GetMean();
-      Asym1err = hacceptance->GetMeanError();
-      Asym2err = hnumerator->GetMeanError();
-      Asym3err = hdenominator->GetMeanError();
+      Asym1 = hdiel->GetMean();
+      Asym2 = hmueg->GetMean();
+      Asym3 = hdimu->GetMean();
+      Asym1err = hdiel->GetMeanError();
+      Asym2err = hmueg->GetMeanError();
+      Asym3err = hdimu->GetMeanError();
       cout<<"mean: "<<9*Asym1<<" +/- "<<9*Asym1err<<", "<<9*Asym2<<" +/- "<<9*Asym2err<<", "<<9*Asym3<<" +/- "<<9*Asym3err<<endl;
 
-      GetAfb(hacceptance,Asym1, Asym1err);
-      GetAfb(hnumerator,Asym2, Asym2err);
-      GetAfb(hdenominator,Asym3, Asym3err);
+      GetAfb(hdiel,Asym1, Asym1err);
+      GetAfb(hmueg,Asym2, Asym2err);
+      GetAfb(hdimu,Asym3, Asym3err);
       cout<<"asym: "<<4*Asym1<<" +/- "<<4*Asym1err<<", "<<4*Asym2<<" +/- "<<4*Asym2err<<", "<<4*Asym3<<" +/- "<<4*Asym3err<<endl;
     }
     else if(histname.Contains("Cos")){
-      Asym1 = hacceptance->GetMean();
-      Asym2 = hnumerator->GetMean();
-      Asym3 = hdenominator->GetMean();
-      Asym1err = hacceptance->GetMeanError();
-      Asym2err = hnumerator->GetMeanError();
-      Asym3err = hdenominator->GetMeanError();
+      Asym1 = hdiel->GetMean();
+      Asym2 = hmueg->GetMean();
+      Asym3 = hdimu->GetMean();
+      Asym1err = hdiel->GetMeanError();
+      Asym2err = hmueg->GetMeanError();
+      Asym3err = hdimu->GetMeanError();
       cout<<"mean: "<<3*Asym1<<" +/- "<<3*Asym1err<<", "<<3*Asym2<<" +/- "<<3*Asym2err<<", "<<3*Asym3<<" +/- "<<3*Asym3err<<endl;
 
-      GetAfb(hacceptance,Asym1, Asym1err);
-      GetAfb(hnumerator,Asym2, Asym2err);
-      GetAfb(hdenominator,Asym3, Asym3err);
+      GetAfb(hdiel,Asym1, Asym1err);
+      GetAfb(hmueg,Asym2, Asym2err);
+      GetAfb(hdimu,Asym3, Asym3err);
       cout<<"asym: "<<2*Asym1<<" +/- "<<2*Asym1err<<", "<<2*Asym2<<" +/- "<<2*Asym2err<<", "<<2*Asym3<<" +/- "<<2*Asym3err<<endl;
     }
     */
     //else {
-      Asym1 = hacceptance->GetMean();
-      Asym2 = hnumerator->GetMean();
-      Asym3 = hdenominator->GetMean();
-      Asym1err = hacceptance->GetMeanError();
-      Asym2err = hnumerator->GetMeanError();
-      Asym3err = hdenominator->GetMeanError();
+      Asym1 = hdiel->GetMean();
+      Asym2 = hmueg->GetMean();
+      Asym3 = hdimu->GetMean();
+      Asym1err = hdiel->GetMeanError();
+      Asym2err = hmueg->GetMeanError();
+      Asym3err = hdimu->GetMeanError();
       cout<<"mean: "<<1*Asym1<<" +/- "<<1*Asym1err<<", "<<1*Asym2<<" +/- "<<1*Asym2err<<", "<<1*Asym3<<" +/- "<<1*Asym3err<<endl;
 
-      GetAfb(hacceptance,Asym1, Asym1err);
-      GetAfb(hnumerator,Asym2, Asym2err);
-      GetAfb(hdenominator,Asym3, Asym3err);
+      GetAfb(hdiel,Asym1, Asym1err);
+      GetAfb(hmueg,Asym2, Asym2err);
+      GetAfb(hdimu,Asym3, Asym3err);
       cout<<"asym: "<<1*Asym1<<" +/- "<<1*Asym1err<<", "<<1*Asym2<<" +/- "<<1*Asym2err<<", "<<1*Asym3<<" +/- "<<1*Asym3err<<endl;
     //}
 
 
-  //hnumerator->Rebin(6);
-  //hdenominator->Rebin(6);
-  //hacceptance->Rebin(6);
+  double KS32 = hdimu->KolmogorovTest(hmueg);
+  double KS12 = hdiel->KolmogorovTest(hmueg);
+  double KS31 = hdimu->KolmogorovTest(hdiel);
+
+  cout<<"K-S mm,em: "<<KS32<<"; ee,em: "<<KS12<<"; mm,ee: "<<KS31<<endl;
+
+/*
+  //recalculate KS using fine-binned histos
+
+   KS32 = hdimu_acceptance->KolmogorovTest(hmueg_acceptance);
+   KS12 = hdiel_acceptance->KolmogorovTest(hmueg_acceptance);
+   KS31 = hdimu_acceptance->KolmogorovTest(hdiel_acceptance);
+
+  cout<<"K-S mm,em: "<<KS32<<"; ee,em: "<<KS12<<"; mm,ee: "<<KS31<<endl;
+*/
+
+  //hmueg->Rebin(6);
+  //hdimu->Rebin(6);
+  //hdiel->Rebin(6);
   
   TString accepthistname = "compare_channels_acceptance_";
   accepthistname += histname;
   
   //TFile *output = new TFile(Form("%s.root", accepthistname.Data()), "RECREATE");  
   
-  //hacceptance =  (TH1F*) hnumerator->Clone(accepthistname.Data());
-  //hacceptance->SetTitle(accepthistname.Data());
-  //hacceptance->Reset();
-  //hacceptance->Divide(hnumerator,hdenominator,1., 1.);
+  //hdiel =  (TH1F*) hmueg->Clone(accepthistname.Data());
+  //hdiel->SetTitle(accepthistname.Data());
+  //hdiel->Reset();
+  //hdiel->Divide(hmueg,hdimu,1., 1.);
   
-  //hacceptance2d =  (TH2F*) hnumerator2d->Clone( Form("%s_mtt_notrebinned", accepthistname.Data()) );
-  //hacceptance2d->Reset();
-  //hacceptance2d->SetTitle(Form("%s_mtt_notrebinned", accepthistname.Data()));
-  //hacceptance2d->Divide(hnumerator2d,hdenominator2d,1., 1.);
+  //hdiel2d =  (TH2F*) hmueg2d->Clone( Form("%s_mtt_notrebinned", accepthistname.Data()) );
+  //hdiel2d->Reset();
+  //hdiel2d->SetTitle(Form("%s_mtt_notrebinned", accepthistname.Data()));
+  //hdiel2d->Divide(hmueg2d,hdimu2d,1., 1.);
   
-  //hacceptance2drebinned =  (TH2F*) hnumerator2drebinned->Clone( Form("%s_mtt", accepthistname.Data()) );
-  //hacceptance2drebinned->Reset();
-  //hacceptance2drebinned->SetTitle(Form("%s_mtt", accepthistname.Data()));
-  //hacceptance2drebinned->Divide(hnumerator2drebinned,hdenominator2drebinned,1., 1.);
+  //hdiel2drebinned =  (TH2F*) hmueg2drebinned->Clone( Form("%s_mtt", accepthistname.Data()) );
+  //hdiel2drebinned->Reset();
+  //hdiel2drebinned->SetTitle(Form("%s_mtt", accepthistname.Data()));
+  //hdiel2drebinned->Divide(hmueg2drebinned,hdimu2drebinned,1., 1.);
   
   
     
-  hnumerator->SetLineColor(kBlue);
-  hnumerator-> SetFillColor(0);
-  hnumerator->SetMarkerColor(kBlue);
-  hdenominator->SetLineColor(kRed);
-  hdenominator->SetMarkerColor(kRed);
-  hdenominator-> SetFillColor(0);
-  hacceptance->SetLineColor(kBlack);
-  hacceptance->SetMarkerColor(kBlack);
-  hacceptance-> SetFillColor(0);
+  hmueg->SetLineColor(kBlue);
+  hmueg-> SetFillColor(0);
+  hmueg->SetMarkerColor(kBlue);
+  hdimu->SetLineColor(kRed);
+  hdimu->SetMarkerColor(kRed);
+  hdimu-> SetFillColor(0);
+  hdiel->SetLineColor(kBlack);
+  hdiel->SetMarkerColor(kBlack);
+  hdiel-> SetFillColor(0);
   
   gStyle->SetPaintTextFormat("6.4f");
 
   TCanvas *c1 = new TCanvas();
   c1->cd();
   
-  hacceptance->SetMaximum(1.25*hacceptance->GetMaximum());
-  if(hacceptance->GetMinimum() <0.15 *hacceptance->GetMaximum() ) hacceptance->SetMinimum(0.);  
-  if(hacceptance->GetMinimum() > 0.) hacceptance->SetMinimum(0.75*hacceptance->GetMinimum() );  
+  hdiel->SetMaximum(1.25*hdiel->GetMaximum());
+  if(hdiel->GetMinimum() <0.15 *hdiel->GetMaximum() ) hdiel->SetMinimum(0.);  
+  if(hdiel->GetMinimum() > 0.) hdiel->SetMinimum(0.75*hdiel->GetMinimum() );  
   
   if(!drawnorm){
-  	hacceptance->Draw("hist TEXT00E");
+  	hdiel->Draw("hist TEXT00E");
   }
   else{
-  	//hacceptance->Scale(1.,"width");
-  	//hnumerator->Scale(1.,"width");
-  	//hdenominator->Scale(1.,"width");
+  	//hdiel->Scale(1.,"width");
+  	//hmueg->Scale(1.,"width");
+  	//hdimu->Scale(1.,"width");
   	  	
   	//TH1 *frame=new TH1F("frame","",1000,0.,3.1415926535);frame->SetMaximum(0.0024);frame->SetMinimum(0.12);frame->Draw();
          //TH1 *frame=new TH1F("frame","",1000,-1.,1.);frame->SetMaximum(0.45);frame->SetMinimum(0.);frame->Draw();
-  	//hacceptance->SetMaximum(0.4);
-  	//hacceptance->SetMinimum(0.); 
-  	//hnumerator->SetMaximum(0.4);
-  	//hnumerator->SetMinimum(0.);
-  	//hdenominator->SetMaximum(0.4);
-  	//hdenominator->SetMinimum(0.); 
-  	//hacceptance->SetMinimum(0.5);
-  	//hacceptance->SetMaximum(1.5);
-  	//hacceptance->GetXaxis()->SetTitle("");
-  	hacceptance->DrawNormalized("histE");  	
-  	hnumerator->DrawNormalized("histEsame");
-  	hdenominator->DrawNormalized("histEsame");
+  	//hdiel->SetMaximum(0.4);
+  	//hdiel->SetMinimum(0.); 
+  	//hmueg->SetMaximum(0.4);
+  	//hmueg->SetMinimum(0.);
+  	//hdimu->SetMaximum(0.4);
+  	//hdimu->SetMinimum(0.); 
+  	//hdiel->SetMinimum(0.5);
+  	//hdiel->SetMaximum(1.5);
+  	//hdiel->GetXaxis()->SetTitle("");
+  	hdiel->DrawNormalized("histE");  	
+  	hmueg->DrawNormalized("histEsame");
+  	hdimu->DrawNormalized("histEsame");
+
+    //hdiel_acceptance->DrawNormalized("histE");   
+    //hmueg_acceptance->DrawNormalized("histEsame");
+    //hdimu_acceptance->DrawNormalized("histEsame");
   }
 
   TLegend *leg = new TLegend(0.47,0.18,0.69,0.27);
@@ -278,11 +340,11 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
   leg->SetLineColor(0);
   leg->SetTextSize(0.032);
   leg->SetFillStyle(0);
-  leg->AddEntry(hacceptance, "ee","l");
-  //if(drawnorm) leg->AddEntry(hnumerator, "powheg (stat1 leps)","l");
-  //if(drawnorm) leg->AddEntry(hdenominator, "powheg SC fix (stat1 leps)","l");
-  if(drawnorm) leg->AddEntry(hnumerator, "e#mu","l");
-  if(drawnorm) leg->AddEntry(hdenominator, "#mu#mu","l");
+  leg->AddEntry(hdiel, "ee","l");
+  //if(drawnorm) leg->AddEntry(hmueg, "powheg (stat1 leps)","l");
+  //if(drawnorm) leg->AddEntry(hdimu, "powheg SC fix (stat1 leps)","l");
+  if(drawnorm) leg->AddEntry(hmueg, "e#mu","l");
+  if(drawnorm) leg->AddEntry(hdimu, "#mu#mu","l");
   
   leg->Draw("same");
 
@@ -321,25 +383,60 @@ void compare_channels_acceptance(TString histname = "topSpinCorr", bool drawnorm
   blah = pt1->AddText(Asym3_temp.Data());
   blah->SetTextSize(0.032);
   blah->SetTextAlign(11);  
-  blah->SetTextColor(kRed);  
+  blah->SetTextColor(kRed); 
 
+  pt1->Draw(); 
+
+
+  TPaveText *pt2 = new TPaveText(0.60, 0.77, 0.82, 0.92, "brNDC");
+  pt2->SetName("pt2name");
+  pt2->SetBorderSize(0);
+  pt2->SetFillStyle(0);
+  
+  TText *blah2;
+
+  blah2 = pt2->AddText("");
+
+  TString KS32_temp = formatFloat(KS32,"%6.4f");
+  KS32_temp.ReplaceAll(" " , "" );
+  KS32_temp = TString("   KS #mu#mu,e#mu: ") +  KS32_temp;
+  blah2 = pt2->AddText(KS32_temp.Data());
+  blah2->SetTextSize(0.032);
+  blah2->SetTextAlign(11);  
+  blah2->SetTextColor(kBlack);  
+
+  TString KS12_temp = formatFloat(KS12,"%6.4f");
+  KS12_temp.ReplaceAll(" " , "" );
+  KS12_temp = TString("   KS ee,e#mu: ") +  KS12_temp;
+  blah2 = pt2->AddText(KS12_temp.Data());
+  blah2->SetTextSize(0.032);
+  blah2->SetTextAlign(11);  
+  blah2->SetTextColor(kBlack);  
+
+  TString KS31_temp = formatFloat(KS31,"%6.4f");
+  KS31_temp.ReplaceAll(" " , "" );
+  KS31_temp = TString("   KS #mu#mu,ee: ") +  KS31_temp;
+  blah2 = pt2->AddText(KS31_temp.Data());
+  blah2->SetTextSize(0.032);
+  blah2->SetTextAlign(11);  
+  blah2->SetTextColor(kBlack);  
 
   
-  pt1->Draw();
+  pt2->Draw();
 
 
   c1->Print(Form("%s.pdf", accepthistname.Data()));
-  //hacceptance->Write();
-  //hdenominator->Write();
-  //hnumerator->Write();
+  //hdiel->Write();
+  //hdimu->Write();
+  //hmueg->Write();
   
-  //hacceptance2d->Write();
-  //hdenominator2d->Write();
-  //hnumerator2d->Write();
+  //hdiel2d->Write();
+  //hdimu2d->Write();
+  //hmueg2d->Write();
 
-  //hacceptance2drebinned->Write();
-  //hdenominator2drebinned->Write();
-  //hnumerator2drebinned->Write();
+  //hdiel2drebinned->Write();
+  //hdimu2drebinned->Write();
+  //hmueg2drebinned->Write();
 
   f_1->Close();
   //f_2->Close();
