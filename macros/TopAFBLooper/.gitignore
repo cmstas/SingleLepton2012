@@ -3,7 +3,10 @@
 LinkDef*
 
 #ignore the unfolding summary files
-summary_*unfolding_*.txt
+summary_*unfolding*.txt
 
 #ignore the temporary json file that holds our systematics
 systematics.json
+
+#ignore output plots
+*.pdf

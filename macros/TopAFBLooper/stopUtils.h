@@ -54,6 +54,10 @@ vector<int> getBJetIndex(double discr, int iskip1, int iskip2, vector<LorentzVec
 pair<int, int> getIndexPair(vector<int> listBJetIndex, vector<LorentzVector> jets, bool docleaning,int iskip1, int iskip2);
 
 
+float getdltrigweight_pteta(int id_l1, float l1_pt, float l1_eta, int id_l2, float l2_pt, float l2_eta);
+float getleadingtrigweight(int id_leading, float leading_pt, float leading_eta);
+float gettrailingtrigweight(int id_trailing, float trailing_pt, float trailing_eta);
+
 float getdltrigweight(int id1, int id2);
 float getsltrigweight(int id1, float pt, float eta);
 float getideffweight(int id1, float pt, float eta);
