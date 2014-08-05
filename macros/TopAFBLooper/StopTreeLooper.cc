@@ -737,7 +737,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if (stopt.id1()*stopt.id2() > 0) basic_flav_tag_dl += "_SS";
 
 
-
             //------------------------------------------
             // datasets bit
             //------------------------------------------
@@ -789,9 +788,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                 if ( name.Contains("ttdl") )
                 {
+                    //gen-level flavour
+                    string basic_flav_tag_dl_gen;
+                    if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 11 ) basic_flav_tag_dl_gen = "_gendiel";
+                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 11 ) basic_flav_tag_dl_gen = "_genmueg";
+                    else if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 13 ) basic_flav_tag_dl_gen = "_genmueg";
+                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 13 ) basic_flav_tag_dl_gen = "_gendimu";
+                    else cout<<"indeterminate dilepton type: "<<stopt.lepPlus_status1_id()<<" "<<stopt.lepMinus_status1_id()<<endl;
+
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                    makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl_gen );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                 }
 
