@@ -17,4 +17,3 @@ systematics.json
 #ignore compiler files
 *.pyc
 *.rootmap
-LinkDef_out.*
