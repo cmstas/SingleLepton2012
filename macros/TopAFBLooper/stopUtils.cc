@@ -320,12 +320,12 @@ float getdltrigweight_pteta(int id_l1, float l1_pt, float l1_eta, int id_l2, flo
   l2_eta = fabs(l2_eta);
 
   eff_1l  = getleadingtrigweight(id_l1, l1_pt, l1_eta);
-  eff_1t  = gettrailingtrigweight(id_l1, l1_pt, l1_eta);
-  eff_2l  = getleadingtrigweight(id_l2, l2_pt, l2_eta);
+  //eff_1t  = gettrailingtrigweight(id_l1, l1_pt, l1_eta);
+  //eff_2l  = getleadingtrigweight(id_l2, l2_pt, l2_eta);
   eff_2t  = gettrailingtrigweight(id_l2, l2_pt, l2_eta);
 
-  //return eff_1l * eff_2t; //what we did for 7 TeV
-  return (eff_1l * eff_2t + eff_1t * eff_2l - eff_1l * eff_2l);
+  return eff_1l * eff_2t; //What we did for 7 TeV. Decided to stick with this method because l(eading) is not always a subset of t(railing), so the full formula below does not always make sense.
+  //return (eff_1l * eff_2t + eff_1t * eff_2l - eff_1l * eff_2l);
 
 }
 
