@@ -799,6 +799,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                    if(basic_flav_tag_dl == "_mueg") makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , flav_tag_dl );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl_gen );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                 }
