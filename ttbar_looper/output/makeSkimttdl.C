@@ -15,6 +15,8 @@ void makeSkimttdl(string path = ".", string tag = "tt_mcatnlo_smallTree") {
   //--------------------------------------------------
   
   char* sel = "ntops == 2 && nleps == 2";
+  string outtag = "ttdl";
+
   cout << "Skimming with selection : "<<sel<<endl;
 
   //--------------------------------------------------
@@ -22,7 +24,9 @@ void makeSkimttdl(string path = ".", string tag = "tt_mcatnlo_smallTree") {
   //--------------------------------------------------
   
   char* infilename = Form("%s/%s.root",path.c_str(),tag.c_str());
-  char* outfilename = Form("%s/%s_ttdl.root",path.c_str(),tag.c_str());
+  
+  tag.replace(0,2,outtag);
+  char* outfilename = Form("%s/%s.root",path.c_str(),tag.c_str());
   
   //--------------------------------------------------
   // cout stuff
