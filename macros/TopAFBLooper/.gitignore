@@ -10,3 +10,11 @@ systematics.json
 
 #ignore output plots
 *.pdf
+
+#ignore backup files
+*.*~
+
+#ignore compiler files
+*.pyc
+*.rootmap
+LinkDef_out.*
