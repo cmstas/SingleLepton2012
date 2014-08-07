@@ -112,7 +112,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     //------------------------------------------------------------------------------------------------------
 
     TPython::LoadMacro("loadBetchart.py");
-    LHAPDF::initPDFSet("pdfs/cteq61.LHgrid");
+    LHAPDF::initPDFSet("pdfs/cteq6mE.LHgrid");
 
     //------------------------------------------------------------------------------------------------------
     // set csv discriminator reshaping
