@@ -304,6 +304,142 @@ float getdltrigweight(int id1, int id2){
 
 }
 
+
+//-------------------------------------------------
+// Sergo's updated efficiency for dilepton trigger
+//-------------------------------------------------
+
+float getdltrigweight_pteta(int id_l1, float l1_pt, float l1_eta, int id_l2, float l2_pt, float l2_eta){ 
+
+  double eff_1l = 0.0;
+  double eff_1t = 0.0;
+  double eff_2l = 0.0;
+  double eff_2t = 0.0;
+
+  l1_eta = fabs(l1_eta);
+  l2_eta = fabs(l2_eta);
+
+  eff_1l  = getleadingtrigweight(id_l1, l1_pt, l1_eta);
+  //eff_1t  = gettrailingtrigweight(id_l1, l1_pt, l1_eta);
+  //eff_2l  = getleadingtrigweight(id_l2, l2_pt, l2_eta);
+  eff_2t  = gettrailingtrigweight(id_l2, l2_pt, l2_eta);
+
+  return eff_1l * eff_2t; //What we did for 7 TeV. Decided to stick with this method because l(eading) is not always a subset of t(railing), so the full formula below does not always make sense.
+  //return (eff_1l * eff_2t + eff_1t * eff_2l - eff_1l * eff_2l);
+
+}
+
+float getleadingtrigweight(int id_leading, float leading_pt, float leading_eta){ 
+
+  float weight_leading = 1.0;
+  leading_eta = fabs(leading_eta);
+  
+    if (id_leading == 11)
+    {
+        if (leading_eta >= 0 && leading_eta < 1.5)
+        {
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.964;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.981;
+            else if (leading_pt > 40.0) weight_leading = 0.987;
+        }
+        else if (leading_eta >= 1.5)
+        {
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.983;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.990;
+            else if (leading_pt > 40.0) weight_leading = 0.993;
+        }
+    }
+
+
+
+    if (id_leading == 13)
+    {
+        if (leading_eta > 0 && leading_eta < 0.8)
+        {
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.977;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.976;
+            else if (leading_pt > 40.0) weight_leading = 0.977;
+        }
+        else if (leading_eta >= 0.8 && leading_eta < 1.2)
+        {
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.937;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.939;
+            else if (leading_pt > 40.0) weight_leading = 0.939;
+        }
+        else if (leading_eta >= 1.2 && leading_eta < 2.1)
+        {
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.930;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.927;
+            else if (leading_pt > 40.0) weight_leading = 0.926;
+        }
+        else if (leading_eta >= 2.1)
+        {
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.;
+            else if (leading_pt > 40.0) weight_leading = 0.;
+        }
+    }
+
+    return weight_leading;
+
+}
+
+float gettrailingtrigweight(int id_trailing, float trailing_pt, float trailing_eta){ 
+
+  float weight_trailing = 1.0;
+  trailing_eta = fabs(trailing_eta);
+
+    if (id_trailing == 11)
+    {
+        if (trailing_eta >= 0 && trailing_eta < 1.5)
+        {
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.964;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.978;
+            else if (trailing_pt > 40.0) weight_trailing = 0.982;
+        }
+        else if (trailing_eta >= 1.5)
+        {
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.979;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.986;
+            else if (trailing_pt > 40.0) weight_trailing = 0.989;
+        }
+    }
+
+
+    if (id_trailing == 13)
+    {
+        if (trailing_eta > 0 && trailing_eta < 0.8)
+        {
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.979;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.978;
+            else if (trailing_pt > 40.0) weight_trailing = 0.978;
+        }
+        else if (trailing_eta >= 0.8 && trailing_eta < 1.2)
+        {
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.948;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.949;
+            else if (trailing_pt > 40.0) weight_trailing = 0.948;
+        }
+        else if (trailing_eta >= 1.2 && trailing_eta < 2.1)
+        {
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.946;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.940;
+            else if (trailing_pt > 40.0) weight_trailing = 0.936;
+        }
+        else if (trailing_eta >= 2.1)
+        {
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.;
+            else if (trailing_pt > 40.0) weight_trailing = 0.;
+        }
+    }
+
+    return weight_trailing;
+
+}
+
+
+
 float getsltrigweight(int id1, float pt, float eta) 
 {
   //--------------------------------------------------------------------------------------

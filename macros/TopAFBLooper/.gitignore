@@ -5,8 +5,15 @@ LinkDef*
 #ignore the unfolding summary files
 summary_*unfolding*.txt
 
+#ignore the temporary json file that holds our systematics
+systematics.json
+
 #ignore output plots
 *.pdf
 
-#ignore the temporary json file that holds our systematics
-systematics.json
+#ignore backup files
+*.*~
+
+#ignore compiler files
+*.pyc
+*.rootmap

@@ -41,6 +41,17 @@ const double mb_solver = 4.8;
 const double mW_solver = 80.385;
 const double mt_solver = 172.5;
 
+            double lep1b_mindR = 9999.;
+            double lep1b_mindPhi = 9999.;
+            double lep2b_mindR = 9999.;
+            double lep2b_mindPhi = 9999.;
+            double lep_dR = -9999;
+            double lep_dEta = -9999;
+            double Mll = -9999;
+            double Etall = -9999;
+            double Phill = -9999;
+            double Ptll = -9999;
+
 const double mlb_max = sqrt(mt_solver * mt_solver - mW_solver * mW_solver);
 bool makeCRplots = false; //For CR studies. If true don't apply the selection until making plots.
 bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
@@ -367,6 +378,20 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 bcandidates.push_back( nonbjets.at(1) );
             }
 
+             lep1b_mindR = 9999.;
+             lep1b_mindPhi = 9999.;
+             lep2b_mindR = 9999.;
+             lep2b_mindPhi = 9999.;
+
+            for (int i = 0; i < bcandidates.size(); ++i)
+            {
+                if (ROOT::Math::VectorUtil::DeltaR(stopt.lep1(), bcandidates.at(i)) < lep1b_mindR ) lep1b_mindR = ROOT::Math::VectorUtil::DeltaR(stopt.lep1(), bcandidates.at(i));
+                if (ROOT::Math::VectorUtil::DeltaR(stopt.lep2(), bcandidates.at(i)) < lep2b_mindR ) lep2b_mindR = ROOT::Math::VectorUtil::DeltaR(stopt.lep2(), bcandidates.at(i));
+                if (fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep1(), bcandidates.at(i))) < lep1b_mindPhi ) lep1b_mindPhi = fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep1(), bcandidates.at(i)));
+                if (fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep2(), bcandidates.at(i))) < lep2b_mindPhi ) lep2b_mindPhi = fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep2(), bcandidates.at(i)));
+            }
+            //if(lep1b_mindPhi<0.6 || lep2b_mindPhi<0.6 ) continue;
+
 
             //----------------------------------------------------------------------------
             // Veto events with jet(s) with suspected TOB/TEC seeded tracking problem. http://www.t2.ucsd.edu/tastwiki/pub/CMS/20130426OsChats/wh_tobtecprob_olivito_260413.pdf
@@ -473,7 +498,14 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //fully leptonic asymmetries
             lep_charge_asymmetry = abs(lepPlus.Eta()) - abs(lepMinus.Eta());
             lep_azimuthal_asymmetry = lepPlus.DeltaPhi(lepMinus);  //lep_azimuthal_asymmetry is same as lep_azimuthal_asymmetry2 but from -pi to pi instead of folding it over from 0 to pi
-            lep_azimuthal_asymmetry2 = acos(cos(lepPlus.DeltaPhi(lepMinus)));
+            lep_azimuthal_asymmetry2 = fabs(lepPlus.DeltaPhi(lepMinus));
+            lep_dR = lepPlus.DeltaR(lepMinus);
+            lep_dEta = lepPlus.Eta() - lepMinus.Eta();
+
+            Mll = (lepPlus+lepMinus).M();
+            Ptll = (lepPlus+lepMinus).Pt();
+            Etall = (lepPlus+lepMinus).Eta();
+            Phill = (lepPlus+lepMinus).Phi();
 
             //more variables for plots
             float lep_pseudorap_diff = (lepPlus.Eta()) - (lepMinus.Eta());
@@ -705,7 +737,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if (stopt.id1()*stopt.id2() > 0) basic_flav_tag_dl += "_SS";
 
 
-
             //------------------------------------------
             // datasets bit
             //------------------------------------------
@@ -757,9 +788,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                 if ( name.Contains("ttdl") )
                 {
+                    //gen-level flavour
+                    string basic_flav_tag_dl_gen;
+                    if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 11 ) basic_flav_tag_dl_gen = "_gendiel";
+                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 11 ) basic_flav_tag_dl_gen = "_genmueg";
+                    else if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 13 ) basic_flav_tag_dl_gen = "_genmueg";
+                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 13 ) basic_flav_tag_dl_gen = "_gendimu";
+                    else cout<<"indeterminate dilepton type: "<<stopt.lepPlus_status1_id()<<" "<<stopt.lepMinus_status1_id()<<endl;
+
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
+                    if(basic_flav_tag_dl == "_mueg") makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , flav_tag_dl );
+                    makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl_gen );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                 }
 
@@ -1027,6 +1068,19 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1D *
 
     plot1DUnderOverFlow("h_sig_met" + tag_selection + flav_tag, t1metphicorr, evtweight, h_1d, nbins , 0, 500);
     plot1DUnderOverFlow("h_sig_metphi" + tag_selection + flav_tag, t1metphicorrphi, evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+
+    plot1DUnderOverFlow("h_sig_lep1b_mindR" + tag_selection + flav_tag, lep1b_mindR, evtweight, h_1d, nbins , 0, 5);
+    plot1DUnderOverFlow("h_sig_lep2b_mindR" + tag_selection + flav_tag, lep2b_mindR, evtweight, h_1d, nbins , 0, 5);
+    plot1DUnderOverFlow("h_sig_lep1b_mindPhi" + tag_selection + flav_tag, lep1b_mindPhi, evtweight, h_1d, nbins , 0, TMath::Pi());
+    plot1DUnderOverFlow("h_sig_lep2b_mindPhi" + tag_selection + flav_tag, lep2b_mindPhi, evtweight, h_1d, nbins , 0, TMath::Pi());
+    plot1DUnderOverFlow("h_sig_lep_dR" + tag_selection + flav_tag, lep_dR, evtweight, h_1d, nbins , 0, 5);
+    plot1DUnderOverFlow("h_sig_lep_dEta" + tag_selection + flav_tag, lep_dEta, evtweight, h_1d, nbins , -5, 5);
+
+    plot1DUnderOverFlow("h_sig_Mll" + tag_selection + flav_tag, Mll, evtweight, h_1d, nbins , 0, 800);
+    plot1DUnderOverFlow("h_sig_Ptll" + tag_selection + flav_tag, Ptll, evtweight, h_1d, nbins , 0, 400);
+    plot1DUnderOverFlow("h_sig_Etall" + tag_selection + flav_tag, Etall, evtweight, h_1d, nbins , -5, 5);
+    plot1DUnderOverFlow("h_sig_Phill" + tag_selection + flav_tag, Phill, evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
+
 
     //pT
     plot1DUnderOverFlow("h_sig_lepPlus_Pt" + tag_selection + flav_tag, stopt.lepp().Pt(), evtweight, h_1d, nbins , 0, 500);

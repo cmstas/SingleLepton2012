@@ -127,6 +127,9 @@ void printYields( vector<TH1F *> mc , const char *labels[] , TH1F *chdata , bool
 void initSymbols(bool);
 void printLine(bool);
 void printHeader();
+float GetAfb(TH1F* h);
+float GetAfbLHalf(TH1F* h);
+float GetAfbRHalf(TH1F* h);
 void print( TH1F *h , string label , bool correlatedError = false );
 char *pm;
 char *percent;
@@ -209,7 +212,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     const int MCID = 9;
     const char *mcsample[MCID] =
     {
-        "ttdl_powheg",
+        "ttdl_mcatnlo_smallTree",
         "ttsl_powheg",
         //"ttfake_powheg",
         "w1to4jets",
@@ -303,7 +306,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 47;
+    const int N1DHISTS = 58;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -316,6 +319,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     {
         "met",
         "lep_azimuthal_asymmetry2",
+        "lep_azimuthal_asymmetry",
         "lep_charge_asymmetry",
         "top_rapiditydiff_Marco",
         "lepPlus_costheta_cms",
@@ -330,6 +334,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "n_jets",
         "n_bjets",
         "metphi",
+        "lep1b_mindR",
+        "lep1b_mindPhi",
+        "lep2b_mindR",
+        "lep2b_mindPhi",
+        "lep_dR",
+        "lep_dEta",
+        "Mll",
+        "Etall",
+        "Phill",
+        "Ptll",
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
@@ -369,6 +383,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     {
         "h_sig_met",
         "h_sig_lep_azimuthal_asymmetry2",
+        "h_sig_lep_azimuthal_asymmetry",
         "h_sig_lep_charge_asymmetry",
         "h_sig_top_rapiditydiff_Marco",
         "h_sig_lepPlus_costheta_cms",
@@ -383,6 +398,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_n_jets",
         "h_sig_n_bjets",
         "h_sig_metphi",
+        "h_sig_lep1b_mindR",
+        "h_sig_lep1b_mindPhi",
+        "h_sig_lep2b_mindR",
+        "h_sig_lep2b_mindPhi",
+        "h_sig_lep_dR",
+        "h_sig_lep_dEta",
+        "h_sig_Mll",
+        "h_sig_Etall",
+        "h_sig_Phill",
+        "h_sig_Ptll",
         "h_sig_lepPlus_Pt",
         "h_sig_lepMinus_Pt",
         "h_sig_lepPt",
@@ -426,24 +451,23 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //logScale.push_back(5);
     //logScale.push_back(6);
     //logScale.push_back(7);
-    logScale.push_back(8);
-    //logScale.push_back(9);
-    //logScale.push_back(10);
-    //logScale.push_back(11);
+    logScale.push_back(9);
+    //logScale.push_back(16);
     //logScale.push_back(56);
-    logScale.push_back(33);
-    logScale.push_back(34);
-    logScale.push_back(35);
-    logScale.push_back(36);
-    logScale.push_back(41);
-    logScale.push_back(42);
+    logScale.push_back(33+11);
+    logScale.push_back(34+11);
+    logScale.push_back(35+11);
+    logScale.push_back(36+11);
+    logScale.push_back(41+11);
+    logScale.push_back(42+11);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
         "ME_{T} [GeV]",
+        "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
         "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
         "#Delta|#eta_{l}|",
         "#Delta|y_{t}|",
@@ -459,6 +483,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "n_jets",
         "n_bjets",
         "metphi",
+        "lep1b_mindR",
+        "lep1b_mindPhi",
+        "lep2b_mindR",
+        "lep2b_mindPhi",
+        "lep_dR",
+        "lep_dEta",
+        "Mll",
+        "Etall",
+        "Phill",
+        "Ptll",
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
@@ -503,11 +537,22 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "",
         "",
         "",
+        "",
         "GeV",
         "GeV",
         "GeV",
         "",
 
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
@@ -692,6 +737,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                      << Form("%s", hist1dname[i]) << endl;
 
                 h_mc1d[i][j]->Sumw2();
+                if(j==0) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
+                //if(j==0) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
                 // Rebin, set limits
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
@@ -1145,6 +1192,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             cout << " Probability " << file1dname[i] << " : "
                  << compatibilityTest(h_dt1d[i], s_mc1d[i]) << endl;
 
+            delete g_data;
             //delete canv1d[i];
         }
     }//end loop over lepton types
@@ -1364,8 +1412,32 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         cout << " Probability " << file1dname[i] << " : "
              << compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]) << endl;
 
+        delete g_data;
+
     }
     //}  NSAMPLE loop
+
+    cout << "-------------------------------------------------" << endl;
+    cout << "**********************ASYMS**********************" << endl;
+    cout << "-------------------------------------------------" << endl;
+
+for (int k = 1; k < 8; ++k)
+{
+
+    printf("Variable: %s \n", file1dname[k]);
+    for (int j = 0; j < MCID; ++j)
+    {
+        printf(" %s : %.4f %.4f %.4f \n", mcsample[j], GetAfb(h_mc1d_comb[k][j]), GetAfbLHalf(h_mc1d_comb[k][j]), GetAfbRHalf(h_mc1d_comb[k][j]) );
+    }
+    printf(" Total_MC : %.4f %.4f %.4f \n", GetAfb(h_mc1d_tot_comb[k]), GetAfbLHalf(h_mc1d_tot_comb[k]), GetAfbRHalf(h_mc1d_tot_comb[k]) );
+    printf(" Data : %.4f %.4f %.4f \n", GetAfb(h_dt1d_comb[k]), GetAfbLHalf(h_dt1d_comb[k]), GetAfbRHalf(h_dt1d_comb[k]) );
+    cout << "-------------------------------------------------" << endl;
+    cout << "*************************************************" << endl;
+    cout << "-------------------------------------------------" << endl;
+
+}
+
+
 
     cout << "-------------------------------------------------" << endl;
     cout << "**********************YIELDS*********************" << endl;
@@ -1392,7 +1464,7 @@ TGraphAsymmErrors *GetPoissonizedGraph(TH1F *histo)
     TGraphAsymmErrors *graph = new TGraphAsymmErrors();
     graph->SetName(Form("g_%s", histo->GetName()));
 
-    int j = 1;
+    int j = 0;
     for (int i = 1; i <= histo->GetNbinsX(); ++i)
     {
 
@@ -1623,5 +1695,88 @@ void print( TH1F *h , string label , bool correlatedError )
          << delim      << setw(width1) << stot.str() << setw(width2)
          << delimend   << endl;
 
+
+}
+
+
+float GetAfb(TH1F* h){
+
+  Int_t nbins = h->GetNbinsX();
+  Float_t event_minus;
+  Float_t event_plus;
+  Float_t event_total;
+  Double_t event_plus_err;
+  Double_t event_minus_err;
+
+  //event_minus  = h-> IntegralAndError(0, nbins/2, event_plus_err,"");
+  event_minus  = h-> IntegralAndError(0, nbins/2, event_minus_err,"");
+  //event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_minus_err,"");
+  event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_plus_err,"");
+  event_total = event_plus + event_minus;
+
+  //cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<endl;
+
+  float afb = (event_plus-event_minus)/(event_plus+event_minus);
+  float afberr   = sqrt(4*(event_plus*event_plus*event_minus_err*event_minus_err 
+    + event_minus*event_minus*event_plus_err*event_plus_err)/
+    (event_total*event_total*event_total*event_total));
+
+  //cout<<afb<< "+/-" <<afberr<<endl;
+
+  return afb;
+
+}
+
+
+
+float GetAfbLHalf(TH1F* h){
+
+  Int_t nbins = h->GetNbinsX()/2;
+  Float_t event_minus;
+  Float_t event_plus;
+  Float_t event_total;
+  Double_t event_plus_err;
+  Double_t event_minus_err;
+
+  //event_minus  = h-> IntegralAndError(0, nbins/2, event_plus_err,"");
+  event_minus  = h-> IntegralAndError(0, nbins/2, event_minus_err,"");
+  //event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_minus_err,"");
+  event_plus   = h-> IntegralAndError(nbins/2+1, nbins, event_plus_err,"");
+  event_total = event_plus + event_minus;
+
+  //cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<endl;
+
+  float afb = (event_plus-event_minus)/(event_plus+event_minus);
+  float afberr   = sqrt(4*(event_plus*event_plus*event_minus_err*event_minus_err 
+    + event_minus*event_minus*event_plus_err*event_plus_err)/
+    (event_total*event_total*event_total*event_total));
+
+  return afb;
+
+}
+
+float GetAfbRHalf(TH1F* h){
+
+  Int_t nbins = h->GetNbinsX()/2;
+  Float_t event_minus;
+  Float_t event_plus;
+  Float_t event_total;
+  Double_t event_plus_err;
+  Double_t event_minus_err;
+
+  //event_minus  = h-> IntegralAndError(0, nbins/2, event_plus_err,"");
+  event_minus  = h-> IntegralAndError(nbins+1, nbins + nbins/2, event_minus_err,"");
+  //event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_minus_err,"");
+  event_plus   = h-> IntegralAndError(nbins + nbins/2+1, nbins + nbins + 1, event_plus_err,"");
+  event_total = event_plus + event_minus;
+
+  //cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<endl;
+
+  float afb = (event_plus-event_minus)/(event_plus+event_minus);
+  float afberr   = sqrt(4*(event_plus*event_plus*event_minus_err*event_minus_err 
+    + event_minus*event_minus*event_plus_err*event_plus_err)/
+    (event_total*event_total*event_total*event_total));
+
+  return afb;
 
 }
