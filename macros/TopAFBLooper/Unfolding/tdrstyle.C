@@ -1,5 +1,7 @@
 #include "TStyle.h"
 
+TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
+
 // tdrGrid: Turns the grid lines on (true) or off (false)
 
 void tdrGrid(bool gridOn) {
@@ -14,7 +16,6 @@ void fixOverlay() {
 }
 
 void setTDRStyle() {
-  TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
 
 // For the canvas:
   tdrStyle->SetCanvasBorderMode(0);

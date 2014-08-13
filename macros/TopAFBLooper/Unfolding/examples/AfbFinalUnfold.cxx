@@ -5,6 +5,7 @@
 #include "TROOT.h"
 #include "TRandom3.h"
 #include "TH1D.h"
+#include "TH2.h"
 #include "TStyle.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -17,13 +18,16 @@
 #include "TCut.h"
 #include "TPaveText.h"
 #include "TLatex.h"
+#include "TMarker.h"
+#include "TProfile.h"
 
 #include "TUnfold.h"
+#include "TUnfoldSys.h"
 
-#include "src/RooUnfoldResponse.h"
-#include "src/RooUnfoldBayes.h"
-#include "src/RooUnfoldSvd.h"
-#include "src/RooUnfoldTUnfold.h"
+//#include "src/RooUnfoldResponse.h"
+//#include "src/RooUnfoldBayes.h"
+//#include "src/RooUnfoldSvd.h"
+//#include "src/RooUnfoldTUnfold.h"
 
 #include "tdrstyle.C"
 
@@ -35,13 +39,9 @@ using std::endl;
 // Global definitions
 //==============================================================================
 
-// 0=SVD, 1=TUnfold via RooUnfold, 2=TUnfold
-int unfoldingType = 2;
-
 TString Region = "";
 Int_t kterm = 3; //for SVD
 Double_t tau = 0.005; //for TUnfold - this is a more reasonable default (1E-4 gives very little regularisation)
-//bool doScanLCurve = false; //determine tau automatically when using unfoldingType=2, using scanLcurve (overrides value set above) - doesn't work very well
 Int_t nVars = 12;
 Int_t includeSys = 0;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
@@ -64,7 +64,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
     ofstream myfile;
     myfile.open (summary_name + ".txt");
-	cout.rdbuf(myfile.rdbuf());
+	//cout.rdbuf(myfile.rdbuf());
 
     // OGU 130516: add second output txt file with format easier to be pasted into google docs
     ofstream second_output_file;
@@ -87,13 +87,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
     Float_t observableMinus, observableMinus_gen;
     Double_t weight;
     Int_t Nsolns = 1;
+	Int_t channel = -99;
 
     for (Int_t iVar = 0; iVar < nVars; iVar++)
     {
 
         Initialize1DBinning(iVar);
 
-		// Extrapolate all possible binning schemes based on the basic binning scheme
+		// Figure out all possible binning schemes based on the basic binning scheme
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
 		int nbinsx_reco_3ch = -99;
@@ -146,26 +147,27 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
 
 		// Make our histograms!
-        // TH1D *hData = new TH1D ("Data_BkgSub", "Data with background subtracted",    nbinsx_reco, recobins);
-        TH1D *hData = new TH1D ("Data_BkgSub", "Data with background subtracted",    nbinsx_reco_3ch, recobins_3ch);
-        // TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco, recobins);
+        //TH1D *hData = new TH1D ("Data", "Data with background subtracted",    nbinsx_reco, recobins);
+        TH1D *hData = new TH1D ("Data", "Data with background subtracted",    nbinsx_reco_3ch, recobins_3ch);
+        TH1D *hData_combined = new TH1D ("Data_combined", "Data with all channels combined", nbinsx_reco, recobins);
+        //TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco, recobins);
         TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch);
         TH1D *hData_unfolded = new TH1D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins);
 
         TH1D *hTrue = new TH1D ("true", "Truth",    nbinsx_gen, genbins);
-        // TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco, recobins);
+        //TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco, recobins);
         TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch);
         TH1D *denominatorM_nopTreweighting = new TH1D ("denominatorM_nopTreweighting", "denominatorM_nopTreweighting", nbinsx_gen, genbins);
 		TH1D *hPurity = new TH1D("purity", "Purity", nbinsx_gen, genbins);
 		TH1D *hStability = new TH1D("stability", "Stability", nbinsx_gen, genbins);
 
-        // TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsx_reco, recobins, nbinsx_gen, genbins);
-        TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsx_reco_3ch, recobins_3ch, nbinsx_gen, genbins);
+        //TH2D *hTrue_vs_Meas = new TH2D("true_vs_meas", "True vs Measured", nbinsx_reco, recobins, nbinsx_gen, genbins);
+        TH2D *hTrue_vs_Meas = new TH2D("true_vs_meas", "True vs Measured", nbinsx_reco_3ch, recobins_3ch, nbinsx_gen, genbins);
 
         TH1D *hData_bkgSub;
 
 		//delete[] genbins;
-		delete[] recobins;
+		//delete[] recobins;
 		delete[] recobins_3ch;
 
         hData->Sumw2();
@@ -183,7 +185,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         TChain *ch_bkg[nBkg];
         TChain *ch_top = new TChain("tree");
-
         TChain *ch_data = new TChain("tree");
 
 
@@ -209,22 +210,25 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         ch_data->SetBranchAddress("tt_mass", &ttmass);
         ch_data->SetBranchAddress("ttRapidity2", &ttRapidity2);
         ch_data->SetBranchAddress("t_mass", &tmass);
+		ch_data->SetBranchAddress("channel", &channel);
 
+		double offset = 0;
+		double histmax = recobins[nbinsx_reco];
+		double histmin = recobins[0];
+		double hiBinCenter = hData_combined->GetBinCenter(nbinsx_reco);
+		double loBinCenter = hData_combined->GetBinCenter(1);
 
         for (Int_t i = 0; i < ch_data->GetEntries(); i++)
         {
             ch_data->GetEntry(i);
 
-			// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms
-			double offset = 0;
-			TString filename = ch_data->GetFile()->GetName();
+			// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms.
 			//Use an offset to sort events into 3 superbins: ee, mumu, emu
-			if( filename.Contains("data_dimu_baby.root") ) offset = recohist_width;
-			if( filename.Contains("data_mueg_baby.root") ) offset = recohist_width*2;
-			//But if it's an under/overflow event, make sure it completely misses the new, wider histogram edges
-			if( observable > recobins[nbinsx_reco] )       offset = 9999;
-			if( observable < recobins[0] )                 offset = -9999;
-			
+			offset = double(channel) * recohist_width;
+			//Do the same thing as "fillUnderOverflow", except adapted for 3x1 histograms
+			if( observable > histmax )        observable = hiBinCenter;
+			else if( observable < histmin )   observable = loBinCenter;
+
 
             // if ( (Region=="Signal") && (ttmass>450) ) {
             //   fillUnderOverFlow(hData, observable, weight, Nsolns);
@@ -233,6 +237,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             {
                 // leptonic asymmetries don't need valid top mass solution
                 fillUnderOverFlow(hData, observable+offset, weight, Nsolns);
+                fillUnderOverFlow(hData_combined, observable, weight, Nsolns);
             }
             else
             {
@@ -240,17 +245,15 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
                 {
                     // asymmetries with top properties are required to have a valid top mass solution
                     fillUnderOverFlow(hData, observable+offset, weight, Nsolns);
+                    fillUnderOverFlow(hData_combined, observable, weight, Nsolns);
                 }
             }
             // }
+
             if (combineLepMinus)
             {
-			  //Calculate the same correction for the minus observable as for the normal observable above
-			  offset = 0;
-			  if( filename.Contains("data_dimu_baby.root") ) offset = recohist_width;
-			  if( filename.Contains("data_mueg_baby.root") ) offset = recohist_width*2;
-			  if( observableMinus > recobins[nbinsx_reco] )  offset = 9999;
-			  if( observableMinus < recobins[0] )            offset = -9999;
+			  if( observableMinus > histmax )        observableMinus = hiBinCenter;
+			  else if( observableMinus < histmin )   observableMinus = loBinCenter;
                 // combine plus and minus
                 // if ( (Region=="Signal") && (ttmass>450) ) {
                 //   fillUnderOverFlow(hData, observable, weight, Nsolns);
@@ -259,6 +262,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
                 {
                     // leptonic asymmetries don't need valid top mass solution
                     fillUnderOverFlow(hData, observableMinus+offset, weight, Nsolns);
+                    fillUnderOverFlow(hData_combined, observableMinus, weight, Nsolns);
                 }
                 else
                 {
@@ -266,12 +270,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
                     {
                         // asymmetries with top properties are required to have a valid top mass solution
                         fillUnderOverFlow(hData, observableMinus+offset, weight, Nsolns);
+                        fillUnderOverFlow(hData_combined, observableMinus, weight, Nsolns);
                     }
                 }
                 // }
             }
         }
-
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
         {
@@ -283,6 +287,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             ch_bkg[iBkg]->SetBranchAddress("tt_mass", &ttmass);
             ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &ttRapidity2);
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
+			ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
 
             for (Int_t i = 0; i < ch_bkg[iBkg]->GetEntries(); i++)
             {
@@ -290,11 +295,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
                 weight *= bkgSF[iBkg];
 
 				// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms
-				double offset = 0;
-				if( isDimuon )                                 offset = recohist_width;
-				if( isMueg )                                   offset = recohist_width*2;
-				if( observable > recobins[nbinsx_reco] )       offset = 9999;
-				if( observable < recobins[0] )                 offset = -9999;
+				offset = double(channel) * recohist_width;
+				if( observable > histmax )        observable = hiBinCenter;
+				else if( observable < histmin )   observable = loBinCenter;
 
                 // if ( (Region=="Signal") && (ttmass>450) ) {
                 //   fillUnderOverFlow(hBkg, observable, weight, Nsolns);
@@ -315,11 +318,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
                 // }
                 if (combineLepMinus)
                 {
-				  offset = 0;
-				  if( isDimuon )                                 offset = recohist_width;
-				  if( isMueg )                                   offset = recohist_width*2;
-				  if( observableMinus > recobins[nbinsx_reco] )  offset = 9999;
-				  if( observableMinus < recobins[0] )            offset = -9999;
+				  if( observableMinus > histmax )        observableMinus = hiBinCenter;
+				  else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
                     // combine plus and minus
                     // if ( (Region=="Signal") && (ttmass>450) ) {
@@ -353,81 +353,92 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         ch_top->SetBranchAddress("tt_mass", &ttmass);
         ch_top->SetBranchAddress("ttRapidity2", &ttRapidity2);
         ch_top->SetBranchAddress("t_mass", &tmass);
+		ch_top->SetBranchAddress("channel", &channel);
 
         for (Int_t i = 0; i < ch_top->GetEntries(); i++)
         {
             ch_top->GetEntry(i);
-            weight *= scalettdil;
-
 			// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms
-			double offset = 0;
-			if( isDimuon )                                 offset = recohist_width;
-			if( isMueg )                                   offset = recohist_width*2;
-			if( observable > recobins[nbinsx_reco] )       offset = 9999;
-			if( observable < recobins[0] )                 offset = -9999;
-
+			offset = double(channel) * recohist_width;
+			if( observable > histmax )        observable = hiBinCenter;
+			else if( observable < histmin )   observable = loBinCenter;
+			if( observableMinus > histmax )        observable = hiBinCenter;
+			else if( observableMinus < histmin )   observable = loBinCenter;
+            weight *= scalettdil;
             // if ( (Region=="Signal") && (ttmass>450) ) {
-            //   fillUnderOverFlow(hMeas, observable, weight, Nsolns);
-            //   fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
-            //   fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
-            //   if( combineLepMinus ) {
-            //        //response.Fill (observableMinus, observableMinus_gen, weight);
-            //        fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
-            //        fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
-            //        fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
-            //      }
+            // fillUnderOverFlow(hMeas, observable, weight, Nsolns);
+            // fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
+            // fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
+            // if( combineLepMinus ) {
+            // //response.Fill (observableMinus, observableMinus_gen, weight);
+            // fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
+            // fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
+            // fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
+            // }
             // } else if (Region=="") {
 
 
-            if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
+            // if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
+            if ( iVar<2 || iVar==8 || ttmass>0 )
             {
                 //response.Fill (observable, observable_gen, weight);
                 fillUnderOverFlow(hMeas, observable+offset, weight, Nsolns);
                 fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
                 fillUnderOverFlow(hTrue_vs_Meas, observable+offset, observable_gen, weight, Nsolns);
+                if ( combineLepMinus )
+                {
+                    //response.Fill (observableMinus, observableMinus_gen, weight);
+                    fillUnderOverFlow(hMeas, observableMinus+offset, weight, Nsolns);
+                    fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
+                    fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
+                }
             }
             else
             {
                 if ( ttmass > 0 )
                 {
                     //response.Fill (observable, observable_gen, weight);
-                    fillUnderOverFlow(hMeas, observable, weight, Nsolns);
+                    fillUnderOverFlow(hMeas, observable+offset, weight, Nsolns);
                     fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
                     fillUnderOverFlow(hTrue_vs_Meas, observable+offset, observable_gen, weight, Nsolns);
+                    if ( combineLepMinus )
+                    {
+                        //response.Fill (observableMinus, observableMinus_gen, weight);
+                        fillUnderOverFlow(hMeas, observableMinus+offset, weight, Nsolns);
+                        fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
+                        fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
+                    }
                 }
-            }
-
-			if ( combineLepMinus )
-			{
-			  offset = 0;
-			  if( isDimuon )                                 offset = recohist_width;
-			  if( isMueg )                                   offset = recohist_width*2;
-			  if( observableMinus > recobins[nbinsx_reco] )  offset = 9999;
-			  if( observableMinus < recobins[0] )            offset = -9999;
-
-			  if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
-			  {
-				//response.Fill (observableMinus, observableMinus_gen, weight);
-				fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
-				fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
-				fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
-			  }
-			  else
-			  {
-				if ( ttmass > 0 )
-				{
-				  //response.Fill (observableMinus, observableMinus_gen, weight);
-				  fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
-				  fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
-				  fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
-				}
-			  }
-
 			}
-            // }
-            //if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
+			// if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
         }
 
+		delete[] recobins;
+
+		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
+        TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
+
+		TH1D *acceptM[3];
+		acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
+		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
+		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
+
+
+		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
+
+			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
+			double n_accepted = hTrue->GetBinContent(acceptbin);
+			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_accepted/acceptance - n_accepted );
+
+		  }
+		}
+
+		//delete[] acceptM;
+
+		TH1D* denominatorM = (TH1D*)file->Get("denominator_" + acceptanceName + "_all"); //Acceptance denominator, all channels
+
+		// Make purity and stability plots
         if( hMeas->GetNbinsX() == nbinsx_gen ) {
         	for( int i=1; i<=nbinsx_gen; i++ ) {
         	  hPurity->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hMeas->GetBinContent(i) );
@@ -461,7 +472,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         // RooUnfoldResponse response (hMeas, hTrue, hTrue_vs_Meas);
         //hTrue_vs_Meas = (TH2D*) response.Hresponse()->Clone();
 
-        hData_bkgSub = (TH1D *) hData->Clone();
+        hData_bkgSub = (TH1D *) hData->Clone("Data_BkgSub");
         hData_bkgSub->Add(hBkg, -1.0);
 
         scaleBias =  hData_bkgSub->Integral() / hMeas->Integral() ;
@@ -507,87 +518,58 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         c_reco->SaveAs("1D_Reco_" + acceptanceName + Region + ".pdf");
 
 
-        if (unfoldingType == 0)
-        {
-            RooUnfoldSvd unfold_svd (&response, hData_bkgSub, kterm);
-            unfold_svd.Setup(&response, hData_bkgSub);
-            unfold_svd.IncludeSystematics(includeSys);
-            hData_unfolded = (TH1D *) unfold_svd.Hreco();
-            m_unfoldE = unfold_svd.Ereco();
-        }
-        else if (unfoldingType == 1)
-        {
-            RooUnfoldTUnfold unfold_rooTUnfold (&response, hData_bkgSub, TUnfold::kRegModeCurvature);
-            unfold_rooTUnfold.Setup(&response, hData_bkgSub);
-            unfold_rooTUnfold.FixTau(tau);
-            unfold_rooTUnfold.IncludeSystematics(includeSys);
-            hData_unfolded = (TH1D *) unfold_rooTUnfold.Hreco();
-            m_unfoldE = unfold_rooTUnfold.Ereco();
-        }
-        else if (unfoldingType == 2)
-        {
-		  TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
-            //TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert);
-            unfold_TUnfold.SetInput(hData_bkgSub);
-            //unfold_TUnfold.SetBias(hTrue);  //doesn't make any difference, because if not set the bias distribution is
-			//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
+		/////// Do the unfolding! /////////////////////////////////////////////////////
 
-			//Regularize the 3 channels on their own
-			unfold_TUnfold.RegularizeBins(1, 1, nbinsx_reco);
-			unfold_TUnfold.RegularizeBins(nbinsx_reco+1, 1, nbinsx_reco);
-			unfold_TUnfold.RegularizeBins(2*nbinsx_reco+1, 1, nbinsx_reco);
-
-			minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, 100, -5.0, 0.0);
-			tau = unfold_TUnfold.GetTau();
-
-            //scaleBias = 0.0; //set biasScale to 0 when using kRegModeSize, or to compare with unfoldingType == 1
-            //do the unfolding with calculated bias scale (N_data/N_MC), and tau from ScanLcurve if doScanLCurve=true. Note that the results will only be the same as unfoldingType == 1 with scaleBias=0 and the same value of tau.
-            cout << "bias scale for TUnfold: " << scaleBias << endl;
-            unfold_TUnfold.DoUnfold(tau, hData_bkgSub, scaleBias);
-            //unfold_TUnfold.DoUnfold(0.005,hData_bkgSub,scaleBias);
+		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
+		//TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert);
+		unfold_TUnfold.SetInput(hData_bkgSub);
+		//unfold_TUnfold.SetBias(hTrue);  //doesn't make any difference, because if not set the bias distribution is
+		//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
 
 
-            unfold_TUnfold.GetOutput(hData_unfolded);
+		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, 100, -5.0, 0.0);
+		tau = unfold_TUnfold.GetTau();
+
+		//scaleBias = 0.0; //set biasScale to 0 when using kRegModeSize, or to compare with unfoldingType == 1
+		//do the unfolding with calculated bias scale (N_data/N_MC), and tau from ScanLcurve if doScanLCurve=true. Note that the results will only be the same as unfoldingType == 1 with scaleBias=0 and the same value of tau.
+		cout << "bias scale for TUnfold: " << scaleBias << endl;
+		unfold_TUnfold.DoUnfold(tau, hData_bkgSub, scaleBias);
+		//unfold_TUnfold.DoUnfold(0.005,hData_bkgSub,scaleBias);
 
 
-            TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-            TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
-            for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
-            {
-                for (Int_t cmj = 0; cmj < nbinsx_gen; cmj++)
-                {
-                    m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
-                    m_unfoldcorr(cmi, cmj) = cmatrix->GetBinContent(cmi + 1, cmj + 1);
-                }
-            }
+		unfold_TUnfold.GetOutput(hData_unfolded);
 
 
-        }
-        else cout << "Unfolding TYPE not Specified" << "\n";
-
+		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+		TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
+		for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
+		  {
+			for (Int_t cmj = 0; cmj < nbinsx_gen; cmj++)
+			  {
+				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+				m_unfoldcorr(cmi, cmj) = cmatrix->GetBinContent(cmi + 1, cmj + 1);
+			  }
+		  }
 
 		// Generate a curve of rhoAvg vs log(tau)
-		double ar_logtau[100];
-		double ar_rhoAvg[100];
+		double ar_logtau[90];
+		double ar_rhoAvg[90];
 		double logtau_test = 0.0;
 		double bestlogtau = log10(tau);
 		double bestrhoavg = unfold_TUnfold.GetRhoAvg();
 
-		TUnfold unfold_getRhoAvg(hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
+		TUnfoldSys unfold_getRhoAvg(hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 		unfold_getRhoAvg.SetInput(hData_bkgSub);
 		//unfold_getRhoAvg.SetBias(hTrue); //unnecessary
-		unfold_getRhoAvg.RegularizeBins(1, 1, nbinsx_reco);
-		unfold_getRhoAvg.RegularizeBins(nbinsx_reco+1, 1, nbinsx_reco);
-		unfold_getRhoAvg.RegularizeBins(2*nbinsx_reco+1, 1, nbinsx_reco);
 
-		for(int l=0; l<100; l++) {
+		for(int l=0; l<90; l++) {
 		  logtau_test = -5.0 + 0.05*l;
 		  unfold_getRhoAvg.DoUnfold(pow(10.0,logtau_test), hData_bkgSub, scaleBias);
 		  ar_logtau[l] = logtau_test;
 		  ar_rhoAvg[l] = unfold_getRhoAvg.GetRhoAvg();
 		}
 
-		TGraph* gr_rhoAvg = new TGraph(100,ar_logtau,ar_rhoAvg);
+		TGraph* gr_rhoAvg = new TGraph(90,ar_logtau,ar_rhoAvg);
 		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
 		gr_rhoAvg->SetTitle("Global Correlation Coefficient;log_{10} #tau;#rho_{avg}");
 		gr_rhoAvg->SetLineColor(kRed);
@@ -600,15 +582,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         //m_unfoldE.Print("f=%1.5g ");
         //m_unfoldcorr.Print("f=%1.5g ");
-
-        if (unfoldingType == 0)
-        {
-            TCanvas *c_d = new TCanvas("c_d", "c_d", 500, 500);
-            TH1D *dvec = unfold_svd.Impl()->GetD();
-            dvec->Draw();
-            c_d->SetLogy();
-            c_d->SaveAs("D_" + acceptanceName + Region + ".pdf");
-        }
 
 		
         TCanvas *c_resp = new TCanvas("c_resp", "c_resp");
@@ -630,56 +603,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         c_purstab->SaveAs("1D_purity_" + acceptanceName + ".pdf");
         hStability->Draw();
         c_purstab->SaveAs("1D_stability_" + acceptanceName + ".pdf");
-		
-
-        TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
-        TH1D *acceptM = (TH1D *) file->Get("accept_" + acceptanceName + "_all");
-        acceptM->Scale(1.0 / acceptM->Integral());
-
-        TH1D *denominatorM = (TH1D *) file->Get("denominator_" + acceptanceName + "_all");
-
-
-        TFile *file_nopTreweighting = new TFile("../denominator/acceptance/mcnlo_nopTreweighting/accept_" + acceptanceName + ".root");
-        TH1D *denominatorM_nopTreweighting_raw = (TH1D *) file_nopTreweighting->Get("denominator_" + acceptanceName + "_all");
-
-
-
-
-        for (Int_t i = 1; i <= nbinsx_gen; i++)
-        {
-
-            if (acceptM->GetBinContent(i) != 0)
-            {
-                hData_unfolded->SetBinContent(i, hData_unfolded->GetBinContent(i) * 1.0 / acceptM->GetBinContent(i));
-                hData_unfolded->SetBinError  (i, hData_unfolded->GetBinError  (i) * 1.0 / acceptM->GetBinContent(i));
-            }
-
-            if (acceptM->GetBinContent(i) != 0)
-            {
-                hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM->GetBinContent(i));
-                hTrue->SetBinError  (i, hTrue->GetBinError(i)  * 1.0 / acceptM->GetBinContent(i));
-            }
-
-            denominatorM_nopTreweighting->SetBinContent(i, denominatorM_nopTreweighting_raw->GetBinContent(i));
-
-        }
-
-        denominatorM_nopTreweighting->Scale(1. / denominatorM_nopTreweighting->Integral(), "width");
-
-        //scaling is now moved to after Afb is calculated
-        //double dataIntegral = hData_unfolded->Integral();
-
-        for (int l = 0; l < nbinsx_gen; l++)
-        {
-            for (int j = 0; j < nbinsx_gen; j++)
-            {
-                double corr = 1.0 / ( acceptM->GetBinContent(l + 1) * acceptM->GetBinContent(j + 1) );
-                //corr = corr * pow(xsection / dataIntegral,2) ;
-                m_correctE(l, j) = m_unfoldE(l, j) * corr;
-            }
-        }
-
-
 
 
 
@@ -755,7 +678,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         Float_t Afb, AfbErr;
 
-        GetAfb(hData, Afb, AfbErr);
+        GetAfb(hData_combined, Afb, AfbErr);
         cout << " Data: " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(hTrue, Afb, AfbErr);
@@ -792,7 +715,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         //hTrue->Scale(xsection/hTrue->Integral(),"width");
 
 
-        hData_unfolded_clone = (TH1D *) hData_unfolded->Clone("hData_unfolded_clone");
+        TH1D* hData_unfolded_clone = (TH1D *) hData_unfolded->Clone("Data_unfolded_clone");
 
         hData_unfolded->Scale(1. / hData_unfolded->Integral(), "width");
         hTrue->Scale(1. / hTrue->Integral(), "width");

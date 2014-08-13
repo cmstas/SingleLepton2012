@@ -1,8 +1,16 @@
+//C++ includes
 #include <algorithm>
 #include <fstream>
+
+//ROOT includes
 #include "TH1D.h"
+#include "TH2.h"
 #include "TMatrixD.h"
 #include "TMath.h"
+#include "TUnfoldSys.h"
+#include "TMinuit.h"
+
+//Analysis-specific includes
 #include "../../denominator/acceptanceplots.h" //import binning from acceptanceplots
 
 double xsection = 154.0*0.06451;
@@ -64,7 +72,7 @@ void GetAfb(TH1D* h, Float_t &afb, Float_t  &afberr){
   event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_plus_err,"");
   event_total = event_plus + event_minus;
 
-  //cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<endl;
+  //std::cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<std::endl;
 
   afb = (event_plus-event_minus)/(event_plus+event_minus);
   afberr   = sqrt(4*(event_plus*event_plus*event_minus_err*event_minus_err 
@@ -143,18 +151,18 @@ void GetAfbBinByBin(TH1D* h){
     event_total[i] = event_plus[i] + event_minus[i];
     event_total_total += event_total[i];
 
-    //cout<<event_minus[i]<<" "<<event_minus_err[i]<<" "<<event_plus[i]<<" "<<event_plus_err[i]<<" "<<event_total[i]<<endl;
+    //std::cout<<event_minus[i]<<" "<<event_minus_err[i]<<" "<<event_plus[i]<<" "<<event_plus_err[i]<<" "<<event_total[i]<<std::endl;
 
     afbbin[i] = (event_plus[i]-event_minus[i])/(event_plus[i]+event_minus[i]);
     afberrbin[i]   = sqrt(4*(event_plus[i]*event_plus[i]*event_minus_err[i]*event_minus_err[i] 
       + event_minus[i]*event_minus[i]*event_plus_err[i]*event_plus_err[i])/
       (event_total[i]*event_total[i]*event_total[i]*event_total[i]));
-    cout<<i<<" AFB = "<<afbbin[i]<<" +/- "<<afberrbin[i]<<endl;
+    std::cout<<i<<" AFB = "<<afbbin[i]<<" +/- "<<afberrbin[i]<<std::endl;
   }
 }
 
 
-void GetAvsY(TH1* histogram, TMatrixD &covarianceM, vector<double> &myafb, vector<double> &myerr, ofstream& second_output_file){
+void GetAvsY(TH1* histogram, TMatrixD &covarianceM, std::vector<double> &myafb, std::vector<double> &myerr, ofstream& second_output_file){
 
   myafb.clear();
   myerr.clear();
@@ -209,7 +217,7 @@ void GetAvsY(TH1* histogram, TMatrixD &covarianceM, vector<double> &myafb, vecto
       for(int i=0;i<nbins;i++){
         for(int k=0;k<nbins;k++){
           afberr += covarianceM(i,k) * dfdn[i] * dfdn[k];
-      //if(i==k) cout<<"DAH: "<<n[i]<<" "<<k<<" "<<covarianceM(i,k)<<endl;
+      //if(i==k) std::cout<<"DAH: "<<n[i]<<" "<<k<<" "<<covarianceM(i,k)<<std::endl;
         }
       }
       afberr = sqrt(afberr);
@@ -226,12 +234,12 @@ void GetAvsY(TH1* histogram, TMatrixD &covarianceM, vector<double> &myafb, vecto
     myafb.push_back(afb[j]);
     myerr.push_back(err[j]);
 
-    cout<<j<<" AFB = "<<afb[j]<<" +/- "<<err[j]<<endl;
-    second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << err[j] << endl;    	
+    std::cout<<j<<" AFB = "<<afb[j]<<" +/- "<<err[j]<<std::endl;
+    second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << err[j] << std::endl;    	
   }
 }
 
-void GetAvsY2d (TH2* h2, vector<double> &myafb, vector<double> &myerr, ofstream& second_output_file){
+void GetAvsY2d (TH2* h2, std::vector<double> &myafb, std::vector<double> &myerr, ofstream& second_output_file){
 
   myafb.clear();
   myerr.clear();
@@ -252,11 +260,11 @@ void GetAvsY2d (TH2* h2, vector<double> &myafb, vector<double> &myerr, ofstream&
 	myafb.push_back(rowafb);
 	myerr.push_back(rowerr);
 
-	cout << i << " AFB = " << rowafb << " +/- " << rowerr << endl;
-	second_output_file << acceptanceName << " " << observablename << " AFB" << i << ": " << rowafb << " +/- " << rowerr << endl;
+	std::cout << i << " AFB = " << rowafb << " +/- " << rowerr << std::endl;
+	second_output_file << acceptanceName << " " << observablename << " AFB" << i << ": " << rowafb << " +/- " << rowerr << std::endl;
   }
 
-  delete rowhist;
+  //delete rowhist;
 }
 
 void GetCorrectedAfb(TH1D* histogram, TMatrixD &covarianceM, Float_t &afb, Float_t  &afberr){
@@ -271,7 +279,7 @@ void GetCorrectedAfb(TH1D* histogram, TMatrixD &covarianceM, Float_t &afb, Float
   }
 
     //Setup Alpha Vector
-  double alpha[16], beta[16];
+  double alpha[16];
   for(int i=0;i<nbins;i++) {
 	if(i < nbins/2 ){ alpha[i] = -1;
 	}
@@ -303,12 +311,12 @@ void GetCorrectedAfb(TH1D* histogram, TMatrixD &covarianceM, Float_t &afb, Float
     //Calculate Afb
   afb = sum_alpha_n / sum_n;
 
-    //    cout<<"AFB = "<<afb<<" "<<afberr<<endl;
+    //    std::cout<<"AFB = "<<afb<<" "<<afberr<<std::endl;
 }
 
 
 
-void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, vector<double> &myafb, vector<double> &myerr, ofstream& second_output_file){
+void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<double> &myafb, std::vector<double> &myerr, ofstream& second_output_file){
 
     //calculate AFB, using covariance matrix, m_correctE(j,i), for the uncertainty
 
@@ -323,8 +331,11 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, vector<double> &m
   const Int_t numbinsy = nbinsy;
   const Int_t numbinsxy = numbinsx*numbinsy;
 
-  double afb[numbinsy+1] = {0.};
-  double afberr[numbinsy+1] = {0.};
+  double afb[numbinsy+1];
+  double afberr[numbinsy+1];
+
+  memset( afb, 0, sizeof(afb) );  //Initialize these arrays to zero
+  memset( afberr, 0, sizeof(afberr) );
 
   double n[numbinsx][numbinsy];
   for(int i=0;i<numbinsx;i++){
@@ -334,14 +345,18 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, vector<double> &m
   }
 
     //Setup Alpha Vector
-  double alpha[numbinsx], beta[numbinsx];
+  double alpha[numbinsx];
   for(int i=0;i<numbinsx;i++) if(i < numbinsx/2 ){ alpha[i] = -1;}else{ alpha[i] = 1;}
 
     //Components of the error calculation
-  double sum_n[numbinsy] = {0.};
-  double sum_alpha_n[numbinsy] = {0.};
+  double sum_n[numbinsy]; //= {0.};
+  double sum_alpha_n[numbinsy]; //= {0.};
   double sum_n_Inclusive = 0.;
   double sum_alpha_n_Inclusive = 0.;
+
+  memset( sum_n, 0, sizeof(sum_n) );
+  memset( sum_alpha_n, 0, sizeof(sum_alpha_n) );
+
   for(int i=0;i<numbinsx;i++){
     for(int j=0;j<numbinsy;j++){
       sum_n[j] += n[i][j];
@@ -368,7 +383,7 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, vector<double> &m
       int i_2dj = i / numbinsx;
       int j_2di = j % numbinsx;
       int j_2dj = j / numbinsx;
-      //cout<<"i: "<<i<<" "<<i_2di<<" "<<i_2dj<<" j: "<<j<<" "<<j_2di<<" "<<j_2dj<<endl;
+      //std::cout<<"i: "<<i<<" "<<i_2di<<" "<<i_2dj<<" j: "<<j<<" "<<j_2di<<" "<<j_2dj<<std::endl;
       afberr[0] += covarianceM(i,j) * dfdnInclusive[i_2di][i_2dj] * dfdnInclusive[j_2di][j_2dj];
       if(i_2dj==j_2dj) afberr[i_2dj+1] += covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj]; 
     }
@@ -385,8 +400,8 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, vector<double> &m
     myafb.push_back(afb[j]);
     myerr.push_back(afberr[j]);
 
-    cout<<j<<" AFB = "<<afb[j]<<" +/- "<<afberr[j]<<endl;
-    second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << afberr[j] << endl; 
+    std::cout<<j<<" AFB = "<<afb[j]<<" +/- "<<afberr[j]<<std::endl;
+    second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << afberr[j] << std::endl; 
 
   }
 
@@ -408,7 +423,7 @@ void GetCorrectedAfb_integratewidth(TH1D* histogram, TMatrixD &covarianceM, Floa
   }
 
     //Setup Alpha Vector
-  double alpha[16], beta[16];
+  double alpha[16];
   for(int i=0;i<nbins;i++) if(i < nbins/2 ){ alpha[i] = -1;}else{ alpha[i] = 1;}
 
     //Components of the error calculation
@@ -436,7 +451,7 @@ void GetCorrectedAfb_integratewidth(TH1D* histogram, TMatrixD &covarianceM, Floa
     //Calculate Afb
   afb = sum_alpha_n / sum_n;
 
-    //    cout<<"AFB = "<<afb<<" "<<afberr<<endl;
+    //    std::cout<<"AFB = "<<afb<<" "<<afberr<<std::endl;
 }
 
 
@@ -452,7 +467,7 @@ void GetCorrectedAfb_integratewidth_V(TH1D* histogram, TMatrixD &covarianceM, Fl
   }
 
     //Setup Alpha Vector
-  double alpha[16], beta[16];
+  double alpha[16];
   for(int i=0;i<nbins;i++) if(i < nbins/2 ){ alpha[i] = -1;}else{ alpha[i] = 1;}
 
     //Components of the error calculation
@@ -480,11 +495,11 @@ void GetCorrectedAfb_integratewidth_V(TH1D* histogram, TMatrixD &covarianceM, Fl
     //Calculate Afb
   afb = sum_alpha_n / sum_n;
 
-    //    cout<<"AFB = "<<afb<<" "<<afberr<<endl;
+    //    std::cout<<"AFB = "<<afb<<" "<<afberr<<std::endl;
 }
 
 
-void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, vector<double> &myafb, vector<double> &myerr, ofstream& second_output_file){
+void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, std::vector<double> &myafb, std::vector<double> &myerr, ofstream& second_output_file){
 
     //Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
 
@@ -504,7 +519,7 @@ void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, vector<doub
   }
 
     //Setup Alpha Vector
-  double alpha[16], beta[16];
+  double alpha[16];
   for(int i=0;i<nbins;i++) if(i < nbins/2 ){ alpha[i] = -1;}else{ alpha[i] = 1;}
 
     //Components of the error calculation
@@ -537,20 +552,20 @@ void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, vector<doub
       for(int j=0;j<nbins;j++){
         if( (i==k || i==nbins-1-k ) && (j==k || j==nbins-1-k ) ) {
           afberrbin[k] += covarianceM(i,j) * dfdn[i] * dfdn[j];
-              //cout<<covarianceM(i,j)<<" "<<dfdn[i]<<" "<<dfdn[j]<<" "<<endl;
+              //std::cout<<covarianceM(i,j)<<" "<<dfdn[i]<<" "<<dfdn[j]<<" "<<std::endl;
         }
       }
     }
     afberrbin[k] = sqrt(afberrbin[k]);
     afbbin[k] = sum_alpha_n[k] / sum_n[k];
-    cout<<k<<" AFB = "<<afbbin[k]<<" +/- "<<afberrbin[k]<<endl;
-    second_output_file << acceptanceName << " " << observablename << " AFB" << k << ": " << afbbin[k] << " +/- " << afberrbin[k] << endl;
+    std::cout<<k<<" AFB = "<<afbbin[k]<<" +/- "<<afberrbin[k]<<std::endl;
+    second_output_file << acceptanceName << " " << observablename << " AFB" << k << ": " << afbbin[k] << " +/- " << afberrbin[k] << std::endl;
 
     myafb.push_back(afbbin[k]);
     myerr.push_back(afberrbin[k]);
   }
-  double afb = sum_alpha_n_total / sum_n_total;
-    //cout<<"AFB = "<<afb<<endl;
+  //double afb = sum_alpha_n_total / sum_n_total;
+  //std::cout<<"AFB = "<<afb<<std::endl;
 }
 
 
@@ -732,9 +747,9 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       asymlabel="A_{cos(#phi)}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
       std::copy(bins_lepCosOpeningAngle, bins_lepCosOpeningAngle + nbins1D + 1, xbins1D);
-      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
-      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
-      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
+      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01; 
+      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00;
+      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02; 
       xmin=-1.0;
       xmax= 1.0;
       break;
@@ -748,9 +763,9 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       asymlabel="A_{#Delta#phi}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.8; xbins1D[2]=-0.4; xbins1D[3]=0.0; xbins1D[4]=0.4; xbins1D[5]=0.8; xbins1D[6]=1.0;
       std::copy(bins_lepAzimAsym, bins_lepAzimAsym + nbinsx2Dalt + 1, xbins2Dalt);
-      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
-      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
-      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
+      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;
+      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00;
+      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;
       xmin1D=-1.0;
       xmax1D= 1.0;
       break;
@@ -764,9 +779,9 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       asymlabel="A_{C}";
       //xbins1D[0]=-2.0; xbins1D[1]=-1.0; xbins1D[2]=-0.5; xbins1D[3]=0.0; xbins1D[4]=0.5; xbins1D[5]=1.0; xbins1D[6]=2.0;
       std::copy(bins_pseudorapiditydiff, bins_pseudorapiditydiff + nbins1D + 1, xbins1D);
-      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
-      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
-      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
+      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;
+      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00;
+      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;
       xmin1D=-2.0;
       xmax1D= 2.0;
       break;
@@ -780,16 +795,16 @@ syst_corr[5] =  0.016122  ; stat_corr[5] =  0.032788  ; stat_uncorr[5] =  0.0245
       asymlabel="A_{C}";
       //xbins1D[0]=-2.0; xbins1D[1]=-0.8; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.8; xbins1D[6]=2.0;
       std::copy(bins_rapiditydiff, bins_rapiditydiff + nbins1D + 1, xbins1D);
-      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;  stat_corr [6] = 0.01; 
-      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00; stat_uncorr[6] = 0.00;
-      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;  syst_corr [6] = 0.02; 
+      stat_corr[0] = 0.01; stat_corr [1] = 0.01;  stat_corr [2] = 0.01;  stat_corr [3] = 0.01; stat_corr [4] = 0.01;  stat_corr [5] = 0.01;
+      stat_uncorr[0] = 0.00; stat_uncorr[1] = 0.00; stat_uncorr[2] = 0.00; stat_uncorr[3] = 0.00; stat_uncorr[4] = 0.00; stat_uncorr[5] = 0.00;
+      syst_corr[0] = 0.02; syst_corr [1] = 0.02;  syst_corr [2] = 0.02;  syst_corr [3] = 0.02; syst_corr [4] = 0.02;  syst_corr [5] = 0.02;
       xmin1D=-2.0;
       xmax1D= 2.0;
       break;
     }
     default:
     {
-      cout<<"Set the variable switch";
+      std::cout<<"Set the variable switch";
     }
   }
 }
@@ -1009,7 +1024,7 @@ syst_corr[2] =  0.009654  ; stat_corr[2] =  0.033674  ; stat_uncorr[2] =  0.0237
     }
     default:
     {
-      cout<<"Set the variable switch";
+      std::cout<<"Set the variable switch";
     }
   }
 }
@@ -1225,7 +1240,7 @@ syst_corr[2] =  0.012402  ; stat_corr[2] =  0.037342  ; stat_uncorr[2] =  0.0268
     }
     default:
     {
-      cout<<"Set the variable switch";
+      std::cout<<"Set the variable switch";
     }
   }
 }
@@ -1266,7 +1281,7 @@ syst_corr[2] =  0.016189  ; stat_corr[2] =  0.020275  ; stat_uncorr[2] =  0.0155
       asymlabel="A_{#Delta#phi}";
       //Double_t pi = 3.141592653589793;
       xbins2D[0]=0.0; xbins2D[1]=4.*pi/20.; xbins2D[2]=7.*pi/20.; xbins2D[3]=10.*pi/20.; xbins2D[4]=13.*pi/20.; xbins2D[5]=16.*pi/20.; xbins2D[6]=pi;
-      ybins2D=0.0; ybins2D[1]=0.3; ybins2D[2]=0.7; ybins2D[3]=1.5;
+      ybins2D[0]=0.0; ybins2D[1]=0.3; ybins2D[2]=0.7; ybins2D[3]=1.5;
       ymin=ybins2D[0];
       ymax=ybins2D[3];
       xmin=xbins2D[0];
@@ -1441,7 +1456,7 @@ syst_corr[2] =  0.013820  ; stat_corr[2] =  0.036253  ; stat_uncorr[2] =  0.0252
     }
     default:
     {
-      cout<<"Set the variable switch";
+      std::cout<<"Set the variable switch";
     }
   }
 }
@@ -1465,7 +1480,7 @@ void fillUnderOverFlow(TH1D *h1, float value, double weight, double Nsolns)
 
 //--------------------------------------------------------------------
 
-void fillUnderOverFlow(TH2D *h2, float xvalue, float yvalue, double weight, double Nsolns)
+void fillUnderOverFlow(TH2 *h2, float xvalue, float yvalue, double weight, double Nsolns)
 {
   double maxx = h2->GetXaxis()->GetXmax();
   double minx = h2->GetXaxis()->GetXmin();
@@ -1491,7 +1506,7 @@ void fillUnderOverFlow(TH2D *h2, float xvalue, float yvalue, double weight, doub
 
 //Given a TH2D and the x,y coordinates of a point, this function tells you what
 //unwrapped bin that point would go into.
-int getUnwrappedBin (TH2D *h2, double xval, double yval)
+int getUnwrappedBin (TH2 *h2, double xval, double yval)
 {
   int nx = h2->GetNbinsX();
   int ny = h2->GetNbinsY();
@@ -1510,7 +1525,7 @@ int getUnwrappedBin (TH2D *h2, double xval, double yval)
 
   int unwrappedbin = rootbin - nx - 2*(rootbin/nxroot);
 
-  if (unwrappedbin > nx*ny || unwrappedbin < 1) cout << "ERROR: unwrapped bin " << unwrappedbin << " doesn't exist! (ROOT bin " << rootbin << ")." << endl;
+  if (unwrappedbin > nx*ny || unwrappedbin < 1) std::cout << "ERROR: unwrapped bin " << unwrappedbin << " doesn't exist! (ROOT bin " << rootbin << ")." << std::endl;
   return unwrappedbin;
 }
 
@@ -1562,8 +1577,8 @@ TH1D* myUnfold_hdataGlobalPointerForTMinuit;
 void myUnfold_globalFunctionForMinuit(int &npar, double *gin, double &f, double *par, int iflag)
 {
   const double logtau = par[0];
-  const double scaleBias = par[1];
-  myUnfold_TUnfoldGlobalPointerForTMinuit->DoUnfold(pow(10, logtau), myUnfold_hdataGlobalPointerForTMinuit, scaleBias);
+  const double myScaleBias = par[1];
+  myUnfold_TUnfoldGlobalPointerForTMinuit->DoUnfold(pow(10, logtau), myUnfold_hdataGlobalPointerForTMinuit, myScaleBias);
   
   f = fabs(myUnfold_TUnfoldGlobalPointerForTMinuit->GetRhoAvg());
 }
