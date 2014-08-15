@@ -81,14 +81,24 @@
 
   TLatex *text = new TLatex();
   text->SetNDC();
-  text->SetTextSize(0.03);
-  //  text->DrawLatex(0.2,0.88,"CMS Preliminary");
-  text->DrawLatex(0.2,0.88,"CMS Unpublished");
-  //text->DrawLatex(0.2,0.83,"0.98 fb^{-1} at #sqrt{s} = 7 TeV");
-  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
-  text->DrawLatex(0.2,0.78,"CR-M_{b#bar{b}}, all other cuts applied");
 
-  TString savedir = "/media/data/olivito/cms2/SingleLepton2012/plots/Feb5/pubplots";
+  text->SetTextFont(42);
+  text->SetTextSize(0.038);
+  text->SetTextAlign(20);
+  //  TString label = "CMS          #sqrt{s} = 8 TeV         L = 19.5 fb^{-1}";
+  TString label = "CMS Unpublished    #sqrt{s} = 8 TeV    L = 19.5 fb^{-1}";
+  text->DrawLatex(0.56,0.95,label);
+
+  // TLatex *text = new TLatex();
+  // text->SetNDC();
+  // text->SetTextSize(0.03);
+  // //  text->DrawLatex(0.2,0.88,"CMS Preliminary");
+  // text->DrawLatex(0.2,0.88,"CMS Unpublished");
+  // //text->DrawLatex(0.2,0.83,"0.98 fb^{-1} at #sqrt{s} = 7 TeV");
+  // text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
+  // text->DrawLatex(0.2,0.78,"CR-M_{b#bar{b}}, all other cuts applied");
+
+  TString savedir = "/media/data/olivito/cms2/SingleLepton2012/plots/May27_14/";
   TString plotname = "datamc_crmbb_allcuts";
   c->SaveAs(savedir + "/" + plotname + ".eps");
   c->SaveAs(savedir + "/" + plotname + ".pdf");

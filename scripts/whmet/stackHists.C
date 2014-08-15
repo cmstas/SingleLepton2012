@@ -622,40 +622,43 @@ void savePublicPlotsSig1(const char* path, const char* outpath) {
 
 void savePublicPlotsSig3(const char* path, const char* outpath) {
 
+  int nsig = 1;
+  TCanvas* c;
+
   // sig mass hists with signals overlaid
-  TCanvas* c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",1);
-  c->SaveAs(Form("%s/sig_met100_mbb.eps",outpath));
+  // c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,nsig,0,"",1);
+  // c->SaveAs(Form("%s/sig_met100_mbb.eps",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",1);
-  c->SaveAs(Form("%s/sig_met125_mbb.eps",outpath));
+  // c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,nsig,0,"",1);
+  // c->SaveAs(Form("%s/sig_met125_mbb.eps",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",1);
-  c->SaveAs(Form("%s/sig_met150_mbb.eps",outpath));
+  // c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,nsig,0,"",1);
+  // c->SaveAs(Form("%s/sig_met150_mbb.eps",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1);
-  c->SaveAs(Form("%s/sig_met175_mbb.eps",outpath));
+  // c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,nsig,0,"",1);
+  // c->SaveAs(Form("%s/sig_met175_mbb.eps",outpath));
 
   // .. and again with error bands.  Currently stacked version
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",1,-1,1,"");
-  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,3,0,"",0,-1,1,"");
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,nsig,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met100",1,2,0,-1,nsig,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met100_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met100_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met100_mbb_errband.png",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",1,-1,1,"");
-  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,3,0,"",0,-1,1,"");
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,nsig,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met125",1,2,0,-1,nsig,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met125_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met125_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met125_mbb_errband.png",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",1,-1,1,"");
-  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,3,0,"",0,-1,1,"");
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,nsig,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_met150",1,2,0,-1,nsig,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met150_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met150_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met150_mbb_errband.png",outpath));
 
-  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",1,-1,1,"");
-  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,3,0,"",0,-1,1,"");
+  c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,nsig,0,"",1,-1,1,"");
+  //c = stackHistAuto(path,"h_bbmass","","sig_bbmasslast_bbmass_nm1",1,2,0,-1,nsig,0,"",0,-1,1,"");
   c->SaveAs(Form("%s/sig_met175_mbb_errband.eps",outpath));
   c->SaveAs(Form("%s/sig_met175_mbb_errband.pdf",outpath));
   c->SaveAs(Form("%s/sig_met175_mbb_errband.png",outpath));

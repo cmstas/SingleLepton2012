@@ -915,8 +915,8 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     else if( mclabel == "zz" ) mclabel = "ZZ";
     else if( mclabel == "wzbb" ) mclabel = "WZ #rightarrow l#nub#bar{b}";
     else if( mclabel == "whbb" ) mclabel = "WH #rightarrow l#nub#bar{b}";
-    else if( mclabel == "dilep top" ) mclabel = "2l top";
-    else if( mclabel == "top 1l" ) mclabel = "1l top";
+    else if( mclabel == "dilep top" ) mclabel = "2l top-quark";
+    else if( mclabel == "top 1l" ) mclabel = "1l top-quark";
     else if( mclabel == "rare" ) mclabel = "Rare";
 
     //leg->AddEntry(mchist[imc],labels.at(imc),"f");
@@ -950,7 +950,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     // formatting
     mchist[imc]->SetFillColor( 0 );
     mchist[imc]->SetLineColor( getColor(labels.at(imc)) );
-    mchist[imc]->SetLineWidth(2);
+    mchist[imc]->SetLineWidth(3);
     //    mchist[imc]->SetLineStyle(2);
     ++nsigmc;
 
@@ -962,13 +962,14 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     }
 
     //leg->AddEntry(mchist[imc],labels.at(imc),"f");
-    leg->AddEntry(mchist[imc],mclabel,"f");
+    leg->AddEntry(mchist[imc],mclabel,"l");
     
   }
 
+  leg->SetTextFont(42);
   leg->SetFillColor(0);
   leg->SetBorderSize(0);
-  leg->SetTextSize(0.026);
+  leg->SetTextSize(0.030); // 0.038 for other labels
   
   return leg;
 
@@ -997,15 +998,33 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   TPad* plotpad = new TPad();
   TPad* respad  = new TPad();
 
+  TLatex *text = new TLatex();
+  text->SetNDC();
+
+  text->SetTextFont(42);
+  text->SetTextSize(0.038);
+  text->SetTextAlign(20);
+  //  TString label = "CMS          #sqrt{s} = 8 TeV         L = 19.5 fb^{-1}";
+  TString label = "CMS Unpublished    #sqrt{s} = 8 TeV    L = 19.5 fb^{-1}";
+
   if( residual ){
     fullpad = new TPad("fullpad","fullpad",0,0,1,1);
     //    fullpad->SetRightMargin(0.05);
-    plotpad->SetBottomMargin(0.05);
     fullpad->Draw();
     fullpad->cd();
 
-    plotpad = new TPad("plotpad","plotpad",0,0,1,0.8);
+    // -- ratio on bottom
+    plotpad = new TPad("plotpad","plotpad",0,0.2,1,0.99);
+    // -- ratio on top
+    //    plotpad = new TPad("plotpad","plotpad",0,0,1,0.8);
+    plotpad->SetTopMargin(0.05);
     plotpad->SetRightMargin(0.05);
+    plotpad->SetBottomMargin(0.05);
+
+    // plotpad->SetBottomMargin(0.12);
+    // plotpad->SetRightMargin(0.07);
+    // plotpad->SetLeftMargin(0.18);
+
     plotpad->Draw();
     plotpad->cd();
     if( log ) plotpad->SetLogy();
@@ -1114,7 +1133,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     if( TString( labels.at(imc) ).Contains("TChiwh") || TString( labels.at(imc) ).Contains("Wino") ){
       // signal
       mchist[imc]->SetFillColor( 0 );
-      mchist[imc]->SetLineWidth(2);
+      mchist[imc]->SetLineWidth(3);
       mchist[imc]->SetLineColor( getColor(labels.at(imc)) );
       //      mchist[imc]->SetLineStyle(2);
       ++nmcsig;
@@ -1177,10 +1196,16 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     max = datahist->GetMaximum() + datahist->GetBinError(datahist->GetMaximumBin());
     if( mctothist->GetMaximum() > max ) max = mctothist->GetMaximum();
 
-    datahist->GetXaxis()->SetTitle(xtitle);
-    datahist->GetXaxis()->SetTitleSize(0.05);
-    datahist->GetXaxis()->SetLabelSize(0.04);
-    datahist->GetXaxis()->SetTitleOffset(1.0);
+    if (residual) {
+      datahist->GetXaxis()->SetTitle("");
+      datahist->GetXaxis()->SetTitleSize(0.0);
+      datahist->GetXaxis()->SetLabelSize(0.0);
+    } else {
+      datahist->GetXaxis()->SetTitle(xtitle);
+      datahist->GetXaxis()->SetTitleSize(0.05);
+      datahist->GetXaxis()->SetLabelSize(0.04);
+      datahist->GetXaxis()->SetTitleOffset(1.0);
+    }
     datahist->GetYaxis()->SetTitle(ytitle);
     datahist->GetYaxis()->SetTitleSize(0.05);
     datahist->GetYaxis()->SetTitleOffset(1.20);
@@ -1202,12 +1227,12 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
       datahist->SetMaximum( 90 * max );
       if (TString(histname).Contains("mt2bl")) datahist->SetMaximum(200*max);
     }
-    else      datahist->SetMaximum( 1.4 * max );
+    else      datahist->SetMaximum( 1.7 * max );
     datahist->Draw("sameE1");
     datahist->Draw("sameaxis");
     
     if(!log) {
-      datahist->GetYaxis()->SetRangeUser(0.,1.4*max);
+      datahist->GetYaxis()->SetRangeUser(0.,1.7*max);
       if (TString(histname).Contains("dphi")) datahist->GetYaxis()->SetRangeUser(0.,3.0*max);
       if (TString(histname).Contains("bbmass") && tsdir.Contains("bbmasslast") && drawingSignal
 	  && (tsdir.Contains("met1") || tsdir.Contains("bbmass_nm1")) && !stacksig ) {
@@ -1222,7 +1247,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 
     max = mctothist->GetMaximum() + mctothist->GetBinError(mctothist->GetMaximumBin());
     if( log ) mctothist->SetMaximum( 90 * max );
-    else      mctothist->SetMaximum( 1.4 * max );
+    else      mctothist->SetMaximum( 1.7 * max );
 
     mctothist->GetXaxis()->SetTitle(xtitle);
     mctothist->GetYaxis()->SetTitle(ytitle);
@@ -1240,26 +1265,27 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
       }
     }
 
-    if(!log) mctothist->GetYaxis()->SetRangeUser(0.,1.4*max);
+    if(!log) mctothist->GetYaxis()->SetRangeUser(0.,1.7*max);
   }
 
   datamchists.mctothist = mctothist;
 
   if( drawLegend ){
     TLegend* myleg = 0;
-    if (nmcsig > 0) myleg = getLegend( labels , overlayData, 0.57, 0.45, 0.88, 0.94, signorm, errband );
+    if (nmcsig > 0) myleg = getLegend( labels , overlayData, 0.53, 0.45, 0.87, 0.94, signorm, errband );
     else myleg = getLegend( labels , overlayData );
     myleg->Draw();
   }
 
-  TLatex *text = new TLatex();
-  text->SetNDC();
-  text->SetTextSize(0.035);
-  TString label = "CMS " + TString(cmslabel);
-  text->DrawLatex(0.2,0.88,label);
+  text->DrawLatex(0.56,0.96,label);
+
+  // my version
+  //  text->SetTextSize(0.035);
+  //  TString label = "CMS " + TString(cmslabel);
+  //  text->DrawLatex(0.2,0.88,label);
   //text->DrawLatex(0.2,0.83,"0.98 fb^{-1} at #sqrt{s} = 7 TeV");
   //  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
-  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, L = 19.5 fb^{-1}");
+  //  text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, L = 19.5 fb^{-1}");
 
   // if     ( TString(flavor).Contains("ee")  ) text->DrawLatex(0.2,0.78,"Events with ee");
   // else if( TString(flavor).Contains("mm")  ) text->DrawLatex(0.2,0.78,"Events with #mu#mu");
@@ -1274,16 +1300,17 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   //else                                       text->DrawLatex(0.2,0.78,"Events with e#mu");
   //else                                       text->DrawLatex(0.2,0.78,"Events with #mu#mu");
   // label for specific control regions
-  float yval = 0.78;
-  if (tsdir.Contains("cr1_")) text->DrawLatex(0.2,yval,"M_{b#bar{b}} > 150 GeV");
-  else if (tsdir.Contains("cr8_")) text->DrawLatex(0.2,yval,"M_{b#bar{b}} < 100 GeV");
-  //  else if (tsdir.Contains("cr14_")) text->DrawLatex(0.2,yval,"M_{b#bar{b}} < 100 GeV or M_{b#bar{b}} > 150 GeV");
-  else if (tsdir.Contains("_met100")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 100 GeV");
-  else if (tsdir.Contains("_met125")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 125 GeV");
-  else if (tsdir.Contains("_met150")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 150 GeV");
-  else if (tsdir.Contains("bbmasslast") && tsdir.Contains("_bbmass_nm1")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 175 GeV");
-  else if (tsdir.Contains("cr23_")) text->DrawLatex(0.2,yval,"CR-2l");
-  else if (tsdir.Contains("cr5_")) text->DrawLatex(0.2,yval,"CR-0b");
+  float yval = 0.87;
+  float xval = 0.34;
+  if (tsdir.Contains("cr1_")) text->DrawLatex(xval,yval,"M_{b#bar{b}} > 150 GeV");
+  else if (tsdir.Contains("cr8_")) text->DrawLatex(xval,yval,"M_{b#bar{b}} < 100 GeV");
+  //  else if (tsdir.Contains("cr14_")) text->DrawLatex(xval,yval,"M_{b#bar{b}} < 100 GeV or M_{b#bar{b}} > 150 GeV");
+  else if (tsdir.Contains("_met100")) text->DrawLatex(xval,yval,"E_{T}^{miss} > 100 GeV");
+  else if (tsdir.Contains("_met125")) text->DrawLatex(xval,yval,"E_{T}^{miss} > 125 GeV");
+  else if (tsdir.Contains("_met150")) text->DrawLatex(xval,yval,"E_{T}^{miss} > 150 GeV");
+  else if (tsdir.Contains("bbmasslast") && tsdir.Contains("_bbmass_nm1")) text->DrawLatex(xval,yval,"E_{T}^{miss} > 175 GeV");
+  else if (tsdir.Contains("cr23_")) text->DrawLatex(xval,yval,"CR-2l");
+  else if (tsdir.Contains("cr5_")) text->DrawLatex(xval,yval,"CR-0b");
 
   // // draw lines for signal region -- doesn't look so good...
   // if (fullhistname.Contains("sig_bbmasslast") && fullhistname.Contains("h_bbmass") ) {
@@ -1302,11 +1329,19 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   if( residual ){
     fullpad->cd();
 
-    respad = new TPad("respad","respad",0,0.8,1,0.98);
+    respad = new TPad("respad","respad",0.,0.,1,0.226);
+    respad->SetLeftMargin(0.16);
     respad->SetRightMargin(0.05);
+    respad->SetTopMargin(0.08);
+    respad->SetBottomMargin(0.44);
+
+    // respad->SetBottomMargin(0.12);
+    // respad->SetRightMargin(0.07);
+    // respad->SetLeftMargin(0.18);
+    // respad->SetTopMargin(0.1);
+
     respad->Draw();
     respad->cd();
-    respad->SetTopMargin(0.05);
 
     gPad->SetGridy();
 
@@ -1356,14 +1391,18 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     }
 
     ratio->GetYaxis()->SetTitleOffset(0.3);
-    ratio->GetYaxis()->SetTitleSize(0.2);
+    ratio->GetYaxis()->SetTitleSize(0.18);
     ratio->GetYaxis()->SetNdivisions(5);
     ratio->GetYaxis()->SetLabelSize(0.15);
     //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
     ratio->GetYaxis()->SetRangeUser(0.001,2.0);
     ratio->GetYaxis()->SetTitle("Data/SM  ");
-    ratio->GetXaxis()->SetLabelSize(0);
-    ratio->GetXaxis()->SetTitleSize(0);
+    ratio->GetXaxis()->SetTitle(xtitle);
+    ratio->GetXaxis()->SetTitleSize(0.17);
+    ratio->GetXaxis()->SetLabelSize(0.17);
+    ratio->GetXaxis()->SetTitleOffset(1.0);
+    // ratio->GetXaxis()->SetLabelSize(0);
+    // ratio->GetXaxis()->SetTitleSize(0);
     ratio->SetMarkerSize(0.7);
 
     TF1* fpol1 = new TF1("fpol1","pol1",datahist->GetXaxis()->GetXmin(),datahist->GetXaxis()->GetXmax());
@@ -1539,6 +1578,11 @@ TCanvas* compareNormalized(std::string histname, TFile* f1, std::string label1, 
 //____________________________________________________________________________
 TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin, bool norm, TH1F* h3, std::string label3, TH1F* h4, std::string label4) {
 
+  bool draw_points = false;
+  TString drawopt = "histe";
+  if (draw_points) drawopt = "pe";
+  TString drawoptsame = drawopt + " same";
+
   TCanvas* c = new TCanvas(Form("c_%s",h1->GetName()),Form("c_%s",h1->GetName()));
 
   TH1F* h1_clone = (TH1F*)h1->Clone(Form("%s_clone",h1->GetName()));
@@ -1549,20 +1593,28 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
   if (h4) h4_clone = (TH1F*)h4->Clone(Form("%s_clone",h4->GetName()));
 
   h1_clone->SetMarkerColor(kRed);
+  if (draw_points) h1_clone->SetMarkerStyle(20);
   h1_clone->SetLineColor(kRed);
   h1_clone->SetLineWidth(2);
+  h1_clone->Sumw2();
   h2_clone->SetMarkerColor(kBlue);
+  if (draw_points) h2_clone->SetMarkerStyle(21);
   h2_clone->SetLineColor(kBlue);
   h2_clone->SetLineWidth(2);
+  h2_clone->Sumw2();
   if (h3_clone) {
     h3_clone->SetMarkerColor(7);
+    if (draw_points) h3_clone->SetMarkerStyle(22);
     h3_clone->SetLineColor(7);
     h3_clone->SetLineWidth(2);
+    h3_clone->Sumw2();
   }
   if (h4_clone) {
     h4_clone->SetMarkerColor(8);
+    if (draw_points) h4_clone->SetMarkerStyle(23);
     h4_clone->SetLineColor(8);
     h4_clone->SetLineWidth(2);
+    h4_clone->Sumw2();
   }
 
   if (rebin > 1) {
@@ -1578,19 +1630,19 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
   TH1F* h4_norm = 0;
 
   if (norm) {
-    h1_norm = (TH1F*)h1_clone->DrawNormalized("histe");
-    h2_norm = (TH1F*)h2_clone->DrawNormalized("histe same");
-    if (h3_clone) h3_norm = (TH1F*)h3_clone->DrawNormalized("histe same");
-    if (h4_clone) h4_norm = (TH1F*)h4_clone->DrawNormalized("histe same");
+    h1_norm = (TH1F*)h1_clone->DrawNormalized(drawopt);
+    h2_norm = (TH1F*)h2_clone->DrawNormalized(drawoptsame);
+    if (h3_clone) h3_norm = (TH1F*)h3_clone->DrawNormalized(drawoptsame);
+    if (h4_clone) h4_norm = (TH1F*)h4_clone->DrawNormalized(drawoptsame);
   } else {
     h1_norm = h1_clone;
     h2_norm = h2_clone;
     if (h3_clone) h3_norm = h3_clone;
-    if (h3_clone) h3_norm = h3_clone;
-    h1_norm->Draw("histe");
-    h2_norm->Draw("histe same");
-    if (h3_clone) h3_norm->Draw("histe same");
-    if (h4_clone) h4_norm->Draw("histe same");
+    if (h4_clone) h4_norm = h4_clone;
+    h1_norm->Draw(drawopt);
+    h2_norm->Draw(drawoptsame);
+    if (h3_clone) h3_norm->Draw(drawoptsame);
+    if (h4_clone) h4_norm->Draw(drawoptsame);
   }
 
   if (h2_norm->GetMaximum() > h1_norm->GetMaximum()) {
@@ -1605,12 +1657,15 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
     h1_norm->GetYaxis()->SetRangeUser(1E-4,1.1*h4_norm->GetMaximum());
   }
 
+  TString legopt = "le";
+  if (draw_points) legopt = "pe";
+
   TLegend *leg = new TLegend(0.57,0.69,0.93,0.9);
   leg->SetFillColor(0);
-  leg->AddEntry(h1_norm,label1.c_str(),"l");
-  leg->AddEntry(h2_norm,label2.c_str(),"l");
-  if (h3_norm) leg->AddEntry(h3_norm,label3.c_str(),"l");
-  if (h4_norm) leg->AddEntry(h4_norm,label4.c_str(),"l");
+  leg->AddEntry(h1_norm,label1.c_str(),legopt);
+  leg->AddEntry(h2_norm,label2.c_str(),legopt);
+  if (h3_norm) leg->AddEntry(h3_norm,label3.c_str(),legopt);
+  if (h4_norm) leg->AddEntry(h4_norm,label4.c_str(),legopt);
   leg->Draw("same");
 
   gPad->Modified();
