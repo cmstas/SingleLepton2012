@@ -1,0 +1,19 @@
+#ignore all untracked linkdef files
+#(already-tracked files can't be ignored)
+LinkDef*
+
+#ignore the unfolding summary files
+summary_*unfolding*.txt
+
+#ignore the temporary json file that holds our systematics
+systematics.json
+
+#ignore output plots
+*.pdf
+
+#ignore backup files
+*.*~
+
+#ignore compiler files
+*.pyc
+*.rootmap

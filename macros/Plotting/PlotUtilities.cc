@@ -235,6 +235,27 @@ void plot1D(string title, float xval, double weight, std::map<string, TH1F*> &al
   
 }
 
+void plot1DUnderOverFlow(string title, double xval, double weight, std::map<string, TH1D*> &allhistos, 
+      int numbinsx, double xmin, double xmax)  
+{
+  if (xval >= xmax) xval = xmax - (xmax-xmin)/double(numbinsx)/1000.;
+  if (xval <= xmin) xval = xmin + (xmax-xmin)/double(numbinsx)/1000.;
+
+  std::map<string, TH1D*>::iterator iter= allhistos.find(title);
+  if(iter == allhistos.end()) //no histo for this yet, so make a new one
+    {
+      TH1D* currentHisto= new TH1D(title.c_str(), title.c_str(), numbinsx, xmin, xmax);
+      currentHisto->Sumw2();
+      currentHisto->Fill(xval, weight);
+      allhistos.insert(std::pair<string, TH1D*> (title,currentHisto) );
+    }
+  else // exists already, so just fill it
+    {
+      (*iter).second->Fill(xval, weight);
+    }
+  
+}
+
 TH1F* getHist1D(string title, std::map<string, TH1F*> &allhistos, 
 	    int numbinsx, float xmin, float xmax)  
 {
@@ -371,6 +392,30 @@ void plot2D(string title, float xval, float yval, double weight, std::map<string
       TH2F* currentHisto= new TH2F(title.c_str(), title.c_str(), numbinsx, xmin, xmax, numbinsy, ymin, ymax);
       currentHisto->Fill(xval, yval, weight);
       allhistos.insert(std::pair<string, TH2F*> (title,currentHisto) );
+    }
+  else // exists already, so just fill it
+    {
+      (*iter).second->Fill(xval, yval, weight);
+    }
+
+  return;
+
+}
+
+void plot2DUnderOverFlow(string title, double xval, double yval, double weight, std::map<string, TH2D*> &allhistos, 
+      int numbinsx, double xmin, double xmax, int numbinsy, double ymin, double ymax){
+
+  if (xval >= xmax) xval = xmax - (xmax-xmin)/double(numbinsx)/1000.;
+  if (xval <= xmin) xval = xmin + (xmax-xmin)/double(numbinsx)/1000.;
+  if (yval >= ymax) yval = ymax - (ymax-ymin)/double(numbinsy)/1000.;
+  if (yval <= ymin) yval = ymin + (ymax-ymin)/double(numbinsy)/1000.;
+ 
+  std::map<string, TH2D*>::iterator iter= allhistos.find(title);
+  if(iter == allhistos.end()) //no histo for this yet, so make a new one
+    {
+      TH2D* currentHisto= new TH2D(title.c_str(), title.c_str(), numbinsx, xmin, xmax, numbinsy, ymin, ymax);
+      currentHisto->Fill(xval, yval, weight);
+      allhistos.insert(std::pair<string, TH2D*> (title,currentHisto) );
     }
   else // exists already, so just fill it
     {
