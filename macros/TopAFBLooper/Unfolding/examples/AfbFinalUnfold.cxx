@@ -414,6 +414,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
 		TH1D *acceptM[4];
+		acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
+		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
+		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
 		acceptM[3] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
 
 		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
