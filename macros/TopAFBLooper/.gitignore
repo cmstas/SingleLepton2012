@@ -10,6 +10,8 @@ systematics.json
 
 #ignore output plots
 *.pdf
+*.png
+*.svg
 
 #ignore backup files
 *.*~

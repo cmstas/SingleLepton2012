@@ -64,7 +64,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
     ofstream myfile;
     myfile.open (summary_name + ".txt");
-	//cout.rdbuf(myfile.rdbuf());
+	cout.rdbuf(myfile.rdbuf());
 
     // OGU 130516: add second output txt file with format easier to be pasted into google docs
     ofstream second_output_file;
@@ -154,7 +154,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch);
         TH1D *hData_unfolded = new TH1D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins);
 
-        TH1D *hTrue = new TH1D ("true", "Truth",    nbinsx_gen, genbins);
+        TH1D *hTrue_split = new TH1D ("true_split", "Truth",    nbinsx_reco_3ch, recobins_3ch); //Rebinned below
+		TH1D *hTrue = new TH1D ("true_combined", "Truth",    nbinsx_gen, genbins);
         //TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco, recobins);
         TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch);
         TH1D *denominatorM_nopTreweighting = new TH1D ("denominatorM_nopTreweighting", "denominatorM_nopTreweighting", nbinsx_gen, genbins);
@@ -166,6 +167,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         TH1D *hData_bkgSub;
 
+		hTrue_split->Rebin(2); //This gives us the gen bin-widths, while preserving the 3-channel layout.
+
 		//delete[] genbins;
 		//delete[] recobins;
 		delete[] recobins_3ch;
@@ -173,6 +176,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         hData->Sumw2();
         hBkg->Sumw2();
         hData_unfolded->Sumw2();
+        hTrue_split->Sumw2();
         hTrue->Sumw2();
         hMeas->Sumw2();
         hTrue_vs_Meas->Sumw2();
@@ -362,8 +366,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			offset = double(channel) * recohist_width;
 			if( observable > histmax )        observable = hiBinCenter;
 			else if( observable < histmin )   observable = loBinCenter;
-			if( observableMinus > histmax )        observable = hiBinCenter;
-			else if( observableMinus < histmin )   observable = loBinCenter;
+			if( observableMinus > histmax )        observableMinus = hiBinCenter;
+			else if( observableMinus < histmin )   observableMinus = loBinCenter;
+			if( observable_gen > histmax )        observable_gen = hiBinCenter;
+			else if( observable_gen < histmin )   observable_gen = loBinCenter;
+			if( observableMinus_gen > histmax )        observableMinus_gen = hiBinCenter;
+			else if( observableMinus_gen < histmin )   observableMinus_gen = loBinCenter;
             weight *= scalettdil;
             // if ( (Region=="Signal") && (ttmass>450) ) {
             // fillUnderOverFlow(hMeas, observable, weight, Nsolns);
@@ -379,64 +387,48 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 
             // if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
-            if ( iVar<2 || iVar==8 || ttmass>0 )
+            if ( iVar<2 || iVar==9 || ttmass>0 )
             {
                 //response.Fill (observable, observable_gen, weight);
                 fillUnderOverFlow(hMeas, observable+offset, weight, Nsolns);
                 fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
+                fillUnderOverFlow(hTrue_split, observable_gen+offset, weight, Nsolns);
                 fillUnderOverFlow(hTrue_vs_Meas, observable+offset, observable_gen, weight, Nsolns);
                 if ( combineLepMinus )
                 {
                     //response.Fill (observableMinus, observableMinus_gen, weight);
                     fillUnderOverFlow(hMeas, observableMinus+offset, weight, Nsolns);
                     fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
+                    fillUnderOverFlow(hTrue_split, observableMinus_gen+offset, weight, Nsolns);
                     fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
                 }
             }
-            else
-            {
-                if ( ttmass > 0 )
-                {
-                    //response.Fill (observable, observable_gen, weight);
-                    fillUnderOverFlow(hMeas, observable+offset, weight, Nsolns);
-                    fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
-                    fillUnderOverFlow(hTrue_vs_Meas, observable+offset, observable_gen, weight, Nsolns);
-                    if ( combineLepMinus )
-                    {
-                        //response.Fill (observableMinus, observableMinus_gen, weight);
-                        fillUnderOverFlow(hMeas, observableMinus+offset, weight, Nsolns);
-                        fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
-                        fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
-                    }
-                }
-			}
+
 			// if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
         }
 
 		delete[] recobins;
 
+
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
-		TH1D *acceptM[3];
-		acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
-		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
-		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
+		TH1D *acceptM[4];
+		acceptM[3] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
 
+		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
 
 		for( int aChannel=0; aChannel<3; aChannel++ ) {
 		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 
 			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
-			double n_accepted = hTrue->GetBinContent(acceptbin);
+			double n_accepted = hTrue_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
 			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_accepted/acceptance - n_accepted );
 
 		  }
 		}
-
 		//delete[] acceptM;
 
-		TH1D* denominatorM = (TH1D*)file->Get("denominator_" + acceptanceName + "_all"); //Acceptance denominator, all channels
 
 		// Make purity and stability plots
         if( hMeas->GetNbinsX() == nbinsx_gen ) {
@@ -547,6 +539,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			for (Int_t cmj = 0; cmj < nbinsx_gen; cmj++)
 			  {
 				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+				m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 				m_unfoldcorr(cmi, cmj) = cmatrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
 		  }
@@ -583,8 +576,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         //m_unfoldE.Print("f=%1.5g ");
         //m_unfoldcorr.Print("f=%1.5g ");
 
-		
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp");
+		float rmargin = gStyle->GetPadRightMargin();
+		gStyle->SetPadRightMargin(0.13);
+
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1200, 600);
         // TH2D *hResp = (TH2D *) response.Hresponse();
 		TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
         gStyle->SetPalette(1);
@@ -592,9 +587,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         hResp->GetYaxis()->SetTitle(xaxislabel + "_{gen}");
         hResp->Draw("COLZ");
         //c_resp->SaveAs("1D_Response_" + acceptanceName + Region + ".eps");
-        c_resp->SaveAs("Response_" + acceptanceName + Region + ".pdf");
+        c_resp->SaveAs("1D_Response_" + acceptanceName + Region + ".pdf");
         //c_resp->SaveAs("Response_" + acceptanceName + Region + ".C");
         //c_resp->SaveAs("Response_" + acceptanceName + Region + ".root");
+		gStyle->SetPadRightMargin(rmargin);
 
         TCanvas *c_purstab = new TCanvas("c_purstab", "c_purstab");
         hPurity->SetTitle("Purity;"+xaxislabel+";"+yaxislabel);
@@ -603,6 +599,34 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         c_purstab->SaveAs("1D_purity_" + acceptanceName + ".pdf");
         hStability->Draw();
         c_purstab->SaveAs("1D_stability_" + acceptanceName + ".pdf");
+
+
+		TH1D *denominatorM = (TH1D*)file->Get("denominator_" + acceptanceName + "_all"); //Acceptance denominator, all channels
+
+		TFile *file_nopTreweighting = new TFile("../denominator/acceptance/mcnlo_nopTreweighting/accept_" + acceptanceName + ".root");
+		TH1D *denominatorM_nopTreweighting_raw = (TH1D *) file_nopTreweighting->Get("denominator_" + acceptanceName + "_all");
+
+
+		for (Int_t i = 1; i <= nbinsx_gen; i++)
+		{
+
+		  if (acceptM[3]->GetBinContent(i) != 0)
+		  {
+			hData_unfolded->SetBinContent(i, hData_unfolded->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
+			hData_unfolded->SetBinError (i, hData_unfolded->GetBinError (i) * 1.0 / acceptM[3]->GetBinContent(i));
+		  }
+
+		  if (acceptM[3]->GetBinContent(i) != 0)
+		  {
+			hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
+			hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[3]->GetBinContent(i));
+		  }
+
+		  denominatorM_nopTreweighting->SetBinContent(i, denominatorM_nopTreweighting_raw->GetBinContent(i));
+
+		}
+
+		denominatorM_nopTreweighting->Scale(1. / denominatorM_nopTreweighting->Integral(), "width");
 
 
 
@@ -870,7 +894,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         pt1->Draw();
 
 		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + Region + ".eps");
-		c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".pdf");
+		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + Region + ".pdf");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".C");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".root");
 		
