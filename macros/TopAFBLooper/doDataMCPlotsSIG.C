@@ -1192,7 +1192,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             cout << " Probability " << file1dname[i] << " : "
                  << compatibilityTest(h_dt1d[i], s_mc1d[i]) << endl;
 
-            delete g_data;
+            //delete g_data;
             //delete canv1d[i];
         }
     }//end loop over lepton types
@@ -1412,7 +1412,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         cout << " Probability " << file1dname[i] << " : "
              << compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]) << endl;
 
-        delete g_data;
+        //delete g_data;
 
     }
     //}  NSAMPLE loop
