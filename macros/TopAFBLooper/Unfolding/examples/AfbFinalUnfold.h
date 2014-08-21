@@ -1585,7 +1585,7 @@ void myUnfold_globalFunctionForMinuit(int &npar, double *gin, double &f, double 
 
 
 
-void minimizeRhoAverage(TUnfoldSys* unfold, TH1D* hdata, int nsteps, double log10min, double log10max)
+void minimizeRhoAverage(TUnfoldSys* unfold, TH1D* hdata, double log10min, double log10max)
 {
   myUnfold_TUnfoldGlobalPointerForTMinuit = unfold;
   myUnfold_hdataGlobalPointerForTMinuit = hdata;

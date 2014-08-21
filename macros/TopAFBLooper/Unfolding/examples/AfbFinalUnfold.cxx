@@ -24,11 +24,6 @@
 #include "TUnfold.h"
 #include "TUnfoldSys.h"
 
-//#include "src/RooUnfoldResponse.h"
-//#include "src/RooUnfoldBayes.h"
-//#include "src/RooUnfoldSvd.h"
-//#include "src/RooUnfoldTUnfold.h"
-
 #include "tdrstyle.C"
 
 using std::cout;
@@ -192,6 +187,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         TChain *ch_data = new TChain("tree");
 
 
+		//ch_data->Add(path + "ttdl_mcatnlo_smallTree_baby.root");
         //ch_data->Add(path + "data.root");
         for (int iSig = 0; iSig < nSig; ++iSig)
         {
@@ -430,7 +426,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 		  }
 		}
-		//delete[] acceptM;
 
 
 		// Make purity and stability plots
@@ -463,9 +458,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		  cout << "\n***WARNING: Purity and stability plots are broken!!!\n" << endl;
 		}
 
-
-        // RooUnfoldResponse response (hMeas, hTrue, hTrue_vs_Meas);
-        //hTrue_vs_Meas = (TH2D*) response.Hresponse()->Clone();
 
         hData_bkgSub = (TH1D *) hData->Clone("Data_BkgSub");
         hData_bkgSub->Add(hBkg, -1.0);
@@ -516,24 +508,20 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		/////// Do the unfolding! /////////////////////////////////////////////////////
 
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
-		//TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert);
 		unfold_TUnfold.SetInput(hData_bkgSub);
 		//unfold_TUnfold.SetBias(hTrue);  //doesn't make any difference, because if not set the bias distribution is
 		//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
 
 
-		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, 100, -5.0, 0.0);
+		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, 0.0);
 		tau = unfold_TUnfold.GetTau();
 
 		//scaleBias = 0.0; //set biasScale to 0 when using kRegModeSize, or to compare with unfoldingType == 1
 		//do the unfolding with calculated bias scale (N_data/N_MC), and tau from ScanLcurve if doScanLCurve=true. Note that the results will only be the same as unfoldingType == 1 with scaleBias=0 and the same value of tau.
 		cout << "bias scale for TUnfold: " << scaleBias << endl;
 		unfold_TUnfold.DoUnfold(tau, hData_bkgSub, scaleBias);
-		//unfold_TUnfold.DoUnfold(0.005,hData_bkgSub,scaleBias);
-
 
 		unfold_TUnfold.GetOutput(hData_unfolded);
-
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
 		TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
@@ -612,12 +600,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
 		{
-
-		  if (acceptM[3]->GetBinContent(i) != 0)
-		  {
-			hData_unfolded->SetBinContent(i, hData_unfolded->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
-			hData_unfolded->SetBinError (i, hData_unfolded->GetBinError (i) * 1.0 / acceptM[3]->GetBinContent(i));
-		  }
 
 		  if (acceptM[3]->GetBinContent(i) != 0)
 		  {
