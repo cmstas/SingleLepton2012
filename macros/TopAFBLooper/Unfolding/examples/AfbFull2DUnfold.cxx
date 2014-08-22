@@ -4,8 +4,8 @@
 #include "AfbFinalUnfold.h"
 
 #include "TRandom3.h"
-#include "TH1D.h"
-#include "TH2D.h"
+#include "TH1.h"
+#include "TH2.h"
 #include "TStyle.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -16,11 +16,9 @@
 #include "TColor.h"
 #include "THStack.h"
 #include "TCut.h"
-
-#include "src/RooUnfold.h"
-#include "src/RooUnfoldResponse.h"
-#include "src/RooUnfoldBayes.h"
-#include "src/RooUnfoldSvd.h"
+#include "TMarker.h"
+#include "TUnfoldSys.h"
+#include "TPaveText.h"
 
 #include "tdrstyle.C"
 
@@ -34,8 +32,6 @@ using std::endl;
 
 //const Double_t _topScalingFactor=1.+(9824. - 10070.94)/9344.25;  //needs to be changed from preselection ratio to ratio for events with a ttbar solution
 
-// 0=SVD, 1=TUnfold via RooUnfold, 2=TUnfold
-int unfoldingType = 2;
 
 TString Region = "";
 Int_t kterm = 3;  //note we used 4 here for ICHEP
@@ -77,17 +73,20 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
     ofstream second_output_file;
     second_output_file.open(summary_name + "_formated.txt");
 
-    const int nBkg = 7;
+    const int nBkg = 10;
+	const int nSig = 3;
     TString path = "../";
-    TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
-    double bkgSF[nBkg] = {scalettotr, scalewjets, scaleDY, scaleDY, scaleDY, scaletw, scaleVV};
+    TString dataroot[nSig] = {"data_diel_baby.root", "data_dimu_baby.root", "data_mueg_baby.root"};
+    // TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
+    TString bkgroot[nBkg] = {"DY1to4Jtot_baby.root", "diboson_baby.root", "tW_lepdl_baby.root", "tW_lepfake_baby.root", "tW_lepsl_baby.root", "triboson_baby.root", "ttV_baby.root", "ttfake_powheg_baby.root", "ttsl_powheg_baby.root", "w1to4jets_baby.root"};
 
+    double bkgSF[nBkg] = {scalettotr, scalewjets, scaleDY, scaleDY, scaleDY, scaletw, scaleVV};
 
     Float_t asymVar, asymVar_gen, tmass; //"asymVar" formerly known as "observable"
     Float_t asymVarMinus, asymVarMinus_gen;
     Float_t obs2D, obs2D_gen; //Note: change the name of obs2D to be something like "secondary variable"
     Double_t weight;
-    Int_t Nsolns;
+    Int_t Nsolns = 1;
 
     for (Int_t iVar = 0; iVar < nVars; iVar++)
     {
@@ -177,7 +176,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 										nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
 
         TH1D *hData_bkgSub;
-		TH1D* hMeas_newErr;
+		// TH1D* hMeas_newErr;
 
 		delete[] genbins;
 		delete[] recobins;
@@ -211,10 +210,13 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TChain *ch_top = new TChain("tree");
         TChain *ch_data = new TChain("tree");
 
-        TString path = "../";
+        // ch_data->Add(path + "data.root");
+        for (int iSig = 0; iSig < nSig; ++iSig)
+        {
+            ch_data->Add(path + dataroot[iSig]);
+        }
 
-        ch_data->Add(path + "data.root");
-        ch_top->Add(path + "ttdil.root");
+        ch_top->Add(path + "ttdl_mcatnlo_smallTree_baby.root");
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
         {
@@ -226,7 +228,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         ch_data->SetBranchAddress(observablename,    &asymVar);
         if ( combineLepMinus ) ch_data->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
         ch_data->SetBranchAddress("weight", &weight);
-        ch_data->SetBranchAddress("Nsolns", &Nsolns);
+        // ch_data->SetBranchAddress("Nsolns", &Nsolns);
         ch_data->SetBranchAddress("t_mass", &tmass);
 
         if (Var2D == "mtt")               ch_data->SetBranchAddress("tt_mass", &obs2D);
@@ -251,7 +253,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             ch_bkg[iBkg]->SetBranchAddress(observablename,    &asymVar);
             if ( combineLepMinus ) ch_bkg[iBkg]->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
             ch_bkg[iBkg]->SetBranchAddress("weight", &weight);
-            ch_bkg[iBkg]->SetBranchAddress("Nsolns", &Nsolns);
+            // ch_bkg[iBkg]->SetBranchAddress("Nsolns", &Nsolns);
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
 
             if (Var2D == "mtt")              ch_bkg[iBkg]->SetBranchAddress("tt_mass", &obs2D);
@@ -277,7 +279,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
         if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms_gen",    &asymVarMinus_gen);
         ch_top->SetBranchAddress("weight", &weight);
-        ch_top->SetBranchAddress("Nsolns", &Nsolns);
+        // ch_top->SetBranchAddress("Nsolns", &Nsolns);
         ch_top->SetBranchAddress("t_mass", &tmass);
 
         if (Var2D == "mtt")
@@ -337,7 +339,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		if( nbinsx_gen != nbinsx_reco ) cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
 
-        RooUnfoldResponse response (hMeas, hTrue, hTrue_vs_Meas);
 
 
 
@@ -375,48 +376,28 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// Now let's actually do the unfolding.
 
 
-        if (unfoldingType == 0)
-	    {
-		  //Dan made no changes here. Probably broken.
-            RooUnfoldSvd unfold_svd (&response, hData_bkgSub, kterm);
-            unfold_svd.Setup(&response, hData_bkgSub);
-            unfold_svd.IncludeSystematics(includeSys);
-            hData_unfolded = (TH1D *) unfold_svd.Hreco();
-            m_unfoldE = unfold_svd.Ereco();
-        }
-        else if (unfoldingType == 1)
-        {
-		  //Dan made no changes here. Probably broken.
-            RooUnfoldTUnfold unfold_rooTUnfold (&response, hData_bkgSub, TUnfold::kRegModeCurvature);
-            unfold_rooTUnfold.Setup(&response, hData_bkgSub);
-            unfold_rooTUnfold.FixTau(tau);
-            unfold_rooTUnfold.IncludeSystematics(includeSys);
-            hData_unfolded = (TH1D *) unfold_rooTUnfold.Hreco();
-            m_unfoldE = unfold_rooTUnfold.Ereco();
-        }
-        else if (unfoldingType == 2)
-        {
-		  TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
-		  unfold_TUnfold.SetInput(hData_bkgSub);
-		  scaleBias = hData_bkgSub->Integral() / hTrue_unwrapped->Integral();
-		  hTrue_unwrapped->Scale(scaleBias);
-		  //unfold_TUnfold.SetBias(hTrue_unwrapped);
-		  unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
-		  //unfold_TUnfold.DoUnfold(tau,hData_bkgSub, 0.0);
-		  minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, 100, -4.0, 0.0);
-		  unfold_TUnfold.GetOutput(hData_unfolded_unwrapped);
-		  tau = unfold_TUnfold.GetTau();
 
-		  TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-		  for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
-            {
-			  for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
-                {
-				  m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
-                }
-            }
-        }
-        else cout << "Unfolding TYPE not Specified" << "\n";
+
+		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
+		unfold_TUnfold.SetInput(hData_bkgSub);
+		scaleBias = hData_bkgSub->Integral() / hTrue_unwrapped->Integral();
+		hTrue_unwrapped->Scale(scaleBias);
+		//unfold_TUnfold.SetBias(hTrue_unwrapped);
+		unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
+		//unfold_TUnfold.DoUnfold(tau,hData_bkgSub, 0.0);
+		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -4.0, 0.0);
+		unfold_TUnfold.GetOutput(hData_unfolded_unwrapped);
+		tau = unfold_TUnfold.GetTau();
+
+		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+		for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
+		  {
+			for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
+			  {
+				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+			  }
+		  }
+        
 
 		// Generate a curve of rhoAvg vs log(tau)
 		double ar_logtau[100];
@@ -445,7 +426,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		TMarker* m_rhoMin = new TMarker(bestlogtau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("minimizeRho_" + acceptanceName + ".eps");
+		c_rhoAvg->SaveAs("minimizeRho_" + acceptanceName + ".pdf");
 		
 
 	  
@@ -466,32 +447,32 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hData_bkgSub_rewrapped->Draw("COLZ");
 		hData_bkgSub_rewrapped->GetZaxis()->SetMoreLogLabels();
         c_data->SetLogz();
-        c_data->SaveAs("data_" + acceptanceName +"_" + Var2D + ".eps");
+        c_data->SaveAs("data_" + acceptanceName +"_" + Var2D + ".pdf");
 		hData_bkgSub->SetTitle("Unwrapped Data (background subtracted);Bin number;Entries per bin");
 		hData_bkgSub->Draw();
-        c_data->SaveAs("dataunwrapped_" + acceptanceName +"_" + Var2D + ".eps");
+        c_data->SaveAs("dataunwrapped_" + acceptanceName +"_" + Var2D + ".pdf");
 
         hTrue->SetTitle("True MC;"+xaxislabel+";"+yaxislabel);
 		hTrue->GetZaxis()->SetMoreLogLabels();
 		hTrue->Draw("COLZ");
-        c_data->SaveAs("true_" + acceptanceName +"_" + Var2D + ".eps");
+        c_data->SaveAs("true_" + acceptanceName +"_" + Var2D + ".pdf");
 		hTrue_unwrapped->SetTitle("Unwrapped Truth;Bin number;Entries per bin");
 		hTrue_unwrapped->Draw();
-        c_data->SaveAs("trueunwrapped_" + acceptanceName +"_" + Var2D + ".eps");
+        c_data->SaveAs("trueunwrapped_" + acceptanceName +"_" + Var2D + ".pdf");
 
 		hData_unfolded->SetTitle("Unfolded Data;"+xaxislabel+";"+yaxislabel);
 		hData_unfolded->GetZaxis()->SetMoreLogLabels();
 		hData_unfolded->Draw("COLZ");
-        c_data->SaveAs("unfolded_" + acceptanceName +"_" + Var2D + ".eps");
+        c_data->SaveAs("unfolded_" + acceptanceName +"_" + Var2D + ".pdf");
 
         TCanvas *c_purstab = new TCanvas("c_purstab", "c_purstab", 650, 600);
 		gStyle->SetPadRightMargin(0.15);
         hPurity->SetTitle("Purity;"+xaxislabel+";"+yaxislabel);
         hStability->SetTitle("Stability;"+xaxislabel+";"+yaxislabel);
         hPurity->Draw("COLZ");
-        c_purstab->SaveAs("purity_" + acceptanceName +"_" + Var2D + ".svg");
+        c_purstab->SaveAs("purity_" + acceptanceName +"_" + Var2D + ".pdf");
         hStability->Draw("COLZ");
-        c_purstab->SaveAs("stability_" + acceptanceName +"_" + Var2D + ".svg");
+        c_purstab->SaveAs("stability_" + acceptanceName +"_" + Var2D + ".pdf");
 
 
 		TCanvas *c1 = new TCanvas("c1","c1",1300,400);
@@ -504,17 +485,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		hTrue->Draw("COLZ");
 		c1->SaveAs("data_comparison_"+acceptanceName+"_"+Var2D+".pdf");
 
-        if (unfoldingType == 0)
-        {
-            TCanvas *c_d = new TCanvas("c_d", "c_d", 500, 500);
-            TH1D *dvec = unfold_svd.Impl()->GetD();
-            dvec->Draw();
-            c_d->SetLogy();
-            c_d->SaveAs(Var2D + "_D_2D_" + acceptanceName + Region + ".pdf");
-        }
 
         TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 650, 600);
-        TH2D *hResp = (TH2D *) response.Hresponse();
+        TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
         gStyle->SetPalette(1);
 		hResp->SetTitle("Migration matrix");
         hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
@@ -527,12 +500,13 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		// Make acceptance corrections ///////////////////////////////////////////////////
 
-        TFile *file = new TFile("../acceptance/kit_1200_gensplit/accept_" + acceptanceName + ".root");
+        // TFile *file = new TFile("../acceptance/kit_1200_gensplit/accept_" + acceptanceName + ".root");
+        TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
-        TH2D *acceptM_2d = (TH2D *) file->Get("accept_" + acceptanceName + "_" + Var2D);
+        TH2D *acceptM_2d = (TH2D *) file->Get("accept_" + acceptanceName + "_" + Var2D + "_all");
         unwrap2dhisto(acceptM_2d, hAcc_unwrapped);
 
-        TH2D *denomM_2d = (TH2D *) file->Get("denominator_" + acceptanceName + "_" + Var2D);
+        TH2D *denomM_2d = (TH2D *) file->Get("denominator_" + acceptanceName + "_" + Var2D + "_all");
 
 
         for (Int_t x = 1; x <= nbinsx_gen; x++)
@@ -656,7 +630,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
         hTop_AfbVsMtt->Draw("E same");
 
-        leg1 = new TLegend(0.6, 0.72, 0.9, 0.938, NULL, "brNDC");
+        TLegend* leg1 = new TLegend(0.6, 0.72, 0.9, 0.938, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);

@@ -12,6 +12,7 @@ systematics.json
 *.pdf
 *.png
 *.svg
+AfbVs*_unfolded_*.C
 
 #ignore backup files
 *.*~
