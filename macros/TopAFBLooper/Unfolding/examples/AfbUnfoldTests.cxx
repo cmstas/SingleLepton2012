@@ -254,22 +254,25 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     Float_t asymVarMinus, asymVarMinus_gen;
 	Float_t obs2D, obs2D_gen;
     Double_t weight;
-    Int_t Nsolns;
+    Int_t Nsolns = 1;
 
 	// Background events ///////////////
 	TChain *ch_bkg = new TChain("tree");
-	ch_bkg->Add("../ttotr.root");
-	ch_bkg->Add("../wjets.root");
-	ch_bkg->Add("../DYee.root");
-	ch_bkg->Add("../DYmm.root");
-	ch_bkg->Add("../DYtautau.root");
-	ch_bkg->Add("../tw.root");
-	ch_bkg->Add("../VV.root");
+	ch_bkg->Add("../DY1to4Jtot_baby.root");
+	ch_bkg->Add("../diboson_baby.root");
+	ch_bkg->Add("../tW_lepdl_baby.root");
+	ch_bkg->Add("../tW_lepfake_baby.root");
+	ch_bkg->Add("../tW_lepsl_baby.root");
+	ch_bkg->Add("../triboson_baby.root");
+	ch_bkg->Add("../ttV_baby.root");
+	ch_bkg->Add("../ttfake_powheg_baby.root");
+	ch_bkg->Add("../ttsl_powheg_baby.root");
+	ch_bkg->Add("../w1to4jets_baby.root");
 
 	ch_bkg->SetBranchAddress(observablename,    &asymVar);
 	if ( combineLepMinus ) ch_bkg->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
 	ch_bkg->SetBranchAddress("weight", &weight);
-	ch_bkg->SetBranchAddress("Nsolns", &Nsolns);
+	// ch_bkg->SetBranchAddress("Nsolns", &Nsolns);
 	ch_bkg->SetBranchAddress("t_mass", &tmass);
 
 	if (Var2D == "mtt")              ch_bkg->SetBranchAddress("tt_mass", &obs2D);
@@ -287,7 +290,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	}
 
 	// Data events /////////////////////
-    TFile *file = new TFile("../ttdil.root");
+    TFile *file = new TFile("../ttdl_mcatnlo_smallTree_baby.root");
     TTree *evtree = (TTree *) file->Get("tree");
     Int_t entries = (Int_t)evtree->GetEntries();
     cout << "RESPONSE: Number of Entries: " << entries << endl;
@@ -298,7 +301,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     if ( combineLepMinus ) evtree->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
     if ( combineLepMinus ) evtree->SetBranchAddress("lepMinus_costheta_cms_gen",    &asymVarMinus_gen);
     evtree->SetBranchAddress("weight", &weight);
-    evtree->SetBranchAddress("Nsolns", &Nsolns);
+    // evtree->SetBranchAddress("Nsolns", &Nsolns);
     evtree->SetBranchAddress("t_mass", &tmass);
 	evtree->SetBranchAddress("tt_mass", &ttmass);
 	evtree->SetBranchAddress("tt_mass_gen", &ttmass_gen);
@@ -477,20 +480,20 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  tau = unfold_FindTau.GetTau();
 
 		  // Generate a curve of rhoAvg vs log(tau)
-		  double ar_logtau[100];
-		  double ar_rhoAvg[100];
+		  double ar_logtau[90];
+		  double ar_rhoAvg[90];
 		  double logtau_test = 0.0;
 		  double bestlogtau = log10(tau);
 		  double bestrhoavg = unfold_FindTau.GetRhoAvg();
 
-		  for(int l=0; l<100; l++) {
+		  for(int l=0; l<90; l++) {
 			logtau_test = -4.0 + 0.04*l;
 			unfold_FindTau.DoUnfold(pow(10.0,logtau_test), hSmeared_unwrapped, scaleBias);
 			ar_logtau[l] = logtau_test;
 			ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
 		  }
 
-		  TGraph* gr_rhoAvg = new TGraph(100,ar_logtau,ar_rhoAvg);
+		  TGraph* gr_rhoAvg = new TGraph(90,ar_logtau,ar_rhoAvg);
 		  TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
 		  gr_rhoAvg->SetTitle("Global Correlation Coefficient;log_{10} #tau;#rho_{avg}");
 		  gr_rhoAvg->SetLineColor(kRed);
@@ -498,7 +501,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		  TMarker* m_rhoMin = new TMarker(bestlogtau,bestrhoavg,kCircle);
 		  m_rhoMin->Draw();
-		  c_rhoAvg->SaveAs(acceptanceName + "_unfoldTests_minRho.svg");
+		  c_rhoAvg->SaveAs(acceptanceName + "_unfoldTests_minRho.pdf");
 
 		  cout << "Optimal tau value: " << tau << endl;
 		  cout << "Minimum rho average: " << bestrhoavg << endl;
@@ -518,8 +521,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         hMeas_after_array[k] = (TH2D *) hMeas_after->Clone();
 
 
-        TFile *accfile = new TFile("../acceptance/mcnlo/accept_" + acceptanceName + ".root");
-        TH2D *acceptM_2d = (TH2D *) accfile->Get("accept_" + acceptanceName + "_" + Var2D);
+        TFile *accfile = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
+        TH2D *acceptM_2d = (TH2D *) accfile->Get("accept_" + acceptanceName + "_" + Var2D + "_all");
         acceptM_2d->Scale(1.0 / acceptM_2d->Integral());
 		unwrap2dhisto(acceptM_2d, hAcc_unwrapped);
 

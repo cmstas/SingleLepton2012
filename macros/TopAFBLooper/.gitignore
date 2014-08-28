@@ -2,8 +2,10 @@
 #(already-tracked files can't be ignored)
 LinkDef*
 
-#ignore the unfolding summary files
+#ignore summary text files
 summary_*unfolding*.txt
+*_summary_PEtest*.txt
+p1_f*.txt
 
 #ignore the temporary json file that holds our systematics
 systematics.json
@@ -13,6 +15,7 @@ systematics.json
 *.png
 *.svg
 AfbVs*_unfolded_*.C
+*_LinearityCheck*.C
 
 #ignore backup files
 *.*~
