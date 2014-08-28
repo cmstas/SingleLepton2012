@@ -536,10 +536,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		  }
 
 		// Generate a curve of rhoAvg vs log(tau)
-		double ar_logtau[90];
+		double ar_tau[90];
 		double ar_rhoAvg[90];
-		double logtau_test = 0.0;
-		double bestlogtau = log10(tau);
+		double tau_test = 0.0;
 		double bestrhoavg = unfold_TUnfold.GetRhoAvg();
 
 		TUnfoldSys unfold_getRhoAvg(hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
@@ -547,19 +546,20 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		//unfold_getRhoAvg.SetBias(hTrue); //unnecessary
 
 		for(int l=0; l<90; l++) {
-		  logtau_test = -5.0 + 0.05*l;
-		  unfold_getRhoAvg.DoUnfold(pow(10.0,logtau_test), hData_bkgSub, scaleBias);
-		  ar_logtau[l] = logtau_test;
+		  tau_test = pow( 10, -5.0 + 0.05*l);
+		  unfold_getRhoAvg.DoUnfold(tau_test, hData_bkgSub, scaleBias);
+		  ar_tau[l] = tau_test;
 		  ar_rhoAvg[l] = unfold_getRhoAvg.GetRhoAvg();
 		}
 
-		TGraph* gr_rhoAvg = new TGraph(90,ar_logtau,ar_rhoAvg);
+		TGraph* gr_rhoAvg = new TGraph(90,ar_tau,ar_rhoAvg);
 		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
-		gr_rhoAvg->SetTitle("Global Correlation Coefficient;log_{10} #tau;#rho_{avg}");
+		c_rhoAvg->SetLogx();
+		gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
 		gr_rhoAvg->SetLineColor(kRed);
 		gr_rhoAvg->Draw("al");
 
-		TMarker* m_rhoMin = new TMarker(bestlogtau,bestrhoavg,kCircle);
+		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
 		c_rhoAvg->SaveAs("1D_minimizeRho_" + acceptanceName + ".pdf");
 

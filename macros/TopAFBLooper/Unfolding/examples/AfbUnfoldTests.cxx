@@ -480,26 +480,26 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  tau = unfold_FindTau.GetTau();
 
 		  // Generate a curve of rhoAvg vs log(tau)
-		  double ar_logtau[90];
+		  double ar_tau[90];
 		  double ar_rhoAvg[90];
-		  double logtau_test = 0.0;
-		  double bestlogtau = log10(tau);
+		  double tau_test = 0.0;
 		  double bestrhoavg = unfold_FindTau.GetRhoAvg();
 
 		  for(int l=0; l<90; l++) {
-			logtau_test = -4.0 + 0.04*l;
-			unfold_FindTau.DoUnfold(pow(10.0,logtau_test), hSmeared_unwrapped, scaleBias);
-			ar_logtau[l] = logtau_test;
+			tau_test = pow( 10, -5.0 + 0.05*l );
+			unfold_FindTau.DoUnfold(tau_test, hSmeared_unwrapped, scaleBias);
+			ar_tau[l] = tau_test;
 			ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
 		  }
 
-		  TGraph* gr_rhoAvg = new TGraph(90,ar_logtau,ar_rhoAvg);
+		  TGraph* gr_rhoAvg = new TGraph(90,ar_tau,ar_rhoAvg);
 		  TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
-		  gr_rhoAvg->SetTitle("Global Correlation Coefficient;log_{10} #tau;#rho_{avg}");
+		  c_rhoAvg->SetLogx();
+		  gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
 		  gr_rhoAvg->SetLineColor(kRed);
 		  gr_rhoAvg->Draw("al");
 
-		  TMarker* m_rhoMin = new TMarker(bestlogtau,bestrhoavg,kCircle);
+		  TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
 		  m_rhoMin->Draw();
 		  c_rhoAvg->SaveAs(acceptanceName + "_unfoldTests_minRho.pdf");
 
