@@ -253,7 +253,7 @@ void GetAvsY2d (TH2* h2, std::vector<double> &myafb, std::vector<double> &myerr,
 
   for(int i=1; i<=ny; i++) {
 
-	  rowhist = h2->ProjectionX("rowprojection", i, i, "");  // I verified that this works correctly even without option "e".
+	rowhist = h2->ProjectionX("rowprojection", i, i, "");  // I verified that this works correctly even without option "e".
 
 	GetAfb(rowhist, rowafb, rowerr);
 
@@ -265,7 +265,6 @@ void GetAvsY2d (TH2* h2, std::vector<double> &myafb, std::vector<double> &myerr,
   }
 
   delete rowhist;
-
 }
 
 void GetCorrectedAfb(TH1D* histogram, TMatrixD &covarianceM, Float_t &afb, Float_t  &afberr){
