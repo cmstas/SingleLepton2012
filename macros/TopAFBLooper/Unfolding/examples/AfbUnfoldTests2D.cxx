@@ -1,49 +1,87 @@
 
 #include <iostream>
+#include <vector>
+
+#include "TRandom3.h"
+#include "TF1.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TUnfold.h"
+#include "TUnfoldSys.h"
+#include "TMatrixD.h"
+#include "TChain.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TFile.h"
+#include "TMarker.h"
+#include "TFitResult.h"
+#include "TColor.h"
+#include "TLegend.h"
+#include "TPaveText.h"
+
+#include "AfbFinalUnfold.h"
+#include "tdrstyle.C"
+
 using std::cout;
 using std::endl;
 
-#include "TRandom3.h"
-#include "TH1D.h"
-#include "TUnfold.h"
-#include "TMatrixD.h"
-
-#include "src/RooUnfoldResponse.h"
-#include "src/RooUnfoldBayes.h"
-#include "src/RooUnfoldSvd.h"
-#include "src/RooUnfoldTUnfold.h"
-
-#include "AfbFinalUnfold.h"
-
-#include "tdrstyle.C"
-#include "../CommonFunctions.C"
 
 //==============================================================================
 // Global definitions
 //==============================================================================
 
-// 0=SVD, 1=TUnfold via RooUnfold, 2=TUnfold
-int unfoldingType = 0;
 
 TString Region = "";
 
 
 Int_t kterm = 3;
-Double_t tau = 1E-4;
-Int_t nPseudos = 10000;
+Double_t tau = 0.003;
+Int_t nPseudos = 1;   // Linearity tests can use 1. For pull width tests, normally set to 10k
 Int_t includeSys = 0;
 
-Int_t lineWidth = 5;
+// int lineWidth = 5;
+bool plot_inclusive_only = false;
 
+
+TF1 *fx;
+
+Double_t myfunction(Double_t * x, Double_t * par)
+{
+  Float_t xx = x[0];
+  Float_t ac = (xmax + xmin) / 2.;
+  Double_t fscaled = par[1] * ( 1. + sign(xx - ac) * par[0] * ( fx->Eval( fabs( (xx - ac) / (xmax - ac) ) ) ) ) ;
+  return fscaled;
+}
 
 //TestType: "Pull" or "Linearity"
-//Var2D: "mtt" or "ttrapidity2" or "ttpt"
-//slopeOption: 1 = continuous reweighting, 2 = 2-binned reweighting (i.e. sign(var)), -1,-2 = also add linear slope in secondary variable
-void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D = "mtt", Int_t slopeOption = 1)
+//slopeOption: 0 = continuous reweighting, 1 = 6-binned reweighting
+void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slopeOption = 0,*/ Int_t Nfunction = 0, TString Var2D = "mtt")
 {
-#ifdef __CINT__
-    gSystem->Load("libRooUnfold");
-#endif
+
+    //    TF1 *fsin = new TF1("fsin","sin(TMath::Pi()*x)",-1,1);
+    //    TF1 *fcos = new TF1("fcos","cos(TMath::Pi()*x)",-1,1);
+    //    TF1 *fmx2 = new TF1("fmx2","1 - (2*x - 1)^2",-1,1);
+    //    TF1 *fx = new TF1("fx","x",-1,1);
+    //    TF1 *fx2 = new TF1("fx2","x^2",-1,1);
+    //    TF1 *fx3 = new TF1("fx3","x^3",-1,1);
+    //    TF1 *fxhalf = new TF1("fxhalf","x^0.5",-1,1);
+    //    TF1 *fxquarter = new TF1("fxquarter","x^0.25",-1,1);
+    //    TF1 *fexpx = new TF1("fexpx","exp(x)/exp(1)",-1,1);
+
+
+    if (Nfunction == 0) fx = new TF1("fx", "x", -1, 1);
+    if (Nfunction == 1) fx = new TF1("fx", "x^2", -1, 1);
+    if (Nfunction == 2) fx = new TF1("fx", "x^3", -1, 1);
+    if (Nfunction == 3) fx = new TF1("fx", "x^0.5", -1, 1);
+    if (Nfunction == 4) fx = new TF1("fx", "x^0.25", -1, 1);
+    if (Nfunction == 5) fx = new TF1("fx", "exp(x)/exp(1)", -1, 1);
+    if (Nfunction == 6) fx = new TF1("fx", "1 - (2*x - 1)^2", -1, 1);
+    if (Nfunction == 7) fx = new TF1("fx", "sin(TMath::Pi()*x)", -1, 1);
+    if (Nfunction == 8) fx = new TF1("fx", "cos(TMath::Pi()*x)", -1, 1);
+    if (Nfunction == 9) fx = new TF1("fx", "1/2", -1, 1);
+
 
     setTDRStyle();
     gStyle->SetOptTitle(0);
@@ -51,57 +89,128 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
     gStyle->SetOptStat("emr");
     cout.precision(3);
 
+    //Initialize1DBinning(iVar);
+	if (Var2D == "mtt") Initialize2DBinning(iVar);
+	else if (Var2D == "ttrapidity2") Initialize2DBinningttrapidity2(iVar);
+	else if (Var2D == "ttpt") Initialize2DBinningttpt(iVar);
+
+	//Do all our bin splitting
+	int nbinsx_gen = -99;
+	int nbinsx_reco = -99;
+	int nbinsunwrapped_gen = -99;
+	int nbinsunwrapped_reco = -99;
+
+	if( iVar < 2 ) nbinsx_gen = nbinsx2D*2;
+	else nbinsx_gen = nbinsx2D;
+
+	nbinsx_reco = nbinsx_gen*2;
+
+	double* genbins;
+	double* recobins;
+
+	genbins = new double[nbinsx_gen+1];
+	recobins = new double[nbinsx_reco+1];
+
+	//Make gen binning array
+	for( int i=0; i<nbinsx2D; i++ ) {
+	  if( iVar<2 ) {
+		genbins[i*2] = xbins2D[i];
+		genbins[i*2 +1] = ( xbins2D[i] + xbins2D[i+1] )/2.;
+	  }
+	  else genbins[i] = xbins2D[i];
+	}
+	genbins[nbinsx_gen] = xbins2D[nbinsx2D];
+
+	//Make reco binning array
+	for( int i=0; i<nbinsx_gen; i++ ) {
+	  recobins[i*2] = genbins[i];
+	  recobins[i*2 +1] = ( genbins[i] + genbins[i+1] )/2.;
+	}
+	recobins[nbinsx_reco] = genbins[nbinsx_gen];
+
+	nbinsunwrapped_gen  = nbinsx_gen  * nbinsy2D;
+	nbinsunwrapped_reco = nbinsx_reco * nbinsy2D;
+
+
+
+    bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
+    // const int nDiff = nbins1D + nbins1D / 2;
+    // const int nDiff = nbinsy2D;
+
     ofstream myfile;
-    //myfile.open ("summary_PEtest_2D.txt");
-    //cout.rdbuf(myfile.rdbuf());
+    myfile.open (acceptanceName + "_summary_PEtest.txt");
+    cout.rdbuf(myfile.rdbuf());
     ofstream second_output_file;
-    //second_output_file.open("summary_PEtest_2D_formated.txt");
+    second_output_file.open(acceptanceName + "_summary_PEtest_formated.txt");
+
+    // TString FunctionName = formatFloat(Nfunction, "%6.0i");
+	char tmpchar[10];
+	sprintf( tmpchar, "%6.0i", Nfunction );
+	TString FunctionName(Nfunction);
+    FunctionName.ReplaceAll(" " , "" );
+    if (Nfunction == 0) FunctionName = "0";
+    TString file_name = "p1_f" + FunctionName + "_" + acceptanceName;
+    ofstream third_output_file;
+    third_output_file.open(file_name + ".txt");
 
     TRandom3 *random = new TRandom3();
     random->SetSeed(5);
 
 
-    //initialise 1D binning to get xmin and xmax for the asym variable
-    Initialize1DBinning(iVar);
+    double asym_centre = (xmax + xmin) / 2.;
 
-    Float_t asym_centre = (xmax + xmin) / 2.;
 
-    //initialise 2D binning
-    if (Var2D == "mtt") Initialize2DBinning(iVar);
-    else if (Var2D == "ttrapidity2") Initialize2DBinningttrapidity2(iVar);
-    else if (Var2D == "ttpt") Initialize2DBinningttpt(iVar);
+    TF1 *fx_scaled = new TF1("fx_scaled", myfunction, xmin, xmax, 2);
+    //fx_scaled->SetParameters(0.3,30);
+    //fx_scaled->Eval(0.5);
+    //cout<<"***** "<<fx_scaled->Eval(0.5)<<endl;
+    double fscale = -9999;
 
-    //set ranges for slope
-    double Var2Dlower = 0.;
-    double Var2Dupper = xbins2D[6];
-    double Var2Dmid = (xbins2D[4] + xbins2D[5]) / 2.;
-    if (Var2D == "mtt") Var2Dlower = 350.;
-    if (Var2D == "ttpt") Var2Dupper = 200.;
+	///////////////////////////////////////////////////////////////////////////////////////////
+	/////////////// 1. Set up all our histograms //////////////////////////////////////////////
 
-    bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
+	// 2D versions of the old 1D histograms
+    // TH2D *hEmpty = new TH2D ("Empty", "Empty",    nbinsx_reco, recobins, nbinsy2D, ybins2D);
+    // TH2D *hEmpty_gen = new TH2D ("Empty_gen", "Empty",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
 
-    TH1D *hTrue_before = new TH1D ("trueBeforeScaling", "Truth",    nbins2D, xbins2D);
-    TH1D *hMeas_before = new TH1D ("measBeforeScaling", "Measured", nbins2D, xbins2D);
+    TH2D *hTrue_before = new TH2D ("trueBeforeScaling", "Truth",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
+    TH2D *hMeas_before = new TH2D ("measBeforeScaling", "Measured", nbinsx_reco, recobins, nbinsy2D, ybins2D);
 
-    TH1D *hTrue_after = new TH1D ("trueAfterScaling", "Truth",    nbins2D, xbins2D);
-    TH1D *hMeas_after = new TH1D ("measAfterScaling", "Measured", nbins2D, xbins2D);
+    TH2D *hTrue_after = new TH2D ("trueAfterScaling", "Truth",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
+    TH2D *hMeas_after = new TH2D ("measAfterScaling", "Measured", nbinsx_reco, recobins, nbinsy2D, ybins2D);
 
-    TH1D *hSmeared = new TH1D ("smeared", "Smeared", nbins2D, xbins2D);
-    TH1D *hUnfolded = new TH1D ("unfolded", "Unfolded", nbins2D, xbins2D);
+    TH2D *hSmeared = new TH2D ("smeared", "Smeared", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+    TH2D *hUnfolded = new TH2D ("unfolded", "Unfolded", nbinsx_gen, genbins, nbinsy2D, ybins2D);
+
+	TH2D *hBkg = new TH2D ("Background",  "Background",    nbinsx_reco, recobins, nbinsy2D, ybins2D);
+
+	// 1D histograms to store the unwrapped distributions
+    TH1D *hTrue_before_unwrapped = new TH1D ("trueBeforeScalingUnwr", "Truth Before Unwrapped",    nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5); //Bias distribution
+    TH1D *hSmeared_unwrapped = new TH1D ("smearedUnwr", "Smeared Unwrapped", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5); //Input to TUnfold
+	TH1D *hUnfolded_unwrapped = new TH1D ("unfoldedUnwr", "Unfolded Unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5); //Output from TUnfold
+	TH1D *hAcc_unwrapped = new TH1D ("acc_unwr", "Acceptance unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5); //Unwrapped acceptance matrix
+	TH1D *hBkg_unwrapped = new TH1D ("Background_Unwr",  "Background unwrapped",    nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
+
+    TH1D *hTrue_after_unwrapped = new TH1D ("trueAfterScalingUnwr", "Truth Unwrapped",    nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
+    // TH1D *hMeas_after_unwrapped = new TH1D ("measAfterScalingUnwr", "Measured Unwrapped", nbinsunwrapped, 0.5, double(nbinsunwrapped)+0.5);
+
 
     double pullMax = 5;
     int pullBins = 50;
     if (TestType == "Linearity") pullMax = 100;
     if (TestType == "Linearity") pullBins = 1000;
 
+    TH1D* AfbPull[nbinsy2D + nbinsunwrapped_gen + 1];
+
+    for (int iD = 0; iD < nbinsy2D + nbinsunwrapped_gen + 1; ++iD)
+    {
+        AfbPull[iD] = new TH1D("h_afbpull" + iD, "Pulls for Afb" + iD, pullBins, -pullMax, pullMax);
+        AfbPull[iD]->Sumw2();
+    }
 
 
-    TH1D *AfbPull = new TH1D("h_afbpull", "Pulls for Afb", pullBins, -pullMax, pullMax);
-    TH1D *Afb2DPullBin1 = new TH1D("h_afb2DpullBin1", "Pulls for Afb 2D Bin1", pullBins, -pullMax, pullMax);
-    TH1D *Afb2DPullBin2 = new TH1D("h_afb2DpullBin2", "Pulls for Afb 2D Bin2", pullBins, -pullMax, pullMax);
-    TH1D *Afb2DPullBin3 = new TH1D("h_afb2DpullBin3", "Pulls for Afb 2D Bin3", pullBins, -pullMax, pullMax);
-
-    TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbins2D, xbins2D, nbins2D, xbins2D);
+	TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5,
+									nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
 
 
     hTrue_before->Sumw2();
@@ -110,19 +219,24 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
     hMeas_after->Sumw2();
     hSmeared->Sumw2();
     hUnfolded->Sumw2();
+	hBkg->Sumw2();
 
-    AfbPull->Sumw2();
-    Afb2DPullBin1->Sumw2();
-    Afb2DPullBin2->Sumw2();
-    Afb2DPullBin3->Sumw2();
+	hTrue_after_unwrapped->Sumw2();
+	// hMeas_after_unwrapped->Sumw2();
+	hUnfolded_unwrapped->Sumw2();
+	hSmeared_unwrapped->Sumw2();
+	hTrue_before_unwrapped->Sumw2();
+	hAcc_unwrapped->Sumw2();
+	hBkg_unwrapped->Sumw2();
+
     hTrue_vs_Meas->Sumw2();
 
-    TMatrixD m_unfoldE(nbins2D, nbins2D);
+    TMatrixD m_unfoldE(nbinsunwrapped_gen, nbinsunwrapped_gen);
 
-
-    TH1F *h_pulls[nbins2D];
-    TH1F *h_resd[nbins2D];
-    for (int i = 0; i < nbins2D; i++)
+	/*
+    TH1F *h_pulls[nbins1D];
+    TH1F *h_resd[nbins1D];
+    for (int i = 0; i < nbins1D; i++)
     {
         TString name = "h_pull_";
         name += i;
@@ -131,518 +245,1443 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
         name += i;
         h_resd[i] = new TH1F(name, name, 20, -1, 1);
     }
+	*/
 
+	/////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////// 2. Fill our histograms from the baby ntuples //////////////////
 
-    TFile *file = new TFile("../ttdil.root");
+    Float_t asymVar, asymVar_gen, tmass, ttmass, ttmass_gen;
+    Float_t asymVarMinus, asymVarMinus_gen;
+	Float_t obs2D, obs2D_gen;
+    Double_t weight;
+    Int_t Nsolns = 1;
+
+	// Background events ///////////////
+	TChain *ch_bkg = new TChain("tree");
+	ch_bkg->Add("../DY1to4Jtot_baby.root");
+	ch_bkg->Add("../diboson_baby.root");
+	ch_bkg->Add("../tW_lepdl_baby.root");
+	ch_bkg->Add("../tW_lepfake_baby.root");
+	ch_bkg->Add("../tW_lepsl_baby.root");
+	ch_bkg->Add("../triboson_baby.root");
+	ch_bkg->Add("../ttV_baby.root");
+	ch_bkg->Add("../ttfake_powheg_baby.root");
+	ch_bkg->Add("../ttsl_powheg_baby.root");
+	ch_bkg->Add("../w1to4jets_baby.root");
+
+	ch_bkg->SetBranchAddress(observablename,    &asymVar);
+	if ( combineLepMinus ) ch_bkg->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
+	ch_bkg->SetBranchAddress("weight", &weight);
+	// ch_bkg->SetBranchAddress("Nsolns", &Nsolns);
+	ch_bkg->SetBranchAddress("t_mass", &tmass);
+
+	if (Var2D == "mtt")              ch_bkg->SetBranchAddress("tt_mass", &obs2D);
+	else if (Var2D == "ttrapidity2") ch_bkg->SetBranchAddress("ttRapidity2", &obs2D);
+	else if (Var2D == "ttpt")        ch_bkg->SetBranchAddress("ttPt", &obs2D);
+
+	for (Int_t i = 0; i < ch_bkg->GetEntries(); i++) {
+	  ch_bkg->GetEntry(i);
+	  obs2D = fabs(obs2D);
+	  //weight *= bkgSF;
+	  if ( tmass > 0 ) {
+		fillUnderOverFlow(hBkg, asymVar, obs2D, weight, Nsolns);
+		if (combineLepMinus)  fillUnderOverFlow(hBkg, asymVarMinus, obs2D, weight, Nsolns);
+	  }
+	}
+
+	// Data events /////////////////////
+    TFile *file = new TFile("../ttdl_mcatnlo_smallTree_baby.root");
     TTree *evtree = (TTree *) file->Get("tree");
     Int_t entries = (Int_t)evtree->GetEntries();
     cout << "RESPONSE: Number of Entries: " << entries << endl;
 
-    Float_t observable, observable_gen, tmass;
-    Float_t observableMinus, observableMinus_gen;
-    Float_t obs2D, obs2D_gen;
-    Double_t weight;
-    Int_t Nsolns;
-
-    evtree->SetBranchAddress(observablename,    &observable);
-    evtree->SetBranchAddress(observablename + "_gen", &observable_gen);
-    if (observablename == "lep_azimuthal_asymmetry2") evtree->SetBranchAddress("lep_azimuthal_asymmetry_gen2", &observable_gen);
-    if ( combineLepMinus ) evtree->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
-    if ( combineLepMinus ) evtree->SetBranchAddress("lepMinus_costheta_cms_gen",    &observableMinus_gen);
+    evtree->SetBranchAddress(observablename,    &asymVar);
+    evtree->SetBranchAddress(observablename + "_gen", &asymVar_gen);
+    //if (observablename == "lep_azimuthal_asymmetry2") evtree->SetBranchAddress("lep_azimuthal_asymmetry_gen2", &asymVar_gen);
+    if ( combineLepMinus ) evtree->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
+    if ( combineLepMinus ) evtree->SetBranchAddress("lepMinus_costheta_cms_gen",    &asymVarMinus_gen);
     evtree->SetBranchAddress("weight", &weight);
-    evtree->SetBranchAddress("Nsolns", &Nsolns);
+    // evtree->SetBranchAddress("Nsolns", &Nsolns);
     evtree->SetBranchAddress("t_mass", &tmass);
+	evtree->SetBranchAddress("tt_mass", &ttmass);
+	evtree->SetBranchAddress("tt_mass_gen", &ttmass_gen);
 
-    if (Var2D == "mtt")
-    {
-        evtree->SetBranchAddress("tt_mass", &obs2D);
-        evtree->SetBranchAddress("tt_mass_gen", &obs2D_gen);
-    }
-    else if (Var2D == "ttrapidity2")
-    {
-        evtree->SetBranchAddress("ttRapidity2", &obs2D);
-        evtree->SetBranchAddress("ttRapidity2_gen", &obs2D_gen);
-    }
-    else if (Var2D == "ttpt")
-    {
-        evtree->SetBranchAddress("ttPt", &obs2D);
-        evtree->SetBranchAddress("ttPt_gen", &obs2D_gen);
-    }
+	//We need to keep the values of ttmass and ttmass_gen, unaffected by the changes to obs2D and obs2D_gen.
+	//So, we'll treat the case Var2D==mtt specially.
+	if (Var2D == "ttrapidity2")
+	  {
+		evtree->SetBranchAddress("ttRapidity2", &obs2D);
+		evtree->SetBranchAddress("ttRapidity2_gen", &obs2D_gen);
+		evtree->SetBranchAddress("tt_mass", &ttmass);
+	  }
+	else if (Var2D == "ttpt")
+	  {
+		evtree->SetBranchAddress("ttPt", &obs2D);
+		evtree->SetBranchAddress("ttPt_gen", &obs2D_gen);
+		evtree->SetBranchAddress("tt_mass", &ttmass);
+	  }
 
-    Float_t slopex = 0.0;
+
+	// Set up stuff for the linearity and/or pull tests /////////////////////////////////
     Float_t slope = 0.0;
     const int Nlin = 7;
-    Float_t A_gen[Nlin], Aerr_gen[Nlin], A_unf[Nlin], Aerr_unf[Nlin], A_meas[Nlin], Aerr_meas[Nlin];
-    Float_t A_pull[Nlin], A_pullwidth[Nlin], Aerr_pull[Nlin], Aerr_pullwidth[Nlin];
-    Float_t A_pull_bin1[Nlin], A_pullwidth_bin1[Nlin], Aerr_pull_bin1[Nlin], Aerr_pullwidth_bin1[Nlin];
-    Float_t A_pull_bin2[Nlin], A_pullwidth_bin2[Nlin], Aerr_pull_bin2[Nlin], Aerr_pullwidth_bin2[Nlin];
-    Float_t A_pull_bin3[Nlin], A_pullwidth_bin3[Nlin], Aerr_pull_bin3[Nlin], Aerr_pullwidth_bin3[Nlin];
+    //Float_t A_gen[Nlin], Aerr_gen[Nlin], A_unf[Nlin], Aerr_unf[Nlin], A_meas[Nlin], Aerr_meas[Nlin];
+    //Float_t A_pull[Nlin], A_pullwidth[Nlin], Aerr_pull[Nlin], Aerr_pullwidth[Nlin];
 
-    Float_t A_unf2Dbin1[Nlin], A_unf2Dbin2[Nlin], A_unf2Dbin3[Nlin];
-    Float_t Aerr_unf2Dbin1[Nlin], Aerr_unf2Dbin2[Nlin], Aerr_unf2Dbin3[Nlin];
-    Float_t A_gen2Dbin1[Nlin], A_gen2Dbin2[Nlin], A_gen2Dbin3[Nlin];
-    Float_t Aerr_gen2Dbin1[Nlin], Aerr_gen2Dbin2[Nlin], Aerr_gen2Dbin3[Nlin];
+    // Float_t  A_meas[Nlin], Aerr_meas[Nlin];
+    vector<vector<Float_t> > A_gen, Aerr_gen, A_unf, Aerr_unf;
+    vector<vector<Float_t> > A_pull, A_pullwidth, Aerr_pull, Aerr_pullwidth;
+
+    A_gen.clear();
+    Aerr_gen.clear();
+    A_unf.clear();
+    Aerr_unf.clear();
+    A_pull.clear();
+    A_pullwidth.clear();
+    Aerr_pull.clear();
+    Aerr_pullwidth.clear();
 
 
+    TH2D *hTrue_after_array[Nlin];
+    TH2D *hMeas_after_array[Nlin];
 
-    TH1D *hTrue_after_array[Nlin];
-    TH1D *hMeas_after_array[Nlin];
+	// Reweight our events, and fill the histograms //////////////////////////////////
 
-    for (int k = 0; k < Nlin; k++)
+	//Begin loop over k
+    for (int k = -1; k < Nlin; k++)
     {
 
         if ((TestType == "Pull") && (k == 1)) break;
 
-        slopex = -0.3 + 0.1 * k;
+        slope = -0.3 + 0.1 * k;
+        //fx_scaled->SetParameters(slope,1.);
+		if(k == -1) {
+		  slope = 0;     //A hack, to allow for tau optimization
+		  cout << "Dummy run to optimize tau value" << endl;
+		}
 
-        cout << "slope =" << slopex << "\n";
+        cout << "slope =" << slope << "\n";
 
         hTrue_before->Reset();
         hMeas_before->Reset();
         hTrue_after->Reset();
         hMeas_after->Reset();
         hTrue_vs_Meas->Reset();
-        AfbPull->Reset();
-        Afb2DPullBin1->Reset();
-        Afb2DPullBin2->Reset();
-        Afb2DPullBin3->Reset();
+        for (int iD = 0; iD < nbinsy2D + nbinsunwrapped_gen + 1; ++iD)
+        {
+            AfbPull[iD]->Reset();
+        }
 
         for (Int_t i = 0; i < entries; i++)
         {
             evtree->GetEntry(i);
-            Double_t orig_weight = weight;
+            double orig_weight = weight;
+
+			if(Var2D == "mtt")
+		    {
+			  obs2D = ttmass;
+			  obs2D_gen = ttmass_gen;
+		    }
+
+			obs2D = fabs(obs2D);
+			obs2D_gen = fabs(obs2D_gen);
+
+            /*if (slopeOption == 1)
+            {
+			  //fix the observable values to the bin centres so the acceptance function is unaffected by any reweighting
+			  asymVar =  hEmpty->GetXaxis()->GetBinCenter( hEmpty->FindBin( asymVar, obs2D ) );
+			  asymVar_gen =  hEmpty_gen->GetXaxis()->GetBinCenter( hEmpty_gen->FindBin( asymVar_gen, obs2D_gen ) );
+			  obs2D =  hEmpty->GetYaxis()->GetBinCenter( hEmpty->FindBin( asymVar, obs2D ) );
+			  obs2D_gen =  hEmpty_gen->GetYaxis()->GetBinCenter( hEmpty_gen->FindBin( asymVar_gen, obs2D_gen ) );
+			  if ( combineLepMinus )
+                {
+				  asymVarMinus =  hEmpty->GetXaxis()->GetBinCenter( hEmpty->FindBin( asymVarMinus, obs2D ) );
+				  asymVarMinus_gen =  hEmpty_gen->GetXaxis()->GetBinCenter( hEmpty_gen->FindBin( asymVarMinus_gen, obs2D_gen ) );
+                }
+			}*/
+
+            double xval = (asymVar_gen - asym_centre) / fabs(xmax - asym_centre);
+            double xsign = sign(xval);
+            //restrict range from -1 to +1
+            if ( fabs(xval) > 1. ) xval = xsign;
+
+            double xminusval = -9999;
+            double xminussign = -9999;
+
+            if ( combineLepMinus )
+            {
+                xminusval = (asymVarMinus_gen - asym_centre) / fabs(xmax - asym_centre);
+                xminussign = sign(xminusval);
+                //restrict range from -1 to +1
+                if ( fabs(xminusval) > 1. ) xminusval = xminussign;
+            }
+
+			int measbin = 0;
+			int genbin = 0;
+
             //if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
 
-            obs2D = fabs(obs2D);
-            obs2D_gen = fabs(obs2D_gen);
-
-            double slopemult = 2.;
-            if (slopeOption < 0) slopemult = ( obs2D_gen - Var2Dmid ) > 0 ? ( obs2D_gen - Var2Dmid ) / (Var2Dupper - Var2Dmid) : ( obs2D_gen - Var2Dmid ) / (Var2Dmid - Var2Dlower) ;
-            slope = slopex * slopemult / 2.;
-
-            //cout << "slope =" << slope << "\n";
-
-            if ( tmass > 0  )
+            if ( ttmass > 0 )
             {
-                fillUnderOverFlow(hMeas_before, sign(observable - asym_centre)*obs2D, weight, Nsolns);
-                fillUnderOverFlow(hTrue_before, sign(observable_gen - asym_centre)*obs2D_gen, weight, Nsolns);
-                fillUnderOverFlow(hTrue_vs_Meas, sign(observable - asym_centre)*obs2D, sign(observable_gen - asym_centre)*obs2D_gen, weight, Nsolns);
-                if ( combineLepMinus )
-                {
-                    fillUnderOverFlow(hMeas_before, sign(observableMinus - asym_centre)*obs2D, weight, Nsolns);
-                    fillUnderOverFlow(hTrue_before, sign(observableMinus_gen - asym_centre)*obs2D_gen, weight, Nsolns);
-                    fillUnderOverFlow(hTrue_vs_Meas, sign(observableMinus - asym_centre)*obs2D, sign(observableMinus_gen - asym_centre)*obs2D_gen, weight, Nsolns);
-                }
-                if (TestType == "Linearity" && abs(slopeOption) == 2) weight = weight * (1.0 + 0.5 * slope * sign(observable_gen - asym_centre) );
-                if (TestType == "Linearity" && abs(slopeOption) == 1) weight = weight * (1.0 + slope * (observable_gen - asym_centre) );
-                fillUnderOverFlow(hMeas_after, sign(observable - asym_centre)*obs2D, weight, Nsolns);
-                fillUnderOverFlow(hTrue_after, sign(observable_gen - asym_centre)*obs2D_gen, weight, Nsolns);
-                if ( combineLepMinus )
-                {
-                    if (TestType == "Linearity" && abs(slopeOption) == 2) weight = orig_weight * (1.0 + 0.5 * slope * sign(observableMinus_gen - asym_centre) );
-                    if (TestType == "Linearity" && abs(slopeOption) == 1) weight = orig_weight * (1.0 + slope * (observableMinus_gen - asym_centre) );
-                    fillUnderOverFlow(hMeas_after, sign(observableMinus - asym_centre)*obs2D, weight, Nsolns);
-                    fillUnderOverFlow(hTrue_after, sign(observableMinus_gen - asym_centre)*obs2D_gen, weight, Nsolns);
-                }
+			  measbin = getUnwrappedBin(hMeas_before, asymVar, obs2D);
+			  genbin  = getUnwrappedBin(hTrue_before, asymVar_gen, obs2D_gen);
 
+			  fillUnderOverFlow(hMeas_before, asymVar, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_before, asymVar_gen, obs2D_gen, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
+			  if ( combineLepMinus )
+              {
+				measbin = getUnwrappedBin(hMeas_before, asymVarMinus, obs2D);
+				genbin  = getUnwrappedBin(hTrue_before, asymVarMinus_gen, obs2D_gen);
+
+				fillUnderOverFlow(hMeas_before, asymVarMinus, obs2D, weight, Nsolns);
+				fillUnderOverFlow(hTrue_before, asymVarMinus_gen, obs2D_gen, weight, Nsolns);
+				fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
+              }
+			  //if (TestType == "Linearity") weight = weight * fx_scaled->Eval(asymVar_gen); //this is very slow for some reason
+			  if (TestType == "Linearity") weight = weight * (1.0 + slope * xsign * ( fx->Eval(fabs(xval)) ) );
+			  fillUnderOverFlow(hMeas_after, asymVar, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_after, asymVar_gen, obs2D_gen, weight, Nsolns);
+			  if ( combineLepMinus )
+              {
+				//if (TestType == "Linearity") weight = orig_weight * fx_scaled->Eval(asymVarMinus_gen); //this is very slow for some reason
+				if (TestType == "Linearity") weight = orig_weight * (1.0 + slope * xminussign * ( fx->Eval(fabs(xminusval)) ) );
+				fillUnderOverFlow(hMeas_after, asymVarMinus, obs2D, weight, Nsolns);
+				fillUnderOverFlow(hTrue_after, asymVarMinus_gen, obs2D_gen, weight, Nsolns);
+              }
             }
-        }
 
-        RooUnfoldResponse response (hMeas_before, hTrue_before, hTrue_vs_Meas);
+        } // end of loop over entries
+
+
+		// Optimize tau for use in all subsequent unfoldings
+		if (k == -1) {
+		  unwrap2dhisto(hTrue_before, hTrue_before_unwrapped);
+		  unwrap2dhisto(hMeas_before, hSmeared_unwrapped);
+		  unwrap2dhisto(hBkg,         hBkg_unwrapped);
+
+		  //Set data-like stat errors on MC for optimizing tau
+		  for( int i=1; i<nbinsunwrapped_reco+1; i++) {
+			double n_sig = hSmeared_unwrapped->GetBinContent(i);
+			double n_bkg = hBkg_unwrapped->GetBinContent(i);
+			double bkg_err = hBkg_unwrapped->GetBinError(i);
+			hSmeared_unwrapped->SetBinError(i, sqrt(n_sig + n_bkg + bkg_err*bkg_err ) );
+			//hSmeared_unwrapped->SetBinError(i, 2.0);
+		  }
+
+		  scaleBias = hSmeared_unwrapped->Integral() / hTrue_before_unwrapped->Integral();
+
+		  TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
+		  unfold_FindTau.SetInput(hSmeared_unwrapped);
+		  //unfold_FindTau.SetBias(hTrue_before_unwrapped);
+		  unfold_FindTau.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
+		  minimizeRhoAverage(&unfold_FindTau, hSmeared_unwrapped, -4.0, 0.0);
+		  // unfold_FindTau.GetOutput(hData_unfolded_unwrapped);
+		  tau = unfold_FindTau.GetTau();
+
+		  // Generate a curve of rhoAvg vs log(tau)
+		  double ar_tau[90];
+		  double ar_rhoAvg[90];
+		  double tau_test = 0.0;
+		  double bestrhoavg = unfold_FindTau.GetRhoAvg();
+
+		  for(int l=0; l<90; l++) {
+			tau_test = pow( 10, -5.0 + 0.05*l );
+			unfold_FindTau.DoUnfold(tau_test, hSmeared_unwrapped, scaleBias);
+			ar_tau[l] = tau_test;
+			ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
+		  }
+
+		  TGraph* gr_rhoAvg = new TGraph(90,ar_tau,ar_rhoAvg);
+		  TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
+		  c_rhoAvg->SetLogx();
+		  gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
+		  gr_rhoAvg->SetLineColor(kRed);
+		  gr_rhoAvg->Draw("al");
+
+		  TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
+		  m_rhoMin->Draw();
+		  c_rhoAvg->SaveAs(acceptanceName + "_unfoldTests_minRho.pdf");
+
+		  cout << "Optimal tau value: " << tau << endl;
+		  cout << "Minimum rho average: " << bestrhoavg << endl;
+		  continue;
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////// 3. Begin testing ///////////////////////////////////////////////////////
 
         //scale to keep total yield constant
         hMeas_after->Scale( hMeas_before->Integral() / hMeas_after->Integral() );
         hTrue_after->Scale( hTrue_before->Integral() / hTrue_after->Integral() );
 
-        hTrue_after_array[k] = (TH1D *) hTrue_after->Clone();
-        hMeas_after_array[k] = (TH1D *) hMeas_after->Clone();
+        fscale = 0.65 * double(hTrue_before->Integral()) / double(nbinsx2D*nbinsy2D);
+
+        hTrue_after_array[k] = (TH2D *) hTrue_after->Clone();
+        hMeas_after_array[k] = (TH2D *) hMeas_after->Clone();
 
 
+        TFile *accfile = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
+        TH2D *acceptM_2d = (TH2D *) accfile->Get("accept_" + acceptanceName + "_" + Var2D + "_all");
+        acceptM_2d->Scale(1.0 / acceptM_2d->Integral());
+		unwrap2dhisto(acceptM_2d, hAcc_unwrapped);
 
-        TFile *accfile = new TFile("../acceptance/mcnlo/accept_" + acceptanceName + ".root");
-
-        TH2D *acceptM_2d = (TH2D *) accfile->Get("accept_" + acceptanceName + "_" + Var2D);
-
-        TH1D *acceptM = new TH1D ("accept", "accept",    nbins2D, xbins2D);
-        acceptM->SetBinContent(1, acceptM_2d->GetBinContent(1, 3));
-        acceptM->SetBinContent(2, acceptM_2d->GetBinContent(1, 2));
-        acceptM->SetBinContent(3, acceptM_2d->GetBinContent(1, 1));
-
-        acceptM->SetBinContent(4, acceptM_2d->GetBinContent(2, 1));
-        acceptM->SetBinContent(5, acceptM_2d->GetBinContent(2, 2));
-        acceptM->SetBinContent(6, acceptM_2d->GetBinContent(2, 3));
-
-        acceptM->Scale(1.0 / acceptM->Integral());
-
-
-        for (Int_t accbin = 1; accbin <= nbins2D; accbin++)
+        for (Int_t x = 1; x <= nbinsx_gen; x++)
         {
+		  for (Int_t y = 1; y <= nbinsy2D; y++)
+			{
 
-            if (acceptM->GetBinContent(accbin) != 0)
-            {
-                hTrue_after->SetBinContent(accbin, hTrue_after->GetBinContent(accbin) * 1.0 / acceptM->GetBinContent(accbin));
-                hTrue_after->SetBinError  (accbin, hTrue_after->GetBinError  (accbin) * 1.0 / acceptM->GetBinContent(accbin));
-
-            }
+			  if (acceptM_2d->GetBinContent(x,y) != 0)
+				{
+				  hTrue_after->SetBinContent(x, y, hTrue_after->GetBinContent(x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
+				  hTrue_after->SetBinError  (x, y, hTrue_after->GetBinError  (x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
+				}
+			}
         }
-
-
 
 
         Float_t Afb, AfbErr;
 
         GetAfb(hTrue_after, Afb, AfbErr);
-        A_gen[k] = Afb;
-        Aerr_gen[k] = 0.0;
+        // Float_t A_gen_k = Afb;
+        // Float_t Aerr_gen_k = 0.0;
         cout << " True after re-weighting   : " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(hMeas_after, Afb, AfbErr);
-        A_meas[k] = Afb;
-        Aerr_meas[k] = AfbErr;
+        // A_meas[k] = Afb;
+        // Aerr_meas[k] = AfbErr;
         cout << " Measured after re-weighting   : " << Afb << " +/-  " << AfbErr << "\n";
 
 
         // Now do the pseudos
 
-        Float_t trialAsym = 0.0, SumAsym = 0.0, SumErrAsym = 0.0;
-        Float_t SumAsymBin1 = 0.0, SumErrAsymBin1 = 0.0, SumAsymBin2 = 0.0, SumErrAsymBin2 = 0.0, SumAsymBin3 = 0.0, SumErrAsymBin3 = 0.0;
-        Float_t SumTrueAsymBin1 = 0.0, SumTrueErrAsymBin1 = 0.0, SumTrueAsymBin2 = 0.0, SumTrueErrAsymBin2 = 0.0, SumTrueAsymBin3 = 0.0, SumTrueErrAsymBin3 = 0.0;
+        // Float_t trialAsym = 0.0;
+        vector <Float_t> SumAsym, SumErrAsym, SumTrueAsym, SumTrueErrAsym;
+        SumAsym.clear();
+        SumErrAsym.clear();
+        SumTrueAsym.clear();
+        SumTrueErrAsym.clear();
+
+        for (int iD = 0; iD < nbinsy2D + nbinsunwrapped_gen + 1; ++iD)
+        {
+            SumAsym.push_back(0);
+            SumErrAsym.push_back(0);
+            SumTrueAsym.push_back(0);
+            SumTrueErrAsym.push_back(0);
+        }
 
 
         if (nPseudos > 0)
         {
 
-            for (int i = 0; i < nPseudos; i++)
+		  ////////// Begin loop over all pseudoexperiments ////////////
+		  for (int i = 0; i < nPseudos; i++)
             {
 
-                for (int j = 1; j < hMeas_after->GetNbinsX() + 1; j++)
+			  for (int x = 1; x <= hMeas_after->GetNbinsX(); x++)
                 {
-                    double fluct;
-                    if (nPseudos > 1) fluct = random->Poisson(hMeas_after->GetBinContent(j));
-                    else fluct = hMeas_after->GetBinContent(j);
-                    hSmeared->SetBinError(j, sqrt(fluct));
-                    hSmeared->SetBinContent(j, fluct);
+				  for (int y = 1; y < hMeas_after->GetNbinsY() + 1; y++)
+					{
+					  double fluct;
+					  if (nPseudos > 1) fluct = random->Poisson(hMeas_after->GetBinContent(x,y));
+					  else fluct = hMeas_after->GetBinContent(x,y);
+					  hSmeared->SetBinError(x, y, sqrt(fluct));
+					  hSmeared->SetBinContent(x, y, fluct);
+					}
                 }
 
+			  unwrap2dhisto(hSmeared, hSmeared_unwrapped);
+			  unwrap2dhisto(hTrue_before, hTrue_before_unwrapped);
 
-                if (unfoldingType == 0)
-                {
-                    RooUnfoldSvd unfold_svd (&response, hSmeared, kterm);
-                    unfold_svd.Setup(&response, hSmeared);
-                    //      unfold_svd.IncludeSystematics(includeSys);
-                    hUnfolded = (TH1D *) unfold_svd.Hreco();
-                    m_unfoldE = unfold_svd.Ereco();
-                }
-                else if (unfoldingType == 1)
-                {
-                    RooUnfoldTUnfold unfold_rooTUnfold (&response, hSmeared, TUnfold::kRegModeCurvature);
-                    unfold_rooTUnfold.Setup(&response, hSmeared);
-                    unfold_rooTUnfold.FixTau(tau);
-                    //  unfold_rooTUnfold.IncludeSystematics(includeSys);
-                    hUnfolded = (TH1D *) unfold_rooTUnfold.Hreco();
-                    m_unfoldE = unfold_rooTUnfold.Ereco();
-                }
-                else if (unfoldingType == 2)
-                {
-                    TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature);
-                    //  Double_t biasScale=5.0;
-                    //  unfold_TUnfold.SetBias(hTrue_before);
-                    unfold_TUnfold.SetInput(hSmeared);
-                    unfold_TUnfold.DoUnfold(tau);
-                    unfold_TUnfold.GetOutput(hUnfolded);
+			  // Unfold! /////////////////////////////
+			  TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
+			  scaleBias =  hSmeared->Integral() / hMeas_before->Integral() ;
+			  cout << "bias scale for TUnfold: " << scaleBias << endl;
+			  unfold_TUnfold.SetBias(hTrue_before_unwrapped);  //doesn't make any difference, because if not set the bias distribution is automatically determined from hTrue_vs_Meas, which gives exactly hTrue
+			  unfold_TUnfold.SetInput(hSmeared_unwrapped);
+			  unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
+			  unfold_TUnfold.DoUnfold(tau, hSmeared_unwrapped, scaleBias);
+			  unfold_TUnfold.GetOutput(hUnfolded_unwrapped);
 
 
-                    TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-                    for (Int_t cmi = 0; cmi < nbins2D; cmi++)
+			  TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+			  for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
+				{
+				  for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
+					{
+					  m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+					}
+				}
+
+
+			  rewrap1dhisto(hUnfolded_unwrapped, hUnfolded);
+
+			  for (int l = 0; l < nbinsunwrapped_gen; l++)
+                {
+				  for (int j = 0; j < nbinsunwrapped_gen; j++)
                     {
-                        for (Int_t cmj = 0; cmj < nbins2D; cmj++)
-                        {
-                            m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
-                        }
-                    }
-                }
-                else cout << "Unfolding TYPE not Specified" << "\n";
-
-
-                for (int l = 0; l < nbins2D; l++)
-                {
-                    for (int j = 0; j < nbins2D; j++)
-                    {
-                        double corr = 1.0 / ( acceptM->GetBinContent(l + 1) * acceptM->GetBinContent(j + 1) );
-                        //corr = corr * pow(xsection / dataIntegral,2) ;
-                        m_unfoldE(l, j) = m_unfoldE(l, j) * corr;
+					  double corr = 1.0 / ( hAcc_unwrapped->GetBinContent(l+1) * hAcc_unwrapped->GetBinContent(j+1) );
+					  //corr = corr * pow(xsection / dataIntegral,2) ;
+					  m_unfoldE(l, j) = m_unfoldE(l, j) * corr;
                     }
                 }
 
-
-                for (Int_t accbin = 1; accbin <= nbins2D; accbin++)
+			  for (Int_t x = 1; x <= nbinsx_gen; x++)
                 {
+				  for (Int_t y = 1; y <= nbinsy2D; y++)
+					{
 
-                    if (acceptM->GetBinContent(accbin) != 0)
-                    {
-                        hUnfolded->SetBinContent(accbin, hUnfolded->GetBinContent(accbin) * 1.0 / acceptM->GetBinContent(accbin));
-                        hUnfolded->SetBinError  (accbin, hUnfolded->GetBinError  (accbin) * 1.0 / acceptM->GetBinContent(accbin));
-
-                    }
+					  if (acceptM_2d->GetBinContent(x,y) != 0)
+						{
+						  hUnfolded->SetBinContent(x, y, hUnfolded->GetBinContent(x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
+						  hUnfolded->SetBinError  (x, y, hUnfolded->GetBinError  (x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
+						}
+					}
                 }
 
-                GetCorrectedAfb(hUnfolded, m_unfoldE, Afb, AfbErr);
+			  //GetAfb(hUnfolded, Afb, AfbErr);
 
-                vector<double> afb2D;
-                vector<double> afb2Derr;
-                GetAvsY(hUnfolded, m_unfoldE, afb2D, afb2Derr, second_output_file);
+			  vector<double> afb2D;
+			  vector<double> afb2Derr;
+			  afb2D.clear();
+			  afb2Derr.clear();
+			  GetCorrectedAfb2d(hUnfolded, m_unfoldE, afb2D, afb2Derr, second_output_file);
 
-                vector<double> afbtrue2D;
-                vector<double> afbtrue2Derr;
-                GetAvsY(hTrue_after, m_unfoldE, afbtrue2D, afbtrue2Derr, second_output_file);
-                //true errors are much smaller (from denominator)
-                afbtrue2Derr[0] = 0.0;
-                afbtrue2Derr[1] = 0.0;
-                afbtrue2Derr[2] = 0.0;
+			  vector<double> afbtrue2D;
+			  vector<double> afbtrue2Derr;
+			  afbtrue2D.clear();
+			  afbtrue2Derr.clear();
+			  GetCorrectedAfb2d(hTrue_after, m_unfoldE, afbtrue2D, afbtrue2Derr, second_output_file);
+			  //true errors are much smaller (from denominator)
+			  afbtrue2Derr[0] = 0.0;
+			  afbtrue2Derr[1] = 0.0;
+			  afbtrue2Derr[2] = 0.0;
+			  afbtrue2Derr[3] = 0.0;
 
-                AfbPull -> Fill( (Afb - A_gen[k])  / AfbErr );
-                Afb2DPullBin1->Fill( (afb2D[0] - afbtrue2D[0])  / afb2Derr[0] );
-                Afb2DPullBin2->Fill( (afb2D[1] - afbtrue2D[1])  / afb2Derr[1] );
-                Afb2DPullBin3->Fill( (afb2D[2] - afbtrue2D[2])  / afb2Derr[2] );
+			  /*
+                AfbPull[0] -> Fill( (Afb - A_gen_k)  / AfbErr );
+                SumAsym[0] + = Afb;
+                SumErrAsym[0] + = AfbErr;
+                SumTrueAsym[0] + = A_gen_k;
+                SumTrueErrAsym[0] + = Aerr_gen_k;
+			  */
 
-                SumAsym + = Afb;
-                SumErrAsym + = AfbErr;
-
-                SumAsymBin1 + = afb2D[0];
-                SumErrAsymBin1 + = afb2Derr[0];
-                SumAsymBin2 + = afb2D[1];
-                SumErrAsymBin2 + = afb2Derr[1];
-                SumAsymBin3 + = afb2D[2];
-                SumErrAsymBin3 + = afb2Derr[2];
-
-                SumTrueAsymBin1 + = afbtrue2D[0];
-                SumTrueErrAsymBin1 + = afbtrue2Derr[0];
-                SumTrueAsymBin2 + = afbtrue2D[1];
-                SumTrueErrAsymBin2 + = afbtrue2Derr[1];
-                SumTrueAsymBin3 + = afbtrue2D[2];
-                SumTrueErrAsymBin3 + = afbtrue2Derr[2];
-
-
-
-                for (int j = 0; j < nbins2D; j++)
+			  for (int iD = 0; iD < nbinsy2D + 1; ++iD)
                 {
-                    double pull = (hUnfolded->GetBinContent(j + 1) - hTrue_after->GetBinContent(j + 1)) / hUnfolded->GetBinError(j + 1);
-                    h_pulls[j]->Fill(pull);
-                    double resd = (hUnfolded->GetBinContent(j + 1) - hTrue_after->GetBinContent(j + 1)) / hTrue_after->GetBinContent(j + 1);
-                    h_resd[j]->Fill(resd);
+				  AfbPull[iD]->Fill( (afb2D[iD] - afbtrue2D[iD])  / afb2Derr[iD] );
+				  SumAsym[iD] += afb2D[iD];
+				  SumErrAsym[iD] += afb2Derr[iD];
+				  SumTrueAsym[iD] += afbtrue2D[iD];
+				  SumTrueErrAsym[iD] += afbtrue2Derr[iD];
                 }
+
+			  unwrap2dhisto(hTrue_after, hTrue_after_unwrapped);
+			  unwrap2dhisto(hUnfolded, hUnfolded_unwrapped); //Get 1D version of unfolded results, including the latest error corrections and such
+
+			  TH1D* hUnfolded_unwrapped_clone = (TH1D*) hUnfolded_unwrapped->Clone("hUnfolded_unwrapped_clone");
+			  TH1D* hTrue_after_unwrapped_clone = (TH1D*) hTrue_after_unwrapped->Clone("hTrue_after_unwrapped_clone");
+
+			  hUnfolded_unwrapped_clone->Scale(1. / hUnfolded_unwrapped_clone->Integral());
+			  hTrue_after_unwrapped_clone->Scale(1. / hTrue_after_unwrapped_clone->Integral());
+
+			  // For filling the bin-by-bin values
+			  for (int iD = nbinsy2D + 1; iD < nbinsy2D+nbinsunwrapped_gen+1; ++iD)
+                {
+				  AfbPull[iD]->Fill( (hUnfolded_unwrapped_clone->GetBinContent(iD - nbinsy2D) - hTrue_after_unwrapped_clone->GetBinContent(iD - nbinsy2D)) / hUnfolded_unwrapped_clone->GetBinError(iD - nbinsy2D) );
+				  SumAsym[iD] += hUnfolded_unwrapped_clone->GetBinContent(iD - nbinsy2D);
+				  SumErrAsym[iD] += hUnfolded_unwrapped_clone->GetBinError(iD - nbinsy2D);
+				  SumTrueAsym[iD] += hTrue_after_unwrapped_clone->GetBinContent(iD - nbinsy2D);
+				  //SumTrueErrAsym[iD] + = hTrue_after_unwrapped_clone->GetBinError(iD - nbinsy2D);
+				  SumTrueErrAsym[iD] += 0.0;
+                }
+
+
+			  /*
+                for (int j = 0; j < nbinsunwrapped; j++)
+                {
+				double pull = (hUnfolded->GetBinContent(j + 1) - hTrue_after->GetBinContent(j + 1)) / hUnfolded->GetBinError(j + 1);
+				h_pulls[j]->Fill(pull);
+				double resd = (hUnfolded->GetBinContent(j + 1) - hTrue_after->GetBinContent(j + 1)) / hTrue_after->GetBinContent(j + 1);
+				h_resd[j]->Fill(resd);
+                }
+			  */
             }
 
-            cout << "Average Asymmetry =" << SumAsym / nPseudos << " +/-  " << SumErrAsym / (nPseudos) << "\n";
-            A_unf[k] = SumAsym / nPseudos;
-            Aerr_unf[k] = SumErrAsym / nPseudos / sqrt(nPseudos);
+		  //cout << "Average Asymmetry =" << SumAsym / nPseudos << " +/-  " << SumErrAsym / (nPseudos) << "\n";
 
-            A_unf2Dbin1[k] = SumAsymBin1 / nPseudos;
-            Aerr_unf2Dbin1[k] = SumErrAsymBin1 / nPseudos / sqrt(nPseudos);
-            A_unf2Dbin2[k] = SumAsymBin2 / nPseudos;
-            Aerr_unf2Dbin2[k] = SumErrAsymBin2 / nPseudos / sqrt(nPseudos);
-            A_unf2Dbin3[k] = SumAsymBin3 / nPseudos;
-            Aerr_unf2Dbin3[k] = SumErrAsymBin3 / nPseudos / sqrt(nPseudos);
+		  vector<Float_t> temp_A_pull;
+		  vector<Float_t> temp_Aerr_pull;
+		  vector<Float_t> temp_A_pullwidth;
+		  vector<Float_t> temp_Aerr_pullwidth;
+		  temp_A_pull.clear();
+		  temp_Aerr_pull.clear();
+		  temp_A_pullwidth.clear();
+		  temp_Aerr_pullwidth.clear();
 
-            if (nPseudos == 1)
+		  for (int iD = 0; iD < nbinsy2D + nbinsunwrapped_gen + 1; ++iD)
             {
-                Aerr_unf[k] = 0;
-                Aerr_unf2Dbin1[k] = 0;
-                Aerr_unf2Dbin2[k] = 0;
-                Aerr_unf2Dbin3[k] = 0;
-            }
+			  temp_A_pull.push_back( AfbPull[iD]->GetMean() );
+			  temp_Aerr_pull.push_back( AfbPull[iD]->GetMeanError() );
+			  temp_A_pullwidth.push_back( AfbPull[iD]->GetRMS() );
+			  temp_Aerr_pullwidth.push_back( AfbPull[iD]->GetRMSError() );
+			  SumAsym[iD] /= nPseudos;
+			  SumErrAsym[iD] /= (nPseudos * sqrt(nPseudos));
+			  SumTrueAsym[iD] /= nPseudos;
+			  SumTrueErrAsym[iD] /= (nPseudos * sqrt(nPseudos));
+			  if (nPseudos == 1)
+                {
+				  SumErrAsym[iD] = 0.;
+				  SumTrueErrAsym[iD] = 0.;
+                }
+            } // end of loop over pseudoexperiments
 
-            A_gen2Dbin1[k] = SumTrueAsymBin1 / nPseudos;
-            Aerr_gen2Dbin1[k] = SumTrueErrAsymBin1 / nPseudos;
-            A_gen2Dbin2[k] = SumTrueAsymBin2 / nPseudos;
-            Aerr_gen2Dbin2[k] = SumTrueErrAsymBin2 / nPseudos;
-            A_gen2Dbin3[k] = SumTrueAsymBin3 / nPseudos;
-            Aerr_gen2Dbin3[k] = SumTrueErrAsymBin3 / nPseudos;
+		  A_unf.push_back( SumAsym );
+		  Aerr_unf.push_back( SumErrAsym );
+		  A_gen.push_back( SumTrueAsym );
+		  Aerr_gen.push_back( SumTrueErrAsym );
 
-            A_pull[k] = AfbPull->GetMean();
-            Aerr_pull[k] = AfbPull->GetMeanError();
-            A_pullwidth[k] = AfbPull->GetRMS();
-            Aerr_pullwidth[k] = AfbPull->GetRMSError();
+		  A_pull.push_back( temp_A_pull );
+		  Aerr_pull.push_back( temp_Aerr_pull );
+		  A_pullwidth.push_back( temp_A_pullwidth );
+		  Aerr_pullwidth.push_back( temp_Aerr_pullwidth );
 
-            A_pull_bin1[k] = Afb2DPullBin1->GetMean();
-            Aerr_pull_bin1[k] = Afb2DPullBin1->GetMeanError();
-            A_pullwidth_bin1[k] = Afb2DPullBin1->GetRMS();
-            Aerr_pullwidth_bin1[k] = Afb2DPullBin1->GetRMSError();
+        }  // end of "if(npseudos>0)"
 
-            A_pull_bin2[k] = Afb2DPullBin2->GetMean();
-            Aerr_pull_bin2[k] = Afb2DPullBin2->GetMeanError();
-            A_pullwidth_bin2[k] = Afb2DPullBin2->GetRMS();
-            Aerr_pullwidth_bin2[k] = Afb2DPullBin2->GetRMSError();
-
-            A_pull_bin3[k] = Afb2DPullBin3->GetMean();
-            Aerr_pull_bin3[k] = Afb2DPullBin3->GetMeanError();
-            A_pullwidth_bin3[k] = Afb2DPullBin3->GetRMS();
-            Aerr_pullwidth_bin3[k] = Afb2DPullBin3->GetRMSError();
-
-        }
-
-    }
-
-    TGraphErrors *Asym2D_TrueUnf = new TGraphErrors (Nlin, A_gen, A_unf, Aerr_gen, Aerr_unf);
-
-    TGraphErrors *Asym2D_TrueMeas = new TGraphErrors (Nlin, A_gen, A_meas, Aerr_gen, Aerr_meas);
-
-    TGraphErrors *Asym2D_PullWidth = new TGraphErrors (Nlin, A_gen, A_pullwidth, Aerr_gen, Aerr_pullwidth);
-    TGraphErrors *Asym2D_Pull = new TGraphErrors (Nlin, A_gen, A_pull, Aerr_gen, Aerr_pull);
+    } // end of loop over values of k
 
 
-    TGraphErrors *Asym2D_TrueUnfbin1 = new TGraphErrors (Nlin, A_gen2Dbin1, A_unf2Dbin1, Aerr_gen2Dbin1, Aerr_unf2Dbin1);
-    TGraphErrors *Asym2D_TrueUnfbin2 = new TGraphErrors (Nlin, A_gen2Dbin2, A_unf2Dbin2, Aerr_gen2Dbin2, Aerr_unf2Dbin2);
-    TGraphErrors *Asym2D_TrueUnfbin3 = new TGraphErrors (Nlin, A_gen2Dbin3, A_unf2Dbin3, Aerr_gen2Dbin3, Aerr_unf2Dbin3);
 
-    TGraphErrors *Asym2D_PullWidthbin1 = new TGraphErrors (Nlin, A_gen2Dbin1, A_pullwidth_bin1, Aerr_gen2Dbin1, Aerr_pullwidth_bin1);
-    TGraphErrors *Asym2D_Pullbin1 = new TGraphErrors (Nlin, A_gen2Dbin1, A_pull_bin1, Aerr_gen2Dbin1, Aerr_pull_bin1);
-    TGraphErrors *Asym2D_PullWidthbin2 = new TGraphErrors (Nlin, A_gen2Dbin2, A_pullwidth_bin2, Aerr_gen2Dbin2, Aerr_pullwidth_bin2);
-    TGraphErrors *Asym2D_Pullbin2 = new TGraphErrors (Nlin, A_gen2Dbin2, A_pull_bin2, Aerr_gen2Dbin2, Aerr_pull_bin2);
-    TGraphErrors *Asym2D_PullWidthbin3 = new TGraphErrors (Nlin, A_gen2Dbin3, A_pullwidth_bin3, Aerr_gen2Dbin3, Aerr_pullwidth_bin3);
-    TGraphErrors *Asym2D_Pullbin3 = new TGraphErrors (Nlin, A_gen2Dbin3, A_pull_bin3, Aerr_gen2Dbin3, Aerr_pull_bin3);
 
     if ((TestType == "Linearity"))
     {
+        //vector<vector<Float_t>> transposed_A_gen, transposed_Aerr_gen, transposed_A_unf, transposed_Aerr_unf;
+        //vector<vector<Float_t>> transposed_A_pull, transposed_A_pullwidth, transposed_Aerr_pull, transposed_Aerr_pullwidth;
+
+        //vector<Float_t> transposed_A_gen, transposed_Aerr_gen, transposed_A_unf, transposed_Aerr_unf;
+        //vector<Float_t> transposed_A_pull, transposed_A_pullwidth, transposed_Aerr_pull, transposed_Aerr_pullwidth;
+        //
+        //transposed_A_gen.clear();
+        //transposed_Aerr_gen.clear();
+        //transposed_A_unf.clear();
+        //transposed_Aerr_unf.clear();
+        //transposed_A_pull.clear();
+        //transposed_A_pullwidth.clear();
+        //transposed_Aerr_pull.clear();
+        //transposed_Aerr_pullwidth.clear();
+
+        //cout << " Got to line: " << __LINE__ << endl;
+
+        //for (int iD = 0; iD < nDiff + 1; ++iD)
+        //{
+
+        /*
+                vector<Float_t> tmp_A_gen, tmp_Aerr_gen, tmp_A_unf, tmp_Aerr_unf;
+                vector<Float_t> tmp_A_pull, tmp_A_pullwidth, tmp_Aerr_pull, tmp_Aerr_pullwidth;
+
+                tmp_A_gen.clear();
+                tmp_Aerr_gen.clear();
+                tmp_A_unf.clear();
+                tmp_Aerr_unf.clear();
+                tmp_A_pull.clear();
+                tmp_A_pullwidth.clear();
+                tmp_Aerr_pull.clear();
+                tmp_Aerr_pullwidth.clear();
+                */
+
+        Float_t inclusive_A_gen[Nlin], inclusive_Aerr_gen[Nlin], inclusive_A_unf[Nlin], inclusive_Aerr_unf[Nlin];
+        Float_t inclusive_A_pull[Nlin], inclusive_A_pullwidth[Nlin], inclusive_Aerr_pull[Nlin], inclusive_Aerr_pullwidth[Nlin];
+
+        Float_t bin1_A_gen[Nlin], bin1_Aerr_gen[Nlin], bin1_A_unf[Nlin], bin1_Aerr_unf[Nlin];
+        Float_t bin1_A_pull[Nlin], bin1_A_pullwidth[Nlin], bin1_Aerr_pull[Nlin], bin1_Aerr_pullwidth[Nlin];
+
+        Float_t bin2_A_gen[Nlin], bin2_Aerr_gen[Nlin], bin2_A_unf[Nlin], bin2_Aerr_unf[Nlin];
+        Float_t bin2_A_pull[Nlin], bin2_A_pullwidth[Nlin], bin2_Aerr_pull[Nlin], bin2_Aerr_pullwidth[Nlin];
+
+        Float_t bin3_A_gen[Nlin], bin3_Aerr_gen[Nlin], bin3_A_unf[Nlin], bin3_Aerr_unf[Nlin];
+        Float_t bin3_A_pull[Nlin], bin3_A_pullwidth[Nlin], bin3_Aerr_pull[Nlin], bin3_Aerr_pullwidth[Nlin];
+
+        Float_t bin1_V_gen[Nlin], bin1_Verr_gen[Nlin], bin1_V_unf[Nlin], bin1_Verr_unf[Nlin];
+        // Float_t bin1_V_pull[Nlin], bin1_V_pullwidth[Nlin], bin1_Verr_pull[Nlin], bin1_Verr_pullwidth[Nlin];
+
+        Float_t bin2_V_gen[Nlin], bin2_Verr_gen[Nlin], bin2_V_unf[Nlin], bin2_Verr_unf[Nlin];
+        // Float_t bin2_V_pull[Nlin], bin2_V_pullwidth[Nlin], bin2_Verr_pull[Nlin], bin2_Verr_pullwidth[Nlin];
+
+        Float_t bin3_V_gen[Nlin], bin3_Verr_gen[Nlin], bin3_V_unf[Nlin], bin3_Verr_unf[Nlin];
+        // Float_t bin3_V_pull[Nlin], bin3_V_pullwidth[Nlin], bin3_Verr_pull[Nlin], bin3_Verr_pullwidth[Nlin];
+
+        Float_t bin4_V_gen[Nlin], bin4_Verr_gen[Nlin], bin4_V_unf[Nlin], bin4_Verr_unf[Nlin];
+        // Float_t bin4_V_pull[Nlin], bin4_V_pullwidth[Nlin], bin4_Verr_pull[Nlin], bin4_Verr_pullwidth[Nlin];
+
+        Float_t bin5_V_gen[Nlin], bin5_Verr_gen[Nlin], bin5_V_unf[Nlin], bin5_Verr_unf[Nlin];
+        // Float_t bin5_V_pull[Nlin], bin5_V_pullwidth[Nlin], bin5_Verr_pull[Nlin], bin5_Verr_pullwidth[Nlin];
+
+        Float_t bin6_V_gen[Nlin], bin6_Verr_gen[Nlin], bin6_V_unf[Nlin], bin6_Verr_unf[Nlin];
+        // Float_t bin6_V_pull[Nlin], bin6_V_pullwidth[Nlin], bin6_Verr_pull[Nlin], bin6_Verr_pullwidth[Nlin];
+
+		//Additional items necessitated by the switch from 1D to 2D
+        Float_t bin7_V_gen[Nlin], bin7_Verr_gen[Nlin], bin7_V_unf[Nlin], bin7_Verr_unf[Nlin];
+        Float_t bin8_V_gen[Nlin], bin8_Verr_gen[Nlin], bin8_V_unf[Nlin], bin8_Verr_unf[Nlin];
+        Float_t bin9_V_gen[Nlin], bin9_Verr_gen[Nlin], bin9_V_unf[Nlin], bin9_Verr_unf[Nlin];
+        Float_t bin10_V_gen[Nlin], bin10_Verr_gen[Nlin], bin10_V_unf[Nlin], bin10_Verr_unf[Nlin];
+        Float_t bin11_V_gen[Nlin], bin11_Verr_gen[Nlin], bin11_V_unf[Nlin], bin11_Verr_unf[Nlin];
+        Float_t bin12_V_gen[Nlin], bin12_Verr_gen[Nlin], bin12_V_unf[Nlin], bin12_Verr_unf[Nlin];
+        Float_t bin13_V_gen[Nlin], bin13_Verr_gen[Nlin], bin13_V_unf[Nlin], bin13_Verr_unf[Nlin];
+        Float_t bin14_V_gen[Nlin], bin14_Verr_gen[Nlin], bin14_V_unf[Nlin], bin14_Verr_unf[Nlin];
+        Float_t bin15_V_gen[Nlin], bin15_Verr_gen[Nlin], bin15_V_unf[Nlin], bin15_Verr_unf[Nlin];
+        Float_t bin16_V_gen[Nlin], bin16_Verr_gen[Nlin], bin16_V_unf[Nlin], bin16_Verr_unf[Nlin];
+        Float_t bin17_V_gen[Nlin], bin17_Verr_gen[Nlin], bin17_V_unf[Nlin], bin17_Verr_unf[Nlin];
+        Float_t bin18_V_gen[Nlin], bin18_Verr_gen[Nlin], bin18_V_unf[Nlin], bin18_Verr_unf[Nlin];
+
+
+        for (int k = 0; k < Nlin; k++)
+        {
+
+            inclusive_A_gen[k] = A_gen[k][0];
+            inclusive_Aerr_gen[k] = Aerr_gen[k][0];
+            inclusive_A_unf[k] = A_unf[k][0];
+            inclusive_Aerr_unf[k] = Aerr_unf[k][0];
+            inclusive_A_pull[k] = A_pull[k][0];
+            inclusive_A_pullwidth[k] = A_pullwidth[k][0];
+            inclusive_Aerr_pull[k] = Aerr_pull[k][0];
+            inclusive_Aerr_pullwidth[k] = Aerr_pullwidth[k][0];
+
+            bin1_A_gen[k] = A_gen[k][1];
+            bin1_Aerr_gen[k] = Aerr_gen[k][1];
+            bin1_A_unf[k] = A_unf[k][1];
+            bin1_Aerr_unf[k] = Aerr_unf[k][1];
+            bin1_A_pull[k] = A_pull[k][1];
+            bin1_A_pullwidth[k] = A_pullwidth[k][1];
+            bin1_Aerr_pull[k] = Aerr_pull[k][1];
+            bin1_Aerr_pullwidth[k] = Aerr_pullwidth[k][1];
+
+            bin2_A_gen[k] = A_gen[k][2];
+            bin2_Aerr_gen[k] = Aerr_gen[k][2];
+            bin2_A_unf[k] = A_unf[k][2];
+            bin2_Aerr_unf[k] = Aerr_unf[k][2];
+            bin2_A_pull[k] = A_pull[k][2];
+            bin2_A_pullwidth[k] = A_pullwidth[k][2];
+            bin2_Aerr_pull[k] = Aerr_pull[k][2];
+            bin2_Aerr_pullwidth[k] = Aerr_pullwidth[k][2];
+
+            bin3_A_gen[k] = A_gen[k][3];
+            bin3_Aerr_gen[k] = Aerr_gen[k][3];
+            bin3_A_unf[k] = A_unf[k][3];
+            bin3_Aerr_unf[k] = Aerr_unf[k][3];
+            bin3_A_pull[k] = A_pull[k][3];
+            bin3_A_pullwidth[k] = A_pullwidth[k][3];
+            bin3_Aerr_pull[k] = Aerr_pull[k][3];
+            bin3_Aerr_pullwidth[k] = Aerr_pullwidth[k][3];
+
+            bin1_V_gen[k] = A_gen[k][4];
+            bin1_Verr_gen[k] = Aerr_gen[k][4];
+            bin1_V_unf[k] = A_unf[k][4];
+            bin1_Verr_unf[k] = Aerr_unf[k][4];
+            // bin1_V_pull[k] = A_pull[k][4];
+            // bin1_V_pullwidth[k] = A_pullwidth[k][4];
+            // bin1_Verr_pull[k] = Aerr_pull[k][4];
+            // bin1_Verr_pullwidth[k] = Aerr_pullwidth[k][4];
+
+            bin2_V_gen[k] = A_gen[k][5];
+            bin2_Verr_gen[k] = Aerr_gen[k][5];
+            bin2_V_unf[k] = A_unf[k][5];
+            bin2_Verr_unf[k] = Aerr_unf[k][5];
+            // bin2_V_pull[k] = A_pull[k][5];
+            // bin2_V_pullwidth[k] = A_pullwidth[k][5];
+            // bin2_Verr_pull[k] = Aerr_pull[k][5];
+            // bin2_Verr_pullwidth[k] = Aerr_pullwidth[k][5];
+
+            bin3_V_gen[k] = A_gen[k][6];
+            bin3_Verr_gen[k] = Aerr_gen[k][6];
+            bin3_V_unf[k] = A_unf[k][6];
+            bin3_Verr_unf[k] = Aerr_unf[k][6];
+            // bin3_V_pull[k] = A_pull[k][6];
+            // bin3_V_pullwidth[k] = A_pullwidth[k][6];
+            // bin3_Verr_pull[k] = Aerr_pull[k][6];
+            // bin3_Verr_pullwidth[k] = Aerr_pullwidth[k][6];
+
+            bin4_V_gen[k] = A_gen[k][7];
+            bin4_Verr_gen[k] = Aerr_gen[k][7];
+            bin4_V_unf[k] = A_unf[k][7];
+            bin4_Verr_unf[k] = Aerr_unf[k][7];
+            // bin4_V_pull[k] = A_pull[k][7];
+            // bin4_V_pullwidth[k] = A_pullwidth[k][7];
+            // bin4_Verr_pull[k] = Aerr_pull[k][7];
+            // bin4_Verr_pullwidth[k] = Aerr_pullwidth[k][7];
+
+            bin5_V_gen[k] = A_gen[k][8];
+            bin5_Verr_gen[k] = Aerr_gen[k][8];
+            bin5_V_unf[k] = A_unf[k][8];
+            bin5_Verr_unf[k] = Aerr_unf[k][8];
+            // bin5_V_pull[k] = A_pull[k][8];
+            // bin5_V_pullwidth[k] = A_pullwidth[k][8];
+            // bin5_Verr_pull[k] = Aerr_pull[k][8];
+            // bin5_Verr_pullwidth[k] = Aerr_pullwidth[k][8];
+
+            bin6_V_gen[k] = A_gen[k][9];
+            bin6_Verr_gen[k] = Aerr_gen[k][9];
+            bin6_V_unf[k] = A_unf[k][9];
+            bin6_Verr_unf[k] = Aerr_unf[k][9];
+            // bin6_V_pull[k] = A_pull[k][9];
+            // bin6_V_pullwidth[k] = A_pullwidth[k][9];
+            // bin6_Verr_pull[k] = Aerr_pull[k][9];
+            // bin6_Verr_pullwidth[k] = Aerr_pullwidth[k][9];
+
+			//Additional items necessitated by the switch from 1D to 2D
+            bin7_V_gen[k] = A_gen[k][10];
+            bin7_Verr_gen[k] = Aerr_gen[k][10];
+            bin7_V_unf[k] = A_unf[k][10];
+            bin7_Verr_unf[k] = Aerr_unf[k][10];
+            // bin7_V_pull[k] = A_pull[k][10];
+            // bin7_V_pullwidth[k] = A_pullwidth[k][10];
+            // bin7_Verr_pull[k] = Aerr_pull[k][10];
+            // bin7_Verr_pullwidth[k] = Aerr_pullwidth[k][10];
+
+            bin8_V_gen[k] = A_gen[k][11];
+            bin8_Verr_gen[k] = Aerr_gen[k][11];
+            bin8_V_unf[k] = A_unf[k][11];
+            bin8_Verr_unf[k] = Aerr_unf[k][11];
+            // bin8_V_pull[k] = A_pull[k][11];
+            // bin8_V_pullwidth[k] = A_pullwidth[k][11];
+            // bin8_Verr_pull[k] = Aerr_pull[k][11];
+            // bin8_Verr_pullwidth[k] = Aerr_pullwidth[k][11];
+
+            bin9_V_gen[k] = A_gen[k][12];
+            bin9_Verr_gen[k] = Aerr_gen[k][12];
+            bin9_V_unf[k] = A_unf[k][12];
+            bin9_Verr_unf[k] = Aerr_unf[k][12];
+            // bin9_V_pull[k] = A_pull[k][12];
+            // bin9_V_pullwidth[k] = A_pullwidth[k][12];
+            // bin9_Verr_pull[k] = Aerr_pull[k][12];
+            // bin9_Verr_pullwidth[k] = Aerr_pullwidth[k][12];
+
+            bin10_V_gen[k] = A_gen[k][13];
+            bin10_Verr_gen[k] = Aerr_gen[k][13];
+            bin10_V_unf[k] = A_unf[k][13];
+            bin10_Verr_unf[k] = Aerr_unf[k][13];
+            // bin10_V_pull[k] = A_pull[k][13];
+            // bin10_V_pullwidth[k] = A_pullwidth[k][13];
+            // bin10_Verr_pull[k] = Aerr_pull[k][13];
+            // bin10_Verr_pullwidth[k] = Aerr_pullwidth[k][13];
+
+            bin11_V_gen[k] = A_gen[k][14];
+            bin11_Verr_gen[k] = Aerr_gen[k][14];
+            bin11_V_unf[k] = A_unf[k][14];
+            bin11_Verr_unf[k] = Aerr_unf[k][14];
+            // bin11_V_pull[k] = A_pull[k][14];
+            // bin11_V_pullwidth[k] = A_pullwidth[k][14];
+            // bin11_Verr_pull[k] = Aerr_pull[k][14];
+            // bin11_Verr_pullwidth[k] = Aerr_pullwidth[k][14];
+
+            bin12_V_gen[k] = A_gen[k][15];
+            bin12_Verr_gen[k] = Aerr_gen[k][15];
+            bin12_V_unf[k] = A_unf[k][15];
+            bin12_Verr_unf[k] = Aerr_unf[k][15];
+            // bin12_V_pull[k] = A_pull[k][15];
+            // bin12_V_pullwidth[k] = A_pullwidth[k][15];
+            // bin12_Verr_pull[k] = Aerr_pull[k][15];
+            // bin12_Verr_pullwidth[k] = Aerr_pullwidth[k][15];
+
+            bin13_V_gen[k] = A_gen[k][16];
+            bin13_Verr_gen[k] = Aerr_gen[k][16];
+            bin13_V_unf[k] = A_unf[k][16];
+            bin13_Verr_unf[k] = Aerr_unf[k][16];
+            // bin13_V_pull[k] = A_pull[k][16];
+            // bin13_V_pullwidth[k] = A_pullwidth[k][16];
+            // bin13_Verr_pull[k] = Aerr_pull[k][16];
+            // bin13_Verr_pullwidth[k] = Aerr_pullwidth[k][16];
+
+            bin14_V_gen[k] = A_gen[k][17];
+            bin14_Verr_gen[k] = Aerr_gen[k][17];
+            bin14_V_unf[k] = A_unf[k][17];
+            bin14_Verr_unf[k] = Aerr_unf[k][17];
+            // bin14_V_pull[k] = A_pull[k][17];
+            // bin14_V_pullwidth[k] = A_pullwidth[k][17];
+            // bin14_Verr_pull[k] = Aerr_pull[k][17];
+            // bin14_Verr_pullwidth[k] = Aerr_pullwidth[k][17];
+
+            bin15_V_gen[k] = A_gen[k][18];
+            bin15_Verr_gen[k] = Aerr_gen[k][18];
+            bin15_V_unf[k] = A_unf[k][18];
+            bin15_Verr_unf[k] = Aerr_unf[k][18];
+            // bin15_V_pull[k] = A_pull[k][18];
+            // bin15_V_pullwidth[k] = A_pullwidth[k][18];
+            // bin15_Verr_pull[k] = Aerr_pull[k][18];
+            // bin15_Verr_pullwidth[k] = Aerr_pullwidth[k][18];
+
+            bin16_V_gen[k] = A_gen[k][19];
+            bin16_Verr_gen[k] = Aerr_gen[k][19];
+            bin16_V_unf[k] = A_unf[k][19];
+            bin16_Verr_unf[k] = Aerr_unf[k][19];
+            // bin16_V_pull[k] = A_pull[k][19];
+            // bin16_V_pullwidth[k] = A_pullwidth[k][19];
+            // bin16_Verr_pull[k] = Aerr_pull[k][19];
+            // bin16_Verr_pullwidth[k] = Aerr_pullwidth[k][19];
+
+            bin17_V_gen[k] = A_gen[k][20];
+            bin17_Verr_gen[k] = Aerr_gen[k][20];
+            bin17_V_unf[k] = A_unf[k][20];
+            bin17_Verr_unf[k] = Aerr_unf[k][20];
+            // bin17_V_pull[k] = A_pull[k][20];
+            // bin17_V_pullwidth[k] = A_pullwidth[k][20];
+            // bin17_Verr_pull[k] = Aerr_pull[k][20];
+            // bin17_Verr_pullwidth[k] = Aerr_pullwidth[k][20];
+
+            bin18_V_gen[k] = A_gen[k][21];
+            bin18_Verr_gen[k] = Aerr_gen[k][21];
+            bin18_V_unf[k] = A_unf[k][21];
+            bin18_Verr_unf[k] = Aerr_unf[k][21];
+            // bin18_V_pull[k] = A_pull[k][21];
+            // bin18_V_pullwidth[k] = A_pullwidth[k][21];
+            // bin18_Verr_pull[k] = Aerr_pull[k][21];
+            // bin18_Verr_pullwidth[k] = Aerr_pullwidth[k][21];
+
+
+            //cout << A_gen[k][0] << " " << Aerr_gen[k][0] << " " << A_unf[k][0] << " " << Aerr_unf[k][0] << " " << A_pull[k][0] << " " << A_pullwidth[k][0] << " " << Aerr_pull[k][0] << " " << Aerr_pullwidth[k][0] << endl;
+            //cout << A_gen[k][1] << " " << Aerr_gen[k][1] << " " << A_unf[k][1] << " " << Aerr_unf[k][1] << " " << A_pull[k][1] << " " << A_pullwidth[k][1] << " " << Aerr_pull[k][1] << " " << Aerr_pullwidth[k][1] << endl;
+            //cout << A_gen[k][2] << " " << Aerr_gen[k][2] << " " << A_unf[k][2] << " " << Aerr_unf[k][2] << " " << A_pull[k][2] << " " << A_pullwidth[k][2] << " " << Aerr_pull[k][2] << " " << Aerr_pullwidth[k][2] << endl;
+            //cout << A_gen[k][3] << " " << Aerr_gen[k][3] << " " << A_unf[k][3] << " " << Aerr_unf[k][3] << " " << A_pull[k][3] << " " << A_pullwidth[k][3] << " " << Aerr_pull[k][3] << " " << Aerr_pullwidth[k][3] << endl;
+            //cout << A_gen[k][4] << " " << Aerr_gen[k][4] << " " << A_unf[k][4] << " " << Aerr_unf[k][4] << " " << A_pull[k][4] << " " << A_pullwidth[k][4] << " " << Aerr_pull[k][4] << " " << Aerr_pullwidth[k][4] << endl;
+            //cout << A_gen[k][5] << " " << Aerr_gen[k][5] << " " << A_unf[k][5] << " " << Aerr_unf[k][5] << " " << A_pull[k][5] << " " << A_pullwidth[k][5] << " " << Aerr_pull[k][5] << " " << Aerr_pullwidth[k][5] << endl;
+            //cout << A_gen[k][6] << " " << Aerr_gen[k][6] << " " << A_unf[k][6] << " " << Aerr_unf[k][6] << " " << A_pull[k][6] << " " << A_pullwidth[k][6] << " " << Aerr_pull[k][6] << " " << Aerr_pullwidth[k][6] << endl;
+            //cout << A_gen[k][7] << " " << Aerr_gen[k][7] << " " << A_unf[k][7] << " " << Aerr_unf[k][7] << " " << A_pull[k][7] << " " << A_pullwidth[k][7] << " " << Aerr_pull[k][7] << " " << Aerr_pullwidth[k][7] << endl;
+            //cout << A_gen[k][8] << " " << Aerr_gen[k][8] << " " << A_unf[k][8] << " " << Aerr_unf[k][8] << " " << A_pull[k][8] << " " << A_pullwidth[k][8] << " " << Aerr_pull[k][8] << " " << Aerr_pullwidth[k][8] << endl;
+            //cout << A_gen[k][9] << " " << Aerr_gen[k][9] << " " << A_unf[k][9] << " " << Aerr_unf[k][9] << " " << A_pull[k][9] << " " << A_pullwidth[k][9] << " " << Aerr_pull[k][9] << " " << Aerr_pullwidth[k][9] << endl;
+
+
+
+
+            /*
+                        tmp_A_gen.push_back( A_gen[k][iD] );
+                        tmp_Aerr_gen.push_back( Aerr_gen[k][iD] );
+                        tmp_A_unf.push_back( A_unf[k][iD] );
+                        tmp_Aerr_unf.push_back( Aerr_unf[k][iD] );
+                        tmp_A_pull.push_back( A_pull[k][iD] );
+                        tmp_A_pullwidth.push_back( A_pullwidth[k][iD] );
+                        tmp_Aerr_pull.push_back( Aerr_pull[k][iD] );
+                        tmp_Aerr_pullwidth.push_back( Aerr_pullwidth[k][iD] );
+            */
+
+        }
+
+        //transposed_A_gen.push_back( tmp_A_gen );
+        //transposed_Aerr_gen.push_back( tmp_Aerr_gen );
+        //transposed_A_unf.push_back( tmp_A_unf );
+        //transposed_Aerr_unf.push_back( tmp_Aerr_unf );
+        //transposed_A_pull.push_back( tmp_A_pull );
+        //transposed_A_pullwidth.push_back( tmp_A_pullwidth );
+        //transposed_Aerr_pull.push_back( tmp_Aerr_pull );
+        //transposed_Aerr_pullwidth.push_back( tmp_Aerr_pullwidth );
+
+        //}
+
+
+
+        TGraphErrors *Asym2D_TrueUnf = new TGraphErrors (Nlin, inclusive_A_gen, inclusive_A_unf, inclusive_Aerr_gen, inclusive_Aerr_unf);
+
+        //TGraphErrors *Asym2D_TrueMeas = new TGraphErrors (Nlin, inclusive_A_gen, inclusive_A_meas, inclusive_Aerr_gen, inclusive_Aerr_meas);
+
+        TGraphErrors *Asym2D_PullWidth = new TGraphErrors (Nlin, inclusive_A_gen, inclusive_A_pullwidth, inclusive_Aerr_gen, inclusive_Aerr_pullwidth);
+
+        TGraphErrors *Asym2D_Pull = new TGraphErrors (Nlin, inclusive_A_gen, inclusive_A_pull, inclusive_Aerr_gen, inclusive_Aerr_pull);
+
+
+
+
+
+        TGraphErrors *Asym2D_TrueUnfbin1 = new TGraphErrors (Nlin, bin1_A_gen, bin1_A_unf, bin1_Aerr_gen, bin1_Aerr_unf);
+        TGraphErrors *Asym2D_PullWidthbin1 = new TGraphErrors (Nlin, bin1_A_gen, bin1_A_pullwidth, bin1_Aerr_gen, bin1_Aerr_pullwidth);
+        TGraphErrors *Asym2D_Pullbin1 = new TGraphErrors (Nlin, bin1_A_gen, bin1_A_pull, bin1_Aerr_gen, bin1_Aerr_pull);
+
+        TGraphErrors *Asym2D_TrueUnfbin2 = new TGraphErrors (Nlin, bin2_A_gen, bin2_A_unf, bin2_Aerr_gen, bin2_Aerr_unf);
+        TGraphErrors *Asym2D_PullWidthbin2 = new TGraphErrors (Nlin, bin2_A_gen, bin2_A_pullwidth, bin2_Aerr_gen, bin2_Aerr_pullwidth);
+        TGraphErrors *Asym2D_Pullbin2 = new TGraphErrors (Nlin, bin2_A_gen, bin2_A_pull, bin2_Aerr_gen, bin2_Aerr_pull);
+
+        TGraphErrors *Asym2D_TrueUnfbin3 = new TGraphErrors (Nlin, bin3_A_gen, bin3_A_unf, bin3_Aerr_gen, bin3_Aerr_unf);
+        TGraphErrors *Asym2D_PullWidthbin3 = new TGraphErrors (Nlin, bin3_A_gen, bin3_A_pullwidth, bin3_Aerr_gen, bin3_Aerr_pullwidth);
+        TGraphErrors *Asym2D_Pullbin3 = new TGraphErrors (Nlin, bin3_A_gen, bin3_A_pull, bin3_Aerr_gen, bin3_Aerr_pull);
+
+
+
+
+
+        TGraphErrors *Value_TrueUnfbin1 = new TGraphErrors (Nlin, bin1_V_gen, bin1_V_unf, bin1_Verr_gen, bin1_Verr_unf);
+        // TGraphErrors *Value_PullWidthbin1 = new TGraphErrors (Nlin, bin1_V_gen, bin1_V_pullwidth, bin1_Verr_gen, bin1_Verr_pullwidth);
+        // TGraphErrors *Value_Pullbin1 = new TGraphErrors (Nlin, bin1_V_gen, bin1_V_pull, bin1_Verr_gen, bin1_Verr_pull);
+
+        TGraphErrors *Value_TrueUnfbin2 = new TGraphErrors (Nlin, bin2_V_gen, bin2_V_unf, bin2_Verr_gen, bin2_Verr_unf);
+        // TGraphErrors *Value_PullWidthbin2 = new TGraphErrors (Nlin, bin2_V_gen, bin2_V_pullwidth, bin2_Verr_gen, bin2_Verr_pullwidth);
+        // TGraphErrors *Value_Pullbin2 = new TGraphErrors (Nlin, bin2_V_gen, bin2_V_pull, bin2_Verr_gen, bin2_Verr_pull);
+
+        TGraphErrors *Value_TrueUnfbin3 = new TGraphErrors (Nlin, bin3_V_gen, bin3_V_unf, bin3_Verr_gen, bin3_Verr_unf);
+        // TGraphErrors *Value_PullWidthbin3 = new TGraphErrors (Nlin, bin3_V_gen, bin3_V_pullwidth, bin3_Verr_gen, bin3_Verr_pullwidth);
+        // TGraphErrors *Value_Pullbin3 = new TGraphErrors (Nlin, bin3_V_gen, bin3_V_pull, bin3_Verr_gen, bin3_Verr_pull);
+
+        TGraphErrors *Value_TrueUnfbin4 = new TGraphErrors (Nlin, bin4_V_gen, bin4_V_unf, bin4_Verr_gen, bin4_Verr_unf);
+        // TGraphErrors *Value_PullWidthbin4 = new TGraphErrors (Nlin, bin4_V_gen, bin4_V_pullwidth, bin4_Verr_gen, bin4_Verr_pullwidth);
+        // TGraphErrors *Value_Pullbin4 = new TGraphErrors (Nlin, bin4_V_gen, bin4_V_pull, bin4_Verr_gen, bin4_Verr_pull);
+
+        TGraphErrors *Value_TrueUnfbin5 = new TGraphErrors (Nlin, bin5_V_gen, bin5_V_unf, bin5_Verr_gen, bin5_Verr_unf);
+        // TGraphErrors *Value_PullWidthbin5 = new TGraphErrors (Nlin, bin5_V_gen, bin5_V_pullwidth, bin5_Verr_gen, bin5_Verr_pullwidth);
+        // TGraphErrors *Value_Pullbin5 = new TGraphErrors (Nlin, bin5_V_gen, bin5_V_pull, bin5_Verr_gen, bin5_Verr_pull);
+
+        TGraphErrors *Value_TrueUnfbin6 = new TGraphErrors (Nlin, bin6_V_gen, bin6_V_unf, bin6_Verr_gen, bin6_Verr_unf);
+        // TGraphErrors *Value_PullWidthbin6 = new TGraphErrors (Nlin, bin6_V_gen, bin6_V_pullwidth, bin6_Verr_gen, bin6_Verr_pullwidth);
+        // TGraphErrors *Value_Pullbin6 = new TGraphErrors (Nlin, bin6_V_gen, bin6_V_pull, bin6_Verr_gen, bin6_Verr_pull);
+
+		//Additional plots necessitated by the move from 1D to 2D
+		// At the time of last revision, the graphs "Value_PullWidthbin#" and "Value_Pullbin#" aren't used, so they're not expanded up to 18.
+        TGraphErrors *Value_TrueUnfbin7 = new TGraphErrors (Nlin, bin7_V_gen, bin7_V_unf, bin7_Verr_gen, bin7_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin8 = new TGraphErrors (Nlin, bin8_V_gen, bin8_V_unf, bin8_Verr_gen, bin8_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin9 = new TGraphErrors (Nlin, bin9_V_gen, bin9_V_unf, bin9_Verr_gen, bin9_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin10 = new TGraphErrors (Nlin, bin10_V_gen, bin10_V_unf, bin10_Verr_gen, bin10_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin11 = new TGraphErrors (Nlin, bin11_V_gen, bin11_V_unf, bin11_Verr_gen, bin11_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin12 = new TGraphErrors (Nlin, bin12_V_gen, bin12_V_unf, bin12_Verr_gen, bin12_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin13 = new TGraphErrors (Nlin, bin13_V_gen, bin13_V_unf, bin13_Verr_gen, bin13_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin14 = new TGraphErrors (Nlin, bin14_V_gen, bin14_V_unf, bin14_Verr_gen, bin14_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin15 = new TGraphErrors (Nlin, bin15_V_gen, bin15_V_unf, bin15_Verr_gen, bin15_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin16 = new TGraphErrors (Nlin, bin16_V_gen, bin16_V_unf, bin16_Verr_gen, bin16_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin17 = new TGraphErrors (Nlin, bin17_V_gen, bin17_V_unf, bin17_Verr_gen, bin17_Verr_unf);
+        TGraphErrors *Value_TrueUnfbin18 = new TGraphErrors (Nlin, bin18_V_gen, bin18_V_unf, bin18_Verr_gen, bin18_Verr_unf);
+
+
+
         TCanvas *c_ttbar = new TCanvas("c_ttbar", "c_ttbar", 500, 500);
-        c_ttbar->Divide(2, 2);
-        c_ttbar->cd(1);
+        if (!plot_inclusive_only) c_ttbar->Divide(2, 2);
+        if (!plot_inclusive_only) c_ttbar->cd(1);
         Asym2D_TrueUnf->SetTitle(asymlabel);
         Asym2D_TrueUnf->SetMarkerStyle(23);
         Asym2D_TrueUnf->SetMarkerColor(kBlack);
         Asym2D_TrueUnf->SetMarkerSize(0.6);
-        Asym2D_TrueUnf->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive (true)");
-        Asym2D_TrueUnf->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive (unfolded)");
+        Asym2D_TrueUnf->GetXaxis()->SetTitle(asymlabel + " inclusive (true)");
+        Asym2D_TrueUnf->GetYaxis()->SetTitle(asymlabel + " inclusive (unfolded)");
         Asym2D_TrueUnf->Draw("AP same");
-        Asym2D_TrueUnf->Fit("pol1");
+        //Asym2D_TrueUnf->Fit("pol1");
+        TFitResultPtr r = Asym2D_TrueUnf->Fit("pol1", "S");
+        Double_t par1   = r->Parameter(1);
+        Double_t par0   = r->Parameter(0);
+        Double_t par1err   = r->ParError(1);
+        Double_t par0err   = r->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0: " << par0 << " +/- " << par0err << " p1: " << par1 << " +/- " << par1err <<  endl;
 
-        c_ttbar->cd(2);
-        Asym2D_TrueUnfbin1->SetTitle(asymlabel);
-        Asym2D_TrueUnfbin1->SetMarkerStyle(23);
-        Asym2D_TrueUnfbin1->SetMarkerColor(kBlue);
-        Asym2D_TrueUnfbin1->SetMarkerSize(0.6);
-        Asym2D_TrueUnfbin1->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 (true)");
-        Asym2D_TrueUnfbin1->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 (unfolded)");
-        Asym2D_TrueUnfbin1->Draw("AP same");
-        Asym2D_TrueUnfbin1->Fit("pol1");
 
-        c_ttbar->cd(3);
-        Asym2D_TrueUnfbin2->SetTitle(asymlabel);
-        Asym2D_TrueUnfbin2->SetMarkerStyle(23);
-        Asym2D_TrueUnfbin2->SetMarkerColor(kBlue);
-        Asym2D_TrueUnfbin2->SetMarkerSize(0.6);
-        Asym2D_TrueUnfbin2->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 (true)");
-        Asym2D_TrueUnfbin2->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 (unfolded)");
-        Asym2D_TrueUnfbin2->Draw("AP same");
-        Asym2D_TrueUnfbin2->Fit("pol1");
+        if (!plot_inclusive_only)
+        {
+            c_ttbar->cd(2);
+            Asym2D_TrueUnfbin1->SetTitle(asymlabel);
+            Asym2D_TrueUnfbin1->SetMarkerStyle(23);
+            Asym2D_TrueUnfbin1->SetMarkerColor(kBlue);
+            Asym2D_TrueUnfbin1->SetMarkerSize(0.6);
+            Asym2D_TrueUnfbin1->GetXaxis()->SetTitle(yaxislabel + " bin 1 (true)");
+            Asym2D_TrueUnfbin1->GetYaxis()->SetTitle(yaxislabel + " bin 1 (unfolded)");
+            Asym2D_TrueUnfbin1->Draw("AP same");
+            //Asym2D_TrueUnfbin1->Fit("pol1");
+            TFitResultPtr rbin1 = Asym2D_TrueUnfbin1->Fit("pol1", "S");
+            par1   = rbin1->Parameter(1);
+            par0   = rbin1->Parameter(0);
+            par1err   = rbin1->ParError(1);
+            par0err   = rbin1->ParError(0);
+            third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0bin1: " << par0 << " +/- " << par0err << " p1bin1: " << par1 << " +/- " << par1err <<  endl;
 
-        c_ttbar->cd(4);
-        Asym2D_TrueUnfbin3->SetTitle(asymlabel);
-        Asym2D_TrueUnfbin3->SetMarkerStyle(23);
-        Asym2D_TrueUnfbin3->SetMarkerColor(kBlue);
-        Asym2D_TrueUnfbin3->SetMarkerSize(0.6);
-        Asym2D_TrueUnfbin3->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 (true)");
-        Asym2D_TrueUnfbin3->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 (unfolded)");
-        Asym2D_TrueUnfbin3->Draw("AP same");
-        Asym2D_TrueUnfbin3->Fit("pol1");
+            c_ttbar->cd(3);
+            Asym2D_TrueUnfbin2->SetTitle(asymlabel);
+            Asym2D_TrueUnfbin2->SetMarkerStyle(23);
+            Asym2D_TrueUnfbin2->SetMarkerColor(kBlue);
+            Asym2D_TrueUnfbin2->SetMarkerSize(0.6);
+            Asym2D_TrueUnfbin2->GetXaxis()->SetTitle(yaxislabel + " bin 2 (true)");
+            Asym2D_TrueUnfbin2->GetYaxis()->SetTitle(yaxislabel + " bin 2 (unfolded)");
+            Asym2D_TrueUnfbin2->Draw("AP same");
+            //Asym2D_TrueUnfbin2->Fit("pol1");
+            TFitResultPtr rbin2 = Asym2D_TrueUnfbin2->Fit("pol1", "S");
+            par1   = rbin2->Parameter(1);
+            par0   = rbin2->Parameter(0);
+            par1err   = rbin2->ParError(1);
+            par0err   = rbin2->ParError(0);
+            third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0bin2: " << par0 << " +/- " << par0err << " p1bin2: " << par1 << " +/- " << par1err <<  endl;
 
-        c_ttbar->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck.pdf");
-        c_ttbar->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck.C");
+            c_ttbar->cd(4);
+            Asym2D_TrueUnfbin3->SetTitle(asymlabel);
+            Asym2D_TrueUnfbin3->SetMarkerStyle(23);
+            Asym2D_TrueUnfbin3->SetMarkerColor(kBlue);
+            Asym2D_TrueUnfbin3->SetMarkerSize(0.6);
+            Asym2D_TrueUnfbin3->GetXaxis()->SetTitle(yaxislabel + " bin 3 (true)");
+            Asym2D_TrueUnfbin3->GetYaxis()->SetTitle(yaxislabel + " bin 3 (unfolded)");
+            Asym2D_TrueUnfbin3->Draw("AP same");
+            //Asym2D_TrueUnfbin3->Fit("pol1");
+            TFitResultPtr rbin3 = Asym2D_TrueUnfbin3->Fit("pol1", "S");
+            par1   = rbin3->Parameter(1);
+            par0   = rbin3->Parameter(0);
+            par1err   = rbin3->ParError(1);
+            par0err   = rbin3->ParError(0);
+            third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0bin3: " << par0 << " +/- " << par0err << " p1bin3: " << par1 << " +/- " << par1err <<  endl;
+        }
+
+        c_ttbar->SaveAs(acceptanceName + "_LinearityCheck.pdf");
+        c_ttbar->SaveAs(acceptanceName + "_LinearityCheck.C");
+
+
+
+
+
+
+
+
+
+
+
+
+        TCanvas *c_LinearityBinByBin = new TCanvas("c_LinearityBinByBin", "c_LinearityBinByBin", 1500, 750);
+        c_LinearityBinByBin->Divide(6, 3);
+
+        c_LinearityBinByBin->cd(13);
+        Value_TrueUnfbin1->SetTitle(asymlabel);
+        Value_TrueUnfbin1->SetMarkerStyle(23);
+        Value_TrueUnfbin1->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin1->SetMarkerSize(0.6);
+        Value_TrueUnfbin1->GetXaxis()->SetTitle(asymlabel + " bin1 (true)");
+        Value_TrueUnfbin1->GetYaxis()->SetTitle(asymlabel + " bin1 (unfolded)");
+        Value_TrueUnfbin1->Draw("AP same");
+        //Value_TrueUnfbin1->Fit("pol1");
+        TFitResultPtr rVbin1 = Value_TrueUnfbin1->Fit("pol1", "S");
+        par1   = rVbin1->Parameter(1);
+        par0   = rVbin1->Parameter(0);
+        par1err   = rVbin1->ParError(1);
+        par0err   = rVbin1->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin1: " << par0 << " +/- " << par0err << " p1Vbin1: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(14);
+        Value_TrueUnfbin2->SetTitle(asymlabel);
+        Value_TrueUnfbin2->SetMarkerStyle(23);
+        Value_TrueUnfbin2->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin2->SetMarkerSize(0.6);
+        Value_TrueUnfbin2->GetXaxis()->SetTitle(asymlabel + " bin2 (true)");
+        Value_TrueUnfbin2->GetYaxis()->SetTitle(asymlabel + " bin2 (unfolded)");
+        Value_TrueUnfbin2->Draw("AP same");
+        //Value_TrueUnfbin2->Fit("pol1");
+        TFitResultPtr rVbin2 = Value_TrueUnfbin2->Fit("pol1", "S");
+        par1   = rVbin2->Parameter(1);
+        par0   = rVbin2->Parameter(0);
+        par1err   = rVbin2->ParError(1);
+        par0err   = rVbin2->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin2: " << par0 << " +/- " << par0err << " p1Vbin2: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(15);
+        Value_TrueUnfbin3->SetTitle(asymlabel);
+        Value_TrueUnfbin3->SetMarkerStyle(23);
+        Value_TrueUnfbin3->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin3->SetMarkerSize(0.6);
+        Value_TrueUnfbin3->GetXaxis()->SetTitle(asymlabel + " bin3 (true)");
+        Value_TrueUnfbin3->GetYaxis()->SetTitle(asymlabel + " bin3 (unfolded)");
+        Value_TrueUnfbin3->Draw("AP same");
+        //Value_TrueUnfbin3->Fit("pol1");
+        TFitResultPtr rVbin3 = Value_TrueUnfbin3->Fit("pol1", "S");
+        par1   = rVbin3->Parameter(1);
+        par0   = rVbin3->Parameter(0);
+        par1err   = rVbin3->ParError(1);
+        par0err   = rVbin3->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin3: " << par0 << " +/- " << par0err << " p1Vbin3: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(16);
+        Value_TrueUnfbin4->SetTitle(asymlabel);
+        Value_TrueUnfbin4->SetMarkerStyle(23);
+        Value_TrueUnfbin4->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin4->SetMarkerSize(0.6);
+        Value_TrueUnfbin4->GetXaxis()->SetTitle(asymlabel + " bin4 (true)");
+        Value_TrueUnfbin4->GetYaxis()->SetTitle(asymlabel + " bin4 (unfolded)");
+        Value_TrueUnfbin4->Draw("AP same");
+        //Value_TrueUnfbin4->Fit("pol1");
+        TFitResultPtr rVbin4 = Value_TrueUnfbin4->Fit("pol1", "S");
+        par1   = rVbin4->Parameter(1);
+        par0   = rVbin4->Parameter(0);
+        par1err   = rVbin4->ParError(1);
+        par0err   = rVbin4->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin4: " << par0 << " +/- " << par0err << " p1Vbin4: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(17);
+        Value_TrueUnfbin5->SetTitle(asymlabel);
+        Value_TrueUnfbin5->SetMarkerStyle(23);
+        Value_TrueUnfbin5->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin5->SetMarkerSize(0.6);
+        Value_TrueUnfbin5->GetXaxis()->SetTitle(asymlabel + " bin5 (true)");
+        Value_TrueUnfbin5->GetYaxis()->SetTitle(asymlabel + " bin5 (unfolded)");
+        Value_TrueUnfbin5->Draw("AP same");
+        //Value_TrueUnfbin5->Fit("pol1");
+        TFitResultPtr rVbin5 = Value_TrueUnfbin5->Fit("pol1", "S");
+        par1   = rVbin5->Parameter(1);
+        par0   = rVbin5->Parameter(0);
+        par1err   = rVbin5->ParError(1);
+        par0err   = rVbin5->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin5: " << par0 << " +/- " << par0err << " p1Vbin5: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(18);
+        Value_TrueUnfbin6->SetTitle(asymlabel);
+        Value_TrueUnfbin6->SetMarkerStyle(23);
+        Value_TrueUnfbin6->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin6->SetMarkerSize(0.6);
+        Value_TrueUnfbin6->GetXaxis()->SetTitle(asymlabel + " bin6 (true)");
+        Value_TrueUnfbin6->GetYaxis()->SetTitle(asymlabel + " bin6 (unfolded)");
+        Value_TrueUnfbin6->Draw("AP same");
+        //Value_TrueUnfbin6->Fit("pol1");
+        TFitResultPtr rVbin6 = Value_TrueUnfbin6->Fit("pol1", "S");
+        par1   = rVbin6->Parameter(1);
+        par0   = rVbin6->Parameter(0);
+        par1err   = rVbin6->ParError(1);
+        par0err   = rVbin6->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin6: " << par0 << " +/- " << par0err << " p1Vbin6: " << par1 << " +/- " << par1err <<  endl;
+
+		// Additions due to the change from 1D to 2D
+        c_LinearityBinByBin->cd(7);
+        Value_TrueUnfbin7->SetTitle(asymlabel);
+        Value_TrueUnfbin7->SetMarkerStyle(23);
+        Value_TrueUnfbin7->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin7->SetMarkerSize(0.6);
+        Value_TrueUnfbin7->GetXaxis()->SetTitle(asymlabel + " bin7 (true)");
+        Value_TrueUnfbin7->GetYaxis()->SetTitle(asymlabel + " bin7 (unfolded)");
+        Value_TrueUnfbin7->Draw("AP same");
+        //Value_TrueUnfbin7->Fit("pol1");
+        TFitResultPtr rVbin7 = Value_TrueUnfbin7->Fit("pol1", "S");
+        par1   = rVbin7->Parameter(1);
+        par0   = rVbin7->Parameter(0);
+        par1err   = rVbin7->ParError(1);
+        par0err   = rVbin7->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin7: " << par0 << " +/- " << par0err << " p1Vbin7: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(8);
+        Value_TrueUnfbin8->SetTitle(asymlabel);
+        Value_TrueUnfbin8->SetMarkerStyle(23);
+        Value_TrueUnfbin8->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin8->SetMarkerSize(0.6);
+        Value_TrueUnfbin8->GetXaxis()->SetTitle(asymlabel + " bin8 (true)");
+        Value_TrueUnfbin8->GetYaxis()->SetTitle(asymlabel + " bin8 (unfolded)");
+        Value_TrueUnfbin8->Draw("AP same");
+        //Value_TrueUnfbin8->Fit("pol1");
+        TFitResultPtr rVbin8 = Value_TrueUnfbin8->Fit("pol1", "S");
+        par1   = rVbin8->Parameter(1);
+        par0   = rVbin8->Parameter(0);
+        par1err   = rVbin8->ParError(1);
+        par0err   = rVbin8->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin8: " << par0 << " +/- " << par0err << " p1Vbin8: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(9);
+        Value_TrueUnfbin9->SetTitle(asymlabel);
+        Value_TrueUnfbin9->SetMarkerStyle(23);
+        Value_TrueUnfbin9->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin9->SetMarkerSize(0.6);
+        Value_TrueUnfbin9->GetXaxis()->SetTitle(asymlabel + " bin9 (true)");
+        Value_TrueUnfbin9->GetYaxis()->SetTitle(asymlabel + " bin9 (unfolded)");
+        Value_TrueUnfbin9->Draw("AP same");
+        //Value_TrueUnfbin9->Fit("pol1");
+        TFitResultPtr rVbin9 = Value_TrueUnfbin9->Fit("pol1", "S");
+        par1   = rVbin9->Parameter(1);
+        par0   = rVbin9->Parameter(0);
+        par1err   = rVbin9->ParError(1);
+        par0err   = rVbin9->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin9: " << par0 << " +/- " << par0err << " p1Vbin9: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(10);
+        Value_TrueUnfbin10->SetTitle(asymlabel);
+        Value_TrueUnfbin10->SetMarkerStyle(23);
+        Value_TrueUnfbin10->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin10->SetMarkerSize(0.6);
+        Value_TrueUnfbin10->GetXaxis()->SetTitle(asymlabel + " bin10 (true)");
+        Value_TrueUnfbin10->GetYaxis()->SetTitle(asymlabel + " bin10 (unfolded)");
+        Value_TrueUnfbin10->Draw("AP same");
+        //Value_TrueUnfbin10->Fit("pol1");
+        TFitResultPtr rVbin10 = Value_TrueUnfbin10->Fit("pol1", "S");
+        par1   = rVbin10->Parameter(1);
+        par0   = rVbin10->Parameter(0);
+        par1err   = rVbin10->ParError(1);
+        par0err   = rVbin10->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin10: " << par0 << " +/- " << par0err << " p1Vbin10: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(11);
+        Value_TrueUnfbin11->SetTitle(asymlabel);
+        Value_TrueUnfbin11->SetMarkerStyle(23);
+        Value_TrueUnfbin11->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin11->SetMarkerSize(0.6);
+        Value_TrueUnfbin11->GetXaxis()->SetTitle(asymlabel + " bin11 (true)");
+        Value_TrueUnfbin11->GetYaxis()->SetTitle(asymlabel + " bin11 (unfolded)");
+        Value_TrueUnfbin11->Draw("AP same");
+        //Value_TrueUnfbin11->Fit("pol1");
+        TFitResultPtr rVbin11 = Value_TrueUnfbin11->Fit("pol1", "S");
+        par1   = rVbin11->Parameter(1);
+        par0   = rVbin11->Parameter(0);
+        par1err   = rVbin11->ParError(1);
+        par0err   = rVbin11->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin11: " << par0 << " +/- " << par0err << " p1Vbin11: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(12);
+        Value_TrueUnfbin12->SetTitle(asymlabel);
+        Value_TrueUnfbin12->SetMarkerStyle(23);
+        Value_TrueUnfbin12->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin12->SetMarkerSize(0.6);
+        Value_TrueUnfbin12->GetXaxis()->SetTitle(asymlabel + " bin12 (true)");
+        Value_TrueUnfbin12->GetYaxis()->SetTitle(asymlabel + " bin12 (unfolded)");
+        Value_TrueUnfbin12->Draw("AP same");
+        //Value_TrueUnfbin12->Fit("pol1");
+        TFitResultPtr rVbin12 = Value_TrueUnfbin12->Fit("pol1", "S");
+        par1   = rVbin12->Parameter(1);
+        par0   = rVbin12->Parameter(0);
+        par1err   = rVbin12->ParError(1);
+        par0err   = rVbin12->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin12: " << par0 << " +/- " << par0err << " p1Vbin12: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(1);
+        Value_TrueUnfbin13->SetTitle(asymlabel);
+        Value_TrueUnfbin13->SetMarkerStyle(23);
+        Value_TrueUnfbin13->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin13->SetMarkerSize(0.6);
+        Value_TrueUnfbin13->GetXaxis()->SetTitle(asymlabel + " bin13 (true)");
+        Value_TrueUnfbin13->GetYaxis()->SetTitle(asymlabel + " bin13 (unfolded)");
+        Value_TrueUnfbin13->Draw("AP same");
+        //Value_TrueUnfbin13->Fit("pol1");
+        TFitResultPtr rVbin13 = Value_TrueUnfbin13->Fit("pol1", "S");
+        par1   = rVbin13->Parameter(1);
+        par0   = rVbin13->Parameter(0);
+        par1err   = rVbin13->ParError(1);
+        par0err   = rVbin13->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin13: " << par0 << " +/- " << par0err << " p1Vbin13: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(2);
+        Value_TrueUnfbin14->SetTitle(asymlabel);
+        Value_TrueUnfbin14->SetMarkerStyle(23);
+        Value_TrueUnfbin14->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin14->SetMarkerSize(0.6);
+        Value_TrueUnfbin14->GetXaxis()->SetTitle(asymlabel + " bin14 (true)");
+        Value_TrueUnfbin14->GetYaxis()->SetTitle(asymlabel + " bin14 (unfolded)");
+        Value_TrueUnfbin14->Draw("AP same");
+        //Value_TrueUnfbin14->Fit("pol1");
+        TFitResultPtr rVbin14 = Value_TrueUnfbin14->Fit("pol1", "S");
+        par1   = rVbin14->Parameter(1);
+        par0   = rVbin14->Parameter(0);
+        par1err   = rVbin14->ParError(1);
+        par0err   = rVbin14->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin14: " << par0 << " +/- " << par0err << " p1Vbin14: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(3);
+        Value_TrueUnfbin15->SetTitle(asymlabel);
+        Value_TrueUnfbin15->SetMarkerStyle(23);
+        Value_TrueUnfbin15->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin15->SetMarkerSize(0.6);
+        Value_TrueUnfbin15->GetXaxis()->SetTitle(asymlabel + " bin15 (true)");
+        Value_TrueUnfbin15->GetYaxis()->SetTitle(asymlabel + " bin15 (unfolded)");
+        Value_TrueUnfbin15->Draw("AP same");
+        //Value_TrueUnfbin15->Fit("pol1");
+        TFitResultPtr rVbin15 = Value_TrueUnfbin15->Fit("pol1", "S");
+        par1   = rVbin15->Parameter(1);
+        par0   = rVbin15->Parameter(0);
+        par1err   = rVbin15->ParError(1);
+        par0err   = rVbin15->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin15: " << par0 << " +/- " << par0err << " p1Vbin15: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(4);
+        Value_TrueUnfbin16->SetTitle(asymlabel);
+        Value_TrueUnfbin16->SetMarkerStyle(23);
+        Value_TrueUnfbin16->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin16->SetMarkerSize(0.6);
+        Value_TrueUnfbin16->GetXaxis()->SetTitle(asymlabel + " bin16 (true)");
+        Value_TrueUnfbin16->GetYaxis()->SetTitle(asymlabel + " bin16 (unfolded)");
+        Value_TrueUnfbin16->Draw("AP same");
+        //Value_TrueUnfbin16->Fit("pol1");
+        TFitResultPtr rVbin16 = Value_TrueUnfbin16->Fit("pol1", "S");
+        par1   = rVbin16->Parameter(1);
+        par0   = rVbin16->Parameter(0);
+        par1err   = rVbin16->ParError(1);
+        par0err   = rVbin16->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin16: " << par0 << " +/- " << par0err << " p1Vbin16: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(5);
+        Value_TrueUnfbin17->SetTitle(asymlabel);
+        Value_TrueUnfbin17->SetMarkerStyle(23);
+        Value_TrueUnfbin17->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin17->SetMarkerSize(0.6);
+        Value_TrueUnfbin17->GetXaxis()->SetTitle(asymlabel + " bin17 (true)");
+        Value_TrueUnfbin17->GetYaxis()->SetTitle(asymlabel + " bin17 (unfolded)");
+        Value_TrueUnfbin17->Draw("AP same");
+        //Value_TrueUnfbin17->Fit("pol1");
+        TFitResultPtr rVbin17 = Value_TrueUnfbin17->Fit("pol1", "S");
+        par1   = rVbin17->Parameter(1);
+        par0   = rVbin17->Parameter(0);
+        par1err   = rVbin17->ParError(1);
+        par0err   = rVbin17->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin17: " << par0 << " +/- " << par0err << " p1Vbin17: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->cd(6);
+        Value_TrueUnfbin18->SetTitle(asymlabel);
+        Value_TrueUnfbin18->SetMarkerStyle(23);
+        Value_TrueUnfbin18->SetMarkerColor(kGreen - 1);
+        Value_TrueUnfbin18->SetMarkerSize(0.6);
+        Value_TrueUnfbin18->GetXaxis()->SetTitle(asymlabel + " bin18 (true)");
+        Value_TrueUnfbin18->GetYaxis()->SetTitle(asymlabel + " bin18 (unfolded)");
+        Value_TrueUnfbin18->Draw("AP same");
+        //Value_TrueUnfbin18->Fit("pol1");
+        TFitResultPtr rVbin18 = Value_TrueUnfbin18->Fit("pol1", "S");
+        par1   = rVbin18->Parameter(1);
+        par0   = rVbin18->Parameter(0);
+        par1err   = rVbin18->ParError(1);
+        par0err   = rVbin18->ParError(0);
+        third_output_file << acceptanceName << " Linearity, f " << Nfunction << " p0Vbin18: " << par0 << " +/- " << par0err << " p1Vbin18: " << par1 << " +/- " << par1err <<  endl;
+
+        c_LinearityBinByBin->SaveAs(acceptanceName + "_LinearityCheck_binbybin.pdf");
+        c_LinearityBinByBin->SaveAs(acceptanceName + "_LinearityCheck_binbybin.C");
+
+
+
+
+
+
+
+
+
+
 
 
 
         TCanvas *c_Pull_lin = new TCanvas("c_Pull_lin", "c_Pull_lin", 500, 500);
-        c_Pull_lin->Divide(2, 2);
-        c_Pull_lin->cd(1);
+        if (!plot_inclusive_only) c_Pull_lin->Divide(2, 2);
+        if (!plot_inclusive_only) c_Pull_lin->cd(1);
         Asym2D_Pull->SetTitle(asymlabel);
         Asym2D_Pull->SetMarkerStyle(23);
         Asym2D_Pull->SetMarkerColor(kBlack);
         Asym2D_Pull->SetMarkerSize(0.6);
-        Asym2D_Pull->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive (true)");
-        Asym2D_Pull->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive pull");
+        Asym2D_Pull->GetXaxis()->SetTitle(asymlabel + " inclusive (true)");
+        Asym2D_Pull->GetYaxis()->SetTitle(asymlabel + " inclusive pull");
         Asym2D_Pull->Draw("AP same");
-        Asym2D_Pull->Fit("pol1");
+        //Asym2D_Pull->Fit("pol1");
+        TFitResultPtr rp = Asym2D_Pull->Fit("pol1", "S");
+        par1   = rp->Parameter(1);
+        par0   = rp->Parameter(0);
+        par1err   = rp->ParError(1);
+        par0err   = rp->ParError(0);
+        third_output_file << acceptanceName << " Pull, f " << Nfunction << " p0: " << par0 << " +/- " << par0err << " p1: " << par1 << " +/- " << par1err <<  endl;
 
-        c_Pull_lin->cd(2);
-        Asym2D_Pullbin1->SetTitle(asymlabel);
-        Asym2D_Pullbin1->SetMarkerStyle(23);
-        Asym2D_Pullbin1->SetMarkerColor(kBlue);
-        Asym2D_Pullbin1->SetMarkerSize(0.6);
-        Asym2D_Pullbin1->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 (true)");
-        Asym2D_Pullbin1->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 pull");
-        Asym2D_Pullbin1->Draw("AP same");
-        Asym2D_Pullbin1->Fit("pol1");
+        if (!plot_inclusive_only)
+        {
+            c_Pull_lin->cd(2);
+            Asym2D_Pullbin1->SetTitle(asymlabel);
+            Asym2D_Pullbin1->SetMarkerStyle(23);
+            Asym2D_Pullbin1->SetMarkerColor(kBlue);
+            Asym2D_Pullbin1->SetMarkerSize(0.6);
+            Asym2D_Pullbin1->GetXaxis()->SetTitle(yaxislabel + " bin 1 (true)");
+            Asym2D_Pullbin1->GetYaxis()->SetTitle(yaxislabel + " bin 1 pull");
+            Asym2D_Pullbin1->Draw("AP same");
+            //Asym2D_Pullbin1->Fit("pol1");
+            TFitResultPtr rpbin1 = Asym2D_Pullbin1->Fit("pol1", "S");
+            par1   = rpbin1->Parameter(1);
+            par0   = rpbin1->Parameter(0);
+            par1err   = rpbin1->ParError(1);
+            par0err   = rpbin1->ParError(0);
+            third_output_file << acceptanceName << " Pull, f " << Nfunction << " p0bin1: " << par0 << " +/- " << par0err << " p1bin1: " << par1 << " +/- " << par1err <<  endl;
 
-        c_Pull_lin->cd(3);
-        Asym2D_Pullbin2->SetTitle(asymlabel);
-        Asym2D_Pullbin2->SetMarkerStyle(23);
-        Asym2D_Pullbin2->SetMarkerColor(kBlue);
-        Asym2D_Pullbin2->SetMarkerSize(0.6);
-        Asym2D_Pullbin2->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 (true)");
-        Asym2D_Pullbin2->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 pull");
-        Asym2D_Pullbin2->Draw("AP same");
-        Asym2D_Pullbin2->Fit("pol1");
+            c_Pull_lin->cd(3);
+            Asym2D_Pullbin2->SetTitle(asymlabel);
+            Asym2D_Pullbin2->SetMarkerStyle(23);
+            Asym2D_Pullbin2->SetMarkerColor(kBlue);
+            Asym2D_Pullbin2->SetMarkerSize(0.6);
+            Asym2D_Pullbin2->GetXaxis()->SetTitle(yaxislabel + " bin 2 (true)");
+            Asym2D_Pullbin2->GetYaxis()->SetTitle(yaxislabel + " bin 2 pull");
+            Asym2D_Pullbin2->Draw("AP same");
+            //Asym2D_Pullbin2->Fit("pol1");
+            TFitResultPtr rpbin2 = Asym2D_Pullbin2->Fit("pol1", "S");
+            par1   = rpbin2->Parameter(1);
+            par0   = rpbin2->Parameter(0);
+            par1err   = rpbin2->ParError(1);
+            par0err   = rpbin2->ParError(0);
+            third_output_file << acceptanceName << " Pull, f " << Nfunction << " p0bin2: " << par0 << " +/- " << par0err << " p1bin2: " << par1 << " +/- " << par1err <<  endl;
 
-        c_Pull_lin->cd(4);
-        Asym2D_Pullbin3->SetTitle(asymlabel);
-        Asym2D_Pullbin3->SetMarkerStyle(23);
-        Asym2D_Pullbin3->SetMarkerColor(kBlue);
-        Asym2D_Pullbin3->SetMarkerSize(0.6);
-        Asym2D_Pullbin3->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 (true)");
-        Asym2D_Pullbin3->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 pull");
-        Asym2D_Pullbin3->Draw("AP same");
-        Asym2D_Pullbin3->Fit("pol1");
+            c_Pull_lin->cd(4);
+            Asym2D_Pullbin3->SetTitle(asymlabel);
+            Asym2D_Pullbin3->SetMarkerStyle(23);
+            Asym2D_Pullbin3->SetMarkerColor(kBlue);
+            Asym2D_Pullbin3->SetMarkerSize(0.6);
+            Asym2D_Pullbin3->GetXaxis()->SetTitle(yaxislabel + " bin 3 (true)");
+            Asym2D_Pullbin3->GetYaxis()->SetTitle(yaxislabel + " bin 3 pull");
+            Asym2D_Pullbin3->Draw("AP same");
+            //Asym2D_Pullbin3->Fit("pol1");
+            TFitResultPtr rpbin3 = Asym2D_Pullbin3->Fit("pol1", "S");
+            par1   = rpbin3->Parameter(1);
+            par0   = rpbin3->Parameter(0);
+            par1err   = rpbin3->ParError(1);
+            par0err   = rpbin3->ParError(0);
+            third_output_file << acceptanceName << " Pull, f " << Nfunction << " p0bin3: " << par0 << " +/- " << par0err << " p1bin3: " << par1 << " +/- " << par1err <<  endl;
+        }
 
-        c_Pull_lin->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck_Pull.pdf");
-        c_Pull_lin->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck_Pull.C");
+        c_Pull_lin->SaveAs(acceptanceName + "_LinearityCheck_Pull.pdf");
+        c_Pull_lin->SaveAs(acceptanceName + "_LinearityCheck_Pull.C");
 
 
 
 
         TCanvas *c_PullWidth_lin = new TCanvas("c_PullWidth_lin", "c_PullWidth_lin", 500, 500);
-        c_PullWidth_lin->Divide(2, 2);
-        c_PullWidth_lin->cd(1);
+        if (!plot_inclusive_only) c_PullWidth_lin->Divide(2, 2);
+        if (!plot_inclusive_only) c_PullWidth_lin->cd(1);
         Asym2D_PullWidth->SetTitle(asymlabel);
         Asym2D_PullWidth->SetMarkerStyle(23);
         Asym2D_PullWidth->SetMarkerColor(kBlack);
         Asym2D_PullWidth->SetMarkerSize(0.6);
-        Asym2D_PullWidth->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive (true)");
-        Asym2D_PullWidth->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive pull width");
+        Asym2D_PullWidth->GetXaxis()->SetTitle(Var2D + " inclusive (true)");
+        Asym2D_PullWidth->GetYaxis()->SetTitle(Var2D + " inclusive pull width");
         Asym2D_PullWidth->Draw("AP same");
-        Asym2D_PullWidth->Fit("pol1");
+        //Asym2D_PullWidth->Fit("pol1");
+        TFitResultPtr rpw = Asym2D_PullWidth->Fit("pol1", "S");
+        par1   = rpw->Parameter(1);
+        par0   = rpw->Parameter(0);
+        par1err   = rpw->ParError(1);
+        par0err   = rpw->ParError(0);
+        third_output_file << acceptanceName << " PullWidth, f " << Nfunction << " p0: " << par0 << " +/- " << par0err << " p1: " << par1 << " +/- " << par1err <<  endl;
 
-        c_PullWidth_lin->cd(2);
-        Asym2D_PullWidthbin1->SetTitle(asymlabel);
-        Asym2D_PullWidthbin1->SetMarkerStyle(23);
-        Asym2D_PullWidthbin1->SetMarkerColor(kBlue);
-        Asym2D_PullWidthbin1->SetMarkerSize(0.6);
-        Asym2D_PullWidthbin1->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 (true)");
-        Asym2D_PullWidthbin1->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 pull width");
-        Asym2D_PullWidthbin1->Draw("AP same");
-        Asym2D_PullWidthbin1->Fit("pol1");
+        if (!plot_inclusive_only)
+        {
+            c_PullWidth_lin->cd(2);
+            Asym2D_PullWidthbin1->SetTitle(asymlabel);
+            Asym2D_PullWidthbin1->SetMarkerStyle(23);
+            Asym2D_PullWidthbin1->SetMarkerColor(kBlue);
+            Asym2D_PullWidthbin1->SetMarkerSize(0.6);
+            Asym2D_PullWidthbin1->GetXaxis()->SetTitle(yaxislabel + " bin 1 (true)");
+            Asym2D_PullWidthbin1->GetYaxis()->SetTitle(yaxislabel + " bin 1 pull width");
+            Asym2D_PullWidthbin1->Draw("AP same");
+            //Asym2D_PullWidthbin1->Fit("pol1");
+            TFitResultPtr rpwbin1 = Asym2D_PullWidthbin1->Fit("pol1", "S");
+            par1   = rpwbin1->Parameter(1);
+            par0   = rpwbin1->Parameter(0);
+            par1err   = rpwbin1->ParError(1);
+            par0err   = rpwbin1->ParError(0);
+            third_output_file << acceptanceName << " PullWidth, f " << Nfunction << " p0bin1: " << par0 << " +/- " << par0err << " p1bin1: " << par1 << " +/- " << par1err <<  endl;
 
-        c_PullWidth_lin->cd(3);
-        Asym2D_PullWidthbin2->SetTitle(asymlabel);
-        Asym2D_PullWidthbin2->SetMarkerStyle(23);
-        Asym2D_PullWidthbin2->SetMarkerColor(kBlue);
-        Asym2D_PullWidthbin2->SetMarkerSize(0.6);
-        Asym2D_PullWidthbin2->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 (true)");
-        Asym2D_PullWidthbin2->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 pull width");
-        Asym2D_PullWidthbin2->Draw("AP same");
-        Asym2D_PullWidthbin2->Fit("pol1");
+            c_PullWidth_lin->cd(3);
+            Asym2D_PullWidthbin2->SetTitle(asymlabel);
+            Asym2D_PullWidthbin2->SetMarkerStyle(23);
+            Asym2D_PullWidthbin2->SetMarkerColor(kBlue);
+            Asym2D_PullWidthbin2->SetMarkerSize(0.6);
+            Asym2D_PullWidthbin2->GetXaxis()->SetTitle(yaxislabel + " bin 2 (true)");
+            Asym2D_PullWidthbin2->GetYaxis()->SetTitle(yaxislabel + " bin 2 pull width");
+            Asym2D_PullWidthbin2->Draw("AP same");
+            //Asym2D_PullWidthbin2->Fit("pol1");
+            TFitResultPtr rpwbin2 = Asym2D_PullWidthbin2->Fit("pol1", "S");
+            par1   = rpwbin2->Parameter(1);
+            par0   = rpwbin2->Parameter(0);
+            par1err   = rpwbin2->ParError(1);
+            par0err   = rpwbin2->ParError(0);
+            third_output_file << acceptanceName << " PullWidth, f " << Nfunction << " p0bin2: " << par0 << " +/- " << par0err << " p1bin2: " << par1 << " +/- " << par1err <<  endl;
 
-        c_PullWidth_lin->cd(4);
-        Asym2D_PullWidthbin3->SetTitle(asymlabel);
-        Asym2D_PullWidthbin3->SetMarkerStyle(23);
-        Asym2D_PullWidthbin3->SetMarkerColor(kBlue);
-        Asym2D_PullWidthbin3->SetMarkerSize(0.6);
-        Asym2D_PullWidthbin3->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 (true)");
-        Asym2D_PullWidthbin3->GetYaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 pull width");
-        Asym2D_PullWidthbin3->Draw("AP same");
-        Asym2D_PullWidthbin3->Fit("pol1");
+            c_PullWidth_lin->cd(4);
+            Asym2D_PullWidthbin3->SetTitle(asymlabel);
+            Asym2D_PullWidthbin3->SetMarkerStyle(23);
+            Asym2D_PullWidthbin3->SetMarkerColor(kBlue);
+            Asym2D_PullWidthbin3->SetMarkerSize(0.6);
+            Asym2D_PullWidthbin3->GetXaxis()->SetTitle(yaxislabel + " bin 3 (true)");
+            Asym2D_PullWidthbin3->GetYaxis()->SetTitle(yaxislabel + " bin 3 pull width");
+            Asym2D_PullWidthbin3->Draw("AP same");
+            //Asym2D_PullWidthbin3->Fit("pol1");
+            TFitResultPtr rpwbin3 = Asym2D_PullWidthbin3->Fit("pol1", "S");
+            par1   = rpwbin3->Parameter(1);
+            par0   = rpwbin3->Parameter(0);
+            par1err   = rpwbin3->ParError(1);
+            par0err   = rpwbin3->ParError(0);
+            third_output_file << acceptanceName << " PullWidth, f " << Nfunction << " p0bin3: " << par0 << " +/- " << par0err << " p1bin3: " << par1 << " +/- " << par1err <<  endl;
+        }
 
-        c_PullWidth_lin->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck_PullWidth.pdf");
-        c_PullWidth_lin->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck_PullWidth.C");
+        c_PullWidth_lin->SaveAs(acceptanceName + "_LinearityCheck_PullWidth.pdf");
+        c_PullWidth_lin->SaveAs(acceptanceName + "_LinearityCheck_PullWidth.C");
 
 
         gStyle->SetOptStat(0);
@@ -654,13 +1693,13 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
         hTrue_before->SetMinimum(0);
         hTrue_before->SetMaximum(1.3 * hTrue_before->GetMaximum());
         hTrue_before->SetFillStyle(0);
-        hTrue_before->GetXaxis()->SetTitle(yaxislabel + " #times sign(" + xaxislabel + ")");
+        hTrue_before->GetXaxis()->SetTitle(xaxislabel);
         hTrue_before->GetYaxis()->SetTitle("Number of events");
         hTrue_before->Draw("hist");
         hMeas_before->SetLineColor(TColor::GetColorDark(kBlue));
         hMeas_before->SetLineWidth(1);
         hMeas_before->SetFillStyle(0);
-        hMeas_before->GetXaxis()->SetTitle(yaxislabel + " #times sign(" + xaxislabel + ")");
+        hMeas_before->GetXaxis()->SetTitle(xaxislabel);
         hMeas_before->GetYaxis()->SetTitle("Number of events");
         hMeas_before->Draw("hist same");
 
@@ -676,11 +1715,15 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
         leg1->Draw();
 
 
+
         for (int k = 0; k < Nlin; ++k)
         {
             slope = -0.3 + 0.1 * k;
+            fx_scaled->SetParameters(slope, fscale);
             if (fabs(slope) < 0.001) slope = 0;
-            TString slope_temp = formatFloat(slope, "%6.1f");
+            // TString slope_temp = formatFloat(slope, "%6.1f");
+			sprintf( tmpchar, "%6.1f", slope );
+			TString slope_temp(tmpchar);
             slope_temp.ReplaceAll(" " , "" );
             c_asymdist_lin->cd(k + 2);
             hTrue_after_array[k]->SetLineColor(TColor::GetColorDark(kRed));
@@ -688,17 +1731,19 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
             hTrue_after_array[k]->SetMinimum(0);
             hTrue_after_array[k]->SetMaximum(1.3 * hTrue_after_array[k]->GetMaximum());
             hTrue_after_array[k]->SetFillStyle(0);
-            hTrue_after_array[k]->GetXaxis()->SetTitle(yaxislabel + " #times sign(" + xaxislabel + "), slope = " + slope_temp);
+            hTrue_after_array[k]->GetXaxis()->SetTitle(xaxislabel + ", slope = " + slope_temp);
             hTrue_after_array[k]->GetYaxis()->SetTitle("Number of events");
             hTrue_after_array[k]->Draw("hist");
             hMeas_after_array[k]->SetLineColor(TColor::GetColorDark(kBlue));
             hMeas_after_array[k]->SetLineWidth(1);
             hMeas_after_array[k]->SetFillStyle(0);
-            hMeas_after_array[k]->GetXaxis()->SetTitle(yaxislabel + " #times sign(" + xaxislabel + "), slope = " + slope_temp);
+            hMeas_after_array[k]->GetXaxis()->SetTitle(xaxislabel + ", slope = " + slope_temp);
             hMeas_after_array[k]->GetYaxis()->SetTitle("Number of events");
             hMeas_after_array[k]->Draw("hist same");
+            fx_scaled->SetLineColor(TColor::GetColorDark(kGreen));
+            fx_scaled->DrawCopy("LSAME");
 
-            TPaveText *pt1 = new TPaveText(0.65, 0.76, 0.90, 0.93, "brNDC");
+            TPaveText *pt1 = new TPaveText(0.20, 0.80, 0.45, 0.93, "brNDC");
             pt1->SetName("pt1name");
             pt1->SetBorderSize(0);
             pt1->SetFillStyle(0);
@@ -708,7 +1753,9 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
             Float_t Afb, AfbErr;
             GetAfb(hTrue_after_array[k], Afb, AfbErr);
 
-            TString Asym1_temp = formatFloat(Afb, "%6.2f");
+            // TString Asym1_temp = formatFloat(Afb, "%6.2f");
+			sprintf( tmpchar, "%6.2f", Afb );
+			TString Asym1_temp(tmpchar);
             Asym1_temp.ReplaceAll(" " , "" );
             Asym1_temp = TString(" Asym (gen): ") +  Asym1_temp;
             blah = pt1->AddText(Asym1_temp.Data());
@@ -718,7 +1765,9 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
 
             GetAfb(hMeas_after_array[k], Afb, AfbErr);
 
-            TString Asym2_temp = formatFloat(Afb, "%6.2f");
+            // TString Asym2_temp = formatFloat(Afb, "%6.2f");
+			sprintf( tmpchar, "%6.2f", Afb );
+			TString Asym2_temp(tmpchar);
             Asym2_temp.ReplaceAll(" " , "" );
             Asym2_temp = TString(" Asym (reco): ") +  Asym2_temp;
             blah = pt1->AddText(Asym2_temp.Data());
@@ -728,80 +1777,99 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Pull", TString Var2D =
 
             pt1->Draw();
 
+            TLegend *leg2 = new TLegend(0.70, 0.84, 0.9, 0.93, NULL, "brNDC");
+            leg2->SetEntrySeparation(0.1);
+            leg2->SetFillColor(0);
+            leg2->SetLineColor(0);
+            leg2->SetBorderSize(0);
+            leg2->SetFillStyle(0);
+            leg2->SetTextSize(0.03);
+            leg2->AddEntry(fx_scaled,    "weight function",  "L");
+            leg2->Draw();
+
         }
 
-        c_asymdist_lin->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck_AsymDists.pdf");
-        c_asymdist_lin->SaveAs(acceptanceName + "_" + Var2D + "_LinearityCheck_AsymDists.C");
-
+        c_asymdist_lin->SaveAs(acceptanceName + "_LinearityCheck_AsymDists.pdf");
+        c_asymdist_lin->SaveAs(acceptanceName + "_LinearityCheck_AsymDists.C");
 
 
     }
     else
     {
+
+
         TCanvas *c_pull = new TCanvas("c_pull", "c_pull", 500, 500);
-        c_pull->Divide(2, 2);
-        c_pull->cd(1);
-        AfbPull->SetMarkerStyle(23);
-        AfbPull->SetMarkerColor(kBlack);
-        AfbPull->SetMarkerSize(0.6);
-        AfbPull->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " inclusive pull");
-        AfbPull->GetYaxis()->SetTitle("Number of PEs / 0.2");
-        AfbPull ->Fit("gaus");
-        AfbPull ->Draw();
+        if (!plot_inclusive_only) c_pull->Divide(2, 2);
+        if (!plot_inclusive_only) c_pull->cd(1);
+        AfbPull[0]->SetMarkerStyle(23);
+        AfbPull[0]->SetMarkerColor(kBlack);
+        AfbPull[0]->SetMarkerSize(0.6);
+        AfbPull[0]->GetXaxis()->SetTitle(asymlabel + " inclusive pull");
+        AfbPull[0]->GetYaxis()->SetTitle("Number of PEs / 0.2");
+        AfbPull[0]->Fit("gaus");
+        AfbPull[0]->Draw();
 
-        c_pull->cd(2);
-        Afb2DPullBin1->SetMarkerStyle(23);
-        Afb2DPullBin1->SetMarkerColor(kBlue);
-        Afb2DPullBin1->SetMarkerSize(0.6);
-        Afb2DPullBin1->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 1 pull");
-        Afb2DPullBin1->GetYaxis()->SetTitle("Number of PEs / 0.2");
-        Afb2DPullBin1 ->Fit("gaus");
-        Afb2DPullBin1 ->Draw();
+        if (!plot_inclusive_only)
+        {
+            c_pull->cd(2);
+            AfbPull[1]->SetMarkerStyle(23);
+            AfbPull[1]->SetMarkerColor(kBlue);
+            AfbPull[1]->SetMarkerSize(0.6);
+            AfbPull[1]->GetXaxis()->SetTitle(yaxislabel + " bin 1 pull");
+            AfbPull[1]->GetYaxis()->SetTitle("Number of PEs / 0.2");
+            AfbPull[1]->Fit("gaus");
+            AfbPull[1]->Draw();
 
-        c_pull->cd(3);
-        Afb2DPullBin2->SetMarkerStyle(23);
-        Afb2DPullBin2->SetMarkerColor(kBlue);
-        Afb2DPullBin2->SetMarkerSize(0.6);
-        Afb2DPullBin2->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 2 pull");
-        Afb2DPullBin2->GetYaxis()->SetTitle("Number of PEs / 0.2");
-        Afb2DPullBin2 ->Fit("gaus");
-        Afb2DPullBin2 ->Draw();
+            c_pull->cd(3);
+            AfbPull[2]->SetMarkerStyle(23);
+            AfbPull[2]->SetMarkerColor(kBlue);
+            AfbPull[2]->SetMarkerSize(0.6);
+            AfbPull[2]->GetXaxis()->SetTitle(yaxislabel + " bin 2 pull");
+            AfbPull[2]->GetYaxis()->SetTitle("Number of PEs / 0.2");
+            AfbPull[2]->Fit("gaus");
+            AfbPull[2]->Draw();
 
-        c_pull->cd(4);
-        Afb2DPullBin3->SetMarkerStyle(23);
-        Afb2DPullBin3->SetMarkerColor(kBlue);
-        Afb2DPullBin3->SetMarkerSize(0.6);
-        Afb2DPullBin3->GetXaxis()->SetTitle(asymlabel + " vs. " + yaxislabel + " bin 3 pull");
-        Afb2DPullBin3->GetYaxis()->SetTitle("Number of PEs / 0.2");
-        Afb2DPullBin3 ->Fit("gaus");
-        Afb2DPullBin3 ->Draw();
+            c_pull->cd(4);
+            AfbPull[3]->SetMarkerStyle(23);
+            AfbPull[3]->SetMarkerColor(kBlue);
+            AfbPull[3]->SetMarkerSize(0.6);
+            AfbPull[3]->GetXaxis()->SetTitle(yaxislabel + " bin 3 pull");
+            AfbPull[3]->GetYaxis()->SetTitle("Number of PEs / 0.2");
+            AfbPull[3]->Fit("gaus");
+            AfbPull[3]->Draw();
+        }
 
-        c_pull->SaveAs(acceptanceName + "_" + Var2D + "_Pull.pdf");
-        c_pull->SaveAs(acceptanceName + "_" + Var2D + "_Pull.C");
+        c_pull->SaveAs(acceptanceName + "_Pull.pdf");
+        c_pull->SaveAs(acceptanceName + "_Pull.C");
 
 
-
-        TFile *plots = new TFile(acceptanceName + "_" + Var2D + "_plots.root", "RECREATE");
+		
+        // TFile *plots = new TFile(acceptanceName + "_plots.root", "RECREATE");
+		/*
         for (int i = 0; i < nbins2D; i++)
         {
             h_pulls[i] ->Write();
             h_resd[i] ->Write();
         }
-        AfbPull ->Write();
-        Afb2DPullBin1 ->Write();
-        Afb2DPullBin2 ->Write();
-        Afb2DPullBin3 ->Write();
+		*/
+        AfbPull[0]->Write();
+        AfbPull[1]->Write();
+        AfbPull[2]->Write();
+        AfbPull[3]->Write();
 
     }
 
     //myfile.close();
+    //second_output_file.close();
+    third_output_file.close();
 
+	//delete[] AfbPull;
 }
 
 #ifndef __CINT__
 int main ()
 {
-    AfbUnfoldLinearityTest();    // Main program when run stand-alone
+    AfbUnfoldTests();    // Main program when run stand-alone
     return 0;
 }
 #endif
