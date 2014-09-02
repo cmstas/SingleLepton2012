@@ -535,7 +535,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			  }
 		  }
 
-		// Generate a curve of rhoAvg vs log(tau)
+		// Generate a curve of rhoAvg vs tau
 		double ar_tau[90];
 		double ar_rhoAvg[90];
 		double tau_test = 0.0;
