@@ -50,8 +50,8 @@ TF1 *fx;
 Double_t myfunction(Double_t * x, Double_t * par)
 {
   Float_t xx = x[0];
-  Float_t ac = (xmax + xmin) / 2.;
-  Double_t fscaled = par[1] * ( 1. + sign(xx - ac) * par[0] * ( fx->Eval( fabs( (xx - ac) / (xmax - ac) ) ) ) ) ;
+  Float_t ac = (xmax1D + xmin1D) / 2.;
+  Double_t fscaled = par[1] * ( 1. + sign(xx - ac) * par[0] * ( fx->Eval( fabs( (xx - ac) / (xmax1D - ac) ) ) ) ) ;
   return fscaled;
 }
 
@@ -165,10 +165,10 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     random->SetSeed(5);
 
 
-    double asym_centre = (xmax + xmin) / 2.;
+    double asym_centre = (xmax1D + xmin1D) / 2.;
 
 
-    TF1 *fx_scaled = new TF1("fx_scaled", myfunction, xmin, xmax, 2);
+    TF1 *fx_scaled = new TF1("fx_scaled", myfunction, xmin1D, xmax1D, 2);
     //fx_scaled->SetParameters(0.3,30);
     //fx_scaled->Eval(0.5);
     //cout<<"***** "<<fx_scaled->Eval(0.5)<<endl;
@@ -393,7 +393,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			if( observableMinus_gen > histmax )        observableMinus_gen = hiBinCenter;
 			else if( observableMinus_gen < histmin )   observableMinus_gen = loBinCenter;
 
-            double xval = (observable_gen - asym_centre) / fabs(xmax - asym_centre);
+            double xval = (observable_gen - asym_centre) / fabs(xmax1D - asym_centre);
             double xsign = sign(xval);
             //restrict range from -1 to +1
             if ( fabs(xval) > 1. ) xval = xsign;
@@ -403,7 +403,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
             if ( combineLepMinus )
             {
-                xminusval = (observableMinus_gen - asym_centre) / fabs(xmax - asym_centre);
+                xminusval = (observableMinus_gen - asym_centre) / fabs(xmax1D - asym_centre);
                 xminussign = sign(xminusval);
                 //restrict range from -1 to +1
                 if ( fabs(xminusval) > 1. ) xminusval = xminussign;
@@ -479,7 +479,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		  TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 		  unfold_FindTau.SetInput(hMeas_before);
-		  minimizeRhoAverage(&unfold_FindTau, hMeas_before, -6.0, -1.0);
+		  minimizeRhoAverage(&unfold_FindTau, hMeas_before, -7.0, -2.0);
 		  tau = unfold_FindTau.GetTau();
 
 		  // Generate a curve of rhoAvg vs tau
@@ -489,7 +489,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  double bestrhoavg = unfold_FindTau.GetRhoAvg();
 
 		  for(int l=0; l<100; l++) {
-			tau_test = pow( 10, -6.0 + 0.05*l );
+			tau_test = pow( 10, -7.0 + 0.05*l );
 			unfold_FindTau.DoUnfold(tau_test, hMeas_before, scaleBias);
 			ar_tau[l] = tau_test;
 			ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
