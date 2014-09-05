@@ -228,53 +228,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			//Do the same thing as "fillUnderOverflow", except adapted for 3x1 histograms
 			if( observable > histmax )        observable = hiBinCenter;
 			else if( observable < histmin )   observable = loBinCenter;
+			if( observableMinus > histmax )        observableMinus = hiBinCenter;
+			else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
-
-            // if ( (Region=="Signal") && (ttmass>450) ) {
-            //   fillUnderOverFlow(hData, observable, weight, Nsolns);
-            // } else if (Region=="") {
-            if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
+            if ( iVar<2 || iVar==9 || tmass>0 )
             {
                 // leptonic asymmetries don't need valid top mass solution
                 fillUnderOverFlow(hData, observable+offset, weight, Nsolns);
                 fillUnderOverFlow(hData_combined, observable, weight, Nsolns);
-            }
-            else
-            {
-                if ( ttmass > 0 )
-                {
-                    // asymmetries with top properties are required to have a valid top mass solution
-                    fillUnderOverFlow(hData, observable+offset, weight, Nsolns);
-                    fillUnderOverFlow(hData_combined, observable, weight, Nsolns);
-                }
-            }
-            // }
-
-            if (combineLepMinus)
-            {
-			  if( observableMinus > histmax )        observableMinus = hiBinCenter;
-			  else if( observableMinus < histmin )   observableMinus = loBinCenter;
-                // combine plus and minus
-                // if ( (Region=="Signal") && (ttmass>450) ) {
-                //   fillUnderOverFlow(hData, observable, weight, Nsolns);
-                // } else if (Region=="") {
-                if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
-                {
-                    // leptonic asymmetries don't need valid top mass solution
+				if (combineLepMinus)
+				  {
                     fillUnderOverFlow(hData, observableMinus+offset, weight, Nsolns);
                     fillUnderOverFlow(hData_combined, observableMinus, weight, Nsolns);
-                }
-                else
-                {
-                    if ( ttmass > 0 )
-                    {
-                        // asymmetries with top properties are required to have a valid top mass solution
-                        fillUnderOverFlow(hData, observableMinus+offset, weight, Nsolns);
-                        fillUnderOverFlow(hData_combined, observableMinus, weight, Nsolns);
-                    }
-                }
-                // }
+				  }
             }
+
         }
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
@@ -298,48 +266,16 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 				offset = double(channel) * recohist_width;
 				if( observable > histmax )        observable = hiBinCenter;
 				else if( observable < histmin )   observable = loBinCenter;
+				if( observableMinus > histmax )        observableMinus = hiBinCenter;
+				else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
-                // if ( (Region=="Signal") && (ttmass>450) ) {
-                //   fillUnderOverFlow(hBkg, observable, weight, Nsolns);
-                // } else if (Region=="") {
-                if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
+                if ( iVar<2 || iVar==9 || tmass > 0 )
                 {
-                    // leptonic asymmetries don't need valid top mass solution
-                    fillUnderOverFlow(hBkg, observable+offset, weight, Nsolns);
+				  // leptonic asymmetries don't need valid top mass solution
+				  fillUnderOverFlow(hBkg, observable+offset, weight, Nsolns);
+				  if (combineLepMinus) fillUnderOverFlow(hBkg, observableMinus+offset, weight, Nsolns);
                 }
-                else
-                {
-                    if ( ttmass > 0 )
-                    {
-                        // asymmetries with top properties are required to have a valid top mass solution
-                        fillUnderOverFlow(hBkg, observable+offset, weight, Nsolns);
-                    }
-                }
-                // }
-                if (combineLepMinus)
-                {
-				  if( observableMinus > histmax )        observableMinus = hiBinCenter;
-				  else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
-                    // combine plus and minus
-                    // if ( (Region=="Signal") && (ttmass>450) ) {
-                    //   fillUnderOverFlow(hBkg, observable, weight, Nsolns);
-                    // } else if (Region=="") {
-                    if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
-                    {
-                        // leptonic asymmetries don't need valid top mass solution
-                        fillUnderOverFlow(hBkg, observableMinus+offset, weight, Nsolns);
-                    }
-                    else
-                    {
-                        if ( ttmass > 0 )
-                        {
-                            // asymmetries with top properties are required to have a valid top mass solution
-                            fillUnderOverFlow(hBkg, observableMinus+offset, weight, Nsolns);
-                        }
-                    }
-                    // }
-                }
             }
 
         }
@@ -369,21 +305,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			if( observableMinus_gen > histmax )        observableMinus_gen = hiBinCenter;
 			else if( observableMinus_gen < histmin )   observableMinus_gen = loBinCenter;
             weight *= scalettdil;
-            // if ( (Region=="Signal") && (ttmass>450) ) {
-            // fillUnderOverFlow(hMeas, observable, weight, Nsolns);
-            // fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
-            // fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
-            // if( combineLepMinus ) {
-            // //response.Fill (observableMinus, observableMinus_gen, weight);
-            // fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
-            // fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
-            // fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
-            // }
-            // } else if (Region=="") {
-
 
             // if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
-            if ( iVar<2 || iVar==9 || ttmass>0 )
+            if ( iVar<2 || iVar==9 || tmass>0 )
             {
                 //response.Fill (observable, observable_gen, weight);
                 fillUnderOverFlow(hMeas, observable+offset, weight, Nsolns);

@@ -289,7 +289,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	  if( observableMinus > histmax )        observableMinus = hiBinCenter;
 	  else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
-	  if ( iVar<2 || iVar==9 || ttmass > 0 ) {
+	  if ( iVar<2 || iVar==9 || tmass > 0 ) {
 		fillUnderOverFlow(hBkg, observable+offset, weight, Nsolns);
 		if (combineLepMinus)  fillUnderOverFlow(hBkg, observableMinus+offset, weight, Nsolns);
 	  }
@@ -412,7 +412,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
             //if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
 
-            if ( iVar<2 || iVar==9 || ttmass > 0 )
+            if ( iVar<2 || iVar==9 || tmass > 0 )
             {
 			  fillUnderOverFlow(hMeas_before, observable+offset, weight, Nsolns);
 			  fillUnderOverFlow(hTrue_before, observable_gen, weight, Nsolns);
