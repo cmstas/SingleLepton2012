@@ -428,20 +428,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
 		}
 
-		//Drawing for debugging purposes only.
-		// Migration matrix
-		gStyle->SetPadRightMargin(0.17);
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1650, 600);
-        TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
-        gStyle->SetPalette(1);
-		hResp->SetTitle("Migration matrix");
-        hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
-        hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
-        hResp->Draw("COLZ");
-        c_resp->SetLogz();
-        c_resp->SaveAs("2D_Response_" + acceptanceName + "_" + Var2D + ".pdf");
-		//Drawing for debugging purposes only.
-
 
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////// 3. Perform the unfolding procedure ////////////////////////////////////
@@ -588,15 +574,15 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		c1->SaveAs("2D_data_comparison_"+acceptanceName+"_"+Var2D+".pdf");
 
 		// Migration matrix
-        // TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 650, 600);
-        // TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
-        // gStyle->SetPalette(1);
-		// hResp->SetTitle("Migration matrix");
-        // hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
-        // hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
-        // hResp->Draw("COLZ");
-        // c_resp->SetLogz();
-        // c_resp->SaveAs("2D_Response_" + acceptanceName + "_" + Var2D + ".pdf");
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 650, 600);
+        TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
+        gStyle->SetPalette(1);
+		hResp->SetTitle("Migration matrix");
+        hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
+        hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
+        hResp->Draw("COLZ");
+        c_resp->SetLogz();
+        c_resp->SaveAs("2D_Response_" + acceptanceName + "_" + Var2D + ".pdf");
 
 		gStyle->SetPadRightMargin(rmargin);
 
