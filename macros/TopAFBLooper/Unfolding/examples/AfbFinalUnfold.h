@@ -1552,6 +1552,29 @@ void unwrap2dhisto(TH2* h2, TH1* h1)
 }
 
 
+void unwrap2dhisto_3ch(TH2* h2, TH1* h1)
+{
+  int n=0;
+  int bins_per_channel = h2->GetNbinsX()/3;
+  int x_3ch = -99;
+
+  for(int channel=0; channel<3; channel++)
+	{
+	  for(int y=1; y<=h2->GetNbinsY(); y++)
+		{
+		  for(int x=1; x<=bins_per_channel; x++)
+			{
+			  n++;
+			  x_3ch = x + (channel*bins_per_channel);
+			  h1->SetBinContent(n, h2->GetBinContent(x_3ch,y));
+			  h1->SetBinError(n, h2->GetBinError(x_3ch,y));
+			}
+		}
+	}
+
+}
+
+
 void rewrap1dhisto(TH1* h1, TH2* h2)
 {
   int n=0;
@@ -1568,6 +1591,27 @@ void rewrap1dhisto(TH1* h1, TH2* h2)
 
 }
 
+void rewrap1dhisto_3ch(TH1* h1, TH2* h2)
+{
+  int n=0;
+  int bins_per_channel = h2->GetNbinsX()/3;
+  int x_3ch = -99;
+
+  for(int channel=0; channel<3; channel++)
+	{
+	  for(int y=1; y<=h2->GetNbinsY(); y++)
+		{
+		  for(int x=1; x<=bins_per_channel; x++)
+			{
+			  n++;
+			  x_3ch = x + (channel*bins_per_channel);
+			  h2->SetBinContent(x_3ch, y, h1->GetBinContent(n));
+			  h2->SetBinError(x_3ch, y, h1->GetBinError(n));
+			}
+		}
+	}
+
+}
 
 // The following is also copied from the KIT group code
 double scaleBias = -99.9;

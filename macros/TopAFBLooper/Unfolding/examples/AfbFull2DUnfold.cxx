@@ -33,7 +33,6 @@ using std::endl;
 //const Double_t _topScalingFactor=1.+(9824. - 10070.94)/9344.25;  //needs to be changed from preselection ratio to ratio for events with a ttbar solution
 
 
-TString Region = "";
 Int_t kterm = 3;  //note we used 4 here for ICHEP
 Double_t tau = 3E-2;
 Int_t nVars = 8;
@@ -44,6 +43,8 @@ bool draw_truth_before_pT_reweighting = false;
 
 void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalettotr = 1., double scalewjets = 1., double scaleDY = 1., double scaletw = 1., double scaleVV = 1.)
 {
+    TH1::SetDefaultSumw2();
+
     setTDRStyle();
     gStyle->SetOptFit();
     gStyle->SetOptStat(0);
@@ -82,20 +83,17 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
     double bkgSF[nBkg] = {scalettotr, scalewjets, scaleDY, scaleDY, scaleDY, scaletw, scaleVV};
 
-    Float_t asymVar, asymVar_gen, tmass; //"asymVar" formerly known as "observable"
-    Float_t asymVarMinus, asymVarMinus_gen;
-    Float_t obs2D, obs2D_gen; //Note: change the name of obs2D to be something like "secondary variable"
+    Float_t observable, observable_gen, tmass, ttmass, ttRapidity2;
+    Float_t observableMinus, observableMinus_gen;
+    Float_t obs2D, obs2D_gen;
     Double_t weight;
     Int_t Nsolns = 1;
+	Int_t channel = -99;
 
     for (Int_t iVar = 0; iVar < nVars; iVar++)
     {
 	  ///////////////////////////////////////////////////////////////////////////////////////////
 	  /////////////// 1. Set up all our histograms //////////////////////////////////////////////
-	  
-        //initialise 1D binning to get x values
-        // Initialize1DBinning(iVar);
-		// Float_t asym_centre = (xmax1D + xmin1D) / 2.;
 
         //initialise 2D binning
         if (Var2D == "mtt") Initialize2DBinning(iVar);
@@ -106,30 +104,37 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		//Do all our bin splitting
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
+		int nbinsx_reco_3ch = -99;
 		int nbinsunwrapped_gen = -99;
 		int nbinsunwrapped_reco = -99;
+		int nbinsunwrapped_reco_3ch = -99;
 
-		if( iVar < 2 ) nbinsx_gen = nbinsx2D*2;
+		if( iVar < 2 || iVar==9 ) nbinsx_gen = nbinsx2D*2;
 		else nbinsx_gen = nbinsx2D;
 
-		//nbinsx_reco = nbinsx_gen*2;
-		nbinsx_reco = nbinsx_gen;
+		nbinsx_reco = nbinsx_gen*2;
+		//nbinsx_reco = nbinsx_gen;
+		nbinsx_reco_3ch = nbinsx_reco*3;
 
 		double* genbins;
 		double* recobins;
+		double* recobins_3ch;
 
 		genbins = new double[nbinsx_gen+1];
 		recobins = new double[nbinsx_reco+1];
+		recobins_3ch = new double[nbinsx_reco_3ch+1];
 
 		//Make gen binning array
-		for( int i=0; i<nbinsx2D; i++ ) {
-		  if( iVar<2 ) {
-			genbins[i*2] = xbins2D[i];
-			genbins[i*2 +1] = ( xbins2D[i] + xbins2D[i+1] )/2.;
-		  }
-		  else genbins[i] = xbins2D[i];
-		}
-		genbins[nbinsx_gen] = xbins2D[nbinsx2D];
+        if( iVar < 2 || iVar == 9 ) {
+          for( int i=0; i<=nbinsx2Dalt; i++ ) {
+            genbins[i] = xbins2Dalt[i];
+          }
+        }
+        else {
+          for( int i=0; i<=nbins1D; i++ ) {
+            genbins[i] = xbins2D[i];
+          }
+        }
 
 		//Make reco binning array
 		for( int i=0; i<nbinsx_gen; i++ ) {
@@ -141,59 +146,56 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 		recobins[nbinsx_reco] = genbins[nbinsx_gen];
 
+		// Make reco binning array including the 3-channel split
+		double recohist_width = fabs(recobins[nbinsx_reco] - recobins[0]);
+		std::copy( recobins, recobins+nbinsx_reco+1, recobins_3ch );
+		for( int i=nbinsx_reco+1; i<nbinsx_reco_3ch+1; i++ ) {
+		  recobins_3ch[i] = recobins_3ch[i-nbinsx_reco] + recohist_width;
+		}
+
 		nbinsunwrapped_gen  = nbinsx_gen  * nbinsy2D;
 		nbinsunwrapped_reco = nbinsx_reco * nbinsy2D;
+		nbinsunwrapped_reco_3ch = nbinsx_reco_3ch * nbinsy2D;
 		
 		//Make histograms
 
 		//Use proper 2D histograms, instead of the old 1D ones
-        TH2D *hData = new TH2D ("Data_BkgSub", "Data with background subtracted",    nbinsx_reco, recobins, nbinsy2D, ybins2D);
-        TH2D *hBkg = new TH2D ("Background",  "Background",    nbinsx_reco, recobins, nbinsy2D, ybins2D);
+        TH2D *hData_combined = new TH2D ("Data_combined", "Data combined", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+        TH2D *hData = new TH2D ("Data", "Data", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
+        TH2D *hBkg = new TH2D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
+        TH2D *hBkg_combined = new TH2D ("Background_combined",  "Background combined", nbinsx_reco, recobins, nbinsy2D, ybins2D);
         TH2D *hData_unfolded = new TH2D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins, nbinsy2D, ybins2D);
         TH2D *hTrue = new TH2D ("true", "Truth",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
-        TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-		//for testing purposes
-        TH2D *hData_bkgSub_rewrapped = new TH2D ("bkgsub", "bkgsub", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-        //TH2D *hData_unwrapped_rewrapped = new TH2D ("lotsofwrap", "lotsofwrap", nbinsx2D, xbins2D, nbinsy2D, ybins2D);
-		// TH2D *hStab_num = new TH2D ("stabnum", "Stability Numerator", nbinsx_gen, genbins, nbinsy2D, ybins2D);
-		// TH2D *hPur_num = new TH2D ("purnum", "Purity Numerator", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-		// TH2D *hStab_den = new TH2D ("stabden", "Stability Denominator", nbinsx_gen, genbins, nbinsy2D, ybins2D);
-		// TH2D *hPur_den = new TH2D ("purden", "Purity Denominator", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+        TH2D *hTrue_split = new TH2D ("true", "Truth",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
+        TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
 		TH2D *hPurity = new TH2D("purity", "Purity", nbinsx_gen, genbins, nbinsy2D, ybins2D);
 		TH2D *hStability = new TH2D("stability", "Stability", nbinsx_gen, genbins, nbinsy2D, ybins2D);
+		//for testing purposes
+        // TH2D *hData_bkgSub_rewrapped = new TH2D ("bkgsub", "bkgsub", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+        //TH2D *hData_unwrapped_rewrapped = new TH2D ("lotsofwrap", "lotsofwrap", nbinsx2D, xbins2D, nbinsy2D, ybins2D);
 
 		//Unwrapped histograms have n bins (where n = nx*ny), centered around the integers from 1 to n.
-		TH1D *hData_unwrapped = new TH1D ("Data_BkgSub_Unwr", "Unwrapped data with background subtracted", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
-        TH1D *hBkg_unwrapped = new TH1D ("Background_Unwr",  "Background unwrapped",    nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
-        TH1D *hData_unfolded_unwrapped = new TH1D ("Data_Unfold_Unwr", "Data with background subtracted and unfolded, unwrapped",
-												   nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
+		TH1D *hData_unwrapped = new TH1D ("Data_BkgSub_Unwr", "Unwrapped data with background subtracted", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
+        TH1D *hBkg_unwrapped = new TH1D ("Background_Unwr",  "Background unwrapped",    nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
+        TH1D *hData_unfolded_unwrapped = new TH1D ("Data_Unfold_Unwr", "Data unfolded and unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
         TH1D *hTrue_unwrapped = new TH1D ("true_unwr", "Truth unwrapped",  nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
-        TH1D *hMeas_unwrapped = new TH1D ("meas_unwr", "Measured unwrapped", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
-        TH1D *hAcc_unwrapped = new TH1D ("acc_unwr", "Acceptance unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
+        TH1D *hTrue_unwrapped_split = new TH1D ("true_unwr_split", "Truth unwrapped, split",  nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
+        TH1D *hMeas_unwrapped = new TH1D ("meas_unwr", "Measured unwrapped", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
+        // TH1D *hAcc_unwrapped = new TH1D ("acc_unwr", "Acceptance unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
 
 		//Migration matrix, using the unwrapped binning on both axes
-        TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5,
-										nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
+        TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5, nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
 
         TH1D *hData_bkgSub;
+		TH2D *hData_bkgSub_combined;
 		// TH1D* hMeas_newErr;
 
 		delete[] genbins;
-		delete[] recobins;
+		delete[] recobins_3ch;
 
-        hData->Sumw2();
-        hBkg->Sumw2();
-        hData_unfolded->Sumw2();
-        hTrue->Sumw2();
-        hMeas->Sumw2();
-        hTrue_vs_Meas->Sumw2();
+		hTrue_split->RebinX(2);
 
-        hData_unwrapped->Sumw2();
-        hBkg_unwrapped->Sumw2();
-        hData_unfolded_unwrapped->Sumw2();
-        hTrue_unwrapped->Sumw2();
-        hMeas_unwrapped->Sumw2();
-
+		//Called TH1::SetDefaultSumw2() above. No need to do it by hand anymore.
 
         TMatrixD m_unfoldE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_correctE(nbinsunwrapped_gen, nbinsunwrapped_gen);
@@ -224,37 +226,61 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             ch_bkg[iBkg]->Add(path + bkgroot[iBkg]);
         }
 
+		double offset = 0;
+		double histmax = recobins[nbinsx_reco];
+		double histmin = recobins[0];
+		double hiBinCenter = hData_combined->GetXaxis()->GetBinCenter(nbinsx_reco);
+		double loBinCenter = hData_combined->GetXaxis()->GetBinCenter(1);
+
 		///// Load data from data chain, and fill hData //////////
-        ch_data->SetBranchAddress(observablename,    &asymVar);
-        if ( combineLepMinus ) ch_data->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
+        ch_data->SetBranchAddress(observablename,    &observable);
+        if ( combineLepMinus ) ch_data->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
         ch_data->SetBranchAddress("weight", &weight);
         // ch_data->SetBranchAddress("Nsolns", &Nsolns);
         ch_data->SetBranchAddress("t_mass", &tmass);
+        ch_data->SetBranchAddress("tt_mass", &ttmass);
+        ch_data->SetBranchAddress("ttRapidity2", &ttRapidity2);
+		ch_data->SetBranchAddress("channel", &channel);
 
         if (Var2D == "mtt")               ch_data->SetBranchAddress("tt_mass", &obs2D);
         else if (Var2D == "ttrapidity2")  ch_data->SetBranchAddress("ttRapidity2", &obs2D);
         else if (Var2D == "ttpt")         ch_data->SetBranchAddress("ttPt", &obs2D);
 
-
         for (Int_t i = 0; i < ch_data->GetEntries(); i++)
         {
             ch_data->GetEntry(i);
             obs2D = fabs(obs2D);
+
+			//Use an offset to sort events into 3 superbins: ee, mumu, emu
+			offset = double(channel) * recohist_width;
+			//Do the same thing as "fillUnderOverflow", except adapted for 3x1 histograms
+			if( observable > histmax )        observable = hiBinCenter;
+			else if( observable < histmin )   observable = loBinCenter;
+			if( observableMinus > histmax )        observableMinus = hiBinCenter;
+			else if( observableMinus < histmin )   observableMinus = loBinCenter;
+
             if ( tmass > 0 )
             {
-			  fillUnderOverFlow(hData, asymVar, obs2D, weight, Nsolns);
-			  if (combineLepMinus) fillUnderOverFlow(hData, asymVarMinus, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hData_combined, observable, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hData, observable+offset, obs2D, weight, Nsolns);
+			  if (combineLepMinus) {
+				fillUnderOverFlow(hData_combined, observableMinus, obs2D, weight, Nsolns);
+				fillUnderOverFlow(hData, observableMinus+offset, obs2D, weight, Nsolns);
+			  }
             }
         }
 
 		///// Load background MC from background chain, and fill h_bkg //////////
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
         {
-            ch_bkg[iBkg]->SetBranchAddress(observablename,    &asymVar);
-            if ( combineLepMinus ) ch_bkg[iBkg]->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
+            ch_bkg[iBkg]->SetBranchAddress(observablename,    &observable);
+            if ( combineLepMinus ) ch_bkg[iBkg]->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
             ch_bkg[iBkg]->SetBranchAddress("weight", &weight);
             // ch_bkg[iBkg]->SetBranchAddress("Nsolns", &Nsolns);
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
+			ch_bkg[iBkg]->SetBranchAddress("tt_mass", &ttmass);
+			ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &ttRapidity2);
+			ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
 
             if (Var2D == "mtt")              ch_bkg[iBkg]->SetBranchAddress("tt_mass", &obs2D);
             else if (Var2D == "ttrapidity2") ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &obs2D);
@@ -265,22 +291,36 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
                 ch_bkg[iBkg]->GetEntry(i);
                 obs2D = fabs(obs2D);
                 weight *= bkgSF[iBkg];
+
+				offset = double(channel) * recohist_width;
+				if( observable > histmax )        observable = hiBinCenter;
+				else if( observable < histmin )   observable = loBinCenter;
+				if( observableMinus > histmax )        observableMinus = hiBinCenter;
+				else if( observableMinus < histmin )   observableMinus = loBinCenter;
+
                 if ( tmass > 0 )
                 {
-				  fillUnderOverFlow(hBkg, asymVar, obs2D, weight, Nsolns);
-				  if (combineLepMinus)  fillUnderOverFlow(hBkg, asymVarMinus, obs2D, weight, Nsolns);
+				  fillUnderOverFlow(hBkg, observable+offset, obs2D, weight, Nsolns);
+				  fillUnderOverFlow(hBkg_combined, observable, obs2D, weight, Nsolns);
+				  if (combineLepMinus) {
+					fillUnderOverFlow(hBkg, observableMinus+offset, obs2D, weight, Nsolns);
+					fillUnderOverFlow(hBkg_combined, observableMinus, obs2D, weight, Nsolns);
+				  }
                 }
             }
         }
 
 		///// Load true top MC from top chain, and fill h_true and hTrue_vs_Meas ///////////
-        ch_top->SetBranchAddress(observablename,    &asymVar);
-        ch_top->SetBranchAddress(observablename + "_gen", &asymVar_gen);
-        if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms",    &asymVarMinus);
-        if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms_gen",    &asymVarMinus_gen);
+        ch_top->SetBranchAddress(observablename,    &observable);
+        ch_top->SetBranchAddress(observablename + "_gen", &observable_gen);
+        if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
+        if ( combineLepMinus ) ch_top->SetBranchAddress("lepMinus_costheta_cms_gen",    &observableMinus_gen);
         ch_top->SetBranchAddress("weight", &weight);
         // ch_top->SetBranchAddress("Nsolns", &Nsolns);
         ch_top->SetBranchAddress("t_mass", &tmass);
+        ch_top->SetBranchAddress("tt_mass", &ttmass);
+        ch_top->SetBranchAddress("ttRapidity2", &ttRapidity2);
+		ch_top->SetBranchAddress("channel", &channel);
 
         if (Var2D == "mtt")
         {
@@ -298,6 +338,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             ch_top->SetBranchAddress("ttPt_gen", &obs2D_gen);
         }
 
+		int measbin_3ch = -99;
 		int measbin = -99;
 		int genbin = -99;
 
@@ -307,52 +348,117 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             obs2D = fabs(obs2D);
             obs2D_gen = fabs(obs2D_gen);
             weight *= scalettdil;
+
+			offset = double(channel) * recohist_width;
+			if( observable > histmax )        observable = hiBinCenter;
+			else if( observable < histmin )   observable = loBinCenter;
+			if( observableMinus > histmax )        observableMinus = hiBinCenter;
+			else if( observableMinus < histmin )   observableMinus = loBinCenter;
+			if( observable_gen > histmax )        observable_gen = hiBinCenter;
+			else if( observable_gen < histmin )   observable_gen = loBinCenter;
+			if( observableMinus_gen > histmax )        observableMinus_gen = hiBinCenter;
+			else if( observableMinus_gen < histmin )   observableMinus_gen = loBinCenter;
+
             if ( tmass > 0 )
             {
-			  measbin = getUnwrappedBin(hMeas, asymVar, obs2D);
-			  genbin  = getUnwrappedBin(hTrue, asymVar_gen, obs2D_gen);
+			  genbin  = getUnwrappedBin(hTrue, observable_gen, obs2D_gen);
+			  measbin = getUnwrappedBin(hData_combined, observable, obs2D);
+			  measbin_3ch = measbin + (channel * nbinsunwrapped_reco);
 
-			  fillUnderOverFlow(hMeas, asymVar, obs2D, weight, Nsolns);
-			  fillUnderOverFlow(hTrue, asymVar_gen, obs2D_gen, weight, Nsolns);
-			  fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
+			  // cout << "Channel: " << channel << ". Offset: " << offset << endl;
+
+			  fillUnderOverFlow(hMeas, observable+offset, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hTrue, observable_gen, obs2D_gen, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_split, observable_gen+offset, obs2D_gen, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_vs_Meas, measbin_3ch, genbin, weight, Nsolns);
 			  if ( combineLepMinus )
                 {
-				  measbin = getUnwrappedBin(hMeas, asymVarMinus, obs2D);
-				  genbin  = getUnwrappedBin(hTrue, asymVarMinus_gen, obs2D_gen);
+				  genbin  = getUnwrappedBin(hTrue, observableMinus_gen, obs2D_gen);
+				  measbin = getUnwrappedBin(hData_combined, observableMinus, obs2D);
+				  measbin_3ch = measbin + (channel * nbinsunwrapped_reco);
 
-				  fillUnderOverFlow(hMeas, asymVarMinus, obs2D, weight, Nsolns);
-				  fillUnderOverFlow(hTrue, asymVarMinus_gen, obs2D_gen, weight, Nsolns);
-				  fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
+				  fillUnderOverFlow(hMeas, observableMinus+offset, obs2D, weight, Nsolns);
+				  fillUnderOverFlow(hTrue, observableMinus_gen, obs2D_gen, weight, Nsolns);
+				  fillUnderOverFlow(hTrue_split, observableMinus_gen+offset, obs2D_gen, weight, Nsolns);
+				  fillUnderOverFlow(hTrue_vs_Meas, measbin_3ch, genbin, weight, Nsolns);
                 }
             }
         }
 
-		for( int i=1; i<=nbinsx_gen; i++) {
-		  for( int j=1; j<=nbinsy2D; j++) {
+		delete[] recobins;
 
-			int k = (j-1)*nbinsx_gen + i; //bin number in the unwrapped version
-			hPurity->SetBinContent( i, j, hTrue_vs_Meas->GetBinContent(k,k) / hMeas->GetBinContent(i,j) );
-			hStability->SetBinContent( i, j, hTrue_vs_Meas->GetBinContent(k,k) / hTrue->GetBinContent(i,j) );
+		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
+        TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
+		TH2D *acceptM[4];
+		acceptM[0] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_diel"));
+		acceptM[1] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_dimu"));
+		acceptM[2] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_mueg"));
+		acceptM[3] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_all" ));
+
+		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
+
+		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		  for( int yBin=1; yBin<=nbinsy2D; yBin++ ) {
+			for( int xBin=1; xBin<=nbinsx_gen; xBin++ ) {
+
+			  double acceptance = acceptM[aChannel]->GetBinContent( xBin, yBin );
+			  double n_accepted = hTrue_split->GetBinContent( aChannel*nbinsx_gen + xBin, yBin );
+			  genbin = (yBin-1)*nbinsx_gen + xBin;
+			  hTrue_vs_Meas->Fill( -999999, double(genbin), n_accepted/acceptance - n_accepted );
+
+			}
 		  }
 		}
 
-		if( nbinsx_gen != nbinsx_reco ) cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
 
+		// Make purity and stability plots
+		if( nbinsx_gen == nbinsx_reco ) {
 
+		  for( int i=1; i<=nbinsx_gen; i++) {
+			for( int j=1; j<=nbinsy2D; j++) {
+			  int k = (j-1)*nbinsx_gen + i; //bin number in the unwrapped version
+			  hPurity->SetBinContent( i, j, hTrue_vs_Meas->GetBinContent(k,k) / hMeas->GetBinContent(i,j) );
+			  hStability->SetBinContent( i, j, hTrue_vs_Meas->GetBinContent(k,k) / hTrue->GetBinContent(i,j) );
+			}
+		  }
+
+		}
+		else {
+		  cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
+		}
+
+		//Drawing for debugging purposes only.
+		// Migration matrix
+		gStyle->SetPadRightMargin(0.17);
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1650, 600);
+        TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
+        gStyle->SetPalette(1);
+		hResp->SetTitle("Migration matrix");
+        hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
+        hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
+        hResp->Draw("COLZ");
+        c_resp->SetLogz();
+        c_resp->SaveAs("2D_Response_" + acceptanceName + "_" + Var2D + ".pdf");
+		//Drawing for debugging purposes only.
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////// 3. Perform the unfolding procedure ////////////////////////////////////
 
 		// First step: unwrap our TH2Ds into TH1Ds!
-		unwrap2dhisto(hData, hData_unwrapped);
-		unwrap2dhisto(hBkg,  hBkg_unwrapped);
-		unwrap2dhisto(hTrue, hTrue_unwrapped);
-		unwrap2dhisto(hMeas, hMeas_unwrapped);
+		unwrap2dhisto_3ch(hData, hData_unwrapped);
+		unwrap2dhisto_3ch(hBkg,  hBkg_unwrapped);
+		unwrap2dhisto_3ch(hTrue, hTrue_unwrapped);
+		unwrap2dhisto_3ch(hTrue_split, hTrue_unwrapped_split);
+		unwrap2dhisto_3ch(hMeas, hMeas_unwrapped);
 
-        hData_bkgSub = (TH1D *) hData_unwrapped->Clone();
+        hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
+
+		hData_bkgSub_combined = (TH2D*) hData_combined->Clone("data_bkgsub_combined");
+		hData_bkgSub_combined->Add(hBkg_combined, -1.0);
+		
 
 		/*
 		hMeas_newErr = (TH1D *) hMeas_unwrapped->Clone();
@@ -368,24 +474,15 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 		*/
 
-        // TCanvas *c_data = new TCanvas("c_data", "c_data");
-		// hData_bkgSub->Draw();
-        // c_data->SaveAs(Var2D + "_data_unwrapped_" + acceptanceName + Region + ".pdf");
-
 
 		// Now let's actually do the unfolding.
-
-
-
-
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
 		unfold_TUnfold.SetInput(hData_bkgSub);
 		scaleBias = hData_bkgSub->Integral() / hTrue_unwrapped->Integral();
 		hTrue_unwrapped->Scale(scaleBias);
 		//unfold_TUnfold.SetBias(hTrue_unwrapped);
 		unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
-		//unfold_TUnfold.DoUnfold(tau,hData_bkgSub, 0.0);
-		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -4.0, 0.0);
+		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, -0.5);
 		unfold_TUnfold.GetOutput(hData_unfolded_unwrapped);
 		tau = unfold_TUnfold.GetTau();
 
@@ -395,6 +492,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
 			  {
 				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+				m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
 		  }
         
@@ -411,7 +509,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		unfold_getRhoAvg.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
 
 		for(int l=0; l<100; l++) {
-		  tau_test = pow( 10, -5.0 + 0.05*l);
+		  tau_test = pow( 10, -5.5 + 0.05*l);
 		  unfold_getRhoAvg.DoUnfold(tau_test, hData_bkgSub, scaleBias);
 		  ar_tau[l] = tau_test;
 		  ar_rhoAvg[l] = unfold_getRhoAvg.GetRhoAvg();
@@ -426,13 +524,13 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("minimizeRho_" + acceptanceName + ".pdf");
+		c_rhoAvg->SaveAs("2D_minimizeRho_" + acceptanceName + ".pdf");
 		
 
 	  
 		//Re-wrap 1D histograms into 2D
 		rewrap1dhisto(hData_unfolded_unwrapped, hData_unfolded);
-		rewrap1dhisto(hData_bkgSub, hData_bkgSub_rewrapped);
+		// rewrap1dhisto(hData_bkgSub, hData_bkgSub_rewrapped);
 		// rewrap1dhisto(hData_unwrapped, hData_unwrapped_rewrapped);
 
 
@@ -441,103 +539,83 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		float rmargin = gStyle->GetPadRightMargin();
 		gStyle->SetPadRightMargin(0.17);
 
+		// Data distribution (2D and unwrapped)
         TCanvas *c_data = new TCanvas("c_data", "c_data", 675, 600);
         gStyle->SetPalette(1);
-        hData_bkgSub_rewrapped->SetTitle("Data (background subtracted);"+xaxislabel+";"+yaxislabel);
-        hData_bkgSub_rewrapped->Draw("COLZ");
-		hData_bkgSub_rewrapped->GetZaxis()->SetMoreLogLabels();
+        hData_bkgSub_combined->SetTitle("Data (background subtracted);"+xaxislabel+";"+yaxislabel);
+        hData_bkgSub_combined->Draw("COLZ");
+		hData_bkgSub_combined->GetZaxis()->SetMoreLogLabels();
         c_data->SetLogz();
-        c_data->SaveAs("data_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_data->SaveAs("2D_data_" + acceptanceName +"_" + Var2D + ".pdf");
 		hData_bkgSub->SetTitle("Unwrapped Data (background subtracted);Bin number;Entries per bin");
 		hData_bkgSub->Draw();
-        c_data->SaveAs("dataunwrapped_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_data->SaveAs("2D_dataunwrapped_" + acceptanceName +"_" + Var2D + ".pdf");
 
+		// ttDil MC (2D and unwrapped)
         hTrue->SetTitle("True MC;"+xaxislabel+";"+yaxislabel);
 		hTrue->GetZaxis()->SetMoreLogLabels();
 		hTrue->Draw("COLZ");
-        c_data->SaveAs("true_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_data->SaveAs("2D_true_" + acceptanceName +"_" + Var2D + ".pdf");
 		hTrue_unwrapped->SetTitle("Unwrapped Truth;Bin number;Entries per bin");
 		hTrue_unwrapped->Draw();
-        c_data->SaveAs("trueunwrapped_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_data->SaveAs("2D_trueunwrapped_" + acceptanceName +"_" + Var2D + ".pdf");
 
+		// Unfolded data (2D)
 		hData_unfolded->SetTitle("Unfolded Data;"+xaxislabel+";"+yaxislabel);
 		hData_unfolded->GetZaxis()->SetMoreLogLabels();
 		hData_unfolded->Draw("COLZ");
-        c_data->SaveAs("unfolded_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_data->SaveAs("2D_unfolded_" + acceptanceName +"_" + Var2D + ".pdf");
 
+		// Purity and stability (2D)
         TCanvas *c_purstab = new TCanvas("c_purstab", "c_purstab", 650, 600);
 		gStyle->SetPadRightMargin(0.15);
         hPurity->SetTitle("Purity;"+xaxislabel+";"+yaxislabel);
         hStability->SetTitle("Stability;"+xaxislabel+";"+yaxislabel);
         hPurity->Draw("COLZ");
-        c_purstab->SaveAs("purity_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_purstab->SaveAs("2D_purity_" + acceptanceName +"_" + Var2D + ".pdf");
         hStability->Draw("COLZ");
-        c_purstab->SaveAs("stability_" + acceptanceName +"_" + Var2D + ".pdf");
+        c_purstab->SaveAs("2D_stability_" + acceptanceName +"_" + Var2D + ".pdf");
 
-
+		// Data_bkgsub, data unfolded, true top
 		TCanvas *c1 = new TCanvas("c1","c1",1300,400);
 		c1->Divide(3,1);
 		c1->cd(1);
-		hData_bkgSub_rewrapped->Draw("COLZ");
+		hData_bkgSub_combined->Draw("COLZ");
 		c1->cd(2);
 		hData_unfolded->Draw("COLZ");
 		c1->cd(3);
 		hTrue->Draw("COLZ");
-		c1->SaveAs("data_comparison_"+acceptanceName+"_"+Var2D+".pdf");
+		c1->SaveAs("2D_data_comparison_"+acceptanceName+"_"+Var2D+".pdf");
 
-
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 650, 600);
-        TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
-        gStyle->SetPalette(1);
-		hResp->SetTitle("Migration matrix");
-        hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
-        hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
-        hResp->Draw("COLZ");
-        c_resp->SetLogz();
-        c_resp->SaveAs(Var2D + "_Response_true2D_" + acceptanceName + Region + ".pdf");
+		// Migration matrix
+        // TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 650, 600);
+        // TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
+        // gStyle->SetPalette(1);
+		// hResp->SetTitle("Migration matrix");
+        // hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
+        // hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
+        // hResp->Draw("COLZ");
+        // c_resp->SetLogz();
+        // c_resp->SaveAs("2D_Response_" + acceptanceName + "_" + Var2D + ".pdf");
 
 		gStyle->SetPadRightMargin(rmargin);
 
-		// Make acceptance corrections ///////////////////////////////////////////////////
 
-        // TFile *file = new TFile("../acceptance/kit_1200_gensplit/accept_" + acceptanceName + ".root");
-        TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
-
-        TH2D *acceptM_2d = (TH2D *) file->Get("accept_" + acceptanceName + "_" + Var2D + "_all");
-        unwrap2dhisto(acceptM_2d, hAcc_unwrapped);
-
-        TH2D *denomM_2d = (TH2D *) file->Get("denominator_" + acceptanceName + "_" + Var2D + "_all");
-
-
-        for (Int_t x = 1; x <= nbinsx_gen; x++)
-        {
-		  for (Int_t y = 1; y<= nbinsy2D; y++)
-		  {
-
-            if (acceptM_2d->GetBinContent(x,y) != 0)
-            {
-			  hData_unfolded->SetBinContent(x,y, hData_unfolded->GetBinContent(x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
-			  hData_unfolded->SetBinError  (x,y, hData_unfolded->GetBinError  (x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
-
-			  hTrue->SetBinContent(x,y, hTrue->GetBinContent(x,y) * 1.0 / acceptM_2d->GetBinContent(x,y));
-			  hTrue->SetBinError  (x,y, hTrue->GetBinError(x,y)  * 1.0 / acceptM_2d->GetBinContent(x,y));
-            }
+		// A few lingering acceptance corrections ///////////////////////////////////////////////////
+        for (Int_t x = 1; x <= nbinsx_gen; x++) {
+		  for (Int_t y = 1; y<= nbinsy2D; y++) {
+			if (acceptM[3]->GetBinContent(x,y) != 0) {
+			  hTrue->SetBinContent(x,y, hTrue->GetBinContent(x,y) * 1.0 / acceptM[3]->GetBinContent(x,y));
+			  hTrue->SetBinError  (x,y, hTrue->GetBinError(x,y)  * 1.0 / acceptM[3]->GetBinContent(x,y));
+			}
 		  }
 		}
 
+        TH2D *denomM_2d = (TH2D*) file->Get("denominator_" + acceptanceName + "_" + Var2D + "_all");
 
-        for (int l = 0; l < nbinsunwrapped_gen; l++)
-        {
-            for (int j = 0; j < nbinsunwrapped_gen; j++)
-            {
-                double corr = 1.0 / ( hAcc_unwrapped->GetBinContent(l + 1) * hAcc_unwrapped->GetBinContent(j + 1) );
-                //corr = corr * pow(xsection / dataIntegral,2) ;
-                m_correctE(l, j) = m_unfoldE(l, j) * corr;
-            }
-        }
 
         //==================================================================
-        // ============== Print the asymmetry =============================
+        //============== Print the asymmetry ===============================
 		cout << "========= Variable: " << acceptanceName << "===================\n";
         Float_t Afb, AfbErr;
 
@@ -545,7 +623,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		cout << "Minimum rhoAvg = " << bestrhoavg << endl;
 		cout << "Bias scale = " << scaleBias << endl;
 
-        GetAfb(hData, Afb, AfbErr);
+        GetAfb(hData_combined, Afb, AfbErr);
         cout << " Data: " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(hTrue, Afb, AfbErr);
@@ -653,9 +731,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         blah->SetTextAlign(11);
         pt1->Draw();
 
-        c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + Region + ".pdf");
-        c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + Region + ".root");
-        c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + Region + ".C");
+        c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + ".pdf");
+        // c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + ".root");
+        // c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + ".C");
 
 		/*
         TCanvas *c_mttu = new TCanvas("c_mttu", "c_mttu", 500, 500);
@@ -688,7 +766,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         leg1->AddEntry(hTrue,    "MC@NLO parton level", "F");
         leg1->Draw();
 
-        c_mttu->SaveAs(Var2D + "_2D_unfolded_" + acceptanceName + Region + ".pdf");
+        c_mttu->SaveAs(Var2D + "_2D_unfolded_" + acceptanceName + ".pdf");
 
         TFile *output = new TFile(Form("DataMC_%s.root", Var2D.Data()), "UPDATE");
 

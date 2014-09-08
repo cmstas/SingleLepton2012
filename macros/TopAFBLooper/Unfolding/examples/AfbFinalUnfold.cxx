@@ -236,8 +236,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
                 // leptonic asymmetries don't need valid top mass solution
                 fillUnderOverFlow(hData, observable+offset, weight, Nsolns);
                 fillUnderOverFlow(hData_combined, observable, weight, Nsolns);
-				if (combineLepMinus)
-				  {
+				if (combineLepMinus) {
                     fillUnderOverFlow(hData, observableMinus+offset, weight, Nsolns);
                     fillUnderOverFlow(hData_combined, observableMinus, weight, Nsolns);
 				  }
@@ -602,7 +601,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 
         //==================================================================
-        // ============== Print the assymetry =============================
+        //============== Print the asymetry ================================
         cout << "========= Variable: " << acceptanceName << "===================\n";
 
 		cout << "Automated tau value: " << tau << endl;
