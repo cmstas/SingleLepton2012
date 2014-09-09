@@ -351,7 +351,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		}
 
 
-		// Make purity and stability plots
+		// Fill purity and stability plots
         if( hMeas->GetNbinsX() == nbinsx_gen ) {
         	for( int i=1; i<=nbinsx_gen; i++ ) {
         	  hPurity->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hMeas->GetBinContent(i) );

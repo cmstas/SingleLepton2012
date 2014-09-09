@@ -170,9 +170,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
 		TH2D *hPurity = new TH2D("purity", "Purity", nbinsx_gen, genbins, nbinsy2D, ybins2D);
 		TH2D *hStability = new TH2D("stability", "Stability", nbinsx_gen, genbins, nbinsy2D, ybins2D);
-		//for testing purposes
-        // TH2D *hData_bkgSub_rewrapped = new TH2D ("bkgsub", "bkgsub", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-        //TH2D *hData_unwrapped_rewrapped = new TH2D ("lotsofwrap", "lotsofwrap", nbinsx2D, xbins2D, nbinsy2D, ybins2D);
 
 		//Unwrapped histograms have n bins (where n = nx*ny), centered around the integers from 1 to n.
 		TH1D *hData_unwrapped = new TH1D ("Data_BkgSub_Unwr", "Unwrapped data with background subtracted", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
@@ -181,7 +178,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TH1D *hTrue_unwrapped = new TH1D ("true_unwr", "Truth unwrapped",  nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
         TH1D *hTrue_unwrapped_split = new TH1D ("true_unwr_split", "Truth unwrapped, split",  nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
         TH1D *hMeas_unwrapped = new TH1D ("meas_unwr", "Measured unwrapped", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
-        // TH1D *hAcc_unwrapped = new TH1D ("acc_unwr", "Acceptance unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
 
 		//Migration matrix, using the unwrapped binning on both axes
         TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5, nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
@@ -412,8 +408,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 
 
-		// Make purity and stability plots
-		if( nbinsx_gen == nbinsx_reco ) {
+		// Fill purity and stability plots
+		if( hData->GetNbinsX() == nbinsx_gen ) {
 
 		  for( int i=1; i<=nbinsx_gen; i++) {
 			for( int j=1; j<=nbinsy2D; j++) {
@@ -423,6 +419,28 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			}
 		  }
 
+		}
+		else if( hData->GetNbinsX() == nbinsx_reco_3ch ) {
+
+		  for( int by=1; by<=nbinsy2D; by++ ) {
+			for( int bx=1; bx<=nbinsx_gen; bx++ ) {
+
+			  int outbin = (by-1)*nbinsx_gen + bx;
+			  double numerator = 0;
+			  double purity_denom = 0;
+			  double stability_denom = hTrue->GetBinContent( bx, by );
+
+			  for( int aChannel=0; aChannel<3; aChannel++ ) {
+				numerator += hTrue_vs_Meas->GetBinContent((outbin*2)+(aChannel*nbinsunwrapped_reco), outbin);
+				numerator += hTrue_vs_Meas->GetBinContent((outbin*2)+(aChannel*nbinsunwrapped_reco)-1, outbin);
+				purity_denom += hMeas->GetBinContent( (bx*2)+(aChannel*nbinsx_reco), by );
+				purity_denom += hMeas->GetBinContent( (bx*2)+(aChannel*nbinsx_reco)-1, by );
+			  }
+
+			  hPurity->SetBinContent( bx, by, numerator / purity_denom );
+			  hStability->SetBinContent( bx, by, numerator / stability_denom );
+			}
+		  }
 		}
 		else {
 		  cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
@@ -574,7 +592,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		c1->SaveAs("2D_data_comparison_"+acceptanceName+"_"+Var2D+".pdf");
 
 		// Migration matrix
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 650, 600);
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1850, 600);
         TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
         gStyle->SetPalette(1);
 		hResp->SetTitle("Migration matrix");
