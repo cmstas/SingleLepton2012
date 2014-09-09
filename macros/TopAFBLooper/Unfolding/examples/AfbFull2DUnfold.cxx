@@ -35,7 +35,7 @@ using std::endl;
 
 Int_t kterm = 3;  //note we used 4 here for ICHEP
 Double_t tau = 3E-2;
-Int_t nVars = 8;
+Int_t nVars = 12;
 Int_t includeSys = 0;
 Int_t checkErrors = 0;
 bool draw_truth_before_pT_reweighting = false;

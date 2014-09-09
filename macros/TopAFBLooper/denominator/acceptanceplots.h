@@ -25,6 +25,10 @@ Double_t bins_lepCosOpeningAngle[] = {-1., -2./3., -1./3., 0., 1./3., 2./3., 1.}
 //Double_t bins_lepCosOpeningAngle[] = {-1., -0.6, -0.3, 0., 0.3, 0.6, 1.}; 
 
 
+Double_t ybinsmtt[] = {0., 430., 530., 1200.};
+Double_t ybinsttpt[] = {0., 41., 92., 300.};
+Double_t ybinsttrapidity2[] = {0., 0.34, 0.75, 1.5};
+
 //minimum bin width should not be smaller than guide from resolution plots (TopAFBLooper/resolutionplots.sh)
 //approximate resolution for lepChargeAsym: ~0
 //approximate resolution for lepAzimAsym2: ~0

@@ -108,11 +108,9 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
   Double_t bins_lepCosOpeningAngle_for2D[] = {-1., 0., 1.};
 */
  
-  Double_t binsmtt[] = {0., 430., 530., 1200.}; 
-  //Double_t binsmtt[] = {0., 410., 510., 800.}; 
-  Double_t binsttpt[] = {0., 41., 92., 300.}; 
-  Double_t binsttrapidity2[] = {0., 0.34, 0.75, 1.5}; 
-  //Double_t binsfor2D[3];
+  // Double_t ybinsmtt[] = {0., 430., 530., 1200.}; 
+  // Double_t ybinsttpt[] = {0., 41., 92., 300.}; 
+  // Double_t ybinsttrapidity2[] = {0., 0.34, 0.75, 1.5}; 
 
   int nbinsx = -999;
   if(histname == "lepChargeAsym" || histname == "lepAzimAsym2" || histname == "lepAzimAsym") nbinsx = 12;
@@ -203,7 +201,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
   hnumerator_finebins = (TH1D*) hnumerator_finebins->Clone(Form("numerator_finebins_%s_%s", histname.Data(), suffixnumerator[ic]));
   hdenominator_finebins = (TH1D*) hdenominator_finebins->Clone(Form("denominator_finebins_%s_%s", histname.Data(), suffixnumerator[ic]));
 
-  hnumerator2drebinned_mtt = new TH2D(Form("numerator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),Form("numerator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, binsmtt); /////////
+  hnumerator2drebinned_mtt = new TH2D(Form("numerator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),Form("numerator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, ybinsmtt); /////////
   TAxis *xaxis = hnumerator2d_mtt->GetXaxis();
   TAxis *yaxis = hnumerator2d_mtt->GetYaxis();
   for (int j=1;j<=yaxis->GetNbins();j++) {
@@ -211,7 +209,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
       hnumerator2drebinned_mtt->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hnumerator2d_mtt->GetBinContent(i,j));
     }
   }
-  hdenominator2drebinned_mtt = new TH2D(Form("denominator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),Form("denominator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, binsmtt);
+  hdenominator2drebinned_mtt = new TH2D(Form("denominator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),Form("denominator_%s_mtt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, ybinsmtt);
   TAxis *xaxisd = hdenominator2d_mtt->GetXaxis();
   TAxis *yaxisd = hdenominator2d_mtt->GetYaxis();
   for (int j=1;j<=yaxisd->GetNbins();j++) {
@@ -220,7 +218,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
     }
   }
 
-  hnumerator2drebinned_ttpt = new TH2D(Form("numerator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),Form("numerator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, binsttpt);
+  hnumerator2drebinned_ttpt = new TH2D(Form("numerator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),Form("numerator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, ybinsttpt);
   xaxis = hnumerator2d_ttpt->GetXaxis();
   yaxis = hnumerator2d_ttpt->GetYaxis();
   for (int j=1;j<=yaxis->GetNbins();j++) {
@@ -228,7 +226,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
       hnumerator2drebinned_ttpt->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hnumerator2d_ttpt->GetBinContent(i,j));
     }
   }
-  hdenominator2drebinned_ttpt = new TH2D(Form("denominator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),Form("denominator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, binsttpt);
+  hdenominator2drebinned_ttpt = new TH2D(Form("denominator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),Form("denominator_%s_ttpt_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, ybinsttpt);
   xaxisd = hdenominator2d_ttpt->GetXaxis();
   yaxisd = hdenominator2d_ttpt->GetYaxis();
   for (int j=1;j<=yaxisd->GetNbins();j++) {
@@ -237,7 +235,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
     }
   }
 
-  hnumerator2drebinned_ttrapidity2 = new TH2D(Form("numerator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),Form("numerator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, binsttrapidity2);
+  hnumerator2drebinned_ttrapidity2 = new TH2D(Form("numerator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),Form("numerator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, ybinsttrapidity2);
   xaxis = hnumerator2d_ttrapidity2->GetXaxis();
   yaxis = hnumerator2d_ttrapidity2->GetYaxis();
   for (int j=1;j<=yaxis->GetNbins();j++) {
@@ -245,7 +243,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
       hnumerator2drebinned_ttrapidity2->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j), hnumerator2d_ttrapidity2->GetBinContent(i,j));
     }
   }
-  hdenominator2drebinned_ttrapidity2 = new TH2D(Form("denominator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),Form("denominator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, binsttrapidity2);
+  hdenominator2drebinned_ttrapidity2 = new TH2D(Form("denominator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),Form("denominator_%s_ttrapidity2_%s", histname.Data(), suffixnumerator[ic]),nbinsx,bins,3, ybinsttrapidity2);
   xaxisd = hdenominator2d_ttrapidity2->GetXaxis();
   yaxisd = hdenominator2d_ttrapidity2->GetYaxis();
   for (int j=1;j<=yaxisd->GetNbins();j++) {
