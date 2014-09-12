@@ -99,6 +99,7 @@ private:
     Int_t   ls;
     Int_t   evt;
     Int_t   channel;
+    Int_t   genchannel;
     double weight;
 
     float lep_charge_asymmetry;
@@ -112,6 +113,7 @@ private:
     float lepMinus_costheta_cms;
     float top_spin_correlation;
     float lep_cos_opening_angle;
+    float dilmass;
     float tt_mass;
     float ttRapidity2;
     float tt_pT;
