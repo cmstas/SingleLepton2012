@@ -785,8 +785,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                 weight = evtweight * trigweight_dl;
 
-                FillBabyNtuple();
-
                 makeNJPlots( weight, h_1d_nj, "", basic_flav_tag_dl);
                 makeSIGPlots( weight, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
                 makeSIGPlots( weight, h_1d_sig,  tag_btag  , "_all" );
@@ -810,6 +808,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl_gen );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                 }
+
+                FillBabyNtuple();
 
             }
 
