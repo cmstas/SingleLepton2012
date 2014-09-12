@@ -212,16 +212,17 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     const int MCID = 9;
     const char *mcsample[MCID] =
     {
-        "ttdl_mcatnlo_smallTree",
-        "ttsl_powheg",
-        //"ttfake_powheg",
+        "ttdl_mcatnlo",
+        "ttsl_mcatnlo",
         "w1to4jets",
         "tW_lepsl",
         "tW_lepdl",
         "diboson",
         "DY1to4Jtot",
         "ttV",
-        "triboson"
+        "triboson",
+        //"ttfake_mcatnlo",
+        //"tttt_mcatnlo"
     };
 
     enum sample {TTDL = 0,
@@ -240,7 +241,6 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     {
         "t#bar{t} #rightarrow #font[12]{l^{+}l^{-}}",
         "t#bar{t} #rightarrow #font[12]{l^{#pm}} + jets",
-        //"t#bar{t} #rightarrow all jets",
         "W+jets",
         // "t#bar{t} #rightarrow #font[12]{l^{+}l^{-}} (e/#mu)",
         // "t#bar{t} #rightarrow #font[12]{l^{+}l^{-}} (lost)",
@@ -254,7 +254,9 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "WW/WZ/ZZ",
         "DY+jets",
         "ttW/Z/#gamma",
-        "triboson"
+        "triboson",
+        //"t#bar{t} #rightarrow all jets",
+        //"t#bar{t}t#bar{t}"
     };
     //    "triboson"};
     //    "QCD"};
@@ -737,8 +739,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                      << Form("%s", hist1dname[i]) << endl;
 
                 h_mc1d[i][j]->Sumw2();
-                if(j==0) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
-                //if(j==0) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
+                if(j==0||j==1) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
+                //if(j==0||j==1) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
                 // Rebin, set limits
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
