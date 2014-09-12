@@ -74,7 +74,7 @@ void GetAfb(TH1D* h, Double_t &afb, Double_t  &afberr){
 
 
 
-void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, TString FName1 = "../SIGoutput/ttdl_mcatnlo_smallTree_histos.root", TString FName2 = "results/hist_noCuts.root"){
+void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, TString FName1 = "../SIGoutput/ttdl_mcatnlo_histos.root", TString FName2 = "results/hist_noCuts.root"){
 
   TString observablename = "";
 
@@ -151,7 +151,7 @@ void acceptanceplots(TString histname = "lepAzimAsym2", bool drawnorm = false, T
   const int nChannels = 4;
 
   char suffixdenominator[nChannels][4]  = {"ee", "mm", "em", "all"};
-  char suffixnumerator[nChannels][5]  = {"diel", "dimu", "mueg", "all"};
+  char suffixnumerator[nChannels][8]  = {"diel", "dimu", "mueg", "all"};
 
   setTDRStyle();
 
