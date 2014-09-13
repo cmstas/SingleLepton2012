@@ -166,7 +166,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TH2D *hBkg_combined = new TH2D ("Background_combined",  "Background combined", nbinsx_reco, recobins, nbinsy2D, ybins2D);
         TH2D *hData_unfolded = new TH2D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins, nbinsy2D, ybins2D);
         TH2D *hTrue = new TH2D ("true", "Truth",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
-        TH2D *hTrue_split = new TH2D ("true", "Truth",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
+        TH2D *hTrue_split = new TH2D ("true_split", "Truth",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
         TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
 		TH2D *hPurity = new TH2D("purity", "Purity", nbinsx_gen, genbins, nbinsy2D, ybins2D);
 		TH2D *hStability = new TH2D("stability", "Stability", nbinsx_gen, genbins, nbinsy2D, ybins2D);
@@ -190,8 +190,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		delete[] recobins_3ch;
 
 		hTrue_split->RebinX(2);
-
-		//Called TH1::SetDefaultSumw2() above. No need to do it by hand anymore.
 
         TMatrixD m_unfoldE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_correctE(nbinsunwrapped_gen, nbinsunwrapped_gen);

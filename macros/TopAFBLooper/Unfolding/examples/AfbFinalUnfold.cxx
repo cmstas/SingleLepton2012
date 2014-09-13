@@ -46,6 +46,7 @@ bool draw_truth_before_pT_reweighting = true; //turn this on when making the fin
 
 void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double scalewjets = 1., double scaleDY = 1., double scaletw = 1., double scaleVV = 1. )
 {
+    TH1::SetDefaultSumw2();
 
     setTDRStyle();
     gStyle->SetOptFit();
@@ -167,14 +168,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		//delete[] genbins;
 		//delete[] recobins;
 		delete[] recobins_3ch;
-
-        hData->Sumw2();
-        hBkg->Sumw2();
-        hData_unfolded->Sumw2();
-        hTrue_split->Sumw2();
-        hTrue->Sumw2();
-        hMeas->Sumw2();
-        hTrue_vs_Meas->Sumw2();
 
         TMatrixD m_unfoldE (nbinsx_gen, nbinsx_gen);
         TMatrixD m_correctE(nbinsx_gen, nbinsx_gen);

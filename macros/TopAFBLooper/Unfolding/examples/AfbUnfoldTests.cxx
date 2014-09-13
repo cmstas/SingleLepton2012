@@ -59,6 +59,7 @@ Double_t myfunction(Double_t * x, Double_t * par)
 //slopeOption: 0 = continuous reweighting, 1 = 6-binned reweighting
 void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slopeOption = 0,*/ Int_t Nfunction = 0)
 {
+    TH1::SetDefaultSumw2();
 
     //    TF1 *fsin = new TF1("fsin","sin(TMath::Pi()*x)",-1,1);
     //    TF1 *fcos = new TF1("fcos","cos(TMath::Pi()*x)",-1,1);
@@ -205,7 +206,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     for (int iD = 0; iD < nbinsx_gen+1; ++iD)
     {
         AfbPull[iD] = new TH1D("h_afbpull" + iD, "Pulls for Afb" + iD, pullBins, -pullMax, pullMax);
-        AfbPull[iD]->Sumw2();
     }
 
 
@@ -213,18 +213,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 
 	hTrue_before_split->Rebin(2);
-
-    hTrue_before->Sumw2();
-	hTrue_before_split->Sumw2();
-    hMeas_before->Sumw2();
-    hTrue_after->Sumw2();
-    hMeas_after->Sumw2();
-	hMeas_after_combined->Sumw2();
-    hSmeared->Sumw2();
-    hUnfolded->Sumw2();
-	hBkg->Sumw2();
-
-    hTrue_vs_Meas->Sumw2();
 
     TMatrixD m_unfoldE(nbinsx_gen, nbinsx_gen);
 
