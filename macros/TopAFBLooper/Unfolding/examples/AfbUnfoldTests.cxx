@@ -327,18 +327,13 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	// Reweight our events, and fill the histograms //////////////////
 
 	//Begin loop over k
-    for (int k = -1; k < Nlin; k++)
+    for (int k = 0; k < Nlin; k++)
     {
 
         if ((TestType == "Pull") && (k == 1)) break;
 
         slope = -0.3 + 0.1 * k;
         //fx_scaled->SetParameters(slope,1.);
-
-		if(k == -1) {
-		  slope = 0;     //A hack, to allow for tau optimization
-		  cout << "[Dummy run to optimize tau value] ";
-		}
 
         cout << "slope =" << slope << "\n";
 
@@ -452,7 +447,9 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 
 		// Optimize tau for use in all subsequent unfoldings
-		if (k == -1) {
+		if (k == 0) {
+
+		  cout << "Optimizing tau..." << endl;
 
 		  //Set data-like stat errors on MC for optimizing tau
 		  for( int i=1; i<nbinsx_reco_3ch+1; i++) {
@@ -496,8 +493,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		  cout << "Optimal tau value: " << tau << endl;
 		  cout << "Minimum rho average: " << bestrhoavg << endl;
-		  continue;
-		} //End of tau optimization dummy-run
+		} //End of tau optimization
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////// 3. Begin testing ///////////////////////////////////////////////////////
