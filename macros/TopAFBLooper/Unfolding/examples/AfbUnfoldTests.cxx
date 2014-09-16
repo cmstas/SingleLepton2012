@@ -410,7 +410,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 				fillUnderOverFlow(hMeas_before, observableMinus+offset, weight, Nsolns);
 				fillUnderOverFlow(hTrue_before, observableMinus_gen, weight, Nsolns);
 				fillUnderOverFlow(hTrue_before_split, observableMinus_gen+offset, weight, Nsolns);
-				fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observable_gen, weight, Nsolns);
+				fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
               }
 			  //if (TestType == "Linearity") weight = weight * fx_scaled->Eval(observable_gen); //this is very slow for some reason
 			  if (TestType == "Linearity") weight = weight * (1.0 + slope * xsign * ( fx->Eval(fabs(xval)) ) );
