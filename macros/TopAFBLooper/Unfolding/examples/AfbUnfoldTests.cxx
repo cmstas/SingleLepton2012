@@ -245,6 +245,10 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	double hiBinCenter = hMeas_after_combined->GetBinCenter(nbinsx_reco);
 	double loBinCenter = hMeas_after_combined->GetBinCenter(1);
 
+	delete[] genbins;
+	delete[] recobins;
+	delete[] recobins_3ch;
+
 	// Background events /////////////////////////////////////////////////////
 	TChain *ch_bkg = new TChain("tree");
 	ch_bkg->Add("../DY1to4Jtot_baby.root");
@@ -508,6 +512,14 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         hTrue_after_array[k] = (TH1D *) hTrue_after->Clone();
         hMeas_after_array[k] = (TH1D *) hMeas_after_combined->Clone();
 
+		for (Int_t i = 1; i <= nbinsx_gen; i++)
+		{
+		  if (acceptM[3]->GetBinContent(i) != 0)
+		  {
+			hTrue_after->SetBinContent(i, hTrue_after->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
+			hTrue_after->SetBinError (i, hTrue_after->GetBinError(i) * 1.0 / acceptM[3]->GetBinContent(i));
+		  }
+		}
 
         Float_t Afb, AfbErr;
 
