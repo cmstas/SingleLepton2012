@@ -249,6 +249,15 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	delete[] recobins;
 	delete[] recobins_3ch;
 
+	// Load in data, just to get the integrals for scaling purposes //////////////////////////
+	TChain *ch_data = new TChain("tree");
+	ch_data->Add("../data_diel_baby.root");
+	ch_data->Add("../data_dimu_baby.root");
+	ch_data->Add("../data_mueg_baby.root");
+	double integral_data = -999.9;
+	if( iVar<2 || iVar==9 ) integral_data = double(ch_data->GetEntries());
+	else integral_data = double(ch_data->GetEntries("t_mass > 0 "));
+
 	// Background events /////////////////////////////////////////////////////
 	TChain *ch_bkg = new TChain("tree");
 	ch_bkg->Add("../DY1to4Jtot_baby.root");
@@ -448,6 +457,17 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			hTrue_vs_Meas->Fill( -999999, hTrue_before->GetXaxis()->GetBinCenter(acceptbin), n_accepted/acceptance - n_accepted );
 		  }
 		}
+
+		// Normalize top + background MC to data
+		double integral_mc = hTrue_before->Integral() + hBkg->Integral();
+
+		hBkg->Scale(				 integral_data / integral_mc );
+		hTrue_before->Scale(		 integral_data / integral_mc );
+		hTrue_before_split->Scale(	 integral_data / integral_mc );
+        hMeas_before->Scale(		 integral_data / integral_mc );
+        hTrue_after->Scale(			 integral_data / integral_mc );
+        hMeas_after->Scale(			 integral_data / integral_mc );
+		hMeas_after_combined->Scale( integral_data / integral_mc );
 
 
 		// Optimize tau for use in all subsequent unfoldings

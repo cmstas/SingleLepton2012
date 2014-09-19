@@ -486,7 +486,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		float rmargin = gStyle->GetPadRightMargin();
 		gStyle->SetPadRightMargin(0.13);
 
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1200, 600);
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1850, 600);
+		c_resp->SetLogz();
 		TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
         gStyle->SetPalette(1);
         hResp->GetXaxis()->SetTitle(xaxislabel);
