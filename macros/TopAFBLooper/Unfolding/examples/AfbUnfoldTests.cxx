@@ -178,10 +178,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	///////////////////////////////////////////////////////////////////////////////////////////
 	/////////////// 1. Set up all our histograms //////////////////////////////////////////////
 
-	// 2D versions of the old 1D histograms
-    // TH2D *hEmpty = new TH2D ("Empty", "Empty",    nbinsx_reco, recobins, nbinsy2D, ybins2D);
-    // TH2D *hEmpty_gen = new TH2D ("Empty_gen", "Empty",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
-
     TH1D *hTrue_before = new TH1D ("trueBeforeScaling", "Truth",    nbinsx_gen, genbins);
 	TH1D *hTrue_before_split = new TH1D ("true_before_split", "Truth",    nbinsx_reco_3ch, recobins_3ch); //Rebinned below
     TH1D *hMeas_before = new TH1D ("measBeforeScaling", "Measured", nbinsx_reco_3ch, recobins_3ch);
@@ -201,7 +197,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     if (TestType == "Linearity") pullMax = 100;
     if (TestType == "Linearity") pullBins = 1000;
 
-    TH1D* AfbPull[nbinsx_gen + 1];
+    TH1D* AfbPull[(nbinsx_gen/2)+nbinsx_gen + 1];
 
     for (int iD = 0; iD < (nbinsx_gen/2)+nbinsx_gen+1; ++iD)
     {
@@ -458,16 +454,16 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  }
 		}
 
-		// Normalize top + background MC to data
-		double integral_mc = hTrue_before->Integral() + hBkg->Integral();
+		// Normalize top MC to data
+		double integral_top = hTrue_before->Integral();
+		double integral_signal = integral_data - hBkg->Integral();
 
-		hBkg->Scale(				 integral_data / integral_mc );
-		hTrue_before->Scale(		 integral_data / integral_mc );
-		hTrue_before_split->Scale(	 integral_data / integral_mc );
-        hMeas_before->Scale(		 integral_data / integral_mc );
-        hTrue_after->Scale(			 integral_data / integral_mc );
-        hMeas_after->Scale(			 integral_data / integral_mc );
-		hMeas_after_combined->Scale( integral_data / integral_mc );
+		hTrue_before->Scale(		 integral_signal / integral_top );
+		hTrue_before_split->Scale(	 integral_signal / integral_top );
+        hMeas_before->Scale(		 integral_signal / integral_top );
+        hTrue_after->Scale(			 integral_signal / integral_top );
+        hMeas_after->Scale(			 integral_signal / integral_top );
+		hMeas_after_combined->Scale( integral_signal / integral_top );
 
 
 		// Optimize tau for use in all subsequent unfoldings

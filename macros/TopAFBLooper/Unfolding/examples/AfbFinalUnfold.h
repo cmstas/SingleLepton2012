@@ -559,7 +559,7 @@ void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, std::vector
     afberrbin[k] = sqrt(afberrbin[k]);
     afbbin[k] = sum_alpha_n[k] / sum_n[k];
     // std::cout<<k<<" AFB = "<<afbbin[k]<<" +/- "<<afberrbin[k]<<std::endl;
-    // second_output_file << acceptanceName << " " << observablename << " AFB" << k << ": " << afbbin[k] << " +/- " << afberrbin[k] << std::endl;
+    second_output_file << acceptanceName << " " << observablename << " AFB" << k << ": " << afbbin[k] << " +/- " << afberrbin[k] << std::endl;
 
     myafb.push_back(afbbin[k]);
     myerr.push_back(afberrbin[k]);
