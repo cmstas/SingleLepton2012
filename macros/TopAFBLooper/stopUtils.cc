@@ -368,15 +368,15 @@ float getleadingtrigweight(int id_leading, float leading_pt, float leading_eta){
         }
         else if (leading_eta >= 1.2 && leading_eta < 2.1)
         {
-            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.930;
-            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.927;
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.931;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.928;
             else if (leading_pt > 40.0) weight_leading = 0.926;
         }
         else if (leading_eta >= 2.1)
         {
-            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.;
-            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.;
-            else if (leading_pt > 40.0) weight_leading = 0.;
+            if (leading_pt > 20.0 && leading_pt <= 30.0) weight_leading = 0.863;
+            else if (leading_pt > 30.0 && leading_pt <= 40.0) weight_leading = 0.890;
+            else if (leading_pt > 40.0) weight_leading = 0.899;
         }
     }
 
@@ -422,15 +422,15 @@ float gettrailingtrigweight(int id_trailing, float trailing_pt, float trailing_e
         }
         else if (trailing_eta >= 1.2 && trailing_eta < 2.1)
         {
-            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.946;
-            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.940;
-            else if (trailing_pt > 40.0) weight_trailing = 0.936;
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.945;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.939;
+            else if (trailing_pt > 40.0) weight_trailing = 0.935;
         }
         else if (trailing_eta >= 2.1)
         {
-            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.;
-            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.;
-            else if (trailing_pt > 40.0) weight_trailing = 0.;
+            if (trailing_pt > 20.0 && trailing_pt <= 30.0) weight_trailing = 0.925;
+            else if (trailing_pt > 30.0 && trailing_pt <= 40.0) weight_trailing = 0.931;
+            else if (trailing_pt > 40.0) weight_trailing = 0.934;
         }
     }
 
