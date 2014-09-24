@@ -687,45 +687,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 			  GetAfb(hUnfolded, Afb, AfbErr);
 
-			  //-------------------------------------------//
-			  //   DAN'S DEBUGGING OUTPUT                  //
-			  //-------------------------------------------//
-			  // cout << "*******Unfolded result: Afb=" << Afb << ", err=" << AfbErr << endl;
-			  // if( k == 3 ) {
-			  // 	gStyle->SetPadRightMargin(0.17);
-
-			  // 	TCanvas *c_data = new TCanvas("c_data", "c_data", 675, 600);
-			  // 	gStyle->SetPalette(1);
-			  // 	hSmeared->SetTitle("Smeared");
-			  // 	hSmeared->GetZaxis()->SetMoreLogLabels();
-			  // 	hSmeared->Draw("COLZ");
-			  // 	c_data->SaveAs("DEBUG_2D_smeared_" + acceptanceName +"_" + Var2D + ".pdf");
-			  // 	hMeas_after->SetTitle("Meas_after");
-			  // 	hMeas_after->Draw("COLZ");
-			  // 	c_data->SaveAs("DEBUG_2D_meas_" + acceptanceName +"_" + Var2D + ".pdf");
-
-			  // 	TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1850, 600);
-			  // 	TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
-			  // 	gStyle->SetPalette(1);
-			  // 	hResp->SetTitle("Migration matrix");
-			  // 	hResp->GetXaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (reco)");
-			  // 	hResp->GetYaxis()->SetTitle(yaxislabel + " and " + xaxislabel + ", unwrapped (gen)");
-			  // 	hResp->Draw("COLZ");
-			  // 	c_resp->SetLogz();
-			  // 	c_resp->SaveAs("DEBUG_2D_Response_" + acceptanceName + "_" + Var2D + ".pdf");
-
-			  // 	TCanvas *c_output = new TCanvas("c_output", "c_output", 675, 600);
-			  // 	gStyle->SetPalette(1);
-			  // 	// c_output->SetLogz();
-			  // 	hUnfolded_unwrapped->Draw();
-			  // 	c_output->SaveAs("DEBUG_2D_unfolded_unwrapped_" + acceptanceName + ".pdf");
-			  // 	hUnfolded->SetTitle("Unfolded ttDil");
-			  // 	hUnfolded->GetZaxis()->SetMoreLogLabels();
-			  // 	hUnfolded->Draw("COLZ");
-			  // 	c_output->SaveAs("DEBUG_2D_unfolded_" + acceptanceName + ".pdf");
-			  // }
-			  //-------------------------------------------//
-
 			  vector<double> afb2D;
 			  vector<double> afb2Derr;
 			  afb2D.clear();
