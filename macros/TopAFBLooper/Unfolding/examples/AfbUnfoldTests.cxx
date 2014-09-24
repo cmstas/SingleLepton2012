@@ -201,7 +201,10 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
     for (int iD = 0; iD < (nbinsx_gen/2)+nbinsx_gen+1; ++iD)
     {
-        AfbPull[iD] = new TH1D("h_afbpull" + iD, "Pulls for Afb" + iD, pullBins, -pullMax, pullMax);
+	  char hname[15], htitle[18];
+	  sprintf( hname, "h_afbpull_%d", iD );
+	  sprintf( htitle, "Pulls for Afb %d", iD );
+	  AfbPull[iD] = new TH1D(hname, htitle, pullBins, -pullMax, pullMax);
     }
 
 

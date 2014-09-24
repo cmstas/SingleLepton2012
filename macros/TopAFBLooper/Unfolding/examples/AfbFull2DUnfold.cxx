@@ -451,7 +451,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// First step: unwrap our TH2Ds into TH1Ds!
 		unwrap2dhisto_3ch(hData, hData_unwrapped);
 		unwrap2dhisto_3ch(hBkg,  hBkg_unwrapped);
-		unwrap2dhisto_3ch(hTrue, hTrue_unwrapped);
+		unwrap2dhisto(hTrue, hTrue_unwrapped);
 		unwrap2dhisto_3ch(hMeas, hMeas_unwrapped);
 
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
