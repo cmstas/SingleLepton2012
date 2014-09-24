@@ -159,7 +159,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		
 		//Make histograms
 
-		//Use proper 2D histograms, instead of the old 1D ones
+		//Use 2D histograms to store the distributions
         TH2D *hData_combined = new TH2D ("Data_combined", "Data combined", nbinsx_reco, recobins, nbinsy2D, ybins2D);
         TH2D *hData = new TH2D ("Data", "Data", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
         TH2D *hBkg = new TH2D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
@@ -176,7 +176,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TH1D *hBkg_unwrapped = new TH1D ("Background_Unwr",  "Background unwrapped",    nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
         TH1D *hData_unfolded_unwrapped = new TH1D ("Data_Unfold_Unwr", "Data unfolded and unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
         TH1D *hTrue_unwrapped = new TH1D ("true_unwr", "Truth unwrapped",  nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
-        TH1D *hTrue_unwrapped_split = new TH1D ("true_unwr_split", "Truth unwrapped, split",  nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
         TH1D *hMeas_unwrapped = new TH1D ("meas_unwr", "Measured unwrapped", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
 
 		//Migration matrix, using the unwrapped binning on both axes
@@ -186,8 +185,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		TH2D *hData_bkgSub_combined;
 		// TH1D* hMeas_newErr;
 
-		delete[] genbins;
-		delete[] recobins_3ch;
 
 		hTrue_split->RebinX(2);
 
@@ -225,6 +222,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		double histmin = recobins[0];
 		double hiBinCenter = hData_combined->GetXaxis()->GetBinCenter(nbinsx_reco);
 		double loBinCenter = hData_combined->GetXaxis()->GetBinCenter(1);
+
+		delete[] genbins;
+		delete[] recobins;
+		delete[] recobins_3ch;
 
 		///// Load data from data chain, and fill hData //////////
         ch_data->SetBranchAddress(observablename,    &observable);
@@ -379,7 +380,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             }
         }
 
-		delete[] recobins;
 
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
@@ -452,7 +452,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		unwrap2dhisto_3ch(hData, hData_unwrapped);
 		unwrap2dhisto_3ch(hBkg,  hBkg_unwrapped);
 		unwrap2dhisto_3ch(hTrue, hTrue_unwrapped);
-		unwrap2dhisto_3ch(hTrue_split, hTrue_unwrapped_split);
 		unwrap2dhisto_3ch(hMeas, hMeas_unwrapped);
 
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
