@@ -55,6 +55,7 @@ const double mt_solver = 172.5;
 const double mlb_max = sqrt(mt_solver * mt_solver - mW_solver * mW_solver);
 bool makeCRplots = false; //For CR studies. If true don't apply the selection until making plots.
 bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
+bool applyTopPtWeighting = false;
 
 
 StopTreeLooper::StopTreeLooper()
@@ -771,6 +772,16 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             float trigweight = isData ? 1. : getsltrigweight(stopt.id1(), stopt.lep1().Pt(), stopt.lep1().Eta());
             float trigweight_dl = isData ? 1. : getdltrigweight(stopt.id1(), stopt.id2());
+
+
+            if ( applyTopPtWeighting && (name.Contains("ttdl") || name.Contains("ttsl") || name.Contains("ttfake")) )
+            {
+
+                float pT_topplus_gen = stopt.t().Pt();
+                float pT_topminus_gen = stopt.tbar().Pt();
+                evtweight *= sqrt( TopPtWeight(pT_topplus_gen) * TopPtWeight(pT_topminus_gen) );
+            }
+
 
             //
             // SIGNAL REGION - dilepton + b-tag
@@ -1967,6 +1978,18 @@ void StopTreeLooper::CloseBabyNtuple()
     babyFile_->cd();
     babyTree_->Write();
     babyFile_->Close();
+}
+
+
+double StopTreeLooper::TopPtWeight(double topPt)
+{
+    if ( topPt < 0 ) return 1;
+    if (topPt > 400) topPt = 400;
+
+    double result = exp(0.156 - 0.00137 * topPt); //8 TeV fit (l+j and 2l combined)
+    //note this fit is for data/madgraph, and we are using MC@NLO
+
+    return result;
 }
 
 

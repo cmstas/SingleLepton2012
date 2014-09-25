@@ -40,15 +40,11 @@ double topAFB_looper::TopPtWeight(double topPt)
     if ( topPt < 0 ) return 1;
     if (topPt > 400) topPt = 400;
 
-    //double result = (1.4 / 1000000.0) * topPt * topPt - (2.0 / 1000.0) * topPt + 1.2; //old 7TeV fit (l+j and 2l combined)
-    double result = exp(0.199 - 0.00166 * topPt); //new 7TeV fit (l+j and 2l combined)
+    double result = exp(0.156 - 0.00137 * topPt); //8 TeV fit (l+j and 2l combined)
     //note this fit is for data/madgraph, and we are using MC@NLO
-
-
 
     return result;
 }
-
 
 
 

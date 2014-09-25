@@ -59,6 +59,9 @@ public:
     //selection
     bool passFullSelection(bool isData);
 
+    //top pT reweighting
+    double TopPtWeight(double topPt);
+
 
 private:
 
