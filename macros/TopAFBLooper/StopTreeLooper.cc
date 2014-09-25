@@ -260,11 +260,22 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             // to reweight from the nvtx distribution
             // float evtweight = isData ? 1. :
-            //    ( stopt.weight() * 19.5 * stopt.nvtxweight() * stopt.mgcor() );
+            //    ( stopt.weight() * 19.5 * stopt.nvtxweight() );
             float puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt, isData );
             float evtweight = isData ? 1. :
                               ( stopt.weight() * 19.5 * puweight );
-            if (!name.Contains("lmg")) evtweight *= stopt.mgcor();
+
+            //make corrections to the mcatnlo baby weights (same as mgcor in singleLeptonLooper.cc)
+            if (name.Contains("mcatnlo")) {
+                  if( stopt.nleps() == 0 ) evtweight *= 1.028;
+                  if( stopt.nleps() == 1 ) evtweight *= 0.986;
+                  if( stopt.nleps() == 2 ) evtweight *= 0.945;
+            }
+            //apply the evt_scale1fb normalisation missing from the mcatnlo babies
+            if (name.Contains("mcatnlo")) {
+                evtweight *= 234000.*274.00756/211.1/32852589.;  //274.00756/211.1 is the ratio of the the per-event xsec and the PREP xsec and accounts for the events with negative weights
+            }
+
 
             plot1DUnderOverFlow("h_vtx",       stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
             plot1DUnderOverFlow("h_vtxweight",     puweight, evtweight, h_1d, 41, -4., 4.);
@@ -771,7 +782,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if (!isData) dataset_2l = true;
 
             float trigweight = isData ? 1. : getsltrigweight(stopt.id1(), stopt.lep1().Pt(), stopt.lep1().Eta());
-            float trigweight_dl = isData ? 1. : getdltrigweight(stopt.id1(), stopt.id2());
+            //float trigweight_dl = isData ? 1. : getdltrigweight(stopt.id1(), stopt.id2());
+            float trigweight_dl = isData ? 1. : getdltrigweight_pteta(stopt.id1(), stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.id2(), stopt.lep2().Pt(), stopt.lep2().Eta());
 
 
             if ( applyTopPtWeighting && (name.Contains("ttdl") || name.Contains("ttsl") || name.Contains("ttfake")) )
