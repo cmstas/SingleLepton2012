@@ -739,7 +739,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                      << Form("%s", hist1dname[i]) << endl;
 
                 h_mc1d[i][j]->Sumw2();
-                if(j==0||j==1) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
+                //if(j==0||j==1) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
                 //if(j==0||j==1) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
                 // Rebin, set limits
@@ -1423,7 +1423,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     cout << "**********************ASYMS**********************" << endl;
     cout << "-------------------------------------------------" << endl;
 
-for (int k = 1; k < 8; ++k)
+for (int k = 1; k < 9; ++k)
 {
 
     printf("Variable: %s \n", file1dname[k]);

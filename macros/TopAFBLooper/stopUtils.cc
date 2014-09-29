@@ -319,6 +319,9 @@ float getdltrigweight_pteta(int id_l1, float l1_pt, float l1_eta, int id_l2, flo
   l1_eta = fabs(l1_eta);
   l2_eta = fabs(l2_eta);
 
+  id_l1 = abs(id_l1);
+  id_l2 = abs(id_l2);
+
   eff_1l  = getleadingtrigweight(id_l1, l1_pt, l1_eta);
   //eff_1t  = gettrailingtrigweight(id_l1, l1_pt, l1_eta);
   //eff_2l  = getleadingtrigweight(id_l2, l2_pt, l2_eta);

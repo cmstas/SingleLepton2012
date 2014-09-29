@@ -265,11 +265,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             float evtweight = isData ? 1. :
                               ( stopt.weight() * 19.5 * puweight );
 
-            //make corrections to the mcatnlo baby weights (same as mgcor in singleLeptonLooper.cc)
+            //make corrections to the mcatnlo baby weights (same as mgcor in singleLeptonLooper.cc). stopt.nleps() does not include hadronic taus, so count leptons based on their gen-level id
             if (name.Contains("mcatnlo")) {
-                  if( stopt.nleps() == 0 ) evtweight *= 1.028;
-                  if( stopt.nleps() == 1 ) evtweight *= 0.986;
-                  if( stopt.nleps() == 2 ) evtweight *= 0.945;
+                  if( stopt.lepPlus_status3_id() == -9999 && stopt.lepMinus_status3_id() == -9999 ) evtweight *= 1.028;
+                  else if( stopt.lepPlus_status3_id() != -9999 && stopt.lepMinus_status3_id() != -9999 ) evtweight *= 0.945;
+                  else evtweight *= 0.986;
             }
             //apply the evt_scale1fb normalisation missing from the mcatnlo babies
             if (name.Contains("mcatnlo")) {
