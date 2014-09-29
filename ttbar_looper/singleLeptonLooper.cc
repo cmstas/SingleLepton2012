@@ -1641,6 +1641,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 	nleps_ = nleps;
   
 	// this is a weight which corrects for the wrong MG W->lnu BF
+  // no longer used, and broken because "leptonGenpCount_lepTauDecays_status3only" doesn't count hadronic taus as leptons
 	if( prefix.Contains("ttall") ||
 	    prefix.Contains("tt_") ){
 	  if( nleps == 0 ) mgcor_ = 1.028;
