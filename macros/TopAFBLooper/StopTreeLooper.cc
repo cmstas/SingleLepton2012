@@ -55,6 +55,7 @@ const double mt_solver = 172.5;
 const double mlb_max = sqrt(mt_solver * mt_solver - mW_solver * mW_solver);
 bool makeCRplots = false; //For CR studies. If true don't apply the selection until making plots.
 bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
+bool applyTopPtWeighting = false;
 
 
 StopTreeLooper::StopTreeLooper()
@@ -158,6 +159,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     //------------------------------
 
     unsigned int nEventsChain = 0;
+    unsigned int nEvents_channel_migrated = 0;
     unsigned int nEvents = chain->GetEntries();
     nEventsChain = nEvents;
     ULong64_t nEventsTotal = 0;
@@ -258,11 +260,22 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             // to reweight from the nvtx distribution
             // float evtweight = isData ? 1. :
-            //    ( stopt.weight() * 19.5 * stopt.nvtxweight() * stopt.mgcor() );
+            //    ( stopt.weight() * 19.5 * stopt.nvtxweight() );
             float puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt, isData );
             float evtweight = isData ? 1. :
                               ( stopt.weight() * 19.5 * puweight );
-            if (!name.Contains("lmg")) evtweight *= stopt.mgcor();
+
+            //make corrections to the mcatnlo baby weights (same as mgcor in singleLeptonLooper.cc). stopt.nleps() does not include hadronic taus, so count leptons based on their gen-level id
+            if (name.Contains("mcatnlo")) {
+                  if( stopt.lepPlus_status3_id() == -9999 && stopt.lepMinus_status3_id() == -9999 ) evtweight *= 1.028;
+                  else if( stopt.lepPlus_status3_id() != -9999 && stopt.lepMinus_status3_id() != -9999 ) evtweight *= 0.945;
+                  else evtweight *= 0.986;
+            }
+            //apply the evt_scale1fb normalisation missing from the mcatnlo babies
+            if (name.Contains("mcatnlo")) {
+                evtweight *= 234000.*274.00756/211.1/32852589.;  //274.00756/211.1 is the ratio of the the per-event xsec and the PREP xsec and accounts for the events with negative weights
+            }
+
 
             plot1DUnderOverFlow("h_vtx",       stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
             plot1DUnderOverFlow("h_vtxweight",     puweight, evtweight, h_1d, 41, -4., 4.);
@@ -404,6 +417,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //----------------------------------------------------------------------------
 
             if ( !makeCRplots && !passFullSelection(isData) ) continue;
+
+            //store dilepton mass to fill in baby tree (region 20<Mll<30 is worst affected by deltaPhi bump)
+            dilmass = stopt.dilmass();
 
             //mlb variables sensitive to top mass without needing solver
             mlb_1 = (stopt.lep1() + bcandidates.at(0)).M();
@@ -710,6 +726,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             //flavor types
             channel = -999;
+            genchannel = -999;
             string flav_tag_sl;
             if ( abs(stopt.id1()) == 13 ) flav_tag_sl = "_muo";
             else if ( abs(stopt.id1()) == 11 ) flav_tag_sl = "_ele";
@@ -765,7 +782,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if (!isData) dataset_2l = true;
 
             float trigweight = isData ? 1. : getsltrigweight(stopt.id1(), stopt.lep1().Pt(), stopt.lep1().Eta());
-            float trigweight_dl = isData ? 1. : getdltrigweight(stopt.id1(), stopt.id2());
+            //float trigweight_dl = isData ? 1. : getdltrigweight(stopt.id1(), stopt.id2());
+            float trigweight_dl = isData ? 1. : getdltrigweight_pteta(stopt.id1(), stopt.lep1().Pt(), stopt.lep1().Eta(), stopt.id2(), stopt.lep2().Pt(), stopt.lep2().Eta());
+
+
+            if ( applyTopPtWeighting && (name.Contains("ttdl") || name.Contains("ttsl") || name.Contains("ttfake")) )
+            {
+
+                float pT_topplus_gen = stopt.t().Pt();
+                float pT_topminus_gen = stopt.tbar().Pt();
+                evtweight *= sqrt( TopPtWeight(pT_topplus_gen) * TopPtWeight(pT_topminus_gen) );
+            }
+
 
             //
             // SIGNAL REGION - dilepton + b-tag
@@ -780,8 +808,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                 weight = evtweight * trigweight_dl;
 
-                FillBabyNtuple();
-
                 makeNJPlots( weight, h_1d_nj, "", basic_flav_tag_dl);
                 makeSIGPlots( weight, h_1d_sig,  tag_btag  , basic_flav_tag_dl );
                 makeSIGPlots( weight, h_1d_sig,  tag_btag  , "_all" );
@@ -790,11 +816,13 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 {
                     //gen-level flavour
                     string basic_flav_tag_dl_gen;
-                    if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 11 ) basic_flav_tag_dl_gen = "_gendiel";
-                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 11 ) basic_flav_tag_dl_gen = "_genmueg";
-                    else if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 13 ) basic_flav_tag_dl_gen = "_genmueg";
-                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 13 ) basic_flav_tag_dl_gen = "_gendimu";
+                    if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 11 ) {genchannel = 0; basic_flav_tag_dl_gen = "_gendiel";}
+                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 11 ) {genchannel = 2; basic_flav_tag_dl_gen = "_genmueg";}
+                    else if ( stopt.lepPlus_status1_id() == -11 && stopt.lepMinus_status1_id() == 13 ) {genchannel = 2; basic_flav_tag_dl_gen = "_genmueg";}
+                    else if ( stopt.lepPlus_status1_id() == -13 && stopt.lepMinus_status1_id() == 13 ) {genchannel = 1; basic_flav_tag_dl_gen = "_gendimu";}
                     else cout<<"indeterminate dilepton type: "<<stopt.lepPlus_status1_id()<<" "<<stopt.lepMinus_status1_id()<<endl;
+
+                    if(channel!=genchannel) {nEvents_channel_migrated++; cout<<nEvents_channel_migrated<<" "<<100.*double(nEvents_channel_migrated)/double(nEventsTotal)<<"%"<<endl;}
 
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl );
                     makettPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
@@ -803,6 +831,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , basic_flav_tag_dl_gen );
                     makeAccPlots( weight, h_1d_sig, h_2d_sig, tag_btag  , "_all" );
                 }
+
+                FillBabyNtuple();
 
             }
 
@@ -1876,7 +1906,7 @@ bool StopTreeLooper::passFullSelection(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             && n_bjets > 0
             && n_jets > 1
-            && (stopt.lep1() + stopt.lep2()).M() >= 20.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -1901,6 +1931,7 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("ls",                    &ls,                  "ls/I"                   );
     babyTree_->Branch("evt",                   &evt,                 "evt/I"                  );
     babyTree_->Branch("channel",                &channel,              "channel/I"               );
+    babyTree_->Branch("genchannel",                &genchannel,              "genchannel/I"               );
     babyTree_->Branch("t_mass",                &m_top,              "t_mass/F"               );
     babyTree_->Branch("weight",                &weight,              "weight/D"               );
     //babyTree_->Branch("Nsolns",                &Nsolns_,              "Nsolns/I"               );
@@ -1909,6 +1940,7 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     //babyTree_->Branch("dr_ltjet_gen",          &dr_ltjet_gen_,        "dr_ltjet_gen/F"         );
     //babyTree_->Branch("dr_lljet_gen",          &dr_lljet_gen_,        "dr_lljet_gen/F"         );
     //babyTree_->Branch("ndavtx",                &ndavtx_,              "ndavtx/I"               );
+    babyTree_->Branch("dilmass",               &dilmass,             "dilmass/F"              );
     babyTree_->Branch("tt_mass",               &tt_mass,             "tt_mass/F"              );
     //babyTree_->Branch("ttRapidity",            &ttRapidity_,          "ttRapidity/F"           );
     babyTree_->Branch("ttRapidity2",            &ttRapidity2,          "ttRapidity2/F"           );
@@ -1958,6 +1990,18 @@ void StopTreeLooper::CloseBabyNtuple()
     babyFile_->cd();
     babyTree_->Write();
     babyFile_->Close();
+}
+
+
+double StopTreeLooper::TopPtWeight(double topPt)
+{
+    if ( topPt < 0 ) return 1;
+    if (topPt > 400) topPt = 400;
+
+    double result = exp(0.156 - 0.00137 * topPt); //8 TeV fit (l+j and 2l combined)
+    //note this fit is for data/madgraph, and we are using MC@NLO
+
+    return result;
 }
 
 

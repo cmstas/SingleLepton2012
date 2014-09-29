@@ -286,15 +286,13 @@ void doAll(bool skipFWLite = true)
 
   TChain* chtt_mcatnlo = new TChain("Events");
   if (runtt_mcatnlo) {
-    pickSkimIfExists(chtt_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing/mcatnlo/*.root");
+    pickSkimIfExists(chtt_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing_TT_mcatnlo_4/preprocessing/ntuple*.root");
+    //pickSkimIfExists(chtt_mcatnlo,"/hadoop/cms/store/user/linacre/CMS2_V05-03-32_j/TT_8TeV-mcatnlo_Summer12_DR53X-PU_S10_START53_V7A-v1/ntuple_592_3_Yz6.root");
   }
 
   TChain* chtt_powheg = new TChain("Events");
   if (runtt_powheg) {
-    cout << "UPDATE 7 TeV TT POWHEG SAMPLE!!!! QUITTING!!!" << endl;
-    exit(0);
-
-    pickSkimIfExists(chtt_powheg,"/hadoop/cms/store/group/snt/papers2011/Summer11MC/TT_TuneZ2_7TeV-powheg-tauola_Summer11-PU_S4_START42_V11-v1/V04-02-29/merged*root");
+    pickSkimIfExists(chtt_powheg,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing_TT_powheg_SC/preprocessing/ntuple*.root");
   }
   TChain* chtt_notauola = new TChain("Events");
   if (runtt_notauola) {

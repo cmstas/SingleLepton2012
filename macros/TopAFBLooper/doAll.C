@@ -25,7 +25,7 @@ void doAll() {
   //
  
   //char* path = "/nfs-6/userdata/stop/output_V00-02-32_2012";
-  char* path = "../../ttbar_looper/output/";
+  char* path = "/nfs-6/userdata/linacre/babies";
 
 //   const int NSAMPLES = 15;
 //   char* sampletag[NSAMPLES] = {
@@ -47,7 +47,7 @@ void doAll() {
 
   const int NSAMPLES = 1;//15;
   char* sampletag[NSAMPLES] = {
-    "ttdl_mcatnlo_smallTree"};
+    "ttdl_mcatnlo"};
 
   TChain *ch[NSAMPLES];
     

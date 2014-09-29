@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void makeSkimttdl(string path = ".", string tag = "tt_mcatnlo_smallTree") {
+void makeSkimttdl(string path = ".", string tag = "tt_mcatnlo") {
   
   //--------------------------------------------------
   // cut for output files
@@ -23,7 +23,7 @@ void makeSkimttdl(string path = ".", string tag = "tt_mcatnlo_smallTree") {
   // input and output file
   //--------------------------------------------------
   
-  char* infilename = Form("%s/%s.root",path.c_str(),tag.c_str());
+  char* infilename = Form("%s/%s_smallTree.root",path.c_str(),tag.c_str());
   
   tag.replace(0,2,outtag);
   char* outfilename = Form("%s/%s.root",path.c_str(),tag.c_str());
