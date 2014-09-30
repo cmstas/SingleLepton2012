@@ -34,7 +34,6 @@ using std::endl;
 // Global definitions
 //==============================================================================
 
-TString Region = "";
 Int_t kterm = 3; //for SVD
 Double_t tau = 0.005; //for TUnfold - this is a more reasonable default (1E-4 gives very little regularisation)
 Int_t nVars = 12;
@@ -418,7 +417,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         leg0->AddEntry(hMeas,  "MC@NLO reco level", "F");
         leg0->AddEntry(hBkg,  "Background", "F");
         leg0->Draw();
-        c_reco->SaveAs("1D_Reco_" + acceptanceName + Region + ".pdf");
+        c_reco->SaveAs("1D_Reco_" + acceptanceName + ".pdf");
 
 
 		/////// Do the unfolding! /////////////////////////////////////////////////////
@@ -493,10 +492,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         hResp->GetXaxis()->SetTitle(xaxislabel);
         hResp->GetYaxis()->SetTitle(xaxislabel + "_{gen}");
         hResp->Draw("COLZ");
-        //c_resp->SaveAs("1D_Response_" + acceptanceName + Region + ".eps");
-        c_resp->SaveAs("1D_Response_" + acceptanceName + Region + ".pdf");
-        //c_resp->SaveAs("Response_" + acceptanceName + Region + ".C");
-        //c_resp->SaveAs("Response_" + acceptanceName + Region + ".root");
+        //c_resp->SaveAs("1D_Response_" + acceptanceName + ".eps");
+        c_resp->SaveAs("1D_Response_" + acceptanceName + ".pdf");
+        //c_resp->SaveAs("Response_" + acceptanceName + ".C");
+        //c_resp->SaveAs("Response_" + acceptanceName + ".root");
 		gStyle->SetPadRightMargin(rmargin);
 
         TCanvas *c_purstab = new TCanvas("c_purstab", "c_purstab");
@@ -794,10 +793,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         blah->SetTextAlign(11);
         pt1->Draw();
 
-		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + Region + ".eps");
-		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + Region + ".pdf");
-        //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".C");
-        //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + Region + ".root");
+		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + ".eps");
+		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + ".pdf");
+        //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".C");
+        //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".root");
 		
         ch_data->Delete();
 
