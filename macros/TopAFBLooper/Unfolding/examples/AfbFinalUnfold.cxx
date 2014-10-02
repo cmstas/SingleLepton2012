@@ -332,12 +332,31 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
 
+		TH1D *accNum[3];
+		accNum[0] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_diel"));
+		accNum[1] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_dimu"));
+		accNum[2] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_mueg"));
+
+		TH1D *accDen[3];
+		accDen[0] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_diel"));
+		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
+		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
+
 		for( int aChannel=0; aChannel<3; aChannel++ ) {
 		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 
+			double old_error = hTrue_vs_Meas->GetBinError( 0, acceptbin );
+
+			//Calculate the number of rejected events, and fill it into the smearing matrix underflow
 			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
 			double n_accepted = hTrue_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
 			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_accepted/acceptance - n_accepted );
+
+			//Calculate the uncertainty on the rejected events
+			double num_error = accNum[aChannel]->GetBinError(acceptbin);
+			double den_error = accDen[aChannel]->GetBinError(acceptbin);
+			double new_error = sqrt( old_error*old_error + den_error*den_error - num_error*num_error  );
+			hTrue_vs_Meas->SetBinError( 0, acceptbin, new_error );
 
 		  }
 		}
@@ -439,6 +458,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		unfold_TUnfold.GetOutput(hData_unfolded);
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+		unfold_TUnfold.GetEmatrixSysUncorr(ematrix, 0, false);
 		TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
 		for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
 		  {
