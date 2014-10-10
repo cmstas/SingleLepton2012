@@ -392,14 +392,33 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
 
+		TH2D *accNum[3];
+		accNum[0] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_diel"));
+		accNum[1] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_dimu"));
+		accNum[2] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_mueg"));
+
+		TH2D *accDen[3];
+		accDen[0] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_diel"));
+		accDen[1] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_dimu"));
+		accDen[2] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_mueg"));
+
 		for( int aChannel=0; aChannel<3; aChannel++ ) {
 		  for( int yBin=1; yBin<=nbinsy2D; yBin++ ) {
 			for( int xBin=1; xBin<=nbinsx_gen; xBin++ ) {
 
+			  genbin = (yBin-1)*nbinsx_gen + xBin;
+			  double old_error = hTrue_vs_Meas->GetBinError( 0, genbin );
+
+			  //Calculate the number of rejected events, and fill it into the smearing matrix underflow
 			  double acceptance = acceptM[aChannel]->GetBinContent( xBin, yBin );
 			  double n_accepted = hTrue_split->GetBinContent( aChannel*nbinsx_gen + xBin, yBin );
-			  genbin = (yBin-1)*nbinsx_gen + xBin;
 			  hTrue_vs_Meas->Fill( -999999, double(genbin), n_accepted/acceptance - n_accepted );
+
+			  //Calculate the uncertainty on the rejected events
+			  double num_error = accNum[aChannel]->GetBinError( xBin, yBin );
+			  double den_error = accDen[aChannel]->GetBinError( xBin, yBin );
+			  double new_error = sqrt( old_error*old_error + den_error*den_error - num_error*num_error );
+			  hTrue_vs_Meas->SetBinError( 0, genbin, new_error );
 
 			}
 		  }
@@ -488,6 +507,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		tau = unfold_TUnfold.GetTau();
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+		unfold_TUnfold.GetEmatrixSysUncorr(ematrix, 0, false);
+
 		for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
 		  {
 			for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
