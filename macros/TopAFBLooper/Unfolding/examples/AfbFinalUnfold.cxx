@@ -342,6 +342,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
 		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
 
+		double gen_integrals[4];
+		double reco_integrals[4];
+
+		//Figure out the relative proportion of events in each channel
+		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		  gen_integrals[aChannel] = hTrue_split->Integral( aChannel*nbinsx_gen+1, (aChannel+1)*nbinsx_gen );
+		  reco_integrals[aChannel] = hData->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco );
+		}
+		gen_integrals[3] = gen_integrals[0] + gen_integrals[1] + gen_integrals[2];
+		reco_integrals[3] = reco_integrals[0] + reco_integrals[1] + reco_integrals[2];
+
+
 		for( int aChannel=0; aChannel<3; aChannel++ ) {
 		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 
@@ -350,7 +362,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			//Calculate the number of rejected events, and fill it into the smearing matrix underflow
 			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
 			double n_accepted = hTrue_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
-			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_accepted/acceptance - n_accepted );
+			double n_rejected = n_accepted/acceptance - n_accepted;
+			double correction = (reco_integrals[aChannel] / reco_integrals[3]) / (gen_integrals[aChannel] / gen_integrals[3]);
+			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_rejected*correction );
 
 			//Calculate the uncertainty on the rejected events
 			double num_error = accNum[aChannel]->GetBinError(acceptbin);
