@@ -79,9 +79,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
     TString path = "../";
     TString dataroot[nSig] = {"data_diel_baby.root", "data_dimu_baby.root", "data_mueg_baby.root"};
     // TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
-    TString bkgroot[nBkg] = {"DY1to4Jtot_baby.root", "diboson_baby.root", "tW_lepdl_baby.root", "tW_lepfake_baby.root", "tW_lepsl_baby.root", "triboson_baby.root", "ttV_baby.root", "ttfake_powheg_baby.root", "ttsl_powheg_baby.root", "w1to4jets_baby.root"};
+    TString bkgroot[nBkg] = {"DY1to4Jtot_baby.root", "diboson_baby.root", "tW_lepdl_baby.root", "tW_lepfake_baby.root", "tW_lepsl_baby.root", "triboson_baby.root", "ttV_baby.root", "ttfake_mcatnlo_baby.root", "ttsl_mcatnlo_baby.root", "w1to4jets_baby.root"};
 
-    double bkgSF[nBkg] = {scalettotr, scalewjets, scaleDY, scaleDY, scaleDY, scaletw, scaleVV};
+    double bkgSF[nBkg] = {scaleDY, scaleVV, scaletw, scaletw, scaletw, scaleVV, scalettotr, scalettotr, scalettotr, scalewjets};
 
     Float_t observable, observable_gen, tmass, ttmass, ttRapidity2;
     Float_t observableMinus, observableMinus_gen;
@@ -209,7 +209,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             ch_data->Add(path + dataroot[iSig]);
         }
 
-        ch_top->Add(path + "ttdl_mcatnlo_smallTree_baby.root");
+        ch_top->Add(path + "ttdl_mcatnlo_baby.root");
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
         {
