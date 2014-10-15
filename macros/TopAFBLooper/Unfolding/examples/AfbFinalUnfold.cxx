@@ -92,22 +92,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		// Figure out all possible binning schemes based on the basic binning scheme
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
-		int nbinsx_reco_3ch = -99;
+		int nbinsx_reco_2ch = -99;
 
 		if( iVar < 2 || iVar == 9 ) nbinsx_gen = nbinsx2Dalt;
 		else nbinsx_gen = nbins1D;
 
 		nbinsx_reco = nbinsx_gen*2;
 		//nbinsx_reco = nbinsx_gen;
-		nbinsx_reco_3ch = nbinsx_reco*3;
+		nbinsx_reco_2ch = nbinsx_reco*2;
 
 		double* genbins;
 		double* recobins;
-		double* recobins_3ch;
+		double* recobins_2ch;
 
 		genbins = new double[nbinsx_gen+1];
 		recobins = new double[nbinsx_reco+1];
-		recobins_3ch = new double[nbinsx_reco_3ch+1];
+		recobins_2ch = new double[nbinsx_reco_2ch+1];
 
 		// Make gen binning array
         if( iVar < 2 || iVar == 9 ) {
@@ -133,40 +133,40 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
 		// Make reco binning array including the 3-channel split
 		double recohist_width = fabs(recobins[nbinsx_reco] - recobins[0]);
-		std::copy( recobins, recobins+nbinsx_reco+1, recobins_3ch );
-		for( int i=nbinsx_reco+1; i<nbinsx_reco_3ch+1; i++ ) {
-		  recobins_3ch[i] = recobins_3ch[i-nbinsx_reco] + recohist_width;
+		std::copy( recobins, recobins+nbinsx_reco+1, recobins_2ch );
+		for( int i=nbinsx_reco+1; i<nbinsx_reco_2ch+1; i++ ) {
+		  recobins_2ch[i] = recobins_2ch[i-nbinsx_reco] + recohist_width;
 		}
 
 
         bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
 
 		// Make our histograms!
-        //TH1D *hData = new TH1D ("Data", "Data with background subtracted",    nbinsx_reco, recobins);
-        TH1D *hData = new TH1D ("Data", "Data with background subtracted",    nbinsx_reco_3ch, recobins_3ch);
-        TH1D *hData_combined = new TH1D ("Data_combined", "Data with all channels combined", nbinsx_reco, recobins);
-        //TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco, recobins);
-        TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch);
+        TH1D *hData = new TH1D ("Data", "Data with background subtracted",    nbinsx_reco, recobins);
+        TH1D *hData_split = new TH1D ("Data_split", "Data split",    nbinsx_reco_2ch, recobins_2ch);
+        //TH1D *hData_combined = new TH1D ("Data_combined", "Data with all channels combined", nbinsx_reco, recobins);
+        TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco, recobins);
+        //TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco_2ch, recobins_2ch);
         TH1D *hData_unfolded = new TH1D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins);
 
-        TH1D *hTrue_split = new TH1D ("true_split", "Truth",    nbinsx_reco_3ch, recobins_3ch); //Rebinned below
+        TH1D *hTrue_split = new TH1D ("true_split", "Truth",    nbinsx_reco_2ch, recobins_2ch); //Rebinned below
 		TH1D *hTrue = new TH1D ("true_combined", "Truth",    nbinsx_gen, genbins);
-        //TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco, recobins);
-        TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch);
+        TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco, recobins);
+        //TH1D *hMeas = new TH1D ("meas", "Measured", nbinsx_reco_2ch, recobins_2ch);
         TH1D *denominatorM_nopTreweighting = new TH1D ("denominatorM_nopTreweighting", "denominatorM_nopTreweighting", nbinsx_gen, genbins);
 		TH1D *hPurity = new TH1D("purity", "Purity", nbinsx_gen, genbins);
 		TH1D *hStability = new TH1D("stability", "Stability", nbinsx_gen, genbins);
 
-        //TH2D *hTrue_vs_Meas = new TH2D("true_vs_meas", "True vs Measured", nbinsx_reco, recobins, nbinsx_gen, genbins);
-        TH2D *hTrue_vs_Meas = new TH2D("true_vs_meas", "True vs Measured", nbinsx_reco_3ch, recobins_3ch, nbinsx_gen, genbins);
+        TH2D *hTrue_vs_Meas = new TH2D("true_vs_meas", "True vs Measured", nbinsx_reco, recobins, nbinsx_gen, genbins);
+        //TH2D *hTrue_vs_Meas = new TH2D("true_vs_meas", "True vs Measured", nbinsx_reco_2ch, recobins_2ch, nbinsx_gen, genbins);
 
         TH1D *hData_bkgSub;
 
-		hTrue_split->Rebin(2); //This gives us the gen bin-widths, while preserving the 3-channel layout.
+		hTrue_split->Rebin(2); //This gives us the gen bin-widths, while preserving the 2-channel layout.
 
 		//delete[] genbins;
 		//delete[] recobins;
-		delete[] recobins_3ch;
+		delete[] recobins_2ch;
 
         TMatrixD m_unfoldE (nbinsx_gen, nbinsx_gen);
         TMatrixD m_correctE(nbinsx_gen, nbinsx_gen);
@@ -207,17 +207,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		double offset = 0;
 		double histmax = recobins[nbinsx_reco];
 		double histmin = recobins[0];
-		double hiBinCenter = hData_combined->GetBinCenter(nbinsx_reco);
-		double loBinCenter = hData_combined->GetBinCenter(1);
+		double hiBinCenter = hData->GetBinCenter(nbinsx_reco);
+		double loBinCenter = hData->GetBinCenter(1);
 
         for (Int_t i = 0; i < ch_data->GetEntries(); i++)
         {
             ch_data->GetEntry(i);
 
-			// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms.
-			//Use an offset to sort events into 3 superbins: ee, mumu, emu
+			// Calculate a correction to the asymmetry value, to put it in the correct bin in a 2x1 histogram.
+			//Use an offset to sort events into 2 superbins: ee/mumu, emu
+			if(channel>0) channel--;
 			offset = double(channel) * recohist_width;
-			//Do the same thing as "fillUnderOverflow", except adapted for 3x1 histograms
+			//Do the same thing as "fillUnderOverflow", except adapted for 2x1 histograms
 			if( observable > histmax )        observable = hiBinCenter;
 			else if( observable < histmin )   observable = loBinCenter;
 			if( observableMinus > histmax )        observableMinus = hiBinCenter;
@@ -226,11 +227,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             if ( iVar<2 || iVar==9 || tmass>0 )
             {
                 // leptonic asymmetries don't need valid top mass solution
-                fillUnderOverFlow(hData, observable+offset, weight, Nsolns);
-                fillUnderOverFlow(hData_combined, observable, weight, Nsolns);
+                fillUnderOverFlow(hData, observable, weight, Nsolns);
+                fillUnderOverFlow(hData_split, observable+offset, weight, Nsolns);
 				if (combineLepMinus) {
-                    fillUnderOverFlow(hData, observableMinus+offset, weight, Nsolns);
-                    fillUnderOverFlow(hData_combined, observableMinus, weight, Nsolns);
+                    fillUnderOverFlow(hData, observableMinus, weight, Nsolns);
+                    fillUnderOverFlow(hData_split, observableMinus+offset, weight, Nsolns);
 				  }
             }
 
@@ -246,25 +247,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             ch_bkg[iBkg]->SetBranchAddress("tt_mass", &ttmass);
             ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &ttRapidity2);
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
-			ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
+			// ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
 
             for (Int_t i = 0; i < ch_bkg[iBkg]->GetEntries(); i++)
             {
                 ch_bkg[iBkg]->GetEntry(i);
                 weight *= bkgSF[iBkg];
 
-				// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms
-				offset = double(channel) * recohist_width;
-				if( observable > histmax )        observable = hiBinCenter;
-				else if( observable < histmin )   observable = loBinCenter;
-				if( observableMinus > histmax )        observableMinus = hiBinCenter;
-				else if( observableMinus < histmin )   observableMinus = loBinCenter;
-
                 if ( iVar<2 || iVar==9 || tmass > 0 )
                 {
 				  // leptonic asymmetries don't need valid top mass solution
-				  fillUnderOverFlow(hBkg, observable+offset, weight, Nsolns);
-				  if (combineLepMinus) fillUnderOverFlow(hBkg, observableMinus+offset, weight, Nsolns);
+				  fillUnderOverFlow(hBkg, observable, weight, Nsolns);
+				  if (combineLepMinus) fillUnderOverFlow(hBkg, observableMinus, weight, Nsolns);
                 }
 
             }
@@ -286,6 +280,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         {
             ch_top->GetEntry(i);
 			// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms
+			if( channel > 0 ) channel --;
 			offset = double(channel) * recohist_width;
 			if( observable > histmax )        observable = hiBinCenter;
 			else if( observable < histmin )   observable = loBinCenter;
@@ -301,17 +296,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             if ( iVar<2 || iVar==9 || tmass>0 )
             {
                 //response.Fill (observable, observable_gen, weight);
-                fillUnderOverFlow(hMeas, observable+offset, weight, Nsolns);
+                fillUnderOverFlow(hMeas, observable, weight, Nsolns);
                 fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
                 fillUnderOverFlow(hTrue_split, observable_gen+offset, weight, Nsolns);
-                fillUnderOverFlow(hTrue_vs_Meas, observable+offset, observable_gen, weight, Nsolns);
+                fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
                 if ( combineLepMinus )
                 {
                     //response.Fill (observableMinus, observableMinus_gen, weight);
-                    fillUnderOverFlow(hMeas, observableMinus+offset, weight, Nsolns);
+                    fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
                     fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
                     fillUnderOverFlow(hTrue_split, observableMinus_gen+offset, weight, Nsolns);
-                    fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
+                    fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
                 }
             }
 
@@ -324,37 +319,42 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
-		TH1D *acceptM[4];
-		acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
-		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
-		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
-		acceptM[3] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
+		TH1D *acceptM[3];
+		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
+		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
 
-		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
+		acceptM[2]->Scale(1.0 / acceptM[2]->Integral());
 
 		TH1D *accNum[3];
 		accNum[0] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_diel"));
-		accNum[1] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_dimu"));
-		accNum[2] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_mueg"));
+		accNum[2] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_dimu"));
+		accNum[1] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_mueg"));
 
 		TH1D *accDen[3];
 		accDen[0] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_diel"));
-		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
-		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
+		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
+		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
 
-		double gen_integrals[4];
-		double reco_integrals[4];
+		//Tricks to make "channel 0" hold the combined same-flavor histograms
+		accNum[0]->Add( accNum[2] );
+		accDen[0]->Add( accDen[2] );
+
+		double gen_integrals[3];
+		double reco_integrals[3];
 
 		//Figure out the relative proportion of events in each channel
-		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  gen_integrals[aChannel] = hTrue_split->Integral( aChannel*nbinsx_gen+1, (aChannel+1)*nbinsx_gen );
-		  reco_integrals[aChannel] = hData->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco );
+		  reco_integrals[aChannel] = hData_split->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco );
 		}
-		gen_integrals[3] = gen_integrals[0] + gen_integrals[1] + gen_integrals[2];
-		reco_integrals[3] = reco_integrals[0] + reco_integrals[1] + reco_integrals[2];
+		gen_integrals[2] = gen_integrals[0] + gen_integrals[1];
+		reco_integrals[2] = reco_integrals[0] + reco_integrals[1];
 
 
-		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		acceptM[0] = (TH1D*)(accNum[0]->Clone("accept_SF"));
+		acceptM[0]->Divide( accDen[0] );
+
+		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 
 			double old_error = hTrue_vs_Meas->GetBinError( 0, acceptbin );
@@ -363,7 +363,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
 			double n_accepted = hTrue_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
 			double n_rejected = n_accepted/acceptance - n_accepted;
-			double correction = (reco_integrals[aChannel] / reco_integrals[3]) / (gen_integrals[aChannel] / gen_integrals[3]);
+			double correction = (reco_integrals[aChannel] / reco_integrals[2]) / (gen_integrals[aChannel] / gen_integrals[2]);
 			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_rejected*correction );
 
 			//Calculate the uncertainty on the rejected events
@@ -383,25 +383,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         	  hStability->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hTrue->GetBinContent(i) );
         	}
         }
-        else if( hMeas->GetNbinsX() ==  2*nbinsx_gen ) {
+        else if( hMeas->GetNbinsX() ==  2*nbinsx_gen || hMeas->GetNbinsX() == 4*nbinsx_gen ) {
             for( int i=1; i<=nbinsx_gen; i++ ) {
               hPurity->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / (hMeas->GetBinContent(2*i)+hMeas->GetBinContent(2*i-1)) );
               hStability->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / hTrue->GetBinContent(i) );
             }
         }
-		else if ( hMeas->GetNbinsX() == 6*nbinsx_gen ) {
-		  for( int i=1; i<=nbinsx_gen; i++ ) {
-			double numerator = hTrue_vs_Meas->GetBinContent(2*i,i) + hTrue_vs_Meas->GetBinContent(2*i-1,i) +
-			  hTrue_vs_Meas->GetBinContent(2*i+nbinsx_reco,i) + hTrue_vs_Meas->GetBinContent(2*i+nbinsx_reco-1,i) +
-			  hTrue_vs_Meas->GetBinContent(2*i+2*nbinsx_reco,i) + hTrue_vs_Meas->GetBinContent(2*i+2*nbinsx_reco-1,i);
-			double purity_denom = hMeas->GetBinContent(2*i,i) + hMeas->GetBinContent(2*i-1,i) +
-			  hMeas->GetBinContent(2*i+nbinsx_reco,i) + hMeas->GetBinContent(2*i+nbinsx_reco-1,i) +
-			  hMeas->GetBinContent(2*i+2*nbinsx_reco,i) + hMeas->GetBinContent(2*i+2*nbinsx_reco-1,i);
-			double stability_denom = hTrue->GetBinContent(i);
-			hPurity->SetBinContent(i, numerator/purity_denom);
-			hStability->SetBinContent(i, numerator/stability_denom);
-		  }
-		}
 		else {
 		  cout << "\n***WARNING: Purity and stability plots are broken!!!\n" << endl;
 		}
@@ -472,7 +459,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		unfold_TUnfold.GetOutput(hData_unfolded);
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-		unfold_TUnfold.GetEmatrixSysUncorr(ematrix, 0, false);
+		unfold_TUnfold.GetEmatrixSysUncorr( ematrix, 0, false );
 		TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
 		for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
 		  {
@@ -519,7 +506,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		float rmargin = gStyle->GetPadRightMargin();
 		gStyle->SetPadRightMargin(0.13);
 
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1850, 600);
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp");
 		c_resp->SetLogz();
 		TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
         gStyle->SetPalette(1);
@@ -550,10 +537,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
 		{
 
-		  if (acceptM[3]->GetBinContent(i) != 0)
+		  if (acceptM[2]->GetBinContent(i) != 0)
 		  {
-			hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
-			hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[3]->GetBinContent(i));
+			hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[2]->GetBinContent(i));
+			hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[2]->GetBinContent(i));
 		  }
 
 		  denominatorM_nopTreweighting->SetBinContent(i, denominatorM_nopTreweighting_raw->GetBinContent(i));
@@ -636,7 +623,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         Float_t Afb, AfbErr;
 
-        GetAfb(hData_combined, Afb, AfbErr);
+        GetAfb(hData, Afb, AfbErr);
         cout << " Data: " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(hTrue, Afb, AfbErr);
