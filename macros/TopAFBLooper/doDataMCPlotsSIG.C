@@ -779,14 +779,14 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         {
             if (!hasplot[leptype][i]) continue;
 
-            cout << "-------------------------------------------------" << endl;
+            //cout << "-------------------------------------------------" << endl;
             float mcall = h_mc1d_tot[i]->Integral();
             float dtall = h_dt1d[i]->Integral();
-            cout << "MC ALL " << mcall << endl;
-            cout << "Data ALL " << dtall << endl;
+            //cout << "MC ALL " << mcall << endl;
+            //cout << "Data ALL " << dtall << endl;
             float mcsf_all = dtall / mcall;
-            cout << "RATIO ALL " << mcsf_all << endl;
-            cout << "-------------------------------------------------" << endl;
+            //cout << "RATIO ALL " << mcsf_all << endl;
+            //cout << "-------------------------------------------------" << endl;
             mcsf_all = 1;
             h_mc1d_tot[i]->Scale(mcsf_all);
             /*
@@ -874,7 +874,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 if (leptype == nCh - 1) sorted_mc1d_comb[i].push_back( h_mc1d_comb[i][j] );
 
             }
-            cout << "sorting" << endl;
+            //cout << "sorting" << endl;
             //sort mc histograms
             sort( sorted_mc1d[i].begin(), sorted_mc1d[i].end(), sortByIntegral );
             sort( sorted_mc1d_comb[i].begin(), sorted_mc1d_comb[i].end(), sortByIntegral );
@@ -952,6 +952,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         // End of add titles to axes /////////////////////////////////////////////
 
         // Print expected number of MC events, after all normalizations
+        /*
         for (int j = 0; j < MCID; ++j)
         {
             cout << endl << "Expected " << legend[j]
@@ -960,6 +961,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         }
         cout << endl << "Expected Data " << h_dt1d[1]->Integral(1, h_dt1d[1]->GetNbinsX())
              << endl;
+        */
 
         // Stack histograms ////////////////////////////////////////////////////
         THStack *s_mc1d[N1DHISTS];
@@ -977,11 +979,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 //    for (int j=MCID-1;j>=0;--j) {
                 //      s_mc1d[i]->Add(h_mc1d[i][j]);
             }
-            cout << endl << "MC " << h_mc1d_tot[i]->Integral(1, h_mc1d_tot[i]->GetNbinsX())
-                 << endl;
-            cout << endl << "Data " << h_dt1d[1]->Integral(1, h_dt1d[1]->GetNbinsX())
-                 << endl;
-            cout << endl;
+            //cout << endl << "MC " << h_mc1d_tot[i]->Integral(1, h_mc1d_tot[i]->GetNbinsX())
+            //     << endl;
+            //cout << endl << "Data " << h_dt1d[1]->Integral(1, h_dt1d[1]->GetNbinsX())
+            //     << endl;
+            //cout << endl;
             // if (i==0) {
             //   TFile *outfile_sl=new TFile("mt_leadmuo_njge4.root","RECREATE");
             //   s_mc1d[i]->Write();
@@ -1197,11 +1199,28 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             //delete g_data;
             //delete canv1d[i];
         }
+    
+        cout << "-------------------------------------------------" << endl;
+        cout << "************"<<leplabel[leptype]<<" YIELDS****************************" << endl;
+        cout << "-------------------------------------------------" << endl;
+        double error_temp = 0.;
+        //printf("%s MC \t\t \n", leptag[leptype]);
+        for (int j = 0; j < MCID; ++j)
+        {
+            printf(" %s : %.1f ± %.1f \n", legend[j], h_mc1d[0][j]->IntegralAndError(0,h_mc1d[0][j]->GetNbinsX()+1,error_temp), error_temp);
+        }
+        printf(" Total_MC : %.1f ± %.1f \n", h_mc1d_tot[0]->IntegralAndError(0,h_mc1d_tot[0]->GetNbinsX()+1,error_temp), error_temp);
+        printf(" Data : %.0f \n", h_dt1d[0]->Integral());
+        cout << "-------------------------------------------------" << endl;
+        cout << "*************************************************" << endl;
+        cout << "-------------------------------------------------" << endl;
+
+
     }//end loop over lepton types
 
 
 
-    //e+mu combined plots
+    //ee+mumu+emu combined plots
     // Style up histograms ////////////////////////////////////////////////////
 
     cout << "Styling 1D" << endl;
@@ -1277,11 +1296,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 cout << endl << "stack " << stacksum << endl;
         */
 
-        cout << endl << "MC " << h_mc1d_tot_comb[i]->Integral(1, h_mc1d_tot_comb[i]->GetNbinsX())
-             << endl;
-        cout << endl << "Data " << h_dt1d_comb[i]->Integral(1, h_dt1d_comb[i]->GetNbinsX())
-             << endl;
-        cout << endl;
+        //cout << endl << "MC " << h_mc1d_tot_comb[i]->Integral(1, h_mc1d_tot_comb[i]->GetNbinsX())
+        //     << endl;
+        //cout << endl << "Data " << h_dt1d_comb[i]->Integral(1, h_dt1d_comb[i]->GetNbinsX())
+        //     << endl;
+        //cout << endl;
     }
     // End of stack histograms /////////////////////////////////////////////
 
@@ -1425,17 +1444,30 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
 for (int k = 1; k < 9; ++k)
 {
-
-    printf("Variable: %s \n", file1dname[k]);
-    for (int j = 0; j < MCID; ++j)
-    {
-        printf(" %s : %.4f %.4f %.4f \n", mcsample[j], GetAfb(h_mc1d_comb[k][j]), GetAfbLHalf(h_mc1d_comb[k][j]), GetAfbRHalf(h_mc1d_comb[k][j]) );
+    if( strncmp(file1dname[k],"lep_azimuthal_asymmetry", 1000 ) == 0 ){
+        printf(" Variable: %s \n", file1dname[k]);
+        for (int j = 0; j < MCID; ++j)
+        {
+            printf("  %s : %.4f %.4f %.4f \n", mcsample[j], GetAfb(h_mc1d_comb[k][j]), GetAfbLHalf(h_mc1d_comb[k][j]), GetAfbRHalf(h_mc1d_comb[k][j]) );
+        }
+        printf(" Total_MC : %.4f %.4f %.4f \n", GetAfb(h_mc1d_tot_comb[k]), GetAfbLHalf(h_mc1d_tot_comb[k]), GetAfbRHalf(h_mc1d_tot_comb[k]) );
+        printf(" Data : %.4f %.4f %.4f \n", GetAfb(h_dt1d_comb[k]), GetAfbLHalf(h_dt1d_comb[k]), GetAfbRHalf(h_dt1d_comb[k]) );
+        cout << " -------------------------------------------------" << endl;
+        cout << " *************************************************" << endl;
+        cout << " -------------------------------------------------" << endl;
     }
-    printf(" Total_MC : %.4f %.4f %.4f \n", GetAfb(h_mc1d_tot_comb[k]), GetAfbLHalf(h_mc1d_tot_comb[k]), GetAfbRHalf(h_mc1d_tot_comb[k]) );
-    printf(" Data : %.4f %.4f %.4f \n", GetAfb(h_dt1d_comb[k]), GetAfbLHalf(h_dt1d_comb[k]), GetAfbRHalf(h_dt1d_comb[k]) );
-    cout << "-------------------------------------------------" << endl;
-    cout << "*************************************************" << endl;
-    cout << "-------------------------------------------------" << endl;
+    else {
+        printf(" Variable: %s \n", file1dname[k]);
+        for (int j = 0; j < MCID; ++j)
+        {
+            printf("  %s : %.4f \n", mcsample[j], GetAfb(h_mc1d_comb[k][j]));
+        }
+        printf(" Total_MC : %.4f \n", GetAfb(h_mc1d_tot_comb[k]));
+        printf(" Data : %.4f \n", GetAfb(h_dt1d_comb[k]));
+        cout << " -------------------------------------------------" << endl;
+        cout << " *************************************************" << endl;
+        cout << " -------------------------------------------------" << endl;
+    }
 
 }
 
@@ -1444,12 +1476,13 @@ for (int k = 1; k < 9; ++k)
     cout << "-------------------------------------------------" << endl;
     cout << "**********************YIELDS*********************" << endl;
     cout << "-------------------------------------------------" << endl;
+    double error_temp = 0.;
     //printf("%s MC \t\t \n", leptag[leptype]);
     for (int j = 0; j < MCID; ++j)
     {
-        printf(" %s : %.0f \n", mcsample[j], h_mc1d_comb[0][j]->Integral());
+        printf(" %s : %.1f ± %.1f \n", legend[j], h_mc1d_comb[0][j]->IntegralAndError(0,h_mc1d_comb[0][j]->GetNbinsX()+1,error_temp), error_temp);
     }
-    printf(" Total_MC : %.0f \n", h_mc1d_tot_comb[0]->Integral());
+    printf(" Total_MC : %.1f ± %.1f \n", h_mc1d_tot_comb[0]->IntegralAndError(0,h_mc1d_tot_comb[0]->GetNbinsX()+1,error_temp), error_temp);
     printf(" Data : %.0f \n", h_dt1d_comb[0]->Integral());
     cout << "-------------------------------------------------" << endl;
     cout << "*************************************************" << endl;
