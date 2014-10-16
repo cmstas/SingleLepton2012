@@ -104,25 +104,24 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		//Do all our bin splitting
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
-		int nbinsx_reco_3ch = -99;
+		int nbinsx_reco_2ch = -99;
 		int nbinsunwrapped_gen = -99;
 		int nbinsunwrapped_reco = -99;
-		int nbinsunwrapped_reco_3ch = -99;
 
 		if( iVar < 2 || iVar==9 ) nbinsx_gen = nbinsx2D*2;
 		else nbinsx_gen = nbinsx2D;
 
 		nbinsx_reco = nbinsx_gen*2;
 		//nbinsx_reco = nbinsx_gen;
-		nbinsx_reco_3ch = nbinsx_reco*3;
+		nbinsx_reco_2ch = nbinsx_reco*2;
 
 		double* genbins;
 		double* recobins;
-		double* recobins_3ch;
+		double* recobins_2ch;
 
 		genbins = new double[nbinsx_gen+1];
 		recobins = new double[nbinsx_reco+1];
-		recobins_3ch = new double[nbinsx_reco_3ch+1];
+		recobins_2ch = new double[nbinsx_reco_2ch+1];
 
 		//Make gen binning array
         if( iVar < 2 || iVar == 9 ) {
@@ -146,43 +145,41 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 		recobins[nbinsx_reco] = genbins[nbinsx_gen];
 
-		// Make reco binning array including the 3-channel split
+		// Make reco binning array including the 2-channel split
 		double recohist_width = fabs(recobins[nbinsx_reco] - recobins[0]);
-		std::copy( recobins, recobins+nbinsx_reco+1, recobins_3ch );
-		for( int i=nbinsx_reco+1; i<nbinsx_reco_3ch+1; i++ ) {
-		  recobins_3ch[i] = recobins_3ch[i-nbinsx_reco] + recohist_width;
+		std::copy( recobins, recobins+nbinsx_reco+1, recobins_2ch );
+		for( int i=nbinsx_reco+1; i<nbinsx_reco_2ch+1; i++ ) {
+		  recobins_2ch[i] = recobins_2ch[i-nbinsx_reco] + recohist_width;
 		}
 
 		nbinsunwrapped_gen  = nbinsx_gen  * nbinsy2D;
 		nbinsunwrapped_reco = nbinsx_reco * nbinsy2D;
-		nbinsunwrapped_reco_3ch = nbinsx_reco_3ch * nbinsy2D;
 		
 		//Make histograms
 
 		//Use 2D histograms to store the distributions
-        TH2D *hData_combined = new TH2D ("Data_combined", "Data combined", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-        TH2D *hData = new TH2D ("Data", "Data", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
-        TH2D *hBkg = new TH2D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
-        TH2D *hBkg_combined = new TH2D ("Background_combined",  "Background combined", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+        TH2D *hData = new TH2D ("Data", "Data", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+        TH2D *hData_split = new TH2D ("Data_split", "Data_split", nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
+        TH2D *hBkg = new TH2D ("Background",  "Background", nbinsx_reco, recobins, nbinsy2D, ybins2D);
         TH2D *hData_unfolded = new TH2D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins, nbinsy2D, ybins2D);
         TH2D *hTrue = new TH2D ("true", "Truth",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
-        TH2D *hTrue_split = new TH2D ("true_split", "Truth",    nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
-        TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco_3ch, recobins_3ch, nbinsy2D, ybins2D);
+        TH2D *hTrue_split = new TH2D ("true_split", "Truth",    nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
+        TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+		TH2D *hData_bkgSub_rewrapped = new TH2D ("bkgsub", "bkgsub", nbinsx_reco, recobins, nbinsy2D, ybins2D);
 		TH2D *hPurity = new TH2D("purity", "Purity", nbinsx_gen, genbins, nbinsy2D, ybins2D);
 		TH2D *hStability = new TH2D("stability", "Stability", nbinsx_gen, genbins, nbinsy2D, ybins2D);
 
 		//Unwrapped histograms have n bins (where n = nx*ny), centered around the integers from 1 to n.
-		TH1D *hData_unwrapped = new TH1D ("Data_BkgSub_Unwr", "Unwrapped data with background subtracted", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
-        TH1D *hBkg_unwrapped = new TH1D ("Background_Unwr",  "Background unwrapped",    nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
+		TH1D *hData_unwrapped = new TH1D ("Data_Unwr", "Unwrapped data with background subtracted", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
+        TH1D *hBkg_unwrapped = new TH1D ("Background_Unwr",  "Background unwrapped",    nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
         TH1D *hData_unfolded_unwrapped = new TH1D ("Data_Unfold_Unwr", "Data unfolded and unwrapped", nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
         TH1D *hTrue_unwrapped = new TH1D ("true_unwr", "Truth unwrapped",  nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
-        TH1D *hMeas_unwrapped = new TH1D ("meas_unwr", "Measured unwrapped", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5);
+        TH1D *hMeas_unwrapped = new TH1D ("meas_unwr", "Measured unwrapped", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5);
 
 		//Migration matrix, using the unwrapped binning on both axes
-        TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsunwrapped_reco_3ch, 0.5, double(nbinsunwrapped_reco_3ch)+0.5, nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
+        TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsunwrapped_reco, 0.5, double(nbinsunwrapped_reco)+0.5, nbinsunwrapped_gen, 0.5, double(nbinsunwrapped_gen)+0.5);
 
         TH1D *hData_bkgSub;
-		TH2D *hData_bkgSub_combined;
 		// TH1D* hMeas_newErr;
 
 
@@ -220,12 +217,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		double offset = 0;
 		double histmax = recobins[nbinsx_reco];
 		double histmin = recobins[0];
-		double hiBinCenter = hData_combined->GetXaxis()->GetBinCenter(nbinsx_reco);
-		double loBinCenter = hData_combined->GetXaxis()->GetBinCenter(1);
+		double hiBinCenter = hData->GetXaxis()->GetBinCenter(nbinsx_reco);
+		double loBinCenter = hData->GetXaxis()->GetBinCenter(1);
 
 		delete[] genbins;
 		delete[] recobins;
-		delete[] recobins_3ch;
+		delete[] recobins_2ch;
 
 		///// Load data from data chain, and fill hData //////////
         ch_data->SetBranchAddress(observablename,    &observable);
@@ -245,8 +242,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         {
             ch_data->GetEntry(i);
             obs2D = fabs(obs2D);
+			if( channel > 0 ) channel--;
 
-			//Use an offset to sort events into 3 superbins: ee, mumu, emu
+			//Use an offset to sort events into 2 superbins: ee/mumu, emu
 			offset = double(channel) * recohist_width;
 			//Do the same thing as "fillUnderOverflow", except adapted for 3x1 histograms
 			if( observable > histmax )        observable = hiBinCenter;
@@ -256,11 +254,11 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
             if ( tmass > 0 )
             {
-			  fillUnderOverFlow(hData_combined, observable, obs2D, weight, Nsolns);
-			  fillUnderOverFlow(hData, observable+offset, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hData, observable, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hData_split, observable+offset, obs2D, weight, Nsolns);
 			  if (combineLepMinus) {
-				fillUnderOverFlow(hData_combined, observableMinus, obs2D, weight, Nsolns);
-				fillUnderOverFlow(hData, observableMinus+offset, obs2D, weight, Nsolns);
+				fillUnderOverFlow(hData, observableMinus, obs2D, weight, Nsolns);
+				fillUnderOverFlow(hData_split, observableMinus+offset, obs2D, weight, Nsolns);
 			  }
             }
         }
@@ -275,7 +273,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
 			ch_bkg[iBkg]->SetBranchAddress("tt_mass", &ttmass);
 			ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &ttRapidity2);
-			ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
+			// ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
 
             if (Var2D == "mtt")              ch_bkg[iBkg]->SetBranchAddress("tt_mass", &obs2D);
             else if (Var2D == "ttrapidity2") ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &obs2D);
@@ -287,20 +285,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
                 obs2D = fabs(obs2D);
                 weight *= bkgSF[iBkg];
 
-				offset = double(channel) * recohist_width;
-				if( observable > histmax )        observable = hiBinCenter;
-				else if( observable < histmin )   observable = loBinCenter;
-				if( observableMinus > histmax )        observableMinus = hiBinCenter;
-				else if( observableMinus < histmin )   observableMinus = loBinCenter;
-
                 if ( tmass > 0 )
                 {
-				  fillUnderOverFlow(hBkg, observable+offset, obs2D, weight, Nsolns);
-				  fillUnderOverFlow(hBkg_combined, observable, obs2D, weight, Nsolns);
-				  if (combineLepMinus) {
-					fillUnderOverFlow(hBkg, observableMinus+offset, obs2D, weight, Nsolns);
-					fillUnderOverFlow(hBkg_combined, observableMinus, obs2D, weight, Nsolns);
-				  }
+				  fillUnderOverFlow(hBkg, observable, obs2D, weight, Nsolns);
+				  if (combineLepMinus) fillUnderOverFlow(hBkg, observableMinus, obs2D, weight, Nsolns);
                 }
             }
         }
@@ -333,7 +321,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             ch_top->SetBranchAddress("ttPt_gen", &obs2D_gen);
         }
 
-		int measbin_3ch = -99;
 		int measbin = -99;
 		int genbin = -99;
 
@@ -343,6 +330,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             obs2D = fabs(obs2D);
             obs2D_gen = fabs(obs2D_gen);
             weight *= scalettdil;
+			if( channel>0 ) channel--;
 
 			offset = double(channel) * recohist_width;
 			if( observable > histmax )        observable = hiBinCenter;
@@ -357,25 +345,23 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             if ( tmass > 0 )
             {
 			  genbin  = getUnwrappedBin(hTrue, observable_gen, obs2D_gen);
-			  measbin = getUnwrappedBin(hData_combined, observable, obs2D);
-			  measbin_3ch = measbin + (channel * nbinsunwrapped_reco);
+			  measbin = getUnwrappedBin(hData, observable, obs2D);
 
 			  // cout << "Channel: " << channel << ". Offset: " << offset << endl;
 
-			  fillUnderOverFlow(hMeas, observable+offset, obs2D, weight, Nsolns);
+			  fillUnderOverFlow(hMeas, observable, obs2D, weight, Nsolns);
 			  fillUnderOverFlow(hTrue, observable_gen, obs2D_gen, weight, Nsolns);
 			  fillUnderOverFlow(hTrue_split, observable_gen+offset, obs2D_gen, weight, Nsolns);
-			  fillUnderOverFlow(hTrue_vs_Meas, measbin_3ch, genbin, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
 			  if ( combineLepMinus )
                 {
 				  genbin  = getUnwrappedBin(hTrue, observableMinus_gen, obs2D_gen);
-				  measbin = getUnwrappedBin(hData_combined, observableMinus, obs2D);
-				  measbin_3ch = measbin + (channel * nbinsunwrapped_reco);
+				  measbin = getUnwrappedBin(hData, observableMinus, obs2D);
 
-				  fillUnderOverFlow(hMeas, observableMinus+offset, obs2D, weight, Nsolns);
+				  fillUnderOverFlow(hMeas, observableMinus, obs2D, weight, Nsolns);
 				  fillUnderOverFlow(hTrue, observableMinus_gen, obs2D_gen, weight, Nsolns);
 				  fillUnderOverFlow(hTrue_split, observableMinus_gen+offset, obs2D_gen, weight, Nsolns);
-				  fillUnderOverFlow(hTrue_vs_Meas, measbin_3ch, genbin, weight, Nsolns);
+				  fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
                 }
             }
         }
@@ -384,37 +370,41 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
-		TH2D *acceptM[4];
-		acceptM[0] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_diel"));
-		acceptM[1] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_dimu"));
-		acceptM[2] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_mueg"));
-		acceptM[3] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_all" ));
+		TH2D *acceptM[3];
+		acceptM[1] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_mueg"));
+		acceptM[2] = (TH2D*)(file->Get("accept_" + acceptanceName + "_" + Var2D + "_all" ));
 
-		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
+		acceptM[2]->Scale(1.0 / acceptM[2]->Integral());
 
 		TH2D *accNum[3];
 		accNum[0] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_diel"));
-		accNum[1] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_dimu"));
-		accNum[2] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_mueg"));
+		accNum[2] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_dimu"));
+		accNum[1] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D +"_mueg"));
 
 		TH2D *accDen[3];
 		accDen[0] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_diel"));
-		accDen[1] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_dimu"));
-		accDen[2] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_mueg"));
+		accDen[2] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_dimu"));
+		accDen[1] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_mueg"));
 
-		double gen_integrals[4];
-		double reco_integrals[4];
+		//Tricks to make "channel 0" hold the combined same-flavor histograms
+		accNum[0]->Add( accNum[2] );
+		accDen[0]->Add( accDen[2] );
+
+		double gen_integrals[3];
+		double reco_integrals[3];
 
 		//Figure out the relative proportion of events in each channel
-		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  gen_integrals[aChannel] = hTrue_split->Integral( aChannel*nbinsx_gen+1, (aChannel+1)*nbinsx_gen, 1, nbinsy2D );
-		  reco_integrals[aChannel] = hData->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco, 1, nbinsy2D );
+		  reco_integrals[aChannel] = hData_split->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco, 1, nbinsy2D );
 		}
-		gen_integrals[3] = gen_integrals[0] + gen_integrals[1] + gen_integrals[2];
-		reco_integrals[3] = reco_integrals[0] + reco_integrals[1] + reco_integrals[2];
+		gen_integrals[2] = gen_integrals[0] + gen_integrals[1];
+		reco_integrals[2] = reco_integrals[0] + reco_integrals[1];
 
+		acceptM[0] = (TH2D*)(accNum[0]->Clone("accept_SF"));
+		acceptM[0]->Divide( accDen[0] );
 
-		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  for( int yBin=1; yBin<=nbinsy2D; yBin++ ) {
 			for( int xBin=1; xBin<=nbinsx_gen; xBin++ ) {
 
@@ -425,7 +415,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			  double acceptance = acceptM[aChannel]->GetBinContent( xBin, yBin );
 			  double n_accepted = hTrue_split->GetBinContent( aChannel*nbinsx_gen + xBin, yBin );
 			  double n_rejected = n_accepted/acceptance - n_accepted;
-			  double correction = (reco_integrals[aChannel] / reco_integrals[3]) / (gen_integrals[aChannel] / gen_integrals[3]);
+			  double correction = (reco_integrals[aChannel] / reco_integrals[2]) / (gen_integrals[aChannel] / gen_integrals[2]);
 			  hTrue_vs_Meas->Fill( -999999, double(genbin), n_rejected*correction );
 
 			  //Calculate the uncertainty on the rejected events
@@ -451,23 +441,16 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  }
 
 		}
-		else if( hData->GetNbinsX() == nbinsx_reco_3ch ) {
+		else if( hData->GetNbinsX() == 2*nbinsx_gen ) {
 
 		  for( int by=1; by<=nbinsy2D; by++ ) {
 			for( int bx=1; bx<=nbinsx_gen; bx++ ) {
 
 			  int outbin = (by-1)*nbinsx_gen + bx;
-			  double numerator = 0;
-			  double purity_denom = 0;
+			  double numerator = hTrue_vs_Meas->GetBinContent(outbin*2, outbin) + hTrue_vs_Meas->GetBinContent(outbin*2-1, outbin);
+			  double purity_denom = hMeas->GetBinContent( bx*2, by ) + hMeas->GetBinContent( bx*2-1, by );
 			  double stability_denom = hTrue->GetBinContent( bx, by );
-
-			  for( int aChannel=0; aChannel<3; aChannel++ ) {
-				numerator += hTrue_vs_Meas->GetBinContent((outbin*2)+(aChannel*nbinsunwrapped_reco), outbin);
-				numerator += hTrue_vs_Meas->GetBinContent((outbin*2)+(aChannel*nbinsunwrapped_reco)-1, outbin);
-				purity_denom += hMeas->GetBinContent( (bx*2)+(aChannel*nbinsx_reco), by );
-				purity_denom += hMeas->GetBinContent( (bx*2)+(aChannel*nbinsx_reco)-1, by );
-			  }
-
+ 
 			  hPurity->SetBinContent( bx, by, numerator / purity_denom );
 			  hStability->SetBinContent( bx, by, numerator / stability_denom );
 			}
@@ -482,17 +465,14 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		//////////////////////// 3. Perform the unfolding procedure ////////////////////////////////////
 
 		// First step: unwrap our TH2Ds into TH1Ds!
-		unwrap2dhisto_3ch(hData, hData_unwrapped);
-		unwrap2dhisto_3ch(hBkg,  hBkg_unwrapped);
+		unwrap2dhisto(hData, hData_unwrapped);
+		unwrap2dhisto(hBkg,  hBkg_unwrapped);
 		unwrap2dhisto(hTrue, hTrue_unwrapped);
-		unwrap2dhisto_3ch(hMeas, hMeas_unwrapped);
+		unwrap2dhisto(hMeas, hMeas_unwrapped);
 
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
 
-		hData_bkgSub_combined = (TH2D*) hData_combined->Clone("data_bkgsub_combined");
-		hData_bkgSub_combined->Add(hBkg_combined, -1.0);
-		
 
 		/*
 		hMeas_newErr = (TH1D *) hMeas_unwrapped->Clone();
@@ -521,7 +501,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		tau = unfold_TUnfold.GetTau();
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-		unfold_TUnfold.GetEmatrixSysUncorr(ematrix, 0, false);
+		unfold_TUnfold.GetEmatrixSysUncorr( ematrix, 0, false );
 
 		for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
 		  {
@@ -566,7 +546,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	  
 		//Re-wrap 1D histograms into 2D
 		rewrap1dhisto(hData_unfolded_unwrapped, hData_unfolded);
-		// rewrap1dhisto(hData_bkgSub, hData_bkgSub_rewrapped);
+		rewrap1dhisto(hData_bkgSub, hData_bkgSub_rewrapped);
 		// rewrap1dhisto(hData_unwrapped, hData_unwrapped_rewrapped);
 
 
@@ -578,9 +558,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// Data distribution (2D and unwrapped)
         TCanvas *c_data = new TCanvas("c_data", "c_data", 675, 600);
         gStyle->SetPalette(1);
-        hData_bkgSub_combined->SetTitle("Data (background subtracted);"+xaxislabel+";"+yaxislabel);
-        hData_bkgSub_combined->Draw("COLZ");
-		hData_bkgSub_combined->GetZaxis()->SetMoreLogLabels();
+        hData_bkgSub_rewrapped->SetTitle("Data (background subtracted);"+xaxislabel+";"+yaxislabel);
+        hData_bkgSub_rewrapped->Draw("COLZ");
+		hData_bkgSub_rewrapped->GetZaxis()->SetMoreLogLabels();
         c_data->SetLogz();
         c_data->SaveAs("2D_data_" + acceptanceName +"_" + Var2D + ".pdf");
 		hData_bkgSub->SetTitle("Unwrapped Data (background subtracted);Bin number;Entries per bin");
@@ -616,7 +596,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		TCanvas *c1 = new TCanvas("c1","c1",1300,400);
 		c1->Divide(3,1);
 		c1->cd(1);
-		hData_bkgSub_combined->Draw("COLZ");
+		hData_bkgSub_rewrapped->Draw("COLZ");
 		c1->cd(2);
 		hData_unfolded->Draw("COLZ");
 		c1->cd(3);
@@ -624,7 +604,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		c1->SaveAs("2D_data_comparison_"+acceptanceName+"_"+Var2D+".pdf");
 
 		// Migration matrix
-        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 1850, 600);
+        TCanvas *c_resp = new TCanvas("c_resp", "c_resp", 700, 600);
         TH2D *hResp = (TH2D*) hTrue_vs_Meas->Clone("response");
         gStyle->SetPalette(1);
 		hResp->SetTitle("Migration matrix");
@@ -640,9 +620,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// A few lingering acceptance corrections ///////////////////////////////////////////////////
         for (Int_t x = 1; x <= nbinsx_gen; x++) {
 		  for (Int_t y = 1; y<= nbinsy2D; y++) {
-			if (acceptM[3]->GetBinContent(x,y) != 0) {
-			  hTrue->SetBinContent(x,y, hTrue->GetBinContent(x,y) * 1.0 / acceptM[3]->GetBinContent(x,y));
-			  hTrue->SetBinError  (x,y, hTrue->GetBinError(x,y)  * 1.0 / acceptM[3]->GetBinContent(x,y));
+			if (acceptM[2]->GetBinContent(x,y) != 0) {
+			  hTrue->SetBinContent(x,y, hTrue->GetBinContent(x,y) * 1.0 / acceptM[2]->GetBinContent(x,y));
+			  hTrue->SetBinError  (x,y, hTrue->GetBinError(x,y)  * 1.0 / acceptM[2]->GetBinContent(x,y));
 			}
 		  }
 		}
@@ -659,7 +639,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		cout << "Minimum rhoAvg = " << bestrhoavg << endl;
 		cout << "Bias scale = " << scaleBias << endl;
 
-        GetAfb(hData_combined, Afb, AfbErr);
+        GetAfb(hData, Afb, AfbErr);
         cout << " Data: " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(hTrue, Afb, AfbErr);
