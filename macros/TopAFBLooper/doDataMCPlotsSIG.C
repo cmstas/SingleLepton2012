@@ -298,6 +298,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     }
 
     bool doverbose = true;
+    bool scalettdiltodata = true;
 
     double lumi = 19.5;
 
@@ -685,14 +686,12 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         {
             h_dt1d[i] = (TH1F *)dt_dl[leptype]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
 
-            cout << "DT: " << h_dt1d[i] << " " << Form("%s%s", hist1dname[i], leptag[leptype]) << endl;
-
-            bool combplotcreated = hasplotall[i];
+            //cout << "DT: " << h_dt1d[i] << " " << Form("%s%s", hist1dname[i], leptag[leptype]) << endl;
 
             if (h_dt1d[i] != 0)
             {
                 hasplot[leptype][i] = true;
-                hasplotall[i] = true;
+                //hasplotall[i] = true;
             }
             else
             {
@@ -706,14 +705,6 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
             h_dt1d[i]->Rebin(rebinFactor[i]);
 
-            //e+mu combined data
-            if ( combplotcreated == false )
-            {
-                h_dt1d_comb[i] = (TH1F *)h_dt1d[i]->Clone();
-                h_dt1d_comb[i]->SetName(Form("%s_comb", hist1dname[i]));
-            }
-            else
-                h_dt1d_comb[i]->Add(h_dt1d[i]);
 
             bool doinit = false;
             for (int j = 0; j < MCID; ++j)
@@ -735,16 +726,82 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 }
                 h_mc1d[i][j]->SetName(Form("%s_%s", mcsample[j], hist1dname[i]));
 
-                cout << "MC" << j << " " << mcsample[j] << ": " << h_mc1d[i][j] << " "
-                     << Form("%s", hist1dname[i]) << endl;
+                //cout << "MC" << j << " " << mcsample[j] << ": " << h_mc1d[i][j] << " "
+                //     << Form("%s", hist1dname[i]) << endl;
 
-                h_mc1d[i][j]->Sumw2();
+                //h_mc1d[i][j]->Sumw2();
                 //if(j==0||j==1) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
                 //if(j==0||j==1) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
                 // Rebin, set limits
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
 
+                if (!doinit)
+                {
+                    h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s", hist1dname[i]));
+                    doinit = true;
+                }
+                else h_mc1d_tot[i]->Add(h_mc1d[i][j]);
+
+            }
+        }
+
+
+        //applying ttdil scaling
+        for (int i = 0; i < N1DHISTS; ++i)
+        {
+            if (!hasplot[leptype][i]) continue;
+
+            //cout << "-------------------------------------------------" << endl;
+            float mcall = h_mc1d_tot[i]->Integral();
+            float dtall = h_dt1d[i]->Integral();
+            //cout << "MC ALL " << mcall << endl;
+            //cout << "Data ALL " << dtall << endl;
+            float mcsf_all = dtall / mcall;
+            //cout << "RATIO ALL " << mcsf_all << endl;
+            //cout << "-------------------------------------------------" << endl;
+            mcsf_all = 1; //don't scale all MC to data, instead just the ttdil component is scaled below
+            h_mc1d_tot[i]->Scale(mcsf_all);
+
+            float mcttdil_all = h_mc1d[i][0]->Integral();
+            float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
+            if(scalettdiltodata) h_mc1d[i][0]->Scale(ttdilsf_all);
+
+/*
+            //no need to do this now we recalculate the sum histograms using the rescaled components
+            //do the same thing for the combination of channels
+            if (leptype == nCh - 1) {
+                float mcall_comb = h_mc1d_tot_comb[i]->Integral();
+                float dtall_comb = h_dt1d_comb[i]->Integral();
+                float mcttdil_all_comb = h_mc1d_comb[i][0]->Integral();
+                float ttdilsf_all_comb = 1. + (dtall_comb-mcall_comb)/mcttdil_all_comb;
+                h_mc1d_comb[i][0]->Scale(ttdilsf_all_comb);
+            }
+*/
+
+        }
+
+        //(re)calculate _tot (sum of MC) histograms
+        for (int i = 0; i < N1DHISTS; ++i)
+        {
+
+            bool combplotcreated = hasplotall[i];
+
+            if ( !hasplot[leptype][i] ) continue;
+            hasplotall[i] = true;
+
+            //e+mu combined data
+            if ( combplotcreated == false )
+            {
+                h_dt1d_comb[i] = (TH1F *)h_dt1d[i]->Clone();
+                h_dt1d_comb[i]->SetName(Form("%s_comb", hist1dname[i]));
+            }
+            else
+                h_dt1d_comb[i]->Add(h_dt1d[i]);
+
+            bool doinit = false;
+            for (int j = 0; j < MCID; ++j)
+            {
                 //combined MC histograms
                 if (combplotcreated == false)
                 {
@@ -773,22 +830,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             }
         }
 
-
         //after applying all the scalings, fill vector for sorting
         for (int i = 0; i < N1DHISTS; ++i)
         {
             if (!hasplot[leptype][i]) continue;
 
-            //cout << "-------------------------------------------------" << endl;
-            float mcall = h_mc1d_tot[i]->Integral();
-            float dtall = h_dt1d[i]->Integral();
-            //cout << "MC ALL " << mcall << endl;
-            //cout << "Data ALL " << dtall << endl;
-            float mcsf_all = dtall / mcall;
-            //cout << "RATIO ALL " << mcsf_all << endl;
-            //cout << "-------------------------------------------------" << endl;
-            mcsf_all = 1;
-            h_mc1d_tot[i]->Scale(mcsf_all);
             /*
                             if (i == 1) //mt
                             {
@@ -845,8 +891,9 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             */
             for (int j = 0; j < MCID; ++j)
             {
+
                 //version for sorting
-                h_mc1d[i][j]->Scale(mcsf_all);
+                //h_mc1d[i][j]->Scale(mcsf_all);
                 /*
                                     if (j >= TWDL && j != VVV)
                                     {
@@ -1031,8 +1078,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         {
             if (!hasplot[leptype][i]) continue;
 
-            canv1d[i] = new TCanvas(Form("c_%s", file1dname[i]),
-                                    Form("c_%s", file1dname[i]),
+            canv1d[i] = new TCanvas(Form("c_%s_%s", file1dname[i], leptag[leptype]),
+                                    Form("c_%s_%s", file1dname[i], leptag[leptype]),
                                     700, 700);
             canv1d[i]->SetLeftMargin(0.18);
             canv1d[i]->SetRightMargin(0.05);
@@ -1119,13 +1166,19 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             */
             // Labels!
             //    myCMSLabel(0.2,0.88,CMSLabel);
+
+            double chi2prob = compatibilityTest(h_dt1d[i], s_mc1d[i]);
+            double KSprob = h_dt1d[i]->KolmogorovTest(h_mc1d_tot[i]);
+
             TLatex *text = new TLatex();
             text->SetNDC();
             text->SetTextSize(0.04);
             float xtex = 0.2;//0.16;//used to be 0.2
             text->DrawLatex(xtex, 0.88, "CMS Preliminary");
             text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
-            text->DrawLatex(xtex, 0.78, Form("%s", leplabel[leptype]));
+            //text->DrawLatex(xtex, 0.78, Form("%s", leplabel[leptype]));
+            if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("%s, #chi^{2} prob: %.2f, KS: %.2f",leplabel[leptype], chi2prob, KSprob));
+            else text->DrawLatex(xtex, 0.78, Form("%s, KS: %.2f",leplabel[leptype], KSprob));
             if (i == 3)
             {
                 //text->DrawLatex(xtex, 0.68, Form("MC = %.0f #pm %.0f, Data = %.0f", mc_mtctail[isr][leptype], emc_mtctail[isr][leptype], dt_mtctail[isr][leptype]));
@@ -1154,7 +1207,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             respad->cd();
 
             //gPad->SetGridy();
-            cout << "----------------------------------------------" << endl;
+            //cout << "----------------------------------------------" << endl;
             TH1F *ratio = (TH1F *) h_dt1d[i]->Clone(Form("%s_ratio", h_dt1d[i]->GetName()));
             ratio->Divide(h_mc1d_tot[i]);
 
@@ -1188,13 +1241,16 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             line.SetLineWidth(1);
             line.DrawLine(h_dt1d[i]->GetXaxis()->GetXmin(), 1, h_dt1d[i]->GetXaxis()->GetXmax(), 1);
 
+            gErrorIgnoreLevel = 2000; //suppress Info in <TCanvas::Print> messages
             canv1d[i]->Print(Form("SIGplots/%s%s%s%s.pdf",
                                   file1dname[i], metcut[isr],
                                   leptag[leptype],
                                   ttbar_tag));
+            gErrorIgnoreLevel = 0;
 
-            cout << " Probability " << file1dname[i] << " : "
-                 << compatibilityTest(h_dt1d[i], s_mc1d[i]) << endl;
+            //cout << " Probability " << file1dname[i] << " : "
+                 //<< chi2prob <<" ";
+            //cout<< h_dt1d[i]->Chi2Test(h_mc1d_tot[i],"UW")<<" "<< KSprob<<endl;
 
             //delete g_data;
             //delete canv1d[i];
@@ -1207,9 +1263,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         //printf("%s MC \t\t \n", leptag[leptype]);
         for (int j = 0; j < MCID; ++j)
         {
-            printf(" %s : %.1f ± %.1f \n", legend[j], h_mc1d[0][j]->IntegralAndError(0,h_mc1d[0][j]->GetNbinsX()+1,error_temp), error_temp);
+            printf(" %s : %.1f ± ", legend[j], h_mc1d[0][j]->IntegralAndError(0,h_mc1d[0][j]->GetNbinsX()+1,error_temp));
+            printf("%.1f \n", error_temp);
         }
-        printf(" Total_MC : %.1f ± %.1f \n", h_mc1d_tot[0]->IntegralAndError(0,h_mc1d_tot[0]->GetNbinsX()+1,error_temp), error_temp);
+        printf(" Total_MC : %.1f ± ", h_mc1d_tot[0]->IntegralAndError(0,h_mc1d_tot[0]->GetNbinsX()+1,error_temp));
+        printf("%.1f \n", error_temp);
         printf(" Data : %.0f \n", h_dt1d[0]->Integral());
         cout << "-------------------------------------------------" << endl;
         cout << "*************************************************" << endl;
@@ -1377,7 +1435,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             h_dt1d_comb[i]->SetMinimum(0.);
         }
 
-        cout << "data entries " << h_dt1d_comb[i]->Integral() << endl;
+        //cout << "data entries " << h_dt1d_comb[i]->Integral() << endl;
         //    h_dt1d_comb[i]->Draw();
 
         TH1F *h_basic = (TH1F *)h_dt1d_comb[i]->Clone();
@@ -1392,6 +1450,12 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         g_data->Draw("e1,p,z,same");
         h_dt1d_comb[i]->Draw("axis,same");
 
+        //if(i==57) h_dt1d_comb[i]->Print("all");
+        //if(i==57) s_mc1d_comb[i]->Print("all");
+        //if(i==57) h_mc1d_tot_comb[i]->Print("all");
+        double chi2prob = compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]);
+        double KSprob = h_dt1d_comb[i]->KolmogorovTest(h_mc1d_tot_comb[i]);
+
         leg1d_comb[i]->Draw("same");
         TLatex *text = new TLatex();
         text->SetNDC();
@@ -1399,6 +1463,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         float xtex = 0.2;//0.16;//used to be 0.2
         text->DrawLatex(xtex, 0.88, "CMS Preliminary");
         text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
+        if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("#chi^{2} prob: %.2f, KS: %.2f", chi2prob, KSprob));
+        else text->DrawLatex(xtex, 0.78, Form("KS: %.2f", KSprob));
 
         fullpad->cd();
 
@@ -1407,7 +1473,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         respad->cd();
 
         //gPad->SetGridy();
-        cout << "----------------------------------------------" << endl;
+        //cout << "----------------------------------------------" << endl;
         TH1F *ratio = (TH1F *) h_dt1d_comb[i]->Clone(Form("%s_ratio", h_dt1d_comb[i]->GetName()));
         ratio->Divide(h_mc1d_tot_comb[i]);
 
@@ -1426,12 +1492,18 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         line.SetLineWidth(1);
         line.DrawLine(h_dt1d_comb[i]->GetXaxis()->GetXmin(), 1, h_dt1d_comb[i]->GetXaxis()->GetXmax(), 1);
 
+        gErrorIgnoreLevel = 2000; //suppress Info in <TCanvas::Print> messages
         canv1d_comb[i]->Print(Form("SIGplots/%s%s%s_combined.pdf",
                                    file1dname[i], metcut[isr],
                                    ttbar_tag));
+        gErrorIgnoreLevel = 0;
 
+        /*
         cout << " Probability " << file1dname[i] << " : "
-             << compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]) << endl;
+             //<< compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]) <<" ";
+             << chi2prob <<" ";
+        cout<< h_dt1d_comb[i]->Chi2Test(h_mc1d_tot_comb[i],"UW")<<" "<< KSprob <<endl;
+        */
 
         //delete g_data;
 
@@ -1480,13 +1552,19 @@ for (int k = 1; k < 9; ++k)
     //printf("%s MC \t\t \n", leptag[leptype]);
     for (int j = 0; j < MCID; ++j)
     {
-        printf(" %s : %.1f ± %.1f \n", legend[j], h_mc1d_comb[0][j]->IntegralAndError(0,h_mc1d_comb[0][j]->GetNbinsX()+1,error_temp), error_temp);
+        printf(" %s : %.1f ± ", legend[j], h_mc1d_comb[0][j]->IntegralAndError(0,h_mc1d_comb[0][j]->GetNbinsX()+1,error_temp));
+        printf("%.1f \n", error_temp);
     }
-    printf(" Total_MC : %.1f ± %.1f \n", h_mc1d_tot_comb[0]->IntegralAndError(0,h_mc1d_tot_comb[0]->GetNbinsX()+1,error_temp), error_temp);
+    printf(" Total_MC : %.1f ± ", h_mc1d_tot_comb[0]->IntegralAndError(0,h_mc1d_tot_comb[0]->GetNbinsX()+1,error_temp));
+    printf("%.1f \n", error_temp);
     printf(" Data : %.0f \n", h_dt1d_comb[0]->Integral());
     cout << "-------------------------------------------------" << endl;
     cout << "*************************************************" << endl;
     cout << "-------------------------------------------------" << endl;
+
+
+    //printYields(sorted_mc1d_yields_comb, legend, h_dt1d_yields_comb, true); //(vectors of) histograms need to be created with SF in first bin, DF in 2nd bin, total in 3rd bin.
+
 
     //#endif
 }
@@ -1556,9 +1634,11 @@ double compatibilityTest(TH1F *hist, THStack *hstack)
     {
 
         h_entries += hist->GetBinContent(i);
-
-        TIter iter(stack_hists->MakeIterator());
-        while (TH1F *stack_hist = dynamic_cast<TH1F *>(iter()))
+        //TIter iter(stack_hists->MakeIterator());
+        TIter iter(stack_hists);
+        TH1F *stack_hist;
+        //while (TH1F *stack_hist = dynamic_cast<TH1F *>(iter()))
+        while ((stack_hist = (TH1F *)iter()))
         {
             s_entries += stack_hist->GetBinContent(i);
             s_sqerror += (stack_hist->GetBinError(i) *
@@ -1579,7 +1659,7 @@ double compatibilityTest(TH1F *hist, THStack *hstack)
         }
 
     }
-    cout << "Chisq, ndf: " << chisq << ", " << ndf << endl;
+    //cout << "Chisq, ndf: " << chisq << ", " << ndf << endl;
     return TMath::Prob(chisq, ndf);
 }
 
