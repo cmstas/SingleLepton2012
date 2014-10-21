@@ -87,7 +87,7 @@ def main():
 
         #Count how many bins we're dealing with
         typelist = list( systematics[plot]['Nominal']['default']['nominal'].keys() )
-        binlist = fnmatch.filter(typelist, 'bin?')
+        binlist = fnmatch.filter(typelist, 'bin*')
         binlist.sort()
         nbins = len(binlist)
 
