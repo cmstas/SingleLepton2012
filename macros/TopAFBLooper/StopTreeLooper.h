@@ -59,9 +59,6 @@ public:
     //selection
     bool passFullSelection(bool isData);
 
-    //top pT reweighting
-    double TopPtWeight(double topPt);
-
 
 private:
 
@@ -74,6 +71,8 @@ private:
     //for phi corrected met
     float t1metphicorr;
     float t1metphicorrphi;
+    float met_x;
+    float met_y;
     float pfcalo_metratio;
     float pfcalo_metdphi;
     float pfcalo_deltamet;

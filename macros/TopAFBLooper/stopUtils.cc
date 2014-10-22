@@ -2114,30 +2114,22 @@ int getRegionNumber(float mstop, float mlsp) {
     return 4;
 }
 
-//--------------------------------------------------------------------
-
-double TopPtWeight(double topPt){
-  if( topPt<0 ) return 1;
-
-  double p0 = 1.18246e+00;
-  double p1 = 4.63312e+02;
-  double p2 = 2.10061e-06;
-
-  if( topPt>p1 ) topPt = p1;
-
-  double result = p0 + p2 * topPt * ( topPt - 2 * p1 );
-  return result;
-}
 
 //--------------------------------------------------------------------
-//updated version of top pt reweighting function from June 2013
+//8 TeV version of top pt reweighting function from June 2013
 //see slide 12 of presentation: https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=252018
 
-double TopPtWeight_v2(double topPt){
-  if( topPt<0 ) return 1.;
-  double result = exp(0.156 - 0.00137 * topPt);
-  return result;
+double TopPtWeight(double topPt)
+{
+    if ( topPt < 0 ) return 1;
+    if (topPt > 400) topPt = 400;
+
+    double result = exp(0.156 - 0.00137 * topPt); //8 TeV fit (l+j and 2l combined)
+    //note this fit is for data/madgraph, and we are using MC@NLO
+
+    return result;
 }
+
 
 //--------------------------------------------------------------------
 
