@@ -268,14 +268,14 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	delete[] recobins;
 	delete[] recobins_3ch;
 
-	// Load in data, just to get the integrals for scaling purposes //////////////////////////
-	TChain *ch_data = new TChain("tree");
-	ch_data->Add("../data_diel_baby.root");
-	ch_data->Add("../data_dimu_baby.root");
-	ch_data->Add("../data_mueg_baby.root");
-	double integral_data = -999.9;
-	if( iVar<2 || iVar==9 ) integral_data = double(ch_data->GetEntries());
-	else integral_data = double(ch_data->GetEntries("t_mass > 0 "));
+	// // Load in data, just to get the integrals for scaling purposes //////////////////////////
+	// TChain *ch_data = new TChain("tree");
+	// ch_data->Add("../data_diel_baby.root");
+	// ch_data->Add("../data_dimu_baby.root");
+	// ch_data->Add("../data_mueg_baby.root");
+	// double integral_data = -999.9;
+	// if( iVar<2 || iVar==9 ) integral_data = double(ch_data->GetEntries());
+	// else integral_data = double(ch_data->GetEntries("t_mass > 0 "));
 
 	// Background events /////////////////////////////////////////////////////
 	TChain *ch_bkg = new TChain("tree");
@@ -510,29 +510,61 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
 
+		TH2D *accNum[3];
+		accNum[0] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D + "_diel"));
+		accNum[1] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D + "_dimu"));
+		accNum[2] = (TH2D*)(file->Get("numerator_" + acceptanceName + "_" + Var2D + "_mueg"));
+
+		TH2D *accDen[3];
+		accDen[0] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D + "_diel"));
+		accDen[1] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D + "_dimu"));
+		accDen[2] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D + "_mueg"));
+
+		double gen_integrals[4];
+		double reco_integrals[4];
+
+		//Figure out the relative proportion of events in each channel
+		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		  gen_integrals[aChannel] = hTrue_before_split->Integral( aChannel*nbinsx_gen+1, (aChannel+1)*nbinsx_gen, 1, nbinsy2D );
+		  reco_integrals[aChannel] = hMeas_before->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco, 1, nbinsy2D );
+		}
+		gen_integrals[3] = gen_integrals[0] + gen_integrals[1] + gen_integrals[2];
+		reco_integrals[3] = reco_integrals[0] + reco_integrals[1] + reco_integrals[2];
+
 		for( int aChannel=0; aChannel<3; aChannel++ ) {
 		  for( int yBin=1; yBin<=nbinsy2D; yBin++ ) {
 			for( int xBin=1; xBin<=nbinsx_gen; xBin++ ) {
 
+			  genbin = (yBin-1)*nbinsx_gen + xBin;
+			  double old_error = hTrue_vs_Meas->GetBinError( 0, genbin );
+
+			  //Calculate the number of rejected events, and fill it into the smearing matrix underflow
 			  double acceptance = acceptM[aChannel]->GetBinContent( xBin, yBin );
 			  double n_accepted = hTrue_before_split->GetBinContent( aChannel*nbinsx_gen + xBin, yBin );
-			  genbin = (yBin-1)*nbinsx_gen + xBin;
-			  hTrue_vs_Meas->Fill( -999999, double(genbin), n_accepted/acceptance - n_accepted );
+			  double n_rejected = n_accepted/acceptance - n_accepted;
+			  double correction = (reco_integrals[aChannel] / reco_integrals[3]) / (gen_integrals[aChannel] / gen_integrals[3]);
+			  hTrue_vs_Meas->Fill( -999999, double(genbin), n_rejected*correction );
+
+			  //Calculate the uncertainty on the rejected events
+			  double num_error = accNum[aChannel]->GetBinError( xBin, yBin );
+			  double den_error = accDen[aChannel]->GetBinError( xBin, yBin );
+			  double new_error = sqrt( old_error*old_error + den_error*den_error - num_error*num_error );
+			  hTrue_vs_Meas->SetBinError( 0, genbin, new_error );
 
 			}
 		  }
 		}
 
-		// Normalize top MC to data
-		double integral_top = hTrue_before->Integral();
-		double integral_signal = integral_data - hBkg->Integral();
+		// // Normalize top MC to data
+		// double integral_top = hTrue_before->Integral();
+		// double integral_signal = integral_data - hBkg->Integral();
 
-		hTrue_before->Scale(		 integral_signal / integral_top );
-		hTrue_before_split->Scale(	 integral_signal / integral_top );
-        hMeas_before->Scale(		 integral_signal / integral_top );
-        hTrue_after->Scale(			 integral_signal / integral_top );
-        hMeas_after->Scale(			 integral_signal / integral_top );
-		hMeas_after_combined->Scale( integral_signal / integral_top );
+		// hTrue_before->Scale(		 integral_signal / integral_top );
+		// hTrue_before_split->Scale(	 integral_signal / integral_top );
+        // hMeas_before->Scale(		 integral_signal / integral_top );
+        // hTrue_after->Scale(			 integral_signal / integral_top );
+        // hMeas_after->Scale(			 integral_signal / integral_top );
+		// hMeas_after_combined->Scale( integral_signal / integral_top );
 
 		// Optimize tau for use in all subsequent unfoldings
 		if (k == 0) {
