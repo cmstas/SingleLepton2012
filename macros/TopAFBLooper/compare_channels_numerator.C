@@ -70,7 +70,7 @@ void compare_channels_numerator(TString histname = "topSpinCorr", bool drawnorm 
   if(histname=="rapiditydiff") observablename="top_rapiditydiff_cms";
 
 
-  TString FName1 = "SIGoutput/ttdl_mcatnlo_smallTree_histos.root";
+  TString FName1 = "SIGoutput/ttdl_mcatnlo_histos.root";
 
   std::cout << "Opening " << FName1.Data() << "\n";
   TFile *f_1         = TFile::Open(FName1.Data());  

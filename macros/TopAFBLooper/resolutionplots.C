@@ -23,7 +23,7 @@ TH1D* datahisto;
 
 
 
-void resolutionplots(TString histname = "ttMasspull",  int drawlog =0, double rangelow = -1, double rangehigh = 3, double rangeylow = 0, double rangeyhigh = 0, int rebin = 1,TString FName1 = "SIGoutput/ttdl_mcatnlo_smallTree_histos.root"){
+void resolutionplots(TString histname = "ttMasspull",  int drawlog =0, double rangelow = -1, double rangehigh = 3, double rangeylow = 0, double rangeyhigh = 0, int rebin = 1,TString FName1 = "SIGoutput/ttdl_mcatnlo_histos.root"){
   setTDRStyle();
 
   bool is2D = rangeyhigh == 0 ? 0 : 1; 
