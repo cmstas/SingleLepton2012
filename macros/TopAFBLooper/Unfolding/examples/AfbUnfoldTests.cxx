@@ -95,21 +95,21 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	//Do all our bin splitting
 	int nbinsx_gen = -99;
 	int nbinsx_reco = -99;
-	int nbinsx_reco_3ch = -99;
+	int nbinsx_reco_2ch = -99;
 
 	if( iVar < 2 || iVar == 9 ) nbinsx_gen = nbinsx2Dalt;
 	else nbinsx_gen = nbins1D;
 
 	nbinsx_reco = nbinsx_gen*2;
-	nbinsx_reco_3ch = nbinsx_reco*3;
+	nbinsx_reco_2ch = nbinsx_reco*2;
 
 	double* genbins;
 	double* recobins;
-	double* recobins_3ch;
+	double* recobins_2ch;
 
 	genbins = new double[nbinsx_gen+1];
 	recobins = new double[nbinsx_reco+1];
-	recobins_3ch = new double[nbinsx_reco_3ch+1];
+	recobins_2ch = new double[nbinsx_reco_2ch+1];
 
 	//Make gen binning array
 	if( iVar < 2 || iVar == 9 ) {
@@ -135,9 +135,9 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 	// Make reco binning array including the 3-channel split
 	double recohist_width = fabs(recobins[nbinsx_reco] - recobins[0]);
-	std::copy( recobins, recobins+nbinsx_reco+1, recobins_3ch );
-	for( int i=nbinsx_reco+1; i<nbinsx_reco_3ch+1; i++ ) {
-	  recobins_3ch[i] = recobins_3ch[i-nbinsx_reco] + recohist_width;
+	std::copy( recobins, recobins+nbinsx_reco+1, recobins_2ch );
+	for( int i=nbinsx_reco+1; i<nbinsx_reco_2ch+1; i++ ) {
+	  recobins_2ch[i] = recobins_2ch[i-nbinsx_reco] + recohist_width;
 	}
 
 
@@ -179,17 +179,20 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	/////////////// 1. Set up all our histograms //////////////////////////////////////////////
 
     TH1D *hTrue_before = new TH1D ("trueBeforeScaling", "Truth",    nbinsx_gen, genbins);
-	TH1D *hTrue_before_split = new TH1D ("true_before_split", "Truth",    nbinsx_reco_3ch, recobins_3ch); //Rebinned below
-    TH1D *hMeas_before = new TH1D ("measBeforeScaling", "Measured", nbinsx_reco_3ch, recobins_3ch);
+	TH1D *hTrue_before_split = new TH1D ("true_before_split", "Truth",    nbinsx_reco_2ch, recobins_2ch); //Rebinned below
+    TH1D *hMeas_before_split = new TH1D ("measBefore_split", "Measured", nbinsx_reco_2ch, recobins_2ch);
+    TH1D *hMeas_before = new TH1D ("measBeforeScaling", "Measured", nbinsx_reco, recobins);
 
     TH1D *hTrue_after = new TH1D ("trueAfterScaling", "Truth",    nbinsx_gen, genbins);
-    TH1D *hMeas_after = new TH1D ("measAfterScaling", "Measured", nbinsx_reco_3ch, recobins_3ch);
-    TH1D *hMeas_after_combined = new TH1D ("measAfterScaling_combined", "Measured", nbinsx_reco, recobins);
+    TH1D *hMeas_after_split = new TH1D ("measAfterScaling_split", "Measured", nbinsx_reco, recobins);
+    TH1D *hMeas_after = new TH1D ("measAfterScaling_combined", "Measured", nbinsx_reco, recobins);
 
-    TH1D *hSmeared = new TH1D ("smeared", "Smeared", nbinsx_reco_3ch, recobins_3ch);
+    // TH1D *hSmeared = new TH1D ("smeared", "Smeared", nbinsx_reco_2ch, recobins_2ch);
+    TH1D *hSmeared = new TH1D ("smeared", "Smeared", nbinsx_reco, recobins);
     TH1D *hUnfolded = new TH1D ("unfolded", "Unfolded", nbinsx_gen, genbins);
 
-	TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco_3ch, recobins_3ch);
+	// TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco_2ch, recobins_2ch);
+	TH1D *hBkg = new TH1D ("Background",  "Background",    nbinsx_reco, recobins);
 
 
     double pullMax = 5;
@@ -208,7 +211,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     }
 
 
-	TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsx_reco_3ch, recobins_3ch, nbinsx_gen, genbins);
+	// TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsx_reco_2ch, recobins_2ch, nbinsx_gen, genbins);
+	TH2D *hTrue_vs_Meas = new TH2D ("true_vs_meas", "True vs Measured", nbinsx_reco, recobins, nbinsx_gen, genbins);
 
 
 	hTrue_before_split->Rebin(2);
@@ -241,12 +245,12 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	double offset = 0;
 	double histmax = recobins[nbinsx_reco];
 	double histmin = recobins[0];
-	double hiBinCenter = hMeas_after_combined->GetBinCenter(nbinsx_reco);
-	double loBinCenter = hMeas_after_combined->GetBinCenter(1);
+	double hiBinCenter = hMeas_after->GetBinCenter(nbinsx_reco);
+	double loBinCenter = hMeas_after->GetBinCenter(1);
 
 	delete[] genbins;
 	delete[] recobins;
-	delete[] recobins_3ch;
+	delete[] recobins_2ch;
 
 	// // Load in data, just to get the integrals for scaling purposes //////////////////////////
 	// TChain *ch_data = new TChain("tree");
@@ -276,22 +280,22 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	// ch_bkg->SetBranchAddress("Nsolns", &Nsolns);
 	ch_bkg->SetBranchAddress("t_mass", &tmass);
 	ch_bkg->SetBranchAddress("tt_mass", &ttmass);
-	ch_bkg->SetBranchAddress("channel", &channel);
+	// ch_bkg->SetBranchAddress("channel", &channel);
 
 	for (Int_t i = 0; i < ch_bkg->GetEntries(); i++) {
 	  ch_bkg->GetEntry(i);
 	  //weight *= bkgSF;
 
-	  //Adjustments for 3-channel unfolding
-	  offset = double(channel) * recohist_width;
-	  if( observable > histmax )             observable = hiBinCenter;
-	  else if( observable < histmin )        observable = loBinCenter;
-	  if( observableMinus > histmax )        observableMinus = hiBinCenter;
-	  else if( observableMinus < histmin )   observableMinus = loBinCenter;
+	  // //Adjustments for 3-channel unfolding
+	  // offset = double(channel) * recohist_width;
+	  // if( observable > histmax )             observable = hiBinCenter;
+	  // else if( observable < histmin )        observable = loBinCenter;
+	  // if( observableMinus > histmax )        observableMinus = hiBinCenter;
+	  // else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
 	  if ( iVar<2 || iVar==9 || tmass > 0 ) {
-		fillUnderOverFlow(hBkg, observable+offset, weight, Nsolns);
-		if (combineLepMinus)  fillUnderOverFlow(hBkg, observableMinus+offset, weight, Nsolns);
+		fillUnderOverFlow(hBkg, observable, weight, Nsolns);
+		if (combineLepMinus)  fillUnderOverFlow(hBkg, observableMinus, weight, Nsolns);
 	  }
 	}
 
@@ -350,10 +354,11 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
         hTrue_before->Reset();
 		hTrue_before_split->Reset();
+		hMeas_before_split->Reset();
         hMeas_before->Reset();
         hTrue_after->Reset();
         hMeas_after->Reset();
-		hMeas_after_combined->Reset();
+		hMeas_after_split->Reset();
         hTrue_vs_Meas->Reset();
         for (int iD = 0; iD < (nbinsx_gen/2)+nbinsx_gen+1; ++iD)
         {
@@ -377,6 +382,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
                 }
 			}*/
 
+			if( channel>0 ) channel -= 1;
 			offset = double(channel) * recohist_width;
 			if( observable > histmax )        observable = hiBinCenter;
 			else if( observable < histmin )   observable = loBinCenter;
@@ -408,28 +414,30 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
             if ( iVar<2 || iVar==9 || tmass > 0 )
             {
-			  fillUnderOverFlow(hMeas_before, observable+offset, weight, Nsolns);
+			  fillUnderOverFlow(hMeas_before, observable, weight, Nsolns);
+			  fillUnderOverFlow(hMeas_before_split, observable+offset, weight, Nsolns);
 			  fillUnderOverFlow(hTrue_before, observable_gen, weight, Nsolns);
 			  fillUnderOverFlow(hTrue_before_split, observable_gen+offset, weight, Nsolns);
-			  fillUnderOverFlow(hTrue_vs_Meas, observable+offset, observable_gen, weight, Nsolns);
+			  fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
 			  if ( combineLepMinus )
               {
-				fillUnderOverFlow(hMeas_before, observableMinus+offset, weight, Nsolns);
+				fillUnderOverFlow(hMeas_before, observableMinus, weight, Nsolns);
+				fillUnderOverFlow(hMeas_before_split, observableMinus+offset, weight, Nsolns);
 				fillUnderOverFlow(hTrue_before, observableMinus_gen, weight, Nsolns);
 				fillUnderOverFlow(hTrue_before_split, observableMinus_gen+offset, weight, Nsolns);
-				fillUnderOverFlow(hTrue_vs_Meas, observableMinus+offset, observableMinus_gen, weight, Nsolns);
+				fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
               }
 			  //if (TestType == "Linearity") weight = weight * fx_scaled->Eval(observable_gen); //this is very slow for some reason
 			  if (TestType == "Linearity") weight = weight * (1.0 + slope * xsign * ( fx->Eval(fabs(xval)) ) );
-			  fillUnderOverFlow(hMeas_after, observable+offset, weight, Nsolns);
-			  fillUnderOverFlow(hMeas_after_combined, observable, weight, Nsolns);
+			  fillUnderOverFlow(hMeas_after_split, observable+offset, weight, Nsolns);
+			  fillUnderOverFlow(hMeas_after, observable, weight, Nsolns);
 			  fillUnderOverFlow(hTrue_after, observable_gen, weight, Nsolns);
 			  if ( combineLepMinus )
               {
 				//if (TestType == "Linearity") weight = orig_weight * fx_scaled->Eval(observableMinus_gen); //this is very slow for some reason
 				if (TestType == "Linearity") weight = orig_weight * (1.0 + slope * xminussign * ( fx->Eval(fabs(xminusval)) ) );
-				fillUnderOverFlow(hMeas_after, observableMinus+offset, weight, Nsolns);
-				fillUnderOverFlow(hMeas_after_combined, observableMinus, weight, Nsolns);
+				fillUnderOverFlow(hMeas_after_split, observableMinus+offset, weight, Nsolns);
+				fillUnderOverFlow(hMeas_after, observableMinus, weight, Nsolns);
 				fillUnderOverFlow(hTrue_after, observableMinus_gen, weight, Nsolns);
               }
             }
@@ -439,37 +447,44 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
-		TH1D *acceptM[4];
-		acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
-		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
-		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
-		acceptM[3] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
+		TH1D *acceptM[3];
+		// acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
+		// acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
+		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
+		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
 
-		acceptM[3]->Scale(1.0 / acceptM[3]->Integral());
+		acceptM[2]->Scale(1.0 / acceptM[2]->Integral());
 
 		TH1D *accNum[3];
 		accNum[0] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_diel"));
-		accNum[1] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_dimu"));
-		accNum[2] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_mueg"));
+		accNum[2] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_dimu"));
+		accNum[1] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_mueg"));
 
 		TH1D *accDen[3];
 		accDen[0] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_diel"));
-		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
-		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
+		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
+		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
 
-		double gen_integrals[4];
-		double reco_integrals[4];
+		//Tricks to make "channel 0" hold the combined same-flavor histograms
+		accNum[0]->Add( accNum[2] );
+		accDen[0]->Add( accDen[2] );
+
+		double gen_integrals[3];
+		double reco_integrals[3];
 
 		//Figure out the relative proportion of events in each channel
-		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  gen_integrals[aChannel] = hTrue_before_split->Integral( aChannel*nbinsx_gen+1, (aChannel+1)*nbinsx_gen );
-		  reco_integrals[aChannel] = hMeas_before->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco );
+		  reco_integrals[aChannel] = hMeas_before_split->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco );
 		}
-		gen_integrals[3] = gen_integrals[0] + gen_integrals[1] + gen_integrals[2];
-		reco_integrals[3] = reco_integrals[0] + reco_integrals[1] + reco_integrals[2];
+		gen_integrals[2] = gen_integrals[0] + gen_integrals[1];
+		reco_integrals[2] = reco_integrals[0] + reco_integrals[1];
 
 
-		for( int aChannel=0; aChannel<3; aChannel++ ) {
+		acceptM[0] = (TH1D*)(accNum[0]->Clone("accept_SF"));
+		acceptM[0]->Divide( accDen[0] );
+
+		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 
 			double old_error = hTrue_vs_Meas->GetBinError( 0, acceptbin );
@@ -478,7 +493,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
 			double n_accepted = hTrue_before_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
 			double n_rejected = n_accepted/acceptance - n_accepted;
-			double correction = (reco_integrals[aChannel] / reco_integrals[3]) / (gen_integrals[aChannel] / gen_integrals[3]);
+			double correction = (reco_integrals[aChannel] / reco_integrals[2]) / (gen_integrals[aChannel] / gen_integrals[2]);
 			hTrue_vs_Meas->Fill( -999999, hTrue_before->GetXaxis()->GetBinCenter(acceptbin), n_rejected*correction );
 
 			//Calculate the uncertainty on the rejected events
@@ -508,7 +523,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  cout << "Optimizing tau..." << endl;
 
 		  //Set data-like stat errors on MC for optimizing tau
-		  for( int i=1; i<=nbinsx_reco_3ch; i++) {
+		  for( int i=1; i<=nbinsx_reco; i++) {
 			double n_sig = hMeas_before->GetBinContent(i);
 			double n_bkg = hBkg->GetBinContent(i);
 			double bkg_err = hBkg->GetBinError(i);
@@ -520,7 +535,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		  TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 		  unfold_FindTau.SetInput(hMeas_before);
-		  minimizeRhoAverage(&unfold_FindTau, hMeas_before, -7.0, -2.0);
+		  minimizeRhoAverage(&unfold_FindTau, hMeas_before, -5.0, 0.0);
 		  tau = unfold_FindTau.GetTau();
 
 		  // Generate a curve of rhoAvg vs tau
@@ -530,7 +545,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  double bestrhoavg = unfold_FindTau.GetRhoAvg();
 
 		  for(int l=0; l<100; l++) {
-			tau_test = pow( 10, -7.0 + 0.05*l );
+			tau_test = pow( 10, -5.0 + 0.05*l );
 			unfold_FindTau.DoUnfold(tau_test, hMeas_before, scaleBias);
 			ar_tau[l] = tau_test;
 			ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
@@ -557,19 +572,19 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         //scale to keep total yield constant
         hTrue_after->Scale( hTrue_before->Integral() / hTrue_after->Integral() );
         hMeas_after->Scale( hMeas_before->Integral() / hMeas_after->Integral() );
-		hMeas_after_combined->Scale( hMeas_before->Integral() / hMeas_after_combined->Integral() );
+		hMeas_after_split->Scale( hMeas_before->Integral() / hMeas_after_split->Integral() );
 
         fscale = 0.65 * double(hTrue_before->Integral()) / double(nbinsx_gen);
 
         hTrue_after_array[k] = (TH1D *) hTrue_after->Clone();
-        hMeas_after_array[k] = (TH1D *) hMeas_after_combined->Clone();
+        hMeas_after_array[k] = (TH1D *) hMeas_after->Clone();
 
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
 		{
-		  if (acceptM[3]->GetBinContent(i) != 0)
+		  if (acceptM[2]->GetBinContent(i) != 0)
 		  {
-			hTrue_after->SetBinContent(i, hTrue_after->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
-			hTrue_after->SetBinError (i, hTrue_after->GetBinError(i) * 1.0 / acceptM[3]->GetBinContent(i));
+			hTrue_after->SetBinContent(i, hTrue_after->GetBinContent(i) * 1.0 / acceptM[2]->GetBinContent(i));
+			hTrue_after->SetBinError (i, hTrue_after->GetBinError(i) * 1.0 / acceptM[2]->GetBinContent(i));
 		  }
 		}
 
@@ -580,7 +595,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         Float_t Aerr_gen_k = 0.0;
         cout << " True after re-weighting   : " << Afb << " +/-  " << AfbErr << "\n";
 
-        GetAfb(hMeas_after_combined, Afb, AfbErr);
+        GetAfb(hMeas_after, Afb, AfbErr);
         // A_meas[k] = Afb;
         // Aerr_meas[k] = AfbErr;
         cout << " Measured after re-weighting   : " << Afb << " +/-  " << AfbErr << "\n";
