@@ -198,6 +198,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
     TH2D *hMeas_after = new TH2D ("measAfterScaling_combined", "Measured", nbinsx_reco, recobins, nbinsy2D, ybins2D);
 
     TH2D *hSmeared = new TH2D ("smeared", "Smeared", nbinsx_reco, recobins, nbinsy2D, ybins2D);
+    TH2D *hSmeared_split = new TH2D ("smeared_split", "Smeared", nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
     TH2D *hUnfolded = new TH2D ("unfolded", "Unfolded", nbinsx_gen, genbins, nbinsy2D, ybins2D);
 
 	// TH2D *hBkg = new TH2D ("Background",  "Background",    nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
@@ -527,6 +528,9 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		accNum[0]->Add( accNum[2] );
 		accDen[0]->Add( accDen[2] );
 
+		acceptM[0] = (TH2D*)(accNum[0]->Clone("accept_SF"));
+		acceptM[0]->Divide( accDen[0] );
+
 		double gen_integrals[3];
 		double reco_integrals[3];
 
@@ -537,10 +541,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		}
 		gen_integrals[2] = gen_integrals[0] + gen_integrals[1];
 		reco_integrals[2] = reco_integrals[0] + reco_integrals[1];
-
-
-		acceptM[0] = (TH2D*)(accNum[0]->Clone("accept_SF"));
-		acceptM[0]->Divide( accDen[0] );
 
 		for( int aChannel=0; aChannel<2; aChannel++ ) {
 		  for( int yBin=1; yBin<=nbinsy2D; yBin++ ) {
@@ -691,18 +691,60 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		  for (int i = 0; i < nPseudos; i++)
             {
 
-			  for (int x = 1; x <= hMeas_after->GetNbinsX(); x++)
+			  for (int x = 1; x <= hMeas_after_split->GetNbinsX(); x++)
                 {
-				  for (int y = 1; y < hMeas_after->GetNbinsY() + 1; y++)
+				  for (int y = 1; y <= hMeas_after_split->GetNbinsY(); y++)
 					{
 					  double fluct;
-					  if (nPseudos > 1) fluct = random->Poisson(hMeas_after->GetBinContent(x,y));
-					  else fluct = hMeas_after->GetBinContent(x,y);
-					  hSmeared->SetBinError(x, y, sqrt(fluct));
-					  hSmeared->SetBinContent(x, y, fluct);
+					  if (nPseudos > 1) fluct = random->Poisson(hMeas_after_split->GetBinContent(x,y));
+					  else fluct = hMeas_after_split->GetBinContent(x,y);
+					  hSmeared_split->SetBinContent(x, y, fluct);
+					  hSmeared_split->SetBinError(x, y, sqrt(fluct));
 					}
                 }
+			  for (int x = 1; x <= hSmeared->GetNbinsX(); x++) {
+				for (int y = 1; y < hSmeared->GetNbinsY() + 1; y++) {
+				  double content1 = hSmeared_split->GetBinContent(x,y);
+				  double content2 = hSmeared_split->GetBinContent(x+nbinsx_reco,y);
+				  hSmeared->SetBinContent( x, y, content1+content2 );
+				  hSmeared->SetBinError( x, y, sqrt(content1+content2) );
+				}
+			  }
+			  /*
+			  //Reset acceptance bins
+			  for( int y=1; y<hTrue_vs_Meas->GetNbinsY(); y++ ) {
+				hTrue_vs_Meas->SetBinContent( 0, y, 0.0 );
+				hTrue_vs_Meas->SetBinError( 0, y, 0.0 );
+			  }
 
+			  //Redo acceptance correction based on fluctuated results
+			  for( int aChannel=0; aChannel<2; aChannel++ ) {
+				reco_integrals[aChannel] = hSmeared_split->Integral( aChannel*nbinsx_reco+1, (aChannel+1)*nbinsx_reco, 1, nbinsy2D );
+			  }
+			  reco_integrals[2] = reco_integrals[0] + reco_integrals[1];
+
+			  for( int aChannel=0; aChannel<2; aChannel++ ) {
+				for( int yBin=1; yBin<=nbinsy2D; yBin++ ) {
+				  for( int xBin=1; xBin<=nbinsx_gen; xBin++ ) {
+
+					genbin = (yBin-1)*nbinsx_gen + xBin;
+					double old_error = hTrue_vs_Meas->GetBinError( 0, genbin );
+
+					double acceptance = acceptM[aChannel]->GetBinContent( xBin, yBin );
+					double n_accepted = hTrue_before_split->GetBinContent( aChannel*nbinsx_gen + xBin, yBin );
+					double n_rejected = n_accepted/acceptance - n_accepted;
+					double correction = (reco_integrals[aChannel] / reco_integrals[2]) / (gen_integrals[aChannel] / gen_integrals[2]);
+					hTrue_vs_Meas->Fill( -999999, hTrue_before_unwrapped->GetXaxis()->GetBinCenter(genbin), n_rejected*correction );
+
+					double num_error = accNum[aChannel]->GetBinError( xBin, yBin );
+					double den_error = accDen[aChannel]->GetBinError( xBin, yBin );
+					double new_error = sqrt( old_error*old_error + den_error*den_error - num_error*num_error );
+					hTrue_vs_Meas->SetBinError( 0, genbin, new_error );
+
+				  }
+				}
+			  }
+			  */
 			  unwrap2dhisto(hSmeared, hSmeared_unwrapped);
 			  unwrap2dhisto(hTrue_before, hTrue_before_unwrapped);
 
