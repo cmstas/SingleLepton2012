@@ -640,7 +640,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 				hSmeared->SetBinContent( x, content1+content2 );
 				hSmeared->SetBinError( x, sqrt(content1+content2) );
 			  }
-			  /*
+
 			  //Reset acceptance bins
 			  for( int y=1; y<hTrue_vs_Meas->GetNbinsY(); y++ ) {
 				hTrue_vs_Meas->SetBinContent( 0, y, 0.0 );
@@ -671,7 +671,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 				}
 			  }
-			  */
+
 			  // Unfold! /////////////////////////////
 			  TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 			  scaleBias =  hSmeared->Integral() / hMeas_before->Integral() ;

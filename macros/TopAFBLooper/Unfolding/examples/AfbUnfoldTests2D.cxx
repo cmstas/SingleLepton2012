@@ -710,7 +710,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 				  hSmeared->SetBinError( x, y, sqrt(content1+content2) );
 				}
 			  }
-			  /*
+
 			  //Reset acceptance bins
 			  for( int y=1; y<hTrue_vs_Meas->GetNbinsY(); y++ ) {
 				hTrue_vs_Meas->SetBinContent( 0, y, 0.0 );
@@ -744,7 +744,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 				  }
 				}
 			  }
-			  */
+
 			  unwrap2dhisto(hSmeared, hSmeared_unwrapped);
 			  unwrap2dhisto(hTrue_before, hTrue_before_unwrapped);
 
