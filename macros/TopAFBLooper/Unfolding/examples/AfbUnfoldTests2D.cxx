@@ -712,7 +712,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			  }
 
 			  //Reset acceptance bins
-			  for( int y=1; y<hTrue_vs_Meas->GetNbinsY(); y++ ) {
+			  for( int y=1; y<=hTrue_vs_Meas->GetNbinsY(); y++ ) {
 				hTrue_vs_Meas->SetBinContent( 0, y, 0.0 );
 				hTrue_vs_Meas->SetBinError( 0, y, 0.0 );
 			  }
