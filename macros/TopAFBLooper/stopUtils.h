@@ -76,6 +76,7 @@ bool passSingleLeptonSelection(bool isData);
 bool passDileptonSelection(bool isData);
 bool passDileptonSSSelection(bool isData);
 bool passDileptonSelectionWithEndcapEls(bool isData);
+bool passDileptonSSSelectionWithEndcapEls(bool isData);
 bool passLepPlusTauSelection(bool isData);
 bool passLepPlusTauSelection_v2(bool isData);
 bool passLepPlusIsoTrkSelection(bool isData);

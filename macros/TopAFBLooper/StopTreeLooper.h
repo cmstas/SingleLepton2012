@@ -30,17 +30,13 @@ public:
 
     //plotting
     void makeSIGPlots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag );
+                      string tag_selection, string flav_tag , string hist_tag);
     void makettPlots(float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                      string tag_selection, string flav_tag );
     void makeAccPlots(float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                       string tag_selection, string flav_tag );
-    void makeCR1Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag );
-    void makeCR2Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag_dl );
-    void makeCR3Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag_dl );
+    void makeCRPlots(float evtweight, std::map<std::string, TH1D *> &h_1d,
+                      string tag_selection, string flav_tag_dl , string hist_tag);
     void makeNJPlots( float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag );
     void makeZPlots(  float evtweight, std::map<std::string, TH1D *> &h_1d,
@@ -58,6 +54,10 @@ public:
 
     //selection
     bool passFullSelection(bool isData);
+    bool passFullSelection_bveto(bool isData);
+    bool passFullSelection_1jet(bool isData);
+    bool passFullSelection_Zpeak(bool isData);
+    bool passFullSelection_SS_inclusiveb(bool isData);
 
 
 private:
