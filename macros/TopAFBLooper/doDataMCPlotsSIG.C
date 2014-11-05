@@ -136,10 +136,14 @@ char *percent;
 char *delim;
 char *delimstart;
 char *delimend;
+char *ee;
+char *mm;
+char *em;
 char *e;
 char *m;
 int   width1;
 int   width2;
+int   extrawidth;
 int   linelength;
 
 float histError( TH1F *h , int minbin , int maxbin )
@@ -202,7 +206,7 @@ pair<float, float> datamcsf( TH1F *h_dt, vector<TH1F *> h_mc, int minbin, int ma
 
 
 //////////////////////////////////////////////////////////////////////////////
-void doDataMCPlotsSIG(const char *ttbar_tag = "")
+void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatnlo")
 {
 
     //derive scale factors
@@ -210,10 +214,29 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //list of samples
     //const int MCID = 10;
     const int MCID = 9;
+    const char *histtag[7] = 
+    {
+        "h_sig_",
+        "h_cr1_",
+        "h_cr2_",
+        "h_cr3_",
+        "h_cr4_",
+        "h_cr5_",
+        "h_cr6_"
+    };
+    int histtag_number = 0;
+    if(strncmp(region,"CR1",1000) == 0) histtag_number = 1;
+    if(strncmp(region,"CR2",1000) == 0) histtag_number = 2;
+    if(strncmp(region,"CR3",1000) == 0) histtag_number = 3;
+    if(strncmp(region,"CR4",1000) == 0) histtag_number = 4;
+    if(strncmp(region,"CR5",1000) == 0) histtag_number = 5;
+    if(strncmp(region,"CR6",1000) == 0) histtag_number = 6;
+
+
     const char *mcsample[MCID] =
     {
-        "ttdl_mcatnlo",
-        "ttsl_mcatnlo",
+        "ttdl",
+        "ttsl",
         "w1to4jets",
         "tW_lepsl",
         "tW_lepdl",
@@ -278,29 +301,102 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     char *histoname = "h_sig_m_top";
 
 
+
+    //pre-calculate basic inclusive ttdil SFs to apply in CRs
+    float ttdilsf[nCh];
+    if(histtag>0) {    
+        TFile *dt_dl_temp[nCh];
+        dt_dl_temp[DIEL] = TFile::Open(Form("%soutput/data_diel_histos.root","SIG"));
+        dt_dl_temp[DIMU] = TFile::Open(Form("%soutput/data_dimu_histos.root","SIG"));
+        dt_dl_temp[MUEG] = TFile::Open(Form("%soutput/data_mueg_histos.root","SIG"));
+
+        TFile *mc_dl_temp[MCID];
+
+        for (int j = 0; j < MCID; ++j)
+        {
+            if (j < 2)
+                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", "SIG",
+                                            mcsample[j], ttbar_tag));
+            else
+                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_histos.root", "SIG",
+                                            mcsample[j]));
+        }
+
+        for (int leptype = 0; leptype < nCh; ++leptype)
+        {
+            TH1F *h_dt1d;
+            TH1F *h_mc1d[MCID];
+            TH1F *h_mc1d_tot;
+
+            h_dt1d = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], "channel", "", leptag[leptype]));
+            h_dt1d->SetName(Form("%s%s", histtag[0], "channel"));
+
+            bool doinit = false;
+            for (int j = 0; j < MCID; ++j)
+            {
+
+                h_mc1d[j] = (TH1F *)mc_dl_temp[j]->Get(Form("%s%s%s%s", histtag[0], "channel", "", leptag[leptype]));
+
+
+                if (h_mc1d[j] == 0)
+                {
+                    h_mc1d[j] = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], "channel", "", leptag[leptype]));
+                    h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], "channel"));
+                    zeroHist(h_mc1d[j]);
+                }
+                h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], "channel"));
+
+
+                if (!doinit)
+                {
+                    h_mc1d_tot = (TH1F *)h_mc1d[j]->Clone(Form("mctot_%s%s", histtag[0], "channel"));
+                    doinit = true;
+                }
+                else h_mc1d_tot->Add(h_mc1d[j]);
+
+            }
+
+            float mcall = h_mc1d_tot->Integral();
+            float dtall = h_dt1d->Integral();
+            float mcttdil_all = h_mc1d[0]->Integral();
+            float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
+            ttdilsf[leptype] = ttdilsf_all;
+            if(histtag_number>0) cout<<"ttdil SF applied in "<<region<<" for "<<leplabel[leptype]<<": "<<ttdilsf_all<<endl;
+        }
+    }
+
+
+
     //initialize
 
     TFile *dt_dl[nCh];
-    dt_dl[DIEL] = TFile::Open("SIGoutput/data_diel_histos.root");
-    dt_dl[DIMU] = TFile::Open("SIGoutput/data_dimu_histos.root");
-    dt_dl[MUEG] = TFile::Open("SIGoutput/data_mueg_histos.root");
+    dt_dl[DIEL] = TFile::Open(Form("%soutput/data_diel_histos.root",region));
+    dt_dl[DIMU] = TFile::Open(Form("%soutput/data_dimu_histos.root",region));
+    dt_dl[MUEG] = TFile::Open(Form("%soutput/data_mueg_histos.root",region));
 
     TFile *mc_dl[MCID];
 
     for (int j = 0; j < MCID; ++j)
     {
         if (j < 2)
-            mc_dl[j] = TFile::Open(Form("SIGoutput/%s%s_histos.root",
+            mc_dl[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", region,
                                         mcsample[j], ttbar_tag));
         else
-            mc_dl[j] = TFile::Open(Form("SIGoutput/%s_histos.root",
+            mc_dl[j] = TFile::Open(Form("%soutput/%s_histos.root", region,
                                         mcsample[j]));
     }
 
     bool doverbose = true;
     bool scalettdiltodata = true;
+    bool printnumbersonplots = true;
 
     double lumi = 19.5;
+
+    double KSsum = 0.;
+    double chi2sum = 0.;
+
+    double KSsum_channels[nCh] = {0.};
+    double chi2sum_channels[nCh] = {0.};
 
     int isr = 0;
     char *metcut[1] = {""};
@@ -309,10 +405,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 58;
+    const int N1DHISTS = 51;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
+    vector<TH1F *> unsorted_mc1d_comb[N1DHISTS];
     TH1F *h_mc1d_tot_comb[N1DHISTS];
     bool hasplot[nCh][N1DHISTS] = {{0}};
     bool hasplotall[N1DHISTS] = {0};
@@ -320,7 +417,6 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     // Output file names
     const char *file1dname[N1DHISTS] =
     {
-        "met",
         "lep_azimuthal_asymmetry2",
         "lep_azimuthal_asymmetry",
         "lep_charge_asymmetry",
@@ -334,13 +430,17 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "tt_pT",
         "ttRapidity2",
 
+        "channel",
+        "channel_withttbarsol",
         "n_jets",
         "n_bjets",
+        "met",
         "metphi",
-        "lep1b_mindR",
-        "lep1b_mindPhi",
-        "lep2b_mindR",
-        "lep2b_mindPhi",
+        "met_smeared",
+        //"lep1b_mindR",
+        //"lep1b_mindPhi",
+        //"lep2b_mindR",
+        //"lep2b_mindPhi",
         "lep_dR",
         "lep_dEta",
         "Mll",
@@ -350,8 +450,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
-        "lepPt_ele",
-        "lepPt_muo",
+        //"lepPt_ele",
+        //"lepPt_muo",
+        "jet_Pt",
+        "jet0_Pt",
+        "jet1_Pt",
         "b_Pt",
         "b0_Pt",
         "b1_Pt",
@@ -359,20 +462,23 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPlus_Eta",
         "lepMinus_Eta",
         "lepEta",
-        "lepEta_ele",
-        "lepEta_muo",
+        //"lepEta_ele",
+        //"lepEta_muo",
+        "jet_Eta",
+        "jet0_Eta",
+        "jet1_Eta",
         "b_Eta",
         "b0_Eta",
         "b1_Eta",
         "nonb_Eta",
-        "pfcalo_metratio",
-        "pfcalo_metratio2",
-        "pfcalodPhi",
-        "pfcalo_deltamet",
-        "pfcalo_deltametx",
-        "pfcalo_deltamety",
-        "calomet",
-        "calometphi",
+        //"pfcalo_metratio",
+        //"pfcalo_metratio2",
+        //"pfcalodPhi",
+        //"pfcalo_deltamet",
+        //"pfcalo_deltametx",
+        //"pfcalo_deltamety",
+        //"calomet",
+        //"calometphi",
         "mlb",
         "mlb_min",
         "maxAMWTweight",
@@ -380,11 +486,10 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "otherAMWTweights",
         "closestDeltaMET_bestcombo"
     };
-
+/*
     // Histogram names
     const char *hist1dname[N1DHISTS] =
     {
-        "h_sig_met",
         "h_sig_lep_azimuthal_asymmetry2",
         "h_sig_lep_azimuthal_asymmetry",
         "h_sig_lep_charge_asymmetry",
@@ -398,13 +503,17 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_tt_pT",
         "h_sig_ttRapidity2",
 
+        "h_sig_channel",
+        "h_sig_channel_withttbarsol",
         "h_sig_n_jets",
         "h_sig_n_bjets",
+        "h_sig_met",
         "h_sig_metphi",
-        "h_sig_lep1b_mindR",
-        "h_sig_lep1b_mindPhi",
-        "h_sig_lep2b_mindR",
-        "h_sig_lep2b_mindPhi",
+        "h_sig_met_smeared",
+        //"h_sig_lep1b_mindR",
+        //"h_sig_lep1b_mindPhi",
+        //"h_sig_lep2b_mindR",
+        //"h_sig_lep2b_mindPhi",
         "h_sig_lep_dR",
         "h_sig_lep_dEta",
         "h_sig_Mll",
@@ -414,8 +523,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_lepPlus_Pt",
         "h_sig_lepMinus_Pt",
         "h_sig_lepPt",
-        "h_sig_lepPt_ele",
-        "h_sig_lepPt_muo",
+        //"h_sig_lepPt_ele",
+        //"h_sig_lepPt_muo",
+        "h_sig_jet_Pt",
+        "h_sig_jet0_Pt",
+        "h_sig_jet1_Pt",
         "h_sig_b_Pt",
         "h_sig_b0_Pt",
         "h_sig_b1_Pt",
@@ -423,20 +535,23 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_lepPlus_Eta",
         "h_sig_lepMinus_Eta",
         "h_sig_lepEta",
-        "h_sig_lepEta_ele",
-        "h_sig_lepEta_muo",
+        //"h_sig_lepEta_ele",
+        //"h_sig_lepEta_muo",
+        "h_sig_jet_Eta",
+        "h_sig_jet0_Eta",
+        "h_sig_jet1_Eta",
         "h_sig_b_Eta",
         "h_sig_b0_Eta",
         "h_sig_b1_Eta",
         "h_sig_nonb_Eta",
-        "h_sig_pfcalo_metratio",
-        "h_sig_pfcalo_metratio2",
-        "h_sig_pfcalodPhi",
-        "h_sig_pfcalo_deltamet",
-        "h_sig_pfcalo_deltametx",
-        "h_sig_pfcalo_deltamety",
-        "h_sig_calomet",
-        "h_sig_calometphi",
+        //"h_sig_pfcalo_metratio",
+        //"h_sig_pfcalo_metratio2",
+        //"h_sig_pfcalodPhi",
+        //"h_sig_pfcalo_deltamet",
+        //"h_sig_pfcalo_deltametx",
+        //"h_sig_pfcalo_deltamety",
+        //"h_sig_calomet",
+        //"h_sig_calometphi",
         "h_sig_mlb",
         "h_sig_mlb_min",
         "h_sig_maxAMWTweight",
@@ -444,6 +559,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "h_sig_otherAMWTweights",
         "h_sig_closestDeltaMET_bestcombo"
     };
+*/
 
     // List of Log scale plots:
     vector<int> logScale;
@@ -454,22 +570,21 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     //logScale.push_back(5);
     //logScale.push_back(6);
     //logScale.push_back(7);
-    logScale.push_back(9);
+    logScale.push_back(8);
     //logScale.push_back(16);
     //logScale.push_back(56);
-    logScale.push_back(33+11);
-    logScale.push_back(34+11);
-    logScale.push_back(35+11);
-    logScale.push_back(36+11);
-    logScale.push_back(41+11);
-    logScale.push_back(42+11);
+    //logScale.push_back(33+11);
+    //logScale.push_back(34+11);
+    //logScale.push_back(35+11);
+    //logScale.push_back(36+11);
+    logScale.push_back(41+4);
+    logScale.push_back(42+4);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
-        "ME_{T} [GeV]",
         "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
         "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
         "#Delta|#eta_{l}|",
@@ -482,14 +597,18 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "M_{t#bar{t}}",
         "p_{T}^{t#bar{t}}",
         "y_{t#bar{t}}",
-
+        
+        "channel",
+        "channel (after solution)",
         "n_jets",
         "n_bjets",
+        "ME_{T} [GeV]",
         "metphi",
-        "lep1b_mindR",
-        "lep1b_mindPhi",
-        "lep2b_mindR",
-        "lep2b_mindPhi",
+        "ME_{T}^{smeared} [GeV]",
+        //"lep1b_mindR",
+        //"lep1b_mindPhi",
+        //"lep2b_mindR",
+        //"lep2b_mindPhi",
         "lep_dR",
         "lep_dEta",
         "Mll",
@@ -499,8 +618,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
-        "lepPt_ele",
-        "lepPt_muo",
+        //"lepPt_ele",
+        //"lepPt_muo",
+        "jet_Pt",
+        "jet0_Pt",
+        "jet1_Pt",
         "b_Pt",
         "b0_Pt",
         "b1_Pt",
@@ -508,20 +630,23 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "lepPlus_Eta",
         "lepMinus_Eta",
         "lepEta",
-        "lepEta_ele",
-        "lepEta_muo",
+        //"lepEta_ele",
+        //"lepEta_muo",
+        "jet_Eta",
+        "jet0_Eta",
+        "jet1_Eta",
         "b_Eta",
         "b0_Eta",
         "b1_Eta",
         "nonb_Eta",
-        "pfcalo_metratio",
-        "pfcalo_metratio2",
-        "pfcalodPhi",
-        "pfcalo_deltamet",
-        "pfcalo_deltametx",
-        "pfcalo_deltamety",
-        "calomet",
-        "calometphi",
+        //"pfcalo_metratio",
+        //"pfcalo_metratio2",
+        //"pfcalodPhi",
+        //"pfcalo_deltamet",
+        //"pfcalo_deltametx",
+        //"pfcalo_deltamety",
+        //"calomet",
+        //"calometphi",
         "mlb",
         "mlb_min",
         "maxAMWTweight",
@@ -532,7 +657,6 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
     const char *ytitle1d[N1DHISTS] =
     {
-        "GeV",
         "",
         "",
         "",
@@ -546,19 +670,19 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         "GeV",
         "",
 
+        //"",
+        //"",
+        //"",
+        //"",
+        //"",
+        //"",
         "",
         "",
         "",
         "",
+        "GeV",
         "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
+        "GeV",
         "",
         "",
         "",
@@ -684,9 +808,9 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
         for (int i = 0; i < N1DHISTS; ++i)
         {
-            h_dt1d[i] = (TH1F *)dt_dl[leptype]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
+            h_dt1d[i] = (TH1F *)dt_dl[leptype]->Get(Form("%s%s%s%s", histtag[histtag_number], file1dname[i], metcut[isr], leptag[leptype]));
 
-            //cout << "DT: " << h_dt1d[i] << " " << Form("%s%s", hist1dname[i], leptag[leptype]) << endl;
+            //cout << "DT: " << h_dt1d[i] << " " << Form("%s%s%s", histtag[histtag_number], file1dname[i], leptag[leptype]) << endl;
 
             if (h_dt1d[i] != 0)
             {
@@ -695,13 +819,13 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             }
             else
             {
-                cout << Form("%s%s", hist1dname[i], leptag[leptype]) << " plot not found, skipping." << endl;
+                cout << Form("%s%s%s", histtag[histtag_number], file1dname[i], leptag[leptype]) << " plot not found, skipping." << endl;
                 continue;
             }
 
             //cout << "gtl: " << __LINE__ << endl;
 
-            h_dt1d[i]->SetName(Form("%s", hist1dname[i]));
+            h_dt1d[i]->SetName(Form("%s%s", histtag[histtag_number], file1dname[i]));
 
             h_dt1d[i]->Rebin(rebinFactor[i]);
 
@@ -711,23 +835,23 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             {
 
                 h_mc1d[i][j] =
-                    (TH1F *)mc_dl[j]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
+                    (TH1F *)mc_dl[j]->Get(Form("%s%s%s%s", histtag[histtag_number], file1dname[i], metcut[isr], leptag[leptype]));
 
                 //cout << "MC" << j << " " << mcsample[j] << ": " << h_mc1d[i][j] << " "
-                //     << Form("%s", hist1dname[i]) << endl;
+                //     << Form("%s%s", histtag[histtag_number], file1dname[i]) << endl;
 
                 if (h_mc1d[i][j] == 0)
                 {
                     h_mc1d[i][j] =
-                        //(TH1F *)mc_dl[0]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
-                        (TH1F *)dt_dl[leptype]->Get(Form("%s%s%s", hist1dname[i], metcut[isr], leptag[leptype]));
-                    h_mc1d[i][j]->SetName(Form("%s_%s", mcsample[j], hist1dname[i]));
+                        //(TH1F *)mc_dl[0]->Get(Form("%s%s%s%s", histtag[histtag_number], file1dname[i], metcut[isr], leptag[leptype]));
+                        (TH1F *)dt_dl[leptype]->Get(Form("%s%s%s%s", histtag[histtag_number], file1dname[i], metcut[isr], leptag[leptype]));
+                    h_mc1d[i][j]->SetName(Form("%s_%s%s", mcsample[j], histtag[histtag_number], file1dname[i]));
                     zeroHist(h_mc1d[i][j]);
                 }
-                h_mc1d[i][j]->SetName(Form("%s_%s", mcsample[j], hist1dname[i]));
+                h_mc1d[i][j]->SetName(Form("%s_%s%s", mcsample[j], histtag[histtag_number], file1dname[i]));
 
                 //cout << "MC" << j << " " << mcsample[j] << ": " << h_mc1d[i][j] << " "
-                //     << Form("%s", hist1dname[i]) << endl;
+                //     << Form("%s%s", histtag[histtag_number], file1dname[i]) << endl;
 
                 //h_mc1d[i][j]->Sumw2();
                 //if(j==0||j==1) h_mc1d[i][j]->Scale(40033./4884387.); //scale to powheg
@@ -738,7 +862,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
                 if (!doinit)
                 {
-                    h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s", hist1dname[i]));
+                    h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s%s", histtag[histtag_number], file1dname[i]));
                     doinit = true;
                 }
                 else h_mc1d_tot[i]->Add(h_mc1d[i][j]);
@@ -747,7 +871,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         }
 
 
-        //applying ttdil scaling
+        //applying ttdil scaling (for SIG do exact scaling, for CRs do scaling based on inclusive SIG region)
         for (int i = 0; i < N1DHISTS; ++i)
         {
             if (!hasplot[leptype][i]) continue;
@@ -765,7 +889,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
             float mcttdil_all = h_mc1d[i][0]->Integral();
             float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
-            if(scalettdiltodata) h_mc1d[i][0]->Scale(ttdilsf_all);
+            if(scalettdiltodata && histtag_number==0) h_mc1d[i][0]->Scale(ttdilsf_all);
+            else if(scalettdiltodata) h_mc1d[i][0]->Scale(ttdilsf[leptype]); 
 
 /*
             //no need to do this now we recalculate the sum histograms using the rescaled components
@@ -794,7 +919,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             if ( combplotcreated == false )
             {
                 h_dt1d_comb[i] = (TH1F *)h_dt1d[i]->Clone();
-                h_dt1d_comb[i]->SetName(Form("%s_comb", hist1dname[i]));
+                h_dt1d_comb[i]->SetName(Form("%s%s_comb", histtag[histtag_number], file1dname[i]));
             }
             else
                 h_dt1d_comb[i]->Add(h_dt1d[i]);
@@ -806,7 +931,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 if (combplotcreated == false)
                 {
                     h_mc1d_comb[i][j] = (TH1F *)h_mc1d[i][j]->Clone();
-                    h_mc1d_comb[i][j]->SetName(Form("%s_%s_comb", mcsample[j], hist1dname[i]));
+                    h_mc1d_comb[i][j]->SetName(Form("%s_%s%s_comb", mcsample[j], histtag[histtag_number], file1dname[i]));
                 }
                 else
                     h_mc1d_comb[i][j]->Add(h_mc1d[i][j]);
@@ -814,15 +939,15 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 //get total
                 if (!doinit && combplotcreated == false)
                 {
-                    h_mc1d_tot_comb[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_comb_%s", hist1dname[i]));
-                    h_mc1d_tot_comb[i]->SetName(Form("mctot_comb_%s", hist1dname[i]));
+                    h_mc1d_tot_comb[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_comb_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_tot_comb[i]->SetName(Form("mctot_comb_%s%s", histtag[histtag_number], file1dname[i]));
                 }
                 else
                     h_mc1d_tot_comb[i]->Add(h_mc1d[i][j]);
 
                 if (!doinit)
                 {
-                    h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s", hist1dname[i]));
+                    h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s%s", histtag[histtag_number], file1dname[i]));
                     doinit = true;
                 }
                 else h_mc1d_tot[i]->Add(h_mc1d[i][j]);
@@ -919,6 +1044,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
                 */
                 sorted_mc1d[i].push_back( h_mc1d[i][j] );
                 if (leptype == nCh - 1) sorted_mc1d_comb[i].push_back( h_mc1d_comb[i][j] );
+                if (leptype == nCh - 1) unsorted_mc1d_comb[i].push_back( h_mc1d_comb[i][j] );
 
             }
             //cout << "sorting" << endl;
@@ -1017,8 +1143,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         {
             if (!hasplot[leptype][i]) continue;
 
-            s_mc1d[i] = new THStack(hist1dname[i], hist1dname[i]);
-            s_mc1d[i]->SetName(Form("stack_%s", hist1dname[i]));
+            s_mc1d[i] = new THStack(file1dname[i], file1dname[i]);
+            s_mc1d[i]->SetName(Form("stack_%s%s", histtag[histtag_number], file1dname[i]));
 
             for (int j = 0; j < MCID; ++j)
             {
@@ -1169,6 +1295,10 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
 
             double chi2prob = compatibilityTest(h_dt1d[i], s_mc1d[i]);
             double KSprob = h_dt1d[i]->KolmogorovTest(h_mc1d_tot[i]);
+            chi2sum_channels[leptype] += chi2prob; KSsum_channels[leptype] += KSprob;
+
+            double asymdata = GetAfb(h_dt1d[i]);
+            double asymMC = GetAfb(h_mc1d_tot[i]);
 
             TLatex *text = new TLatex();
             text->SetNDC();
@@ -1176,9 +1306,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             float xtex = 0.2;//0.16;//used to be 0.2
             text->DrawLatex(xtex, 0.88, "CMS Preliminary");
             text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
-            //text->DrawLatex(xtex, 0.78, Form("%s", leplabel[leptype]));
-            if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("%s, #chi^{2} prob: %.2f, KS: %.2f",leplabel[leptype], chi2prob, KSprob));
+            if(!printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("%s", leplabel[leptype]));
+            else if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("%s, #chi^{2} prob: %.2f, KS: %.2f",leplabel[leptype], chi2prob, KSprob));
             else text->DrawLatex(xtex, 0.78, Form("%s, KS: %.2f",leplabel[leptype], KSprob));
+            if(i<8 && printnumbersonplots) text->DrawLatex(xtex, 0.73, Form("A_{data}=%.2f, A_{MC}=%.2f", asymdata, asymMC));
+
             if (i == 3)
             {
                 //text->DrawLatex(xtex, 0.68, Form("MC = %.0f #pm %.0f, Data = %.0f", mc_mtctail[isr][leptype], emc_mtctail[isr][leptype], dt_mtctail[isr][leptype]));
@@ -1242,10 +1374,11 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             line.DrawLine(h_dt1d[i]->GetXaxis()->GetXmin(), 1, h_dt1d[i]->GetXaxis()->GetXmax(), 1);
 
             gErrorIgnoreLevel = 2000; //suppress Info in <TCanvas::Print> messages
-            canv1d[i]->Print(Form("SIGplots/%s%s%s%s.pdf",
+            canv1d[i]->Print(Form("%splots/%s%s%s%s.pdf", region,
                                   file1dname[i], metcut[isr],
                                   leptag[leptype],
-                                  ttbar_tag));
+                                  ""));
+                                  //ttbar_tag));
             gErrorIgnoreLevel = 0;
 
             //cout << " Probability " << file1dname[i] << " : "
@@ -1255,7 +1388,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
             //delete g_data;
             //delete canv1d[i];
         }
-    
+    /*
         cout << "-------------------------------------------------" << endl;
         cout << "************"<<leplabel[leptype]<<" YIELDS****************************" << endl;
         cout << "-------------------------------------------------" << endl;
@@ -1272,7 +1405,7 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         cout << "-------------------------------------------------" << endl;
         cout << "*************************************************" << endl;
         cout << "-------------------------------------------------" << endl;
-
+*/
 
     }//end loop over lepton types
 
@@ -1325,8 +1458,8 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     {
         if (!hasplotall[i]) continue;
 
-        s_mc1d_comb[i] = new THStack(hist1dname[i], hist1dname[i]);
-        s_mc1d_comb[i]->SetName(Form("stack_%s", hist1dname[i]));
+        s_mc1d_comb[i] = new THStack(file1dname[i], file1dname[i]);
+        s_mc1d_comb[i]->SetName(Form("stack_%s%s", histtag[histtag_number], file1dname[i]));
 
 
         for (int j = 0; j < MCID; ++j)
@@ -1449,22 +1582,27 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         TGraphAsymmErrors *g_data = GetPoissonizedGraph(h_dt1d_comb[i]);
         g_data->Draw("e1,p,z,same");
         h_dt1d_comb[i]->Draw("axis,same");
+        leg1d_comb[i]->Draw("same");
 
         //if(i==57) h_dt1d_comb[i]->Print("all");
         //if(i==57) s_mc1d_comb[i]->Print("all");
         //if(i==57) h_mc1d_tot_comb[i]->Print("all");
         double chi2prob = compatibilityTest(h_dt1d_comb[i], s_mc1d_comb[i]);
         double KSprob = h_dt1d_comb[i]->KolmogorovTest(h_mc1d_tot_comb[i]);
+        chi2sum += chi2prob; KSsum += KSprob;
 
-        leg1d_comb[i]->Draw("same");
+        double asymdata = GetAfb(h_dt1d_comb[i]);
+        double asymMC = GetAfb(h_mc1d_tot_comb[i]);
+
         TLatex *text = new TLatex();
         text->SetNDC();
         text->SetTextSize(0.04);
         float xtex = 0.2;//0.16;//used to be 0.2
         text->DrawLatex(xtex, 0.88, "CMS Preliminary");
         text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
-        if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("#chi^{2} prob: %.2f, KS: %.2f", chi2prob, KSprob));
-        else text->DrawLatex(xtex, 0.78, Form("KS: %.2f", KSprob));
+        if(scalettdiltodata && printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("#chi^{2} prob: %.2f, KS: %.2f", chi2prob, KSprob));
+        else if(printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("KS: %.2f", KSprob));
+        if(i<8 && printnumbersonplots) text->DrawLatex(xtex, 0.73, Form("A_{data}=%.2f, A_{MC}=%.2f", asymdata, asymMC));
 
         fullpad->cd();
 
@@ -1493,9 +1631,10 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
         line.DrawLine(h_dt1d_comb[i]->GetXaxis()->GetXmin(), 1, h_dt1d_comb[i]->GetXaxis()->GetXmax(), 1);
 
         gErrorIgnoreLevel = 2000; //suppress Info in <TCanvas::Print> messages
-        canv1d_comb[i]->Print(Form("SIGplots/%s%s%s_combined.pdf",
+        canv1d_comb[i]->Print(Form("%splots/%s%s%s_combined.pdf", region,
                                    file1dname[i], metcut[isr],
-                                   ttbar_tag));
+                                   ""));
+                                   //ttbar_tag));
         gErrorIgnoreLevel = 0;
 
         /*
@@ -1510,11 +1649,33 @@ void doDataMCPlotsSIG(const char *ttbar_tag = "")
     }
     //}  NSAMPLE loop
 
+
+
+/*
+    cout << "-------------------------------------------------" << endl;
+    cout << "**********************YIELDS*********************" << endl;
+    cout << "-------------------------------------------------" << endl;
+    double error_temp = 0.;
+    //printf("%s MC \t\t \n", leptag[leptype]);
+    for (int j = 0; j < MCID; ++j)
+    {
+        printf(" %s : %.1f ± ", legend[j], h_mc1d_comb[0][j]->IntegralAndError(0,h_mc1d_comb[0][j]->GetNbinsX()+1,error_temp));
+        printf("%.1f \n", error_temp);
+    }
+    printf(" Total_MC : %.1f ± ", h_mc1d_tot_comb[0]->IntegralAndError(0,h_mc1d_tot_comb[0]->GetNbinsX()+1,error_temp));
+    printf("%.1f \n", error_temp);
+    printf(" Data : %.0f \n", h_dt1d_comb[0]->Integral());
+    cout << "-------------------------------------------------" << endl;
+    cout << "*************************************************" << endl;
+    cout << "-------------------------------------------------" << endl;
+*/
+
+
     cout << "-------------------------------------------------" << endl;
     cout << "**********************ASYMS**********************" << endl;
     cout << "-------------------------------------------------" << endl;
 
-for (int k = 1; k < 9; ++k)
+for (int k = 0; k < 8; ++k)
 {
     if( strncmp(file1dname[k],"lep_azimuthal_asymmetry", 1000 ) == 0 ){
         printf(" Variable: %s \n", file1dname[k]);
@@ -1540,30 +1701,26 @@ for (int k = 1; k < 9; ++k)
         cout << " *************************************************" << endl;
         cout << " -------------------------------------------------" << endl;
     }
-
 }
 
+    cout << "-------------------------------------------------" << endl;
+    cout << "******************Compatability******************" << endl;
+    cout << "-------------------------------------------------" << endl;
+    for (int leptype = 0; leptype < nCh; ++leptype) {
+        printf(" %s, mean chi2 prob: %.3f, mean KS prob: %.3f \n", leplabel[leptype], chi2sum_channels[leptype]/N1DHISTS, KSsum_channels[leptype]/N1DHISTS);   
+    }
+    printf(" combined, mean chi2 prob: %.3f, mean KS prob: %.3f \n", chi2sum/N1DHISTS, KSsum/N1DHISTS);   
 
 
     cout << "-------------------------------------------------" << endl;
     cout << "**********************YIELDS*********************" << endl;
     cout << "-------------------------------------------------" << endl;
-    double error_temp = 0.;
-    //printf("%s MC \t\t \n", leptag[leptype]);
-    for (int j = 0; j < MCID; ++j)
-    {
-        printf(" %s : %.1f ± ", legend[j], h_mc1d_comb[0][j]->IntegralAndError(0,h_mc1d_comb[0][j]->GetNbinsX()+1,error_temp));
-        printf("%.1f \n", error_temp);
-    }
-    printf(" Total_MC : %.1f ± ", h_mc1d_tot_comb[0]->IntegralAndError(0,h_mc1d_tot_comb[0]->GetNbinsX()+1,error_temp));
-    printf("%.1f \n", error_temp);
-    printf(" Data : %.0f \n", h_dt1d_comb[0]->Integral());
-    cout << "-------------------------------------------------" << endl;
-    cout << "*************************************************" << endl;
-    cout << "-------------------------------------------------" << endl;
 
+    cout << "Before ttbar solution: "<<endl;
+    printYields(unsorted_mc1d_comb[12], legend, h_dt1d_comb[12], true);
 
-    //printYields(sorted_mc1d_yields_comb, legend, h_dt1d_yields_comb, true); //(vectors of) histograms need to be created with SF in first bin, DF in 2nd bin, total in 3rd bin.
+    cout << "After ttbar solution: "<<endl;
+    printYields(unsorted_mc1d_comb[13], legend, h_dt1d_comb[13], true);
 
 
     //#endif
@@ -1678,8 +1835,7 @@ void printYields( vector<TH1F *> h_mc , const char *labels[] , TH1F *h_data , bo
     printHeader();
     printLine(latex);
 
-    TH1F *hmctot = new TH1F("hmctot", "hmctot", 2, 0, 2);
-    hmctot->Sumw2();
+    TH1F *hmctot;
 
     //----------------------
     // print SM MC samples
@@ -1720,7 +1876,8 @@ void initSymbols( bool latex )
 
     width1      = 20;
     width2      = 4;
-    linelength  = (width1 + width2) * 4 + 1;
+    extrawidth  = 26;
+    linelength  = (width1 + width2) * 5 + 1 + extrawidth;
 
     //-------------------------------------------------------
     // symbols
@@ -1733,6 +1890,9 @@ void initSymbols( bool latex )
         delim      = "&";
         delimstart = "";
         delimend   = "\\\\";
+        ee         = "$ee$";
+        mm         = "$\\mu\\mu$";
+        em         = "$e\\mu$";
         e          = "$e$";
         m          = "$\\mu$";
     }
@@ -1743,6 +1903,9 @@ void initSymbols( bool latex )
         delim      = "|";
         delimstart = "|";
         delimend   = "|";
+        ee         = "ee";
+        mm         = "mm";
+        em         = "em";
         e          = "e";
         m          = "m";
     }
@@ -1766,10 +1929,11 @@ void printLine( bool latex )
 void printHeader()
 {
 
-    cout << delimstart << setw(width1) << "Sample"    << setw(width2)
-         << delim      << setw(width1) << e           << setw(width2)
-         << delim      << setw(width1) << m           << setw(width2)
-         << delim      << setw(width1) << "total"     << setw(width2)
+    cout << delimstart << setw(width1+extrawidth)   << "Sample"  << setw(width2)
+         << delim      << setw(width1) << ee        << setw(width2)
+         << delim      << setw(width1) << mm        << setw(width2)
+         << delim      << setw(width1) << em        << setw(width2)
+         << delim      << setw(width1) << "total"   << setw(width2)
          << delimend   << endl;
 
 }
@@ -1777,15 +1941,17 @@ void printHeader()
 void print( TH1F *h , string label , bool correlatedError )
 {
 
-    stringstream se;
-    stringstream sm;
+    stringstream see;
+    stringstream smm;
+    stringstream sem;
     stringstream stot;
 
     if ( label == "data" )
     {
-        se   << Form( "%.0f" , h->GetBinContent(1) );
-        sm   << Form( "%.0f" , h->GetBinContent(2) );
-        stot << Form( "%.0f" , h->GetBinContent(3) );
+        see   << Form( "%.0f" , h->GetBinContent(1) );
+        smm   << Form( "%.0f" , h->GetBinContent(2) );
+        sem   << Form( "%.0f" , h->GetBinContent(3) );
+        stot  << Form( "%.0f" , h->GetBinContent(4) );
     }
     else
     {
@@ -1793,20 +1959,23 @@ void print( TH1F *h , string label , bool correlatedError )
         //smm  << Form( "%.1f" , h->GetBinContent(2) );
         //stot << Form( "%.1f" , h->Integral()       );
 
-        se   << Form( "%.1f" , h->GetBinContent(1) ) << pm << Form( "%.1f" , h->GetBinError(1) );
-        sm   << Form( "%.1f" , h->GetBinContent(2) ) << pm << Form( "%.1f" , h->GetBinError(2) );
-        stot << Form( "%.1f" , h->GetBinContent(3) ) << pm << Form( "%.1f" , h->GetBinError(3) );
+        see   << Form( "%.1f" , h->GetBinContent(1) ) << pm << Form( "%.1f" , h->GetBinError(1) );
+        smm   << Form( "%.1f" , h->GetBinContent(2) ) << pm << Form( "%.1f" , h->GetBinError(2) );
+        sem   << Form( "%.1f" , h->GetBinContent(3) ) << pm << Form( "%.1f" , h->GetBinError(3) );
+        stot  << Form( "%.1f" , h->GetBinContent(4) ) << pm << Form( "%.1f" , h->GetBinError(4) );
 
         float error = 0;
         if ( correlatedError ) error = h->GetBinError(1) + h->GetBinError(2) + h->GetBinError(3);
-        else                  error = histError(h, 1, 4);
+        //else                  error = histError(h, 1, 4);
+        else                  error = h->GetBinError(4);
 
         //    stot << Form( "%.1f" , h->Integral()       ) << pm << Form( "%.1f" , error  );
     }
 
-    cout << delimstart << setw(width1) << label      << setw(width2)
-         << delim      << setw(width1) << se.str()   << setw(width2)
-         << delim      << setw(width1) << sm.str()   << setw(width2)
+    cout << delimstart << setw(width1+extrawidth) << label      << setw(width2)
+         << delim      << setw(width1) << see.str()   << setw(width2)
+         << delim      << setw(width1) << smm.str()   << setw(width2)
+         << delim      << setw(width1) << sem.str()   << setw(width2)
          << delim      << setw(width1) << stot.str() << setw(width2)
          << delimend   << endl;
 
