@@ -341,7 +341,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             nonbjets.clear();
             bcandidates.clear();
             btag.clear();
-            sigma_jets.clear();
+            //sigma_jets.clear();
             mc.clear();
 
             n_jets  = 0;
@@ -357,12 +357,13 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 if ( fabs(stopt.pfjets().at(i).eta()) > 2.4 )  continue; //note, this was 2.5 for 7 TeV AFB
                 //  if( stopt.pfjets_beta2_0p5().at(i)<0.2 )  continue;
 
-                float unc = stopt.pfjets_sigma().at(i); 
+                float sigma = stopt.pfjets_sigma().at(i);
+                float unc   = stopt.pfjets_uncertainty().at(i);
 
                 if ( scaleJER && !isData ) {
 
                     TRandom3 r3(  stopt.event()*1000 + i  );
-                    double JER_smear_width = sqrt( pow( getDataMCRatio(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * unc  / getDataMCRatio(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio in the babies for MC, so must divide
+                    double JER_smear_width = sqrt( pow( getDataMCRatio(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatio(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio in the babies for MC, so must divide
                     double JER_smear = r3.Gaus(0,JER_smear_width);
 
                     //cout<<stopt.pfjets().at(i)<<endl;
@@ -428,7 +429,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 if ( !isData ) mc.push_back  ( stopt.pfjets_mc3().at(i) );
                 else mc.push_back  ( 0 );
 
-                sigma_jets.push_back(stopt.pfjets_sigma().at(i));
+                //sigma_jets.push_back(sigma);
 
                 //count jets that are not overlapping with second lepton
                 if (isData) continue;
