@@ -213,46 +213,76 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     //list of samples
     //const int MCID = 10;
-    const int MCID = 9;
+    const int MCID = 10;
 
-    const int nRegions = 10;
+    const int nRegions = 14;
+
+    enum regions {SIG=0,
+        CR0,
+        CR1,
+        CR1v,
+        CR2,
+        CR2v,
+        CR3,
+        CR3v,
+        CR4,
+        CR4v,
+        CR5,
+        CR5v,
+        CR6,
+        CR6v
+    };
+
+
     const char *histtag[nRegions] = 
     {
         "h_sig_",
+        "h_cr0_",
         "h_cr1_",
         "h_cr1v_",
         "h_cr2_",
         "h_cr2v_",
+        "h_cr3_",
         "h_cr3v_",
         "h_cr4_",
         "h_cr4v_",
         "h_cr5_",
-        "h_cr5v_"
+        "h_cr5v_",
+        "h_cr6_",
+        "h_cr6v_"
     };
-    int histtag_number = 0;
-    if(strncmp(region,"CR1",1000) == 0) histtag_number = 1;
-    if(strncmp(region,"CR1v",1000) == 0) histtag_number = 2;
-    if(strncmp(region,"CR2",1000) == 0) histtag_number = 3;
-    if(strncmp(region,"CR2v",1000) == 0) histtag_number = 4;
-    if(strncmp(region,"CR3v",1000) == 0) histtag_number = 5;
-    if(strncmp(region,"CR4",1000) == 0) histtag_number = 6;
-    if(strncmp(region,"CR4v",1000) == 0) histtag_number = 7;
-    if(strncmp(region,"CR5",1000) == 0) histtag_number = 8;
-    if(strncmp(region,"CR5v",1000) == 0) histtag_number = 9;
+    int histtag_number = SIG;
+    if(strncmp(region,"CR0",1000) == 0) histtag_number = CR0;
+    if(strncmp(region,"CR1",1000) == 0) histtag_number = CR1;
+    if(strncmp(region,"CR1v",1000) == 0) histtag_number = CR1v;
+    if(strncmp(region,"CR2",1000) == 0) histtag_number = CR2;
+    if(strncmp(region,"CR2v",1000) == 0) histtag_number = CR2v;
+    if(strncmp(region,"CR3",1000) == 0) histtag_number = CR3;
+    if(strncmp(region,"CR3v",1000) == 0) histtag_number = CR3v;
+    if(strncmp(region,"CR4",1000) == 0) histtag_number = CR4;
+    if(strncmp(region,"CR4v",1000) == 0) histtag_number = CR4v;
+    if(strncmp(region,"CR5",1000) == 0) histtag_number = CR5;
+    if(strncmp(region,"CR5v",1000) == 0) histtag_number = CR5v;
+    if(strncmp(region,"CR6",1000) == 0) histtag_number = CR6;
+    if(strncmp(region,"CR6v",1000) == 0) histtag_number = CR6v;
 
 
     const char *dirtag[nRegions] = 
     {
         "SIG",
+        "CR0",
         "CR1",
         "CR1v",
         "CR2",
         "CR2v",
+        "CR3",
         "CR3v",
         "CR4",
         "CR4v",
         "CR5",
-        "CR5v"
+        "CR5v",
+        "CR6",
+        "CR6v"
     };
 
     //Be careful changing the order of these (some hard coding may still exist). At least always keep ttdl first.
@@ -265,7 +295,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "tW_lepsl",
         "tW_lepdl",
         "diboson",
-        "DY1to4Jtot",
+        //"DY1to4Jtot",
+        "DY1to4Jeemm",
+        "DY1to4Jtautau",
         "ttV",
         "triboson",
         //"ttfake_mcatnlo",
@@ -280,6 +312,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                  TWDL,
                  DIBO,
                  DY,
+                 DYTT,
                  TTV,
                  VVV
                 };
@@ -293,8 +326,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         DY,
         DY,
         DY,
+        DY,
+        DY,
         TWDL,
-        TWDL,
+        DYTT,
+        TTSL,
+        TTSL,
         TTSL,
         TTSL
     };
@@ -318,7 +355,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "single top (tW, 2-lep)",
         //    "single top",
         "WW/WZ/ZZ",
-        "DY+jets",
+        //"DY+jets",
+        "DY #rightarrow ee/#mu#mu+jets",
+        "DY #rightarrow #tau#tau+jets",
         "ttW/Z/#gamma",
         "triboson",
         //"t#bar{t} #rightarrow all jets",
@@ -330,7 +369,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //  const int mccolor[]={7,2,6,4,5,kOrange,9,kAzure-9, 8, kViolet,kGreen+1, 15,12,13,27};
     //  const int mccolor[]={7,2,6,4,kOrange,8,9,kAzure-9, 5, kViolet,kGreen+1, 15,12,13,27};
     //const int mccolor[] = {7, 2, kRed-2, 6, 4, kOrange, 8, kViolet + 1, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
-    const int mccolor[] = {7, 2, 6, 4, kOrange, 8, kViolet + 1, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
+    const int mccolor[] = {7, 2, 6, 4, kOrange, 8, kViolet + 1, kViolet - 7, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
     //  const int mccolor[]={7,2,6,4,kOrange,8,5,kAzure-9, 9,5,kViolet,kGreen+1, 15,12,13,27};
 
     //-------------------------------
@@ -345,6 +384,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     bool doverbose = true;
     bool scalettdiltodata = true;
+    bool iteratettdilscalingforCRs = true;
     bool scalebkgtoCRs = true;
     bool scaletoyieldsafterttbarsol = false;
     bool printnumbersonplots = true;
@@ -425,9 +465,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             float mcttdil_all = h_mc1d[TTDL]->IntegralAndError(0, h_mc1d[TTDL]->GetNbinsX()+1, mcttdil_allerr );
             float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
             float ttdilsf_allerr = sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all );
+            //cout<<sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all)<<" "<<sqrt((dtallerr*dtallerr)/mcttdil_all/mcttdil_all)<<endl;
             ttdilsf[leptype] = ttdilsf_all;
             ttdilsferr[leptype] = ttdilsf_allerr;
-            if(!scalebkgtoCRs && scalettdiltodata && histtag_number>0) cout<<"ttdil SF applied for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
+            if(!scalebkgtoCRs && scalettdiltodata && histtag_number!=SIG) cout<<"ttdil SF applied for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
             if(scalebkgtoCRs) cout<<"ttdil SF applied in CRs prior to scaling for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
         }
     }
@@ -442,7 +483,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     float CRsftot[nRegions];
     float CRsftoterr[nRegions];
     if(scalebkgtoCRs) {
-        for (int i = 0; i < nRegions; ++i)
+        for (int i = 1; i < nRegions; ++i)
         {   
             CRsftot[i] = 0;
             CRsftoterr[i] = 0;
@@ -509,6 +550,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 float mcall = h_mc1d_tot->IntegralAndError(0, h_mc1d_tot->GetNbinsX()+1, mcallerr );
                 //add the uncertainty from the ttdl SF:
                 float mcallerrttdlsf = ttdilsferr[leptype] * h_mc1d[TTDL]->Integral();
+                //cout<<"mcallerr: "<<mcallerr<<" additional error from ttdl sf: "<<mcallerrttdlsf<<endl;
                 mcallerr = sqrt(mcallerr*mcallerr+mcallerrttdlsf*mcallerrttdlsf);
 
                 float dtall = h_dt1d->IntegralAndError(0, h_dt1d->GetNbinsX()+1, dtallerr );
@@ -525,26 +567,18 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 mcCRsampleerr = sqrt(mcCRsampleerr);
                 float CRsftemp = 1. + (dtall-mcall)/mcCRsample;
                 float CRsftemperr = sqrt( pow(mcCRsampleerr*(mcall-mcCRsample-dtall)/mcCRsample/mcCRsample , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcCRsampleerr*mcCRsampleerr)/mcCRsample/mcCRsample );
+                //cout<<sqrt( pow(mcCRsampleerr*(mcall-mcCRsample-dtall)/mcCRsample/mcCRsample , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcCRsampleerr*mcCRsampleerr)/mcCRsample/mcCRsample)<<" "<<sqrt((dtallerr*dtallerr)/mcCRsample/mcCRsample)<<endl;
+                //cout<<"Uncertainty increase factor from full error propagation: "<< CRsftemperr / (dtallerr/mcCRsample) <<endl;
                 CRsf[i][leptype] = CRsftemp;
                 CRsferr[i][leptype] = CRsftemperr;
-                cout<<"SF from "<<dirtag[i]<<" for "<<legend[CRtargetsamplenumber[i]]<<" for "<<leplabel[leptype]<<": "<<CRsftemp<<" +/- "<<CRsftemperr<<endl;
+                if(CRtargetsamplenumber[i]!=TTDL) cout<<"SF from "<<dirtag[i]<<" for "<< (CRtargetsamplenumber[i] == TTSL ? "fakes" : legend[CRtargetsamplenumber[i]]) <<" for "<<leplabel[leptype]<<": "<<CRsftemp<<" +/- "<<CRsftemperr<<endl;
 
                 //calculate weighted average
-                if( CRtargetsamplenumber[i] != DY || leptype < MUEG) {
+                if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) ) {
                     CRsftot[i] += CRsf[i][leptype]/CRsferr[i][leptype]/CRsferr[i][leptype];
                     CRsftoterr[i] += 1./CRsferr[i][leptype]/CRsferr[i][leptype];
                 }
 
-/*
-                float mcall = h_mc1d_tot->Integral();
-                float dtall = h_dt1d->Integral();
-                float mcCRsample = h_mc1d[CRtargetsamplenumber[i]]->Integral();
-                if(CRtargetsamplenumber[i]==1) mcCRsample += h_mc1d[2]->Integral();  //add w+jets to ttsl
-                //if(CRtargetsamplenumber[i]==1) mcCRsample += h_mc1d[3]->Integral();  //add 1l single top to ttsl
-                float CRsf_temp = 1. + (dtall-mcall)/mcCRsample;
-                CRsf[i][leptype] = CRsf_temp;
-                cout<<"SF from "<<dirtag[i]<<" for "<<legend[CRtargetsamplenumber[i]]<<" for "<<leplabel[leptype]<<": "<<CRsf_temp<<endl;
-*/
             }
 
             CRsftot[i] /= CRsftoterr[i];
@@ -555,22 +589,111 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     double bkgsf[MCID] =
     {
         0., //this element corresponds to ttdl and is not used
-        CRsftot[8],
-        //CRsftot[8],
-        CRsftot[8],
-        CRsftot[8],
+        CRsftot[CR5],
+        //CRsftot[CR5],
+        CRsftot[CR5],
+        CRsftot[CR5],
         1,
         1,
-        CRsftot[1],
+        CRsftot[CR1],
+        CRsftot[CR2],
         1,
         1
     };
 
-    if(scalebkgtoCRs) cout<<"average CR5 sf for fakes: "<<CRsftot[8]<<" +/- "<<CRsftoterr[8]<<endl;
-    if(scalebkgtoCRs) cout<<"average CR5v sf for fakes: "<<CRsftot[9]<<" +/- "<<CRsftoterr[9]<<endl;
-    if(scalebkgtoCRs) cout<<"average CR1 sf for DY:  "<<CRsftot[1]<<" +/- "<<CRsftoterr[1]<<endl;
-    if(scalebkgtoCRs) cout<<"alternative CR3v sf for DY:  "<<CRsftot[5]<<" +/- "<<CRsftoterr[5]<<endl;
-    if(scalebkgtoCRs) cout<<"composite sf for DY (CR1v*CR2/CR2v):  "<<CRsftot[2]*CRsftot[3]/CRsftot[4]<<" +/- "<<(CRsftot[2]*CRsftot[3]/CRsftot[4])*sqrt(pow(CRsftoterr[2]/CRsftot[2],2)+pow(CRsftoterr[3]/CRsftot[3],2)+pow(CRsftoterr[4]/CRsftot[4],2))<<endl;
+    if(scalebkgtoCRs) cout<<"average CR5 sf for fakes: "<<CRsftot[CR5]<<" +/- "<<CRsftoterr[CR5]<<endl;
+    if(scalebkgtoCRs) cout<<"average CR5v sf for fakes: "<<CRsftot[CR5v]<<" +/- "<<CRsftoterr[CR5v]<<endl;
+    if(scalebkgtoCRs) cout<<"average CR6 sf for fakes: "<<CRsftot[CR6]<<" +/- "<<CRsftoterr[CR6]<<endl;
+    if(scalebkgtoCRs) cout<<"average CR6v sf for fakes: "<<CRsftot[CR6v]<<" +/- "<<CRsftoterr[CR6v]<<endl;
+    if(scalebkgtoCRs) cout<<"average CR1 sf for DYeemm:  "<<CRsftot[CR1]<<" +/- "<<CRsftoterr[CR1]<<endl;
+    if(scalebkgtoCRs) cout<<"alternative CR0 sf for DYeemm:  "<<CRsftot[CR0]<<" +/- "<<CRsftoterr[CR0]<<endl;
+    if(scalebkgtoCRs) cout<<"composite sf for DYeemm (CR1v*CR2/CR2v):  "<<CRsftot[CR1v]*CRsftot[CR2]/CRsftot[CR2v]<<" +/- "<<(CRsftot[CR1v]*CRsftot[CR2]/CRsftot[CR2v])*sqrt(pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2]/CRsftot[CR2],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
+    if(scalebkgtoCRs) cout<<"average CR3 sf:  "<<CRsftot[CR3]<<" +/- "<<CRsftoterr[CR3]<<endl;
+    if(scalebkgtoCRs) cout<<"average CR3v sf:  "<<CRsftot[CR3v]<<" +/- "<<CRsftoterr[CR3v]<<endl;
+    if(scalebkgtoCRs) cout<<"average CR2 sf for DYtautau:  "<<CRsftot[CR2]<<" +/- "<<CRsftoterr[CR2]<<endl;
+    if(scalebkgtoCRs) cout<<"composite sf for DYtautau:  "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR3]/CRsftot[CR3],2)+pow(CRsftoterr[CR3v]/CRsftot[CR3v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
+
+
+
+
+
+
+    if(iteratettdilscalingforCRs && scalebkgtoCRs && scalettdiltodata) {    
+        TFile *dt_dl_temp[nCh];
+        dt_dl_temp[DIEL] = TFile::Open(Form("%soutput/data_diel_histos.root","SIG"));
+        dt_dl_temp[DIMU] = TFile::Open(Form("%soutput/data_dimu_histos.root","SIG"));
+        dt_dl_temp[MUEG] = TFile::Open(Form("%soutput/data_mueg_histos.root","SIG"));
+
+        TFile *mc_dl_temp[MCID];
+
+        for (int j = 0; j < MCID; ++j)
+        {
+            if (j < 2)
+                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", "SIG",
+                                            mcsample[j], ttbar_tag));
+            else
+                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_histos.root", "SIG",
+                                            mcsample[j]));
+        }
+
+        for (int leptype = 0; leptype < nCh; ++leptype)
+        {
+            TH1F *h_dt1d;
+            TH1F *h_mc1d[MCID];
+            TH1F *h_mc1d_tot;
+
+            h_dt1d = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
+            h_dt1d->SetName(Form("%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol]));
+
+            bool doinit = false;
+            for (int j = 0; j < MCID; ++j)
+            {
+
+                h_mc1d[j] = (TH1F *)mc_dl_temp[j]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
+
+
+                if (h_mc1d[j] == 0)
+                {
+                    h_mc1d[j] = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
+                    h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], channelhist[scaletoyieldsafterttbarsol]));
+                    zeroHist(h_mc1d[j]);
+                }
+                h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], channelhist[scaletoyieldsafterttbarsol]));
+
+                if(j != TTDL) h_mc1d[j]->Scale(bkgsf[j]);
+
+                if (!doinit)
+                {
+                    h_mc1d_tot = (TH1F *)h_mc1d[j]->Clone(Form("mctot_%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol]));
+                    doinit = true;
+                }
+                else h_mc1d_tot->Add(h_mc1d[j]);
+
+            }
+
+            double mcallerr = 0.;
+            double dtallerr = 0.;
+            double mcttdil_allerr = 0.;
+
+            float mcall = h_mc1d_tot->IntegralAndError(0, h_mc1d_tot->GetNbinsX()+1, mcallerr );
+            float dtall = h_dt1d->IntegralAndError(0, h_dt1d->GetNbinsX()+1, dtallerr );
+            float mcttdil_all = h_mc1d[TTDL]->IntegralAndError(0, h_mc1d[TTDL]->GetNbinsX()+1, mcttdil_allerr );
+            float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
+            float ttdilsf_allerr = sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all );
+            //cout<<sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all)<<" "<<sqrt((dtallerr*dtallerr)/mcttdil_all/mcttdil_all)<<endl;
+            ttdilsf[leptype] = ttdilsf_all;
+            ttdilsferr[leptype] = ttdilsf_allerr;
+            cout<<"updated ttdil SF applied for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
+        }
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -979,7 +1102,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 //if(j==TTDL||j==TTSL||j==TTFA) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
 
-                if(scalebkgtoCRs && j>0) h_mc1d[i][j]->Scale(bkgsf[j]);
+                if(scalebkgtoCRs && j!=TTDL) h_mc1d[i][j]->Scale(bkgsf[j]);
 
                 // Rebin, set limits
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
@@ -1183,7 +1306,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 h_mc1d[i][j]->SetLineColor(kBlack);
                 h_mc1d[i][j]->SetMarkerColor(mccolor[j]);
                 h_mc1d[i][j]->SetFillColor(mccolor[j]);
-                //      h_mc1d[i][j]->SetFillColor(j>0?mccolor[j]:10);
+                //      h_mc1d[i][j]->SetFillColor(j!=TTDL?mccolor[j]:10);
                 h_mc1d[i][j]->SetFillStyle(1001);
             }
 
@@ -1540,7 +1663,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             h_mc1d_comb[i][j]->SetLineColor(kBlack);
             h_mc1d_comb[i][j]->SetMarkerColor(mccolor[j]);
             h_mc1d_comb[i][j]->SetFillColor(mccolor[j]);
-            //      h_mc1d_comb[i][j]->SetFillColor(j>0?mccolor[j]:10);
+            //      h_mc1d_comb[i][j]->SetFillColor(j!=TTDL?mccolor[j]:10);
             h_mc1d_comb[i][j]->SetFillStyle(1001);
         }
     }
