@@ -336,6 +336,47 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         TTSL
     };
 
+    //apply SFs to other backgrounds when deriving the SFs for this CR?
+    const int SFsApply[nRegions] = 
+    {
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,  //not clear whether the fake and DY SFs are applicable in this region
+        1,
+        1,
+        1,
+        1
+    };
+
+/*
+    //0: no SFs (except for TTDL)
+    //1: full SFs
+    //2: full except DY b 
+    const int SFsApply[nRegions] = 
+    {
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        2,
+        1,
+        2
+    };
+*/
 
     const char *legend[MCID] =
     {
@@ -384,7 +425,6 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     bool doverbose = true;
     bool scalettdiltodata = true;
-    bool iteratettdilscalingforCRs = true;
     bool scalebkgtoCRs = true;
     bool scaletoyieldsafterttbarsol = false;
     bool printnumbersonplots = true;
@@ -401,205 +441,205 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     const char *metcut[1] = {""};
     const char *channelhist[2] = {"channel", "channel_withttbarsol"};
 
-    //pre-calculate basic inclusive ttdil SFs to apply in CRs
-    float ttdilsf[nCh];
-    float ttdilsferr[nCh]; 
-    if(true) {    
-        TFile *dt_dl_temp[nCh];
-        dt_dl_temp[DIEL] = TFile::Open(Form("%soutput/data_diel_histos.root","SIG"));
-        dt_dl_temp[DIMU] = TFile::Open(Form("%soutput/data_dimu_histos.root","SIG"));
-        dt_dl_temp[MUEG] = TFile::Open(Form("%soutput/data_mueg_histos.root","SIG"));
-
-        TFile *mc_dl_temp[MCID];
-
-        for (int j = 0; j < MCID; ++j)
-        {
-            if (j < 2)
-                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", "SIG",
-                                            mcsample[j], ttbar_tag));
-            else
-                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_histos.root", "SIG",
-                                            mcsample[j]));
-        }
-
-        for (int leptype = 0; leptype < nCh; ++leptype)
-        {
-            TH1F *h_dt1d;
-            TH1F *h_mc1d[MCID];
-            TH1F *h_mc1d_tot;
-
-            h_dt1d = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-            h_dt1d->SetName(Form("%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-
-            bool doinit = false;
-            for (int j = 0; j < MCID; ++j)
-            {
-
-                h_mc1d[j] = (TH1F *)mc_dl_temp[j]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-
-
-                if (h_mc1d[j] == 0)
-                {
-                    h_mc1d[j] = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-                    h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-                    zeroHist(h_mc1d[j]);
-                }
-                h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-
-
-                if (!doinit)
-                {
-                    h_mc1d_tot = (TH1F *)h_mc1d[j]->Clone(Form("mctot_%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-                    doinit = true;
-                }
-                else h_mc1d_tot->Add(h_mc1d[j]);
-
-            }
-
-            double mcallerr = 0.;
-            double dtallerr = 0.;
-            double mcttdil_allerr = 0.;
-
-            float mcall = h_mc1d_tot->IntegralAndError(0, h_mc1d_tot->GetNbinsX()+1, mcallerr );
-            float dtall = h_dt1d->IntegralAndError(0, h_dt1d->GetNbinsX()+1, dtallerr );
-            float mcttdil_all = h_mc1d[TTDL]->IntegralAndError(0, h_mc1d[TTDL]->GetNbinsX()+1, mcttdil_allerr );
-            float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
-            float ttdilsf_allerr = sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all );
-            //cout<<sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all)<<" "<<sqrt((dtallerr*dtallerr)/mcttdil_all/mcttdil_all)<<endl;
-            ttdilsf[leptype] = ttdilsf_all;
-            ttdilsferr[leptype] = ttdilsf_allerr;
-            if(!scalebkgtoCRs && scalettdiltodata && histtag_number!=SIG) cout<<"ttdil SF applied for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
-            if(scalebkgtoCRs) cout<<"ttdil SF applied in CRs prior to scaling for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
-        }
-    }
-
-
-
-
-
-    //pre-calculate background SFs from CRs
+    //calculate background SFs from CRs
+    double bkgsf[MCID][nCh];
+    double bkgsferr[MCID][nCh];
     float CRsf[nRegions][nCh];
     float CRsferr[nRegions][nCh];
     float CRsftot[nRegions];
     float CRsftoterr[nRegions];
     if(scalebkgtoCRs) {
-        for (int i = 1; i < nRegions; ++i)
+
+        TFile *dt_dl_temp[nCh][nRegions];
+        TFile *mc_dl_temp[MCID][nRegions];
+
+        for (int i = 0; i < nRegions; ++i)
         {   
-            CRsftot[i] = 0;
-            CRsftoterr[i] = 0;
 
-            TFile *dt_dl_temp[nCh];
-            dt_dl_temp[DIEL] = TFile::Open(Form("%soutput/data_diel_histos.root",dirtag[i]));
-            dt_dl_temp[DIMU] = TFile::Open(Form("%soutput/data_dimu_histos.root",dirtag[i]));
-            dt_dl_temp[MUEG] = TFile::Open(Form("%soutput/data_mueg_histos.root",dirtag[i]));
-
-            TFile *mc_dl_temp[MCID];
+            dt_dl_temp[DIEL][i] = TFile::Open(Form("%soutput/data_diel_histos.root",dirtag[i]));
+            dt_dl_temp[DIMU][i] = TFile::Open(Form("%soutput/data_dimu_histos.root",dirtag[i]));
+            dt_dl_temp[MUEG][i] = TFile::Open(Form("%soutput/data_mueg_histos.root",dirtag[i]));
 
             for (int j = 0; j < MCID; ++j)
             {
                 if (j < 2)
-                    mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", dirtag[i],
+                    mc_dl_temp[j][i] = TFile::Open(Form("%soutput/%s_%s_histos.root", dirtag[i],
                                                 mcsample[j], ttbar_tag));
                 else
-                    mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_histos.root", dirtag[i],
+                    mc_dl_temp[j][i] = TFile::Open(Form("%soutput/%s_histos.root", dirtag[i],
                                                 mcsample[j]));
             }
+        }
+
+        for (int j = 0; j < MCID; ++j)
+        {
+            for (int leptype = 0; leptype < nCh; ++leptype)
+            {
+                bkgsf[j][leptype] = 1.;
+                bkgsferr[j][leptype] = 0.;
+            }
+        }
+
+        int iteration = 0;
+        //6 iterations is plenty
+        while (iteration < 6) {
+            iteration++;
+
+            for (int i = 0; i < nRegions; ++i)
+            {   
+                CRsftot[i] = 0;
+                CRsftoterr[i] = 0;
+
+                for (int leptype = 0; leptype < nCh; ++leptype)
+                {
+                    TH1F *h_dt1d;
+                    TH1F *h_mc1d[MCID];
+                    TH1F *h_mc1d_tot;
+
+                    h_dt1d = (TH1F *)dt_dl_temp[leptype][i]->Get(Form("%s%s%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
+                    h_dt1d->SetName(Form("%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol]));
+
+                    bool doinit = false;
+                    for (int j = 0; j < MCID; ++j)
+                    {
+
+                        h_mc1d[j] = (TH1F *)mc_dl_temp[j][i]->Get(Form("%s%s%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
+
+
+                        if (h_mc1d[j] == 0)
+                        {
+                            h_mc1d[j] = (TH1F *)dt_dl_temp[leptype][i]->Get(Form("%s%s%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
+                            h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[i], channelhist[scaletoyieldsafterttbarsol]));
+                            zeroHist(h_mc1d[j]);
+                        }
+                        h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[i], channelhist[scaletoyieldsafterttbarsol]));
+
+                        if(j == TTDL && j != CRtargetsamplenumber[i]) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SF for TTDL
+                        if(  j != TTDL && j != CRtargetsamplenumber[i] && SFsApply[i] &&  ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL )  )  ) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
+                        //if(  j != TTDL && j != CRtargetsamplenumber[i] && SFsApply[i] &&  ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL && j != TTFA )  )  ) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
+
+                        if (!doinit)
+                        {
+                            h_mc1d_tot = (TH1F *)h_mc1d[j]->Clone(Form("mctot_%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol]));
+                            doinit = true;
+                        }
+                        else h_mc1d_tot->Add(h_mc1d[j]);
+
+                    }
+
+
+                    double mcallerr = 0.;
+                    double dtallerr = 0.;
+                    double mcCRsampleerrtemp = 0.;
+                    double mcCRsampleerr = 0.;
+
+                    float mcall = h_mc1d_tot->IntegralAndError(0, h_mc1d_tot->GetNbinsX()+1, mcallerr );
+                    //add the uncertainties from the other SFs:
+                    double mcallerrsftotalsquared = 0.;
+                    float mcallerrsf[MCID];
+                    for (int j = 0; j < MCID; ++j)
+                    {
+                        if(j == CRtargetsamplenumber[i]) continue; //only want to add the uncertainty from the other SFs 
+                        //if( j==WJETS || j==TWSL || j==TTFA ) continue; //these uncertainties are correlated and these components are always scaled together, so sum them linearly before combining 
+                        if( j==WJETS || j==TWSL ) continue; //these uncertainties are correlated and these components are always scaled together, so sum them linearly before combining (below)
+                        if( j==DYTT && CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) continue; //DYTT is correlated with DY, but these components are not scaled together. For non-DY CRs, continue and sum the uncertainties linearly.
+
+                        mcallerrsf[j] = bkgsferr[j][leptype] * h_mc1d[j]->Integral();
+
+                        if( j==TTSL ) mcallerrsf[j] += bkgsferr[WJETS][leptype] * h_mc1d[WJETS]->Integral();
+                        if( j==TTSL ) mcallerrsf[j] += bkgsferr[TWSL][leptype] * h_mc1d[TWSL]->Integral();
+                        //if( j==TTSL ) mcallerrsf[j] += bkgsferr[TTFA][leptype] * h_mc1d[TTFA]->Integral();
+
+                        //for non-DY CRs, add the DYTT and DY uncertainties assuming 100% correlation (this is slightly conservative because the true correlation is <100%)
+                        if( j==DY && CRtargetsamplenumber[i] != DYTT && CRtargetsamplenumber[i] != DY ) mcallerrsf[j] += bkgsferr[DYTT][leptype] * h_mc1d[DYTT]->Integral();
+
+                        mcallerrsftotalsquared += mcallerrsf[j]*mcallerrsf[j] ; 
+                    }
+
+                    //cout<<"mcallerr: "<<mcallerr<<" additional error from SFs: "<<sqrt(mcallerrsftotalsquared)<<endl;
+                    mcallerr = sqrt(mcallerr*mcallerr+mcallerrsftotalsquared);
+
+                    float dtall = h_dt1d->IntegralAndError(0, h_dt1d->GetNbinsX()+1, dtallerr );
+                    float mcCRsample = h_mc1d[CRtargetsamplenumber[i]]->IntegralAndError(0, h_mc1d[CRtargetsamplenumber[i]]->GetNbinsX()+1, mcCRsampleerrtemp );
+                    mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
+                    if(CRtargetsamplenumber[i]==TTSL) {
+                        mcCRsample += h_mc1d[WJETS]->IntegralAndError(0, h_mc1d[WJETS]->GetNbinsX()+1, mcCRsampleerrtemp );  //add w+jets to ttsl
+                        mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
+                        mcCRsample += h_mc1d[TWSL]->IntegralAndError(0, h_mc1d[TWSL]->GetNbinsX()+1, mcCRsampleerrtemp );  //add 1l single top to ttsl
+                        mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
+                        //mcCRsample += h_mc1d[TTFA]->IntegralAndError(0, h_mc1d[TTFA]->GetNbinsX()+1, mcCRsampleerrtemp );  //add ttfake to ttsl
+                        //mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
+                    }
+                    mcCRsampleerr = sqrt(mcCRsampleerr);
+                    double CRsftemp = 1. + (dtall-mcall)/mcCRsample;
+                    double CRsftemperr = sqrt( pow(mcCRsampleerr*(mcall-mcCRsample-dtall)/mcCRsample/mcCRsample , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcCRsampleerr*mcCRsampleerr)/mcCRsample/mcCRsample );
+                    //cout<<sqrt( pow(mcCRsampleerr*(mcall-mcCRsample-dtall)/mcCRsample/mcCRsample , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcCRsampleerr*mcCRsampleerr)/mcCRsample/mcCRsample)<<" "<<sqrt((dtallerr*dtallerr)/mcCRsample/mcCRsample)<<endl;
+                    //cout<<"Uncertainty increase factor from full error propagation: "<< CRsftemperr / (dtallerr/mcCRsample) <<endl;
+                    CRsf[i][leptype] = CRsftemp;
+                    CRsferr[i][leptype] = CRsftemperr;
+                    //cout<<"SF from "<<dirtag[i]<<" for "<< (CRtargetsamplenumber[i] == TTSL ? "fakes" : legend[CRtargetsamplenumber[i]]) <<" for "<<leplabel[leptype]<<": "<<CRsftemp<<" +/- "<<CRsftemperr<<endl;
+                    if(i == SIG) {
+                        bkgsf[TTDL][leptype] = CRsf[i][leptype];
+                        bkgsferr[TTDL][leptype] = CRsferr[i][leptype];
+                    }
+
+                    //calculate weighted average
+                    if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) ) {
+                        CRsftot[i] += CRsf[i][leptype]/CRsferr[i][leptype]/CRsferr[i][leptype];
+                        CRsftoterr[i] += 1./CRsferr[i][leptype]/CRsferr[i][leptype];
+                    }
+
+                }
+
+                CRsftot[i] /= CRsftoterr[i];
+                CRsftoterr[i] = 1./sqrt(CRsftoterr[i]);
+            }
+
+            cout<<bkgsf[TTDL][0]<<" ± "<<bkgsferr[TTDL][0]<<" "<<bkgsf[TTDL][1]<<" ± "<<bkgsferr[TTDL][1]<<" "<<bkgsf[TTDL][2]<<" ± "<<bkgsferr[TTDL][2]<<" "<<bkgsf[TTSL][0]<<" ± "<<bkgsferr[TTSL][0]<<" "<<bkgsf[DY][0]<<" ± "<<bkgsferr[DY][0]<<" "<<bkgsf[DYTT][0]<<" ± "<<bkgsferr[DYTT][0]<<" "<<endl;
+
 
             for (int leptype = 0; leptype < nCh; ++leptype)
             {
-                TH1F *h_dt1d;
-                TH1F *h_mc1d[MCID];
-                TH1F *h_mc1d_tot;
-
-                h_dt1d = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-                h_dt1d->SetName(Form("%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol]));
-
-                bool doinit = false;
-                for (int j = 0; j < MCID; ++j)
-                {
-
-                    h_mc1d[j] = (TH1F *)mc_dl_temp[j]->Get(Form("%s%s%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-
-
-                    if (h_mc1d[j] == 0)
-                    {
-                        h_mc1d[j] = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-                        h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[i], channelhist[scaletoyieldsafterttbarsol]));
-                        zeroHist(h_mc1d[j]);
-                    }
-                    h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[i], channelhist[scaletoyieldsafterttbarsol]));
-
-                    if(j == TTDL) h_mc1d[j]->Scale(ttdilsf[leptype]); //scale ttdil to data before calculating background SFs
-
-
-                    if (!doinit)
-                    {
-                        h_mc1d_tot = (TH1F *)h_mc1d[j]->Clone(Form("mctot_%s%s", histtag[i], channelhist[scaletoyieldsafterttbarsol]));
-                        doinit = true;
-                    }
-                    else h_mc1d_tot->Add(h_mc1d[j]);
-
-                }
-
-
-                double mcallerr = 0.;
-                double dtallerr = 0.;
-                double mcCRsampleerrtemp = 0.;
-                double mcCRsampleerr = 0.;
-
-                float mcall = h_mc1d_tot->IntegralAndError(0, h_mc1d_tot->GetNbinsX()+1, mcallerr );
-                //add the uncertainty from the ttdl SF:
-                float mcallerrttdlsf = ttdilsferr[leptype] * h_mc1d[TTDL]->Integral();
-                //cout<<"mcallerr: "<<mcallerr<<" additional error from ttdl sf: "<<mcallerrttdlsf<<endl;
-                mcallerr = sqrt(mcallerr*mcallerr+mcallerrttdlsf*mcallerrttdlsf);
-
-                float dtall = h_dt1d->IntegralAndError(0, h_dt1d->GetNbinsX()+1, dtallerr );
-                float mcCRsample = h_mc1d[CRtargetsamplenumber[i]]->IntegralAndError(0, h_mc1d[CRtargetsamplenumber[i]]->GetNbinsX()+1, mcCRsampleerrtemp );
-                mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
-                if(CRtargetsamplenumber[i]==TTSL) {
-                    mcCRsample += h_mc1d[WJETS]->IntegralAndError(0, h_mc1d[WJETS]->GetNbinsX()+1, mcCRsampleerrtemp );  //add w+jets to ttsl
-                    mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
-                    mcCRsample += h_mc1d[TWSL]->IntegralAndError(0, h_mc1d[TWSL]->GetNbinsX()+1, mcCRsampleerrtemp );  //add 1l single top to ttsl
-                    mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
-                    //mcCRsample += h_mc1d[TTFA]->IntegralAndError(0, h_mc1d[TTFA]->GetNbinsX()+1, mcCRsampleerrtemp );  //add ttfake to ttsl
-                    //mcCRsampleerr += mcCRsampleerrtemp*mcCRsampleerrtemp;
-                }
-                mcCRsampleerr = sqrt(mcCRsampleerr);
-                float CRsftemp = 1. + (dtall-mcall)/mcCRsample;
-                float CRsftemperr = sqrt( pow(mcCRsampleerr*(mcall-mcCRsample-dtall)/mcCRsample/mcCRsample , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcCRsampleerr*mcCRsampleerr)/mcCRsample/mcCRsample );
-                //cout<<sqrt( pow(mcCRsampleerr*(mcall-mcCRsample-dtall)/mcCRsample/mcCRsample , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcCRsampleerr*mcCRsampleerr)/mcCRsample/mcCRsample)<<" "<<sqrt((dtallerr*dtallerr)/mcCRsample/mcCRsample)<<endl;
-                //cout<<"Uncertainty increase factor from full error propagation: "<< CRsftemperr / (dtallerr/mcCRsample) <<endl;
-                CRsf[i][leptype] = CRsftemp;
-                CRsferr[i][leptype] = CRsftemperr;
-                if(CRtargetsamplenumber[i]!=TTDL) cout<<"SF from "<<dirtag[i]<<" for "<< (CRtargetsamplenumber[i] == TTSL ? "fakes" : legend[CRtargetsamplenumber[i]]) <<" for "<<leplabel[leptype]<<": "<<CRsftemp<<" +/- "<<CRsftemperr<<endl;
-
-                //calculate weighted average
-                if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) ) {
-                    CRsftot[i] += CRsf[i][leptype]/CRsferr[i][leptype]/CRsferr[i][leptype];
-                    CRsftoterr[i] += 1./CRsferr[i][leptype]/CRsferr[i][leptype];
-                }
-
+                     bkgsf[TTSL][leptype] = CRsftot[CR5];
+                     bkgsferr[TTSL][leptype] = CRsftoterr[CR5];
+                     //bkgsf[TTFA][leptype] = CRsftot[CR5];
+                     //bkgsferr[TTFA][leptype] = CRsftoterr[CR5];
+                     bkgsf[WJETS][leptype] = CRsftot[CR5];
+                     bkgsferr[WJETS][leptype] = CRsftoterr[CR5];
+                     bkgsf[TWSL][leptype] = CRsftot[CR5];
+                     bkgsferr[TWSL][leptype] = CRsftoterr[CR5];
+                     bkgsf[TWDL][leptype] = 1.;
+                     bkgsferr[TWDL][leptype] = 0.;
+                     bkgsf[DIBO][leptype] = 1.;
+                     bkgsferr[DIBO][leptype] = 0.;
+                     bkgsf[DY][leptype] = CRsftot[CR1];
+                     bkgsferr[DY][leptype] = CRsftoterr[CR1];
+                     bkgsf[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v];
+                     bkgsferr[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2));
+                     //bkgsf[DYTT][leptype] = CRsftot[CR2];
+                     //bkgsferr[DYTT][leptype] = CRsftoterr[CR2];
+                     bkgsf[TTV][leptype] = 1.;
+                     bkgsferr[TTV][leptype] = 0.;
+                     bkgsf[VVV][leptype] = 1.;
+                     bkgsferr[VVV][leptype] = 0.;
             }
 
-            CRsftot[i] /= CRsftoterr[i];
-            CRsftoterr[i] = 1./sqrt(CRsftoterr[i]);
         }
-    }
 
-    double bkgsf[MCID] =
-    {
-        0., //this element corresponds to ttdl and is not used
-        CRsftot[CR5],
-        //CRsftot[CR5],
-        CRsftot[CR5],
-        CRsftot[CR5],
-        1,
-        1,
-        CRsftot[CR1],
-        CRsftot[CR2],
-        1,
-        1
-    };
+        for (int i = 0; i < nRegions; ++i)
+        {   
+
+            dt_dl_temp[DIEL][i] -> Close();
+            dt_dl_temp[DIMU][i] -> Close();
+            dt_dl_temp[MUEG][i] -> Close();
+
+            for (int j = 0; j < MCID; ++j)
+            {
+                mc_dl_temp[j][i] -> Close();
+            }
+        }
+
+    }
 
     if(scalebkgtoCRs) cout<<"average CR5 sf for fakes: "<<CRsftot[CR5]<<" +/- "<<CRsftoterr[CR5]<<endl;
     if(scalebkgtoCRs) cout<<"average CR5v sf for fakes: "<<CRsftot[CR5v]<<" +/- "<<CRsftoterr[CR5v]<<endl;
@@ -611,89 +651,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     if(scalebkgtoCRs) cout<<"average CR3 sf:  "<<CRsftot[CR3]<<" +/- "<<CRsftoterr[CR3]<<endl;
     if(scalebkgtoCRs) cout<<"average CR3v sf:  "<<CRsftot[CR3v]<<" +/- "<<CRsftoterr[CR3v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR2 sf for DYtautau:  "<<CRsftot[CR2]<<" +/- "<<CRsftoterr[CR2]<<endl;
-    if(scalebkgtoCRs) cout<<"composite sf for DYtautau:  "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR3]/CRsftot[CR3],2)+pow(CRsftoterr[CR3v]/CRsftot[CR3v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
-
-
-
-
-
-
-    if(iteratettdilscalingforCRs && scalebkgtoCRs && scalettdiltodata) {    
-        TFile *dt_dl_temp[nCh];
-        dt_dl_temp[DIEL] = TFile::Open(Form("%soutput/data_diel_histos.root","SIG"));
-        dt_dl_temp[DIMU] = TFile::Open(Form("%soutput/data_dimu_histos.root","SIG"));
-        dt_dl_temp[MUEG] = TFile::Open(Form("%soutput/data_mueg_histos.root","SIG"));
-
-        TFile *mc_dl_temp[MCID];
-
-        for (int j = 0; j < MCID; ++j)
-        {
-            if (j < 2)
-                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", "SIG",
-                                            mcsample[j], ttbar_tag));
-            else
-                mc_dl_temp[j] = TFile::Open(Form("%soutput/%s_histos.root", "SIG",
-                                            mcsample[j]));
-        }
-
-        for (int leptype = 0; leptype < nCh; ++leptype)
-        {
-            TH1F *h_dt1d;
-            TH1F *h_mc1d[MCID];
-            TH1F *h_mc1d_tot;
-
-            h_dt1d = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-            h_dt1d->SetName(Form("%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-
-            bool doinit = false;
-            for (int j = 0; j < MCID; ++j)
-            {
-
-                h_mc1d[j] = (TH1F *)mc_dl_temp[j]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-
-
-                if (h_mc1d[j] == 0)
-                {
-                    h_mc1d[j] = (TH1F *)dt_dl_temp[leptype]->Get(Form("%s%s%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol], "", leptag[leptype]));
-                    h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-                    zeroHist(h_mc1d[j]);
-                }
-                h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-
-                if(j != TTDL) h_mc1d[j]->Scale(bkgsf[j]);
-
-                if (!doinit)
-                {
-                    h_mc1d_tot = (TH1F *)h_mc1d[j]->Clone(Form("mctot_%s%s", histtag[0], channelhist[scaletoyieldsafterttbarsol]));
-                    doinit = true;
-                }
-                else h_mc1d_tot->Add(h_mc1d[j]);
-
-            }
-
-            double mcallerr = 0.;
-            double dtallerr = 0.;
-            double mcttdil_allerr = 0.;
-
-            float mcall = h_mc1d_tot->IntegralAndError(0, h_mc1d_tot->GetNbinsX()+1, mcallerr );
-            float dtall = h_dt1d->IntegralAndError(0, h_dt1d->GetNbinsX()+1, dtallerr );
-            float mcttdil_all = h_mc1d[TTDL]->IntegralAndError(0, h_mc1d[TTDL]->GetNbinsX()+1, mcttdil_allerr );
-            float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
-            float ttdilsf_allerr = sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) + (dtallerr*dtallerr + mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all );
-            //cout<<sqrt( pow(mcttdil_allerr*(mcall-mcttdil_all-dtall)/mcttdil_all/mcttdil_all , 2) )<<" "<<sqrt((mcallerr*mcallerr - mcttdil_allerr*mcttdil_allerr)/mcttdil_all/mcttdil_all)<<" "<<sqrt((dtallerr*dtallerr)/mcttdil_all/mcttdil_all)<<endl;
-            ttdilsf[leptype] = ttdilsf_all;
-            ttdilsferr[leptype] = ttdilsf_allerr;
-            cout<<"updated ttdil SF applied for "<<leplabel[leptype]<<": "<<ttdilsf_all<<" +/- "<<ttdilsf_allerr<<endl;
-        }
-    }
-
-
-
-
-
-
-
-
+    if(scalebkgtoCRs) cout<<"composite sf for DYtautau (CR1):  "<<(CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
+    if(scalebkgtoCRs) cout<<"composite sf for DYtautau (CR3):  "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR3]/CRsftot[CR3],2)+pow(CRsftoterr[CR3v]/CRsftot[CR3v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
+    if(scalebkgtoCRs) cout<<"CR4v sf for DYtautau:  "<<CRsftot[CR4v]<<" +/- "<<CRsftoterr[CR4v]<<endl;
 
 
 
@@ -1102,7 +1062,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 //if(j==TTDL||j==TTSL||j==TTFA) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
 
-                if(scalebkgtoCRs && j!=TTDL) h_mc1d[i][j]->Scale(bkgsf[j]);
+                if(scalebkgtoCRs && j!=TTDL) h_mc1d[i][j]->Scale(bkgsf[j][leptype]);
 
                 // Rebin, set limits
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
@@ -1137,7 +1097,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             float mcttdil_all = h_mc1d[i][TTDL]->Integral();
             float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
             if(scalettdiltodata && histtag_number==0) h_mc1d[i][TTDL]->Scale(ttdilsf_all);
-            else if(scalettdiltodata) h_mc1d[i][TTDL]->Scale(ttdilsf[leptype]); 
+            else if(scalettdiltodata) h_mc1d[i][TTDL]->Scale(bkgsf[TTDL][leptype]); 
 
         }
 
@@ -1956,6 +1916,19 @@ for (int k = 0; k < 8; ++k)
 
     cout << "After ttbar solution: "<<endl;
     printYields(unsorted_mc1d_comb[13], legend, h_dt1d_comb[13], true);
+
+
+
+    dt_dl[DIEL] -> Close();
+    dt_dl[DIMU] -> Close();
+    dt_dl[MUEG] -> Close();
+
+    for (int j = 0; j < MCID; ++j)
+    {
+            mc_dl[j] -> Close();
+    }
+
+
 
 
     //#endif
