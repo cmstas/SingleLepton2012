@@ -167,9 +167,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	TString FunctionName(Nfunction);
     FunctionName.ReplaceAll(" " , "" );
     if (Nfunction == 0) FunctionName = "0";
-    TString file_name = "p1_f" + FunctionName + "_" + acceptanceName + "_2D";
-    ofstream third_output_file;
-    third_output_file.open(file_name + ".txt");
 
     TRandom3 *random = new TRandom3();
     random->SetSeed(5);
@@ -767,6 +764,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 					}
 				}
 
+			  delete ematrix;
 
 			  rewrap1dhisto(hUnfolded_unwrapped, hUnfolded);
 
@@ -885,6 +883,11 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
     if ((TestType == "Linearity"))
     {
+
+	  TString file_name = "p1_f" + FunctionName + "_" + acceptanceName + "_2D";
+	  ofstream third_output_file;
+	  third_output_file.open(file_name + ".txt");
+
         //vector<vector<Float_t>> transposed_A_gen, transposed_Aerr_gen, transposed_A_unf, transposed_Aerr_unf;
         //vector<vector<Float_t>> transposed_A_pull, transposed_A_pullwidth, transposed_Aerr_pull, transposed_Aerr_pullwidth;
 
@@ -1930,6 +1933,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         // c_asymdist_lin->SaveAs(acceptanceName + "_LinearityCheck_AsymDists.C");
 		*/
 
+		third_output_file.close();
+
     } // end "if TestType==Linearity"
     else
     { // presumably TestType==Pull
@@ -1989,16 +1994,15 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
             h_resd[i] ->Write();
         }
 		*/
-        AfbPull[0]->Write();
-        AfbPull[1]->Write();
-        AfbPull[2]->Write();
-        AfbPull[3]->Write();
+        // AfbPull[0]->Write();
+        // AfbPull[1]->Write();
+        // AfbPull[2]->Write();
+        // AfbPull[3]->Write();
 
     }
 
     //myfile.close();
     //second_output_file.close();
-    third_output_file.close();
 
 	//delete[] AfbPull;
 }

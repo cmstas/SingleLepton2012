@@ -492,7 +492,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// Now let's actually do the unfolding.
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
 		unfold_TUnfold.SetInput(hData_bkgSub);
-		scaleBias = hData_bkgSub->Integral() / hTrue_unwrapped->Integral();
+		scaleBias = (hData->Integral() - hBkg->Integral()) / hTrue_unwrapped->Integral();
 		hTrue_unwrapped->Scale(scaleBias);
 		//unfold_TUnfold.SetBias(hTrue_unwrapped);
 		unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);

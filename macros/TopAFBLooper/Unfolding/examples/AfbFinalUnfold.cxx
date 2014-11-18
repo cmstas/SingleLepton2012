@@ -397,7 +397,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         hData_bkgSub = (TH1D *) hData->Clone("Data_BkgSub");
         hData_bkgSub->Add(hBkg, -1.0);
 
-        scaleBias =  hData_bkgSub->Integral() / hMeas->Integral() ;
+        scaleBias =  (hData->Integral() - hBkg->Integral()) / hMeas->Integral() ;
         hMeas->Scale(scaleBias);
 
         TCanvas *c_reco = new TCanvas("c_reco", "c_reco", 500, 500);
