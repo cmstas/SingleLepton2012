@@ -55,9 +55,12 @@ public:
     //selection
     bool passFullSelection(bool isData);
     bool passFullSelection_bveto(bool isData);
-    bool passFullSelection_1jet(bool isData);
-    bool passFullSelection_Zpeak(bool isData);
+    bool passFullSelection_1jet_inclusiveb(bool isData);
+    bool passFullSelection_0jets(bool isData);
+    bool passFullSelection_Zpeak_inclusiveb(bool isData);
+    bool passFullSelection_noMETcut_inclusiveb(bool isData);
     bool passFullSelection_SS_inclusiveb(bool isData);
+    bool passFullSelection_SS_noMETcut_inclusiveb(bool isData);
 
 
 private:

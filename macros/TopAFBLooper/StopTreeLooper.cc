@@ -113,7 +113,15 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     printf("[StopTreeLooper::loop] %s\n", name.Data());
 
-    TString babyFilename = name + "_baby.root";
+    //split DY sample into ee,mm and tautau so we can use different SFs later
+    TString origname = name;
+    bool doDYtautau = false;
+    bool doDYeemm = false;
+    if(name.Contains("DY1to4J") && name.Contains("tautau")) doDYtautau = true; 
+    if(name.Contains("DY1to4J") && name.Contains("eemm")) doDYeemm = true;
+    if(name.Contains("DY1to4J")) name = "DY1to4Jtot";
+
+    TString babyFilename = origname + "_baby.root";
     MakeBabyNtuple(babyFilename.Data());
 
     load_badlaserevents("../Core/badlaser_events.txt", events_lasercalib);
@@ -150,7 +158,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     std::map<std::string, TH1D *> h_1d;
     //also for control regions
-    std::map<std::string, TH1D *> h_1d_cr1, h_1d_cr2, h_1d_cr3, h_1d_cr4, h_1d_cr5, h_1d_cr6;
+    std::map<std::string, TH1D *> h_1d_cr1, h_1d_cr1v, h_1d_cr2, h_1d_cr2v, h_1d_cr0, h_1d_cr3, h_1d_cr3v, h_1d_cr4, h_1d_cr4v, h_1d_cr40, h_1d_cr5, h_1d_cr5v, h_1d_cr6, h_1d_cr6v;
     //for signal region
     std::map<std::string, TH1D *> h_1d_sig;
     std::map<std::string, TH2D *> h_2d_sig;
@@ -188,7 +196,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     bool isData = name.Contains("data") ? true : false;
 
     //Define jet multiplicity requirement
-    min_njets = 1;
+    min_njets = 0;
     printf("[StopTreeLooper::loop] N JET min. requirement %i \n", min_njets);
 
     cout << "[StopTreeLooper::loop] running over chain with total entries " << nEvents << endl;
@@ -217,6 +225,9 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             stopt.GetEntry(event);
 
+            if(doDYtautau && abs(stopt.mcid1()) != 15) continue;
+            if(doDYeemm && abs(stopt.mcid1()) == 15) continue;
+
             //if (event % 100 != 0) continue; //to skip 99 of every 100 events
 
             //----------------------------
@@ -237,7 +248,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     fflush(stdout);
                     stwatch.Stop();
                     if (i_permille % 100 < 0.0001)
-                        cout << "At " << i_permille / 10. << "% of " << name.Data() << " time is " << stwatch.RealTime() << " cpu: " << stwatch.CpuTime() << endl;
+                        cout << "At " << i_permille / 10. << "% of " << origname.Data() << " time is " << stwatch.RealTime() << " cpu: " << stwatch.CpuTime() << endl;
                     stwatch.Start();//stwatch.Continue();
 
                 }
@@ -483,11 +494,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             dilmass = stopt.dilmass();
 
             //mlb variables sensitive to top mass without needing solver
-            mlb_1 = (stopt.lep1() + bcandidates.at(0)).M();
+            mlb_1 = bcandidates.size()<1 ? 0 : (stopt.lep1() + bcandidates.at(0)).M();
             mlb_2 = bcandidates.size()<2 ? 0 : (stopt.lep2() + bcandidates.at(1)).M();
             mlb_3 = bcandidates.size()<2 ? 0 : (stopt.lep1() + bcandidates.at(1)).M();
-            mlb_4 = (stopt.lep2() + bcandidates.at(0)).M();
-            mlb_min = bcandidates.size()<2 ? std::min(mlb_1, mlb_4) : std::min( std::min(mlb_1, mlb_2), std::min(mlb_3, mlb_4) );
+            mlb_4 = bcandidates.size()<1 ? 0 : (stopt.lep2() + bcandidates.at(0)).M();
+            mlb_min = bcandidates.size()<1 ? 0 : ( bcandidates.size()<2 ? std::min(mlb_1, mlb_4) : std::min( std::min(mlb_1, mlb_2), std::min(mlb_3, mlb_4) ) );
 
             //----------------------------------------------------------------------------
             // Require event to pass full selection prior to ttbar solver unless we want to make control region plots.
@@ -525,9 +536,10 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             if (stopt.ngoodlep()>1) if ( ( fabs(lepPlus.E() - stopt.lepp().E()) > 0.01 || fabs(lepMinus.E() - stopt.lepm().E()) > 0.01 ) && stopt.id1() * stopt.id2() < 0 ) printf("[StopTreeLooper::loop] Something went wrong with lepton assignments. %d %f %f %d %f %f \n", stopt.id1(), lepPlus.E(), stopt.lepp().E(), stopt.id2(), lepMinus.E(), stopt.lepm().E() );
 
-            jet1.SetPtEtaPhiE(bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
+            if(bcandidates.size()>0) jet1.SetPtEtaPhiE(bcandidates.at(0).Pt(), bcandidates.at(0).Eta(), bcandidates.at(0).Phi(), bcandidates.at(0).E());
+            else jet1.SetPtEtaPhiM(4, 4., 0., 4.8);  //dummy jet for 0-jet CRs to avoid crash
             if(bcandidates.size()>1) jet2.SetPtEtaPhiE(bcandidates.at(1).Pt(), bcandidates.at(1).Eta(), bcandidates.at(1).Phi(), bcandidates.at(1).E());
-            else jet2.SetPtEtaPhiM(4, 4.*jet1.Eta()/fabs(jet1.Eta()), 0., 4.8);  //for 1-jet events assume 2nd jet was soft to allow ttbar solution in <2j CRs
+            else jet2.SetPtEtaPhiM(4, 4.*jet1.Eta()/fabs(jet1.Eta()), 0., 4.8);  //for 1-jet events assume 2nd jet was soft to allow ttbar solution in 1j CRs
 
             top1_p4.SetPtEtaPhiE(0, 0, 0, 0);
             top2_p4.SetPtEtaPhiE(0, 0, 0, 0);
@@ -547,7 +559,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             //----------------------------------------------------------------------------
 
             //if( stopt.ngoodlep() > 1 ) solvettbar(); //this takes a long time to run on DY MC, so apply the Z veto
-            if( stopt.ngoodlep() > 1  && (abs(stopt.id1()) != abs(stopt.id2()) || (n_jets > 1 && n_bjets > 0) || fabs( stopt.dilmass() - 91.) > 15. ) ) solvettbar();
+            if( stopt.ngoodlep() > 1 && n_jets > 0 && (abs(stopt.id1()) != abs(stopt.id2()) || (n_jets > 1 && n_bjets > 0) || fabs( stopt.dilmass() - 91.) > 15. ) ) solvettbar();
 
             //cout<<"gtl: "<<__LINE__<<endl;
 
@@ -934,7 +946,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 */
 
             // CR1 - dilepton control REGION - dilepton + b-tag + Z peak
-            if ( dataset_2l && passFullSelection_Zpeak(isData) )
+            if ( dataset_2l && passFullSelection_Zpeak_inclusiveb(isData) && n_bjets > 0 )
             {
                 weight = evtweight * trigweight_dl;
 
@@ -943,8 +955,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             }
 
+            // CR1v - dilepton control REGION - dilepton + b-veto + Z peak
+            if ( dataset_2l && passFullSelection_Zpeak_inclusiveb(isData) && n_bjets == 0 )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr1v, "" , basic_flav_tag_dl , "h_cr1v");
+                makeSIGPlots( weight, h_1d_cr1v, "" , "_all" , "h_cr1v");
+
+            }
+
             //
-            // CR2 - Z-peak for yields and mT resolution studies
+            // CR2(v) - Z-peak for yields and mT resolution studies
             //
 
             // selection - SF dilepton, veto on isolated track in addition to 2 leptons, in z-peak
@@ -969,14 +991,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                   // Add stricter 3rd lepton veto
                   // require at least 2 jets
-                  //// Add b-tag veto
-                  if ( 
-                   //(stopt.trkpt10loose() <0.0001 || stopt.trkreliso10loose() > 0.1)
-                   // && n_bjets==0  
-                   n_jets>=2 ) {
+                  //CR2
+                  if ( n_jets>=2 && n_bjets > 0 ) {
 
                   makeSIGPlots( evtweight*trigweight_dl, h_1d_cr2, "", basic_flav_tag_dl , "h_cr2");
                   makeSIGPlots( evtweight*trigweight_dl, h_1d_cr2, "", "_all" , "h_cr2");
+
+                  }
+                  //CR2v
+                  if ( n_jets>=2 && n_bjets == 0 ) {
+
+                  makeSIGPlots( evtweight*trigweight_dl, h_1d_cr2v, "", basic_flav_tag_dl , "h_cr2v");
+                  makeSIGPlots( evtweight*trigweight_dl, h_1d_cr2v, "", "_all" , "h_cr2v");
 
                   }
                 }
@@ -984,8 +1010,18 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
 
   
-            // CR3 - dilepton control REGION - dilepton + 0 b-tag
+            // CR0 - dilepton control REGION - dilepton + 0 b-tag
             if ( dataset_2l && passFullSelection_bveto(isData) )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr0, "" , basic_flav_tag_dl , "h_cr0");
+                makeSIGPlots( weight, h_1d_cr0, "" , "_all" , "h_cr0");
+
+            }
+
+            // CR3 - dilepton control REGION - dilepton + no MET cut + b-tag
+            if ( dataset_2l && passFullSelection_noMETcut_inclusiveb(isData) && n_bjets > 0 )
             {
                 weight = evtweight * trigweight_dl;
 
@@ -994,13 +1030,43 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             }
 
+            // CR3v - dilepton control REGION - dilepton + no MET cut + b-veto
+            if ( dataset_2l && passFullSelection_noMETcut_inclusiveb(isData) && n_bjets == 0 )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr3v, "" , basic_flav_tag_dl , "h_cr3v");
+                makeSIGPlots( weight, h_1d_cr3v, "" , "_all" , "h_cr3v");
+
+            }
+
             // CR4 - dilepton control REGION - dilepton + 1 b-tagged jet
-            if ( dataset_2l && passFullSelection_1jet(isData) )
+            if ( dataset_2l && passFullSelection_1jet_inclusiveb(isData) && n_bjets > 0 )
             {
                 weight = evtweight * trigweight_dl;
 
                 makeSIGPlots( weight, h_1d_cr4, "" , basic_flav_tag_dl , "h_cr4");
                 makeSIGPlots( weight, h_1d_cr4, "" , "_all" , "h_cr4");
+
+            }
+
+            // CR4v - dilepton control REGION - dilepton + 1 untagged jet
+            if ( dataset_2l && passFullSelection_1jet_inclusiveb(isData) && n_bjets == 0 )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr4v, "" , basic_flav_tag_dl , "h_cr4v");
+                makeSIGPlots( weight, h_1d_cr4v, "" , "_all" , "h_cr4v");
+
+            }
+
+            // CR40 - dilepton control REGION - dilepton + 0 jets
+            if ( dataset_2l && passFullSelection_0jets(isData) )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr40, "" , basic_flav_tag_dl , "h_cr40");
+                makeSIGPlots( weight, h_1d_cr40, "" , "_all" , "h_cr40");
 
             }
 
@@ -1014,13 +1080,33 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             }
 
-            // CR6 - dilepton control REGION - SS dilepton + b-veto
+            // CR5v - dilepton control REGION - SS dilepton + b-veto
             if ( dataset_2l && passFullSelection_SS_inclusiveb(isData) && n_bjets == 0 )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr5v, "" , basic_flav_tag_dl , "h_cr5v");
+                makeSIGPlots( weight, h_1d_cr5v, "" , "_all" , "h_cr5v");
+
+            }
+
+            // CR6 - dilepton control REGION - SS dilepton + no MET cut + b-tag
+            if ( dataset_2l && passFullSelection_SS_noMETcut_inclusiveb(isData) && n_bjets > 0 )
             {
                 weight = evtweight * trigweight_dl;
 
                 makeSIGPlots( weight, h_1d_cr6, "" , basic_flav_tag_dl , "h_cr6");
                 makeSIGPlots( weight, h_1d_cr6, "" , "_all" , "h_cr6");
+
+            }
+
+            // CR6v - dilepton control REGION - SS dilepton + no MET cut + b-veto
+            if ( dataset_2l && passFullSelection_SS_noMETcut_inclusiveb(isData) && n_bjets == 0 )
+            {
+                weight = evtweight * trigweight_dl;
+
+                makeSIGPlots( weight, h_1d_cr6v, "" , basic_flav_tag_dl , "h_cr6v");
+                makeSIGPlots( weight, h_1d_cr6v, "" , "_all" , "h_cr6v");
 
             }
 
@@ -1090,6 +1176,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       outfile_cr1.Write();
       outfile_cr1.Close();
 
+      TFile outfile_cr1v(Form("CR1v%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR1v histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr1v;
+      for(it1d_cr1v=h_1d_cr1v.begin(); it1d_cr1v!=h_1d_cr1v.end(); it1d_cr1v++) {
+        it1d_cr1v->second->Write();
+        delete it1d_cr1v->second;
+      }
+
+      outfile_cr1v.Write();
+      outfile_cr1v.Close();
+
+
       TFile outfile_cr2(Form("CR2%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR2 histograms to %s\n", m_outfilename_.c_str());
 
@@ -1101,6 +1200,32 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
       outfile_cr2.Write();
       outfile_cr2.Close();
+
+      TFile outfile_cr2v(Form("CR2v%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR2v histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr2v;
+      for(it1d_cr2v=h_1d_cr2v.begin(); it1d_cr2v!=h_1d_cr2v.end(); it1d_cr2v++) {
+        it1d_cr2v->second->Write();
+        delete it1d_cr2v->second;
+      }
+
+      outfile_cr2v.Write();
+      outfile_cr2v.Close();
+
+
+      TFile outfile_cr0(Form("CR0%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR0 histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr0;
+      for(it1d_cr0=h_1d_cr0.begin(); it1d_cr0!=h_1d_cr0.end(); it1d_cr0++) {
+        it1d_cr0->second->Write();
+        delete it1d_cr0->second;
+      }
+
+      outfile_cr0.Write();
+      outfile_cr0.Close();
+
 
       TFile outfile_cr3(Form("CR3%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR3 histograms to %s\n", m_outfilename_.c_str());
@@ -1114,6 +1239,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       outfile_cr3.Write();
       outfile_cr3.Close();
 
+      TFile outfile_cr3v(Form("CR3v%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR3v histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr3v;
+      for(it1d_cr3v=h_1d_cr3v.begin(); it1d_cr3v!=h_1d_cr3v.end(); it1d_cr3v++) {
+        it1d_cr3v->second->Write();
+        delete it1d_cr3v->second;
+      }
+
+      outfile_cr3v.Write();
+      outfile_cr3v.Close();
+
+
       TFile outfile_cr4(Form("CR4%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR4 histograms to %s\n", m_outfilename_.c_str());
 
@@ -1125,6 +1263,31 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
       outfile_cr4.Write();
       outfile_cr4.Close();
+
+      TFile outfile_cr4v(Form("CR4v%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR4v histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr4v;
+      for(it1d_cr4v=h_1d_cr4v.begin(); it1d_cr4v!=h_1d_cr4v.end(); it1d_cr4v++) {
+        it1d_cr4v->second->Write();
+        delete it1d_cr4v->second;
+      }
+
+      outfile_cr4v.Write();
+      outfile_cr4v.Close();
+
+      TFile outfile_cr40(Form("CR40%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR40 histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr40;
+      for(it1d_cr40=h_1d_cr40.begin(); it1d_cr40!=h_1d_cr40.end(); it1d_cr40++) {
+        it1d_cr40->second->Write();
+        delete it1d_cr40->second;
+      }
+
+      outfile_cr40.Write();
+      outfile_cr40.Close();
+
 
       TFile outfile_cr5(Form("CR5%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR5 histograms to %s\n", m_outfilename_.c_str());
@@ -1138,6 +1301,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
       outfile_cr5.Write();
       outfile_cr5.Close();
 
+      TFile outfile_cr5v(Form("CR5v%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR5v histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr5v;
+      for(it1d_cr5v=h_1d_cr5v.begin(); it1d_cr5v!=h_1d_cr5v.end(); it1d_cr5v++) {
+        it1d_cr5v->second->Write();
+        delete it1d_cr5v->second;
+      }
+
+      outfile_cr5v.Write();
+      outfile_cr5v.Close();
+
+
       TFile outfile_cr6(Form("CR6%s",m_outfilename_.c_str()),"RECREATE") ;
       printf("[StopTreeLooper::loop] Saving CR6 histograms to %s\n", m_outfilename_.c_str());
 
@@ -1149,6 +1325,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
       outfile_cr6.Write();
       outfile_cr6.Close();
+
+      TFile outfile_cr6v(Form("CR6v%s",m_outfilename_.c_str()),"RECREATE") ;
+      printf("[StopTreeLooper::loop] Saving CR6v histograms to %s\n", m_outfilename_.c_str());
+
+      std::map<std::string, TH1D*>::iterator it1d_cr6v;
+      for(it1d_cr6v=h_1d_cr6v.begin(); it1d_cr6v!=h_1d_cr6v.end(); it1d_cr6v++) {
+        it1d_cr6v->second->Write();
+        delete it1d_cr6v->second;
+      }
+
+      outfile_cr6v.Write();
+      outfile_cr6v.Close();
+
 
     TFile outfile_nj(Form("NJ%s", m_outfilename_.c_str()), "RECREATE") ;
     printf("[StopTreeLooper::loop] Saving NJ histograms to %s\n", m_outfilename_.c_str());
@@ -1183,7 +1372,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
     gROOT->cd();
 
-    printf("[StopTreeLooper::loop] Finished %s\n", name.Data());
+    printf("[StopTreeLooper::loop] Finished %s\n", origname.Data());
 
 }
 
@@ -2122,14 +2311,14 @@ bool StopTreeLooper::passFullSelection_bveto(bool isData)
 }
 
 
-bool StopTreeLooper::passFullSelection_1jet(bool isData)
+bool StopTreeLooper::passFullSelection_1jet_inclusiveb(bool isData)
 {
     bool passFull = false;
     if ( passDileptonSelectionWithEndcapEls(isData)
             //events with mlb_min beyond the kinematic edge cannot be solved and have lower signal:background ratio. Could also cut on second-lowest mlb, but this would remove some events where we got one of the bs wrong that are still OK for the purely leptonic variables.
             && mlb_min <= mlb_max
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
-            && n_bjets == 1
+            //&& n_bjets == 1
             && n_jets == 1
             && stopt.dilmass() >= 30.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
@@ -2138,16 +2327,31 @@ bool StopTreeLooper::passFullSelection_1jet(bool isData)
     return passFull;
 }
 
+bool StopTreeLooper::passFullSelection_0jets(bool isData)
+{
+    bool passFull = false;
+    if ( passDileptonSelectionWithEndcapEls(isData)
+            //events with mlb_min beyond the kinematic edge cannot be solved and have lower signal:background ratio. Could also cut on second-lowest mlb, but this would remove some events where we got one of the bs wrong that are still OK for the purely leptonic variables.
+            && mlb_min <= mlb_max
+            && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
+            //&& n_bjets == 0
+            && n_jets == 0
+            && stopt.dilmass() >= 30.0
+            && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
+       ) passFull = true;
+
+    return passFull;
+}
 
 
-bool StopTreeLooper::passFullSelection_Zpeak(bool isData)
+bool StopTreeLooper::passFullSelection_Zpeak_inclusiveb(bool isData)
 {
     bool passFull = false;
     if ( passDileptonSelectionWithEndcapEls(isData)
             //events with mlb_min beyond the kinematic edge cannot be solved and have lower signal:background ratio. Could also cut on second-lowest mlb, but this would remove some events where we got one of the bs wrong that are still OK for the purely leptonic variables.
             && mlb_min <= mlb_max
             && fabs( stopt.dilmass() - 91.) <= 15.
-            && n_bjets > 0
+            //&& n_bjets > 0
             && n_jets > 1
             && stopt.dilmass() >= 30.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
@@ -2155,6 +2359,24 @@ bool StopTreeLooper::passFullSelection_Zpeak(bool isData)
 
     return passFull;
 }
+
+
+bool StopTreeLooper::passFullSelection_noMETcut_inclusiveb(bool isData)
+{
+    bool passFull = false;
+    if ( passDileptonSelectionWithEndcapEls(isData)
+            //events with mlb_min beyond the kinematic edge cannot be solved and have lower signal:background ratio. Could also cut on second-lowest mlb, but this would remove some events where we got one of the bs wrong that are still OK for the purely leptonic variables.
+            && mlb_min <= mlb_max
+            && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
+            //&& n_bjets > 0
+            && n_jets > 1
+            && stopt.dilmass() >= 30.0
+            //&& (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
+       ) passFull = true;
+
+    return passFull;
+}
+
 
 
 bool StopTreeLooper::passFullSelection_SS_inclusiveb(bool isData)
@@ -2172,6 +2394,26 @@ bool StopTreeLooper::passFullSelection_SS_inclusiveb(bool isData)
 
     return passFull;
 }
+
+
+bool StopTreeLooper::passFullSelection_SS_noMETcut_inclusiveb(bool isData)
+{
+    bool passFull = false;
+    if ( passDileptonSSSelectionWithEndcapEls(isData)
+            //events with mlb_min beyond the kinematic edge cannot be solved and have lower signal:background ratio. Could also cut on second-lowest mlb, but this would remove some events where we got one of the bs wrong that are still OK for the purely leptonic variables.
+            && mlb_min <= mlb_max
+            && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
+            //&& n_bjets > 0
+            && n_jets > 1
+            && stopt.dilmass() >= 30.0
+            //&& (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
+       ) passFull = true;
+
+    return passFull;
+}
+
+
+
 
 
 
