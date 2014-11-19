@@ -1115,6 +1115,51 @@ bool passDileptonSelectionWithEndcapEls(bool isData)
 }
 
 //-------------------------------------------
+// the dilepton SS selection, including endcap electrons
+//-------------------------------------------
+
+bool passDileptonSSSelectionWithEndcapEls(bool isData) 
+{
+  //two lepton selection including endcap electrons for 8 TeV AFB analysis
+
+  //exactly 2 leptons
+  if ( stopt.ngoodlep() != 2 ) return false;
+
+  //opposite sign
+  if ( stopt.id1()*stopt.id2()<0 ) return false;
+
+  //pass trigger if data - dilepton
+  if ( isData && stopt.mm() != 1 && stopt.me() != 1 
+       && stopt.em() != 1 && stopt.ee() != 1 ) return false;
+
+  //passes pt and eta requirements
+  if ( stopt.lep1().Pt() < 20 )          return false;
+  if ( stopt.lep2().Pt() < 20 )          return false;
+  if ( fabs(stopt.lep1().Eta() ) > 2.4)  return false;
+  if ( fabs(stopt.lep2().Eta() ) > 2.4)  return false;
+
+  //consistency with pf leptons
+  if ( fabs( stopt.pflep1().Pt() - stopt.lep1().Pt() ) > 10. )  return false;
+  if ( fabs( stopt.pflep2().Pt() - stopt.lep2().Pt() ) > 10. )  return false;
+
+  //requirement for leading lepton
+  if ( ( stopt.isopf1() * stopt.lep1().Pt() ) > 5. )  return false; 
+  if ( fabs(stopt.id1())==11 && stopt.eoverpin() > 4. ) return false;
+
+  //requirement for trailing lepton
+  if ( ( stopt.isopf2() * stopt.lep2().Pt() ) > 5. )  return false; 
+  if ( fabs(stopt.id2())==11 && stopt.eoverpin2() > 4. ) return false;
+
+  //if have more than 1 lepton, remove cases where have 2 close together
+  if ( stopt.ngoodlep() > 1 && 
+       dRbetweenVectors( stopt.lep1() ,  stopt.lep2() )<0.1 ) return false;
+
+  return true;
+
+}
+
+
+//-------------------------------------------
 // good lepton + veto isolated track
 //-------------------------------------------
 
@@ -2114,30 +2159,22 @@ int getRegionNumber(float mstop, float mlsp) {
     return 4;
 }
 
-//--------------------------------------------------------------------
-
-double TopPtWeight(double topPt){
-  if( topPt<0 ) return 1;
-
-  double p0 = 1.18246e+00;
-  double p1 = 4.63312e+02;
-  double p2 = 2.10061e-06;
-
-  if( topPt>p1 ) topPt = p1;
-
-  double result = p0 + p2 * topPt * ( topPt - 2 * p1 );
-  return result;
-}
 
 //--------------------------------------------------------------------
-//updated version of top pt reweighting function from June 2013
+//8 TeV version of top pt reweighting function from June 2013
 //see slide 12 of presentation: https://indico.cern.ch/getFile.py/access?contribId=2&resId=0&materialId=slides&confId=252018
 
-double TopPtWeight_v2(double topPt){
-  if( topPt<0 ) return 1.;
-  double result = exp(0.156 - 0.00137 * topPt);
-  return result;
+double TopPtWeight(double topPt)
+{
+    if ( topPt < 0 ) return 1;
+    if (topPt > 400) topPt = 400;
+
+    double result = exp(0.156 - 0.00137 * topPt); //8 TeV fit (l+j and 2l combined)
+    //note this fit is for data/madgraph, and we are using MC@NLO
+
+    return result;
 }
+
 
 //--------------------------------------------------------------------
 

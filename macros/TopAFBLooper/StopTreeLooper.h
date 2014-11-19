@@ -30,17 +30,13 @@ public:
 
     //plotting
     void makeSIGPlots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag );
+                      string tag_selection, string flav_tag , string hist_tag);
     void makettPlots(float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                      string tag_selection, string flav_tag );
     void makeAccPlots(float evtweight, std::map<std::string, TH1D *> &h_1d, std::map<std::string, TH2D *> &h_2d,
                       string tag_selection, string flav_tag );
-    void makeCR1Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag );
-    void makeCR2Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag_dl );
-    void makeCR3Plots(float evtweight, std::map<std::string, TH1D *> &h_1d,
-                      string tag_selection, string flav_tag_dl );
+    void makeCRPlots(float evtweight, std::map<std::string, TH1D *> &h_1d,
+                      string tag_selection, string flav_tag_dl , string hist_tag);
     void makeNJPlots( float evtweight, std::map<std::string, TH1D *> &h_1d,
                       string tag_selection, string flav_tag );
     void makeZPlots(  float evtweight, std::map<std::string, TH1D *> &h_1d,
@@ -58,9 +54,13 @@ public:
 
     //selection
     bool passFullSelection(bool isData);
-
-    //top pT reweighting
-    double TopPtWeight(double topPt);
+    bool passFullSelection_bveto(bool isData);
+    bool passFullSelection_1jet_inclusiveb(bool isData);
+    bool passFullSelection_0jets(bool isData);
+    bool passFullSelection_Zpeak_inclusiveb(bool isData);
+    bool passFullSelection_noMETcut_inclusiveb(bool isData);
+    bool passFullSelection_SS_inclusiveb(bool isData);
+    bool passFullSelection_SS_noMETcut_inclusiveb(bool isData);
 
 
 private:
@@ -74,6 +74,8 @@ private:
     //for phi corrected met
     float t1metphicorr;
     float t1metphicorrphi;
+    float met_x;
+    float met_y;
     float pfcalo_metratio;
     float pfcalo_metdphi;
     float pfcalo_deltamet;

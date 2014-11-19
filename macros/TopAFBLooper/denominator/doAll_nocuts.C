@@ -14,7 +14,7 @@ void doAll_nocuts(TString outputDir = "results")
     topAFB_looper *baby = new topAFB_looper();
 
     vector<TString> v_baseCuts;
-    //v_baseCuts.push_back("applyTopPtWeighting");
+    v_baseCuts.push_back("applyTopPtWeighting");
     //v_baseCuts.push_back("weighttaudecay");
 
     vector<TString> v_Cuts = v_baseCuts;
