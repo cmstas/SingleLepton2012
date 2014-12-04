@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include "AfbFinalUnfold.h"
 
 #include "TROOT.h"
 #include "TRandom3.h"
@@ -20,10 +19,12 @@
 #include "TLatex.h"
 #include "TMarker.h"
 #include "TProfile.h"
+#include "TF1.h"
 
 #include "TUnfold.h"
 #include "TUnfoldSys.h"
 
+#include "AfbFinalUnfold.h"
 #include "tdrstyle.C"
 
 using std::cout;
@@ -555,13 +556,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         TProfile *theoryProfileUnCorr = new TProfile("thprofileuncorrelated", "uncorrelated data from theory file", nbinsx_gen, genbins);
         delete[] genbins;
 
+		TF1 *predict_corr = new TF1("prediction", "pol1", -1, 1);
+		TF1 *predict_uncorr = new TF1("flat_line", "pol0", -1, 1);
+		predict_corr->SetParameter( 0, 0.5 );
+		predict_uncorr->SetParameter( 0, 0.5 );
+
         if (observablename == "lep_azimuthal_asymmetry2")
         {
 
             Float_t dphi, v1, v2, v3;
             Int_t ncols, nlines;
             nlines = 0;
-            FILE *fp = fopen("theory/lhc7_mu1m_dphill_corr.dat", "r");
+            FILE *fp = fopen("theory/lhc8-dphill-corr.dat", "r");
             while (1)
             {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
@@ -572,7 +578,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             }
 
             nlines = 0;
-            fp = fopen("theory/lhc7_mu1m_dphill_uncorr.dat", "r");
+            fp = fopen("theory/lhc8-dphill-uncorr.dat", "r");
             while (1)
             {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
@@ -589,7 +595,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             Float_t c1c2, v1, v2, v3;
             Int_t ncols, nlines;
             nlines = 0;
-            FILE *fp = fopen("theory/lhc7_mu1m_cos1cos2.dat", "r");
+            FILE *fp = fopen("theory/Chelbin-8TeV.dat", "r");
             while (1)
             {
                 ncols = fscanf(fp, "%f %f %f %f", &c1c2, &v1, &v2, &v3);
@@ -631,6 +637,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         GetAfb(hData_unfolded, Afb, AfbErr);
         cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
+		predict_corr->SetParameter( 1, Afb );
 
         GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
         cout << " Unfolded with smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
@@ -745,6 +752,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         theoryProfileUnCorr->SetLineStyle(2);
         theoryProfileUnCorr->SetMarkerStyle(1);
 
+		predict_corr->SetLineColor(kBlue);
+		predict_corr->SetLineWidth(2);
+		predict_corr->SetLineStyle(1);
+
+		predict_uncorr->SetLineColor(kBlue);
+		predict_uncorr->SetLineWidth(2);
+		predict_uncorr->SetLineStyle(2);
+
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
@@ -772,6 +787,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             theoryProfileUnCorr->Draw("hist same");
             theoryProfileCorr->Draw("hist same");
         }
+		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
+		  predict_corr->Draw("LSAME");
+		  if( observablename == "lep_cos_opening_angle" ) predict_uncorr->Draw("LSAME");
+		}
 
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
         TLegend *leg1 = new TLegend(0.58, 0.75, 0.9, 0.93, NULL, "brNDC");
@@ -796,10 +815,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
             leg2->SetBorderSize(0);
             leg2->SetFillStyle(0);
             leg2->SetTextSize(0.032);
-            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(7 TeV SM, #mu=^{}m_{t})}", "L");
-            leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(7 TeV uncorrelated, #mu=^{}m_{t})}", "L");
+            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV SM, #mu=^{}m_{t})}", "L");
+            leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
             leg2->Draw();
         }
+		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
+		  TLegend *leg2 = new TLegend(0.18, 0.745, 0.45, 0.88, NULL, "brNDC");
+		  leg2->SetEntrySeparation(0.5);
+		  leg2->SetFillColor(0);
+		  leg2->SetLineColor(0);
+		  leg2->SetBorderSize(0);
+		  leg2->SetFillStyle(0);
+		  leg2->SetTextSize(0.032);
+		  leg2->AddEntry(predict_corr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV SM, #mu=^{}m_{t})}", "L");
+		  if( observablename == "lep_cos_opening_angle" ) leg2->AddEntry(predict_uncorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
+		  leg2->Draw();
+		}
 
 
 
