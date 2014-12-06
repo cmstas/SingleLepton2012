@@ -169,7 +169,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		//delete[] recobins;
 		delete[] recobins_2ch;
 
-        TMatrixD m_unfoldE (nbinsx_gen, nbinsx_gen);
+        TMatrixD m_smearingE (nbinsx_gen, nbinsx_gen);
         TMatrixD m_correctE(nbinsx_gen, nbinsx_gen);
         TMatrixD m_unfoldcorr (nbinsx_gen, nbinsx_gen);
 
@@ -460,13 +460,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		unfold_TUnfold.GetOutput(hData_unfolded);
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-		unfold_TUnfold.GetEmatrixSysUncorr( ematrix, 0, false );
+		TH2D *ematrix_smearing = (TH2D*)ematrix->Clone("ematrix_smearing");
+		unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, false );
 		TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
 		for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
 		  {
 			for (Int_t cmj = 0; cmj < nbinsx_gen; cmj++)
 			  {
-				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+				m_smearingE(cmi, cmj) = ematrix_smearing->GetBinContent(cmi + 1, cmj + 1);
 				m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 				m_unfoldcorr(cmi, cmj) = cmatrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
@@ -635,11 +636,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         GetAfb(hTrue, Afb, AfbErr);
         cout << " True Top: " << Afb << " +/-  " << AfbErr << "\n";
 
-        GetAfb(hData_unfolded, Afb, AfbErr);
+        GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
         cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
 		predict_corr->SetParameter( 1, Afb );
 
-        GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
+        GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
         cout << " Unfolded with smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << Afb << " +/-  " << AfbErr << endl;
 

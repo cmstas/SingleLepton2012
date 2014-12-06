@@ -690,7 +690,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 			  delete ematrix;
 
-			  GetAfb(hUnfolded, Afb, AfbErr);
+			  GetCorrectedAfb(hUnfolded, m_unfoldE, Afb, AfbErr);
 
 			  
 			  vector<double> afb2D;

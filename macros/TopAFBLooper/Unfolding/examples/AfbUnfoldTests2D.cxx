@@ -768,8 +768,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 			  rewrap1dhisto(hUnfolded_unwrapped, hUnfolded);
 
-			  GetAfb(hUnfolded, Afb, AfbErr);
-
 			  vector<double> afb2D;
 			  vector<double> afb2Derr;
 			  afb2D.clear();
@@ -786,14 +784,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			  afbtrue2Derr[1] = 0.0;
 			  afbtrue2Derr[2] = 0.0;
 			  afbtrue2Derr[3] = 0.0;
-
 			  
-			  // AfbPull[0]->Fill( (Afb - A_gen_k)  / AfbErr );
-			  // SumAsym[0] += Afb;
-			  // SumErrAsym[0] += AfbErr;
-			  // SumTrueAsym[0] += A_gen_k;
-			  // SumTrueErrAsym[0] += Aerr_gen_k;
-
 			  for (int iD = 0; iD < nbinsy2D + 1; ++iD)
                 {
 				  AfbPull[iD]->Fill( (afb2D[iD] - afbtrue2D[iD])  / afb2Derr[iD] );
