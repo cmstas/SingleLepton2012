@@ -42,7 +42,7 @@ bool makeCRplots = true; //For CR studies. If true don't apply the selection unt
 bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
 
 //control systematic variations
-bool applyTopPtWeighting = true;
+bool applyTopPtWeighting = false;
 bool scaleJESMETUp              = false;
 bool scaleJESMETDown            = false;
 bool scaleJER                   = false;
@@ -304,10 +304,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                   else if( stopt.lepPlus_status3_id() != -9999 && stopt.lepMinus_status3_id() != -9999 ) evtweight *= 0.945;
                   else evtweight *= 0.986;
             }
-            //apply the evt_scale1fb normalisation missing from the mcatnlo babies
-            if (name.Contains("mcatnlo")) {
-                evtweight *= 234000.*274.00756/211.1/32852589.;  //274.00756/211.1 is the ratio of the the per-event xsec and the PREP xsec and accounts for the events with negative weights
-            }
 
 
             plot1DUnderOverFlow("h_vtx",       stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
@@ -401,8 +397,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     //cout<<stopt.pfjets().at(i)<<" "<<vardirection<<" "<<unc<<" "<<endl;
                 }
 
+                TString currentfilename = currentFile->GetTitle();
+
                 //  bool passMediumPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(),stopt.pfjets_mvaPUid().at(i),1);
-                bool passTightPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(), stopt.pfjets_mva5xPUid().at(i), 0);
+                bool passTightPUid = true;
+                //hack due to missing pfjets_mva5xPUid in the low mass DY baby
+                if(! currentfilename.Contains("Mll10to50")  ) passTightPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(), stopt.pfjets_mva5xPUid().at(i), 0);
 
                 if (!passTightPUid) continue;
 
@@ -885,7 +885,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             {
                 //check cuts
                 if ( (stopt.lep1().Pt() < 20.0 || stopt.lep2().Pt() < 20.0 ) ) cout << stopt.lep1().Pt() << " " << stopt.lep2().Pt() << endl;
-                if ( (stopt.lep1() + stopt.lep2()).M() < 30.0 )  cout << (stopt.lep1() + stopt.lep2()).M() << endl;
+                if ( (stopt.lep1() + stopt.lep2()).M() < 20.0 )  cout << (stopt.lep1() + stopt.lep2()).M() << endl;
                 if ( t1metphicorr < 40. && basic_flav_tag_dl != "_mueg" )  cout << "MET: " << t1metphicorr << " " + basic_flav_tag_dl << endl;
 
                 weight = evtweight * trigweight_dl;
@@ -2285,7 +2285,7 @@ bool StopTreeLooper::passFullSelection(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             && n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2303,7 +2303,7 @@ bool StopTreeLooper::passFullSelection_bveto(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             && n_bjets == 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2320,7 +2320,7 @@ bool StopTreeLooper::passFullSelection_1jet_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets == 1
             && n_jets == 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2336,7 +2336,7 @@ bool StopTreeLooper::passFullSelection_0jets(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets == 0
             && n_jets == 0
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2353,7 +2353,7 @@ bool StopTreeLooper::passFullSelection_Zpeak_inclusiveb(bool isData)
             && fabs( stopt.dilmass() - 91.) <= 15.
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2370,7 +2370,7 @@ bool StopTreeLooper::passFullSelection_noMETcut_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             //&& (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2388,7 +2388,7 @@ bool StopTreeLooper::passFullSelection_SS_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2405,7 +2405,7 @@ bool StopTreeLooper::passFullSelection_SS_noMETcut_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             //&& (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
