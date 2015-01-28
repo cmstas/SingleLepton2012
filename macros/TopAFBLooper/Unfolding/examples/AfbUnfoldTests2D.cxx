@@ -278,7 +278,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 	// Background events /////////////////////////////////////////////////////
 	TChain *ch_bkg = new TChain("tree");
-	ch_bkg->Add("../DY1to4Jtot_baby.root");
+	ch_bkg->Add("../DY1to4Jeemm_baby.root");
+	ch_bkg->Add("../DY1to4Jtautau_baby.root");
 	ch_bkg->Add("../diboson_baby.root");
 	ch_bkg->Add("../tW_lepdl_baby.root");
 	ch_bkg->Add("../tW_lepfake_baby.root");

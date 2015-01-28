@@ -44,7 +44,7 @@ bool draw_truth_before_pT_reweighting = true; //turn this on when making the fin
 //bool drawTheory = true; //turn this on to show Bernreuther's predictions for AdeltaPhi and Ac1c2
 
 
-void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double scalewjets = 1., double scaleDY = 1., double scaletw = 1., double scaleVV = 1. )
+void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.27055, double scalewjets = 1., double scaleDYeemm = 1.46211, double scaleDYtautau = 1.17888, double scaletw = 1., double scaleVV = 1. )
 {
     TH1::SetDefaultSumw2();
 
@@ -56,7 +56,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
     TString summary_name = "summary_1Dunfolding";
 
-    if (!(scalettotr == 1. && scalewjets == 1. && scaleDY == 1. && scaletw == 1. && scaleVV == 1.))  summary_name = Form("summary_1Dunfolding_%i_%i_%i_%i_%i", int(10.*scalettotr + 0.5), int(10.*scalewjets + 0.5), int(10.*scaleDY + 0.5), int(10.*scaletw + 0.5), int(10.*scaleVV + 0.5));
+    // if (!(scalefake == 1. && scalewjets == 1. && scaleDY == 1. && scaletw == 1. && scaleVV == 1.))  summary_name = Form("summary_1Dunfolding_%i_%i_%i_%i_%i", int(10.*scalefake + 0.5), int(10.*scalewjets + 0.5), int(10.*scaleDY + 0.5), int(10.*scaletw + 0.5), int(10.*scaleVV + 0.5));
 
     ofstream myfile;
     myfile.open (summary_name + ".txt");
@@ -70,14 +70,24 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
     random->SetSeed(5);
 
 
-    const int nBkg = 10;
+    const int nBkg = 11;
     const int nSig = 3;
     TString path = "../";
     TString dataroot[nSig] = {"data_diel_baby.root", "data_dimu_baby.root", "data_mueg_baby.root"};
-    //TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
-    TString bkgroot[nBkg] = {"DY1to4Jtot_baby.root", "diboson_baby.root", "tW_lepdl_baby.root", "tW_lepfake_baby.root", "tW_lepsl_baby.root", "triboson_baby.root", "ttV_baby.root", "ttfake_mcatnlo_baby.root", "ttsl_mcatnlo_baby.root", "w1to4jets_baby.root"};
+    TString bkgroot[nBkg];
+	double bkgSF[nBkg];
 
-    double bkgSF[nBkg] = {scaleDY, scaleVV, scaletw, scaletw, scaletw, scaleVV, scalettotr, scalettotr, scalettotr, scalewjets};
+	bkgroot[0] = "DY1to4Jeemm_baby.root";    	bkgSF[0] = scaleDYeemm;
+	bkgroot[1] = "DY1to4Jtautau_baby.root";	 	bkgSF[1] = scaleDYtautau;
+	bkgroot[2] = "diboson_baby.root";		 	bkgSF[2] = scaleVV;
+	bkgroot[3] = "tW_lepdl_baby.root";		 	bkgSF[3] = scaletw;
+	bkgroot[4] = "tW_lepfake_baby.root";	 	bkgSF[4] = scalefake;
+	bkgroot[5] = "tW_lepsl_baby.root";		 	bkgSF[5] = scalefake;
+	bkgroot[6] = "triboson_baby.root";		 	bkgSF[6] = scaleVV;
+	bkgroot[7] = "ttV_baby.root";			 	bkgSF[7] = scaleVV;
+	bkgroot[8] = "ttfake_mcatnlo_baby.root";	bkgSF[8] = scalefake;
+	bkgroot[9] = "ttsl_mcatnlo_baby.root";	 	bkgSF[9] = scalefake;
+	bkgroot[10] = "w1to4jets_baby.root";		bkgSF[10] = scalefake;
 
     Float_t observable, observable_gen, ttmass, ttRapidity2, tmass;
     Float_t observableMinus, observableMinus_gen;
@@ -440,6 +450,48 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
         leg0->Draw();
         c_reco->SaveAs("1D_Reco_" + acceptanceName + ".pdf");
 
+		/////////////////////////////////////////////////////
+		// Set data-like stat errors on MC for optimizing tau
+		for( int i=1; i<=nbinsx_reco; i++) {
+		  double n_sig = hMeas->GetBinContent(i);
+		  double n_bkg = hBkg->GetBinContent(i);
+		  double bkg_err = hBkg->GetBinError(i);
+		  hMeas->SetBinError(i, sqrt(n_sig + n_bkg + bkg_err*bkg_err ) );
+		}
+
+		double tempScaleBias = hMeas->Integral() / hTrue->Integral();
+
+		TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
+		unfold_FindTau.SetInput(hMeas);
+		minimizeRhoAverage(&unfold_FindTau, hMeas, -5.0, 0.0);
+		tau = unfold_FindTau.GetTau();
+
+		// Generate a curve of rhoAvg vs tau
+		double ar_tau[100];
+		double ar_rhoAvg[100];
+		double tau_test = 0.0;
+		double bestrhoavg = unfold_FindTau.GetRhoAvg();
+
+		for(int l=0; l<100; l++) {
+		  tau_test = pow( 10, -5.0 + 0.05*l );
+		  unfold_FindTau.DoUnfold(tau_test, hMeas, tempScaleBias);
+		  ar_tau[l] = tau_test;
+		  ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
+		}
+
+		TGraph* gr_rhoAvg = new TGraph(100, ar_tau, ar_rhoAvg);
+		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
+		c_rhoAvg->SetLogx();
+		gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
+		gr_rhoAvg->SetLineColor(kRed);
+		gr_rhoAvg->Draw("al");
+
+		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
+		m_rhoMin->Draw();
+		c_rhoAvg->SaveAs("1D_" + acceptanceName + "_unfoldTests_minRho.pdf");
+
+		// cout << "Optimal tau value: " << tau << endl;
+		// cout << "Minimum rho average: " << bestrhoavg << endl;
 
 		/////// Do the unfolding! /////////////////////////////////////////////////////
 
@@ -449,8 +501,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
 
 
-		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, 0.0);
-		tau = unfold_TUnfold.GetTau();
+		// minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, 0.0);
+		// tau = unfold_TUnfold.GetTau();
 
 		//scaleBias = 0.0; //set biasScale to 0 when using kRegModeSize, or to compare with unfoldingType == 1
 		//do the unfolding with calculated bias scale (N_data/N_MC), and tau from ScanLcurve if doScanLCurve=true. Note that the results will only be the same as unfoldingType == 1 with scaleBias=0 and the same value of tau.
@@ -472,35 +524,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 				m_unfoldcorr(cmi, cmj) = cmatrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
 		  }
-
-		// Generate a curve of rhoAvg vs tau
-		double ar_tau[90];
-		double ar_rhoAvg[90];
-		double tau_test = 0.0;
-		double bestrhoavg = unfold_TUnfold.GetRhoAvg();
-
-		TUnfoldSys unfold_getRhoAvg(hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
-		unfold_getRhoAvg.SetInput(hData_bkgSub);
-		//unfold_getRhoAvg.SetBias(hTrue); //unnecessary
-
-		for(int l=0; l<90; l++) {
-		  tau_test = pow( 10, -5.0 + 0.05*l);
-		  unfold_getRhoAvg.DoUnfold(tau_test, hData_bkgSub, scaleBias);
-		  ar_tau[l] = tau_test;
-		  ar_rhoAvg[l] = unfold_getRhoAvg.GetRhoAvg();
-		}
-
-		TGraph* gr_rhoAvg = new TGraph(90,ar_tau,ar_rhoAvg);
-		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
-		c_rhoAvg->SetLogx();
-		gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
-		gr_rhoAvg->SetLineColor(kRed);
-		gr_rhoAvg->Draw("al");
-
-		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
-		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("1D_minimizeRho_" + acceptanceName + ".pdf");
-
 
         //m_unfoldE.Print("f=%1.5g ");
         //m_unfoldcorr.Print("f=%1.5g ");
@@ -561,6 +584,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 		TF1 *predict_uncorr = new TF1("flat_line", "pol0", -1, 1);
 		predict_corr->SetParameter( 0, 0.5 );
 		predict_uncorr->SetParameter( 0, 0.5 );
+
+		if( acceptanceName == "lepCosTheta" ) predict_corr->SetParameter( 1, 0.0015 );
+		else if( observablename == "lep_cos_opening_angle" ) predict_corr->SetParameter( 1, 0.1085 );
 
         if (observablename == "lep_azimuthal_asymmetry2")
         {
@@ -638,7 +664,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalettotr = 1., double sca
 
         GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
         cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
-		predict_corr->SetParameter( 1, Afb );
 
         GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
         cout << " Unfolded with smearing errors: " << Afb << " +/-  " << AfbErr << "\n";

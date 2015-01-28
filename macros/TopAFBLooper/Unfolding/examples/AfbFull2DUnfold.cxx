@@ -41,7 +41,7 @@ Int_t checkErrors = 0;
 bool draw_truth_before_pT_reweighting = false;
 
 
-void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalettotr = 1., double scalewjets = 1., double scaleDY = 1., double scaletw = 1., double scaleVV = 1.)
+void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalefake = 2.27055, double scalewjets = 1., double scaleDYeemm = 1.46211, double scaleDYtautau = 1.17888, double scaletw = 1., double scaleVV = 1.)
 {
     TH1::SetDefaultSumw2();
 
@@ -61,7 +61,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
     else if (Var2D == "ttrapidity2") yaxisunit = "";
     else if (Var2D == "ttpt") yaxisunit = " (GeV/c)";
 
-    if (!(scalettotr == 1. && scalewjets == 1. && scaleDY == 1. && scaletw == 1. && scaleVV == 1.))  summary_name = summary_name + Form("_%i_%i_%i_%i_%i", int(10.*scalettotr + 0.5), int(10.*scalewjets + 0.5), int(10.*scaleDY + 0.5), int(10.*scaletw + 0.5), int(10.*scaleVV + 0.5));
+    // if (!(scalefake == 1. && scalewjets == 1. && scaleDY == 1. && scaletw == 1. && scaleVV == 1.))  summary_name = summary_name + Form("_%i_%i_%i_%i_%i", int(10.*scalefake + 0.5), int(10.*scalewjets + 0.5), int(10.*scaleDY + 0.5), int(10.*scaletw + 0.5), int(10.*scaleVV + 0.5));
 
     TRandom3 *random = new TRandom3();
     random->SetSeed(5);
@@ -74,14 +74,24 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
     ofstream second_output_file;
     second_output_file.open(summary_name + "_formated.txt");
 
-    const int nBkg = 10;
+    const int nBkg = 11;
 	const int nSig = 3;
     TString path = "../";
     TString dataroot[nSig] = {"data_diel_baby.root", "data_dimu_baby.root", "data_mueg_baby.root"};
-    // TString bkgroot[nBkg] = {"ttotr.root", "wjets.root", "DYee.root", "DYmm.root", "DYtautau.root", "tw.root", "VV.root"};
-    TString bkgroot[nBkg] = {"DY1to4Jtot_baby.root", "diboson_baby.root", "tW_lepdl_baby.root", "tW_lepfake_baby.root", "tW_lepsl_baby.root", "triboson_baby.root", "ttV_baby.root", "ttfake_mcatnlo_baby.root", "ttsl_mcatnlo_baby.root", "w1to4jets_baby.root"};
+    TString bkgroot[nBkg];
+	double bkgSF[nBkg];
 
-    double bkgSF[nBkg] = {scaleDY, scaleVV, scaletw, scaletw, scaletw, scaleVV, scalettotr, scalettotr, scalettotr, scalewjets};
+	bkgroot[0] = "DY1to4Jeemm_baby.root";     	bkgSF[0] = scaleDYeemm;
+	bkgroot[1] = "DY1to4Jtautau_baby.root";	 	bkgSF[1] = scaleDYtautau;
+	bkgroot[2] = "diboson_baby.root";		 	bkgSF[2] = scaleVV;
+	bkgroot[3] = "tW_lepdl_baby.root";		 	bkgSF[3] = scaletw;
+	bkgroot[4] = "tW_lepfake_baby.root";		bkgSF[4] = scalefake;
+	bkgroot[5] = "tW_lepsl_baby.root";		 	bkgSF[5] = scalefake;
+	bkgroot[6] = "triboson_baby.root";		 	bkgSF[6] = scaleVV;
+	bkgroot[7] = "ttV_baby.root";			 	bkgSF[7] = scaleVV;
+	bkgroot[8] = "ttfake_mcatnlo_baby.root";	bkgSF[8] = scalefake;
+	bkgroot[9] = "ttsl_mcatnlo_baby.root";	 	bkgSF[9] = scalefake;
+	bkgroot[10] = "w1to4jets_baby.root";		bkgSF[10] = scalefake;
 
     Float_t observable, observable_gen, tmass, ttmass, ttRapidity2;
     Float_t observableMinus, observableMinus_gen;
@@ -460,6 +470,53 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  cout << "\n***WARNING: Purity and stability plots are broken, because nbinsx_gen != nbinsx_reco!!!\n" << endl;
 		}
 
+		///////////////////////////////////////////////////////////////////////
+		// Set data-like stat errors on MC for optimizing tau
+
+		unwrap2dhisto(hTrue, hTrue_unwrapped);
+		unwrap2dhisto(hMeas, hMeas_unwrapped);
+		unwrap2dhisto(hBkg,  hBkg_unwrapped);
+
+		//Set data-like stat errors on MC for optimizing tau
+		for( int i=1; i<=nbinsunwrapped_reco; i++) {
+		  double n_sig = hMeas_unwrapped->GetBinContent(i);
+		  double n_bkg = hBkg_unwrapped->GetBinContent(i);
+		  double bkg_err = hBkg_unwrapped->GetBinError(i);
+		  hMeas_unwrapped->SetBinError(i, sqrt(n_sig + n_bkg + bkg_err*bkg_err ) );
+		}
+
+		double tempScaleBias = hMeas_unwrapped->Integral() / hTrue_unwrapped->Integral();
+
+		TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
+		unfold_FindTau.SetInput(hMeas_unwrapped);
+		unfold_FindTau.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
+		minimizeRhoAverage(&unfold_FindTau, hMeas_unwrapped, -6.0, -1.0);
+		tau = unfold_FindTau.GetTau();
+
+		// Generate a curve of rhoAvg vs log(tau)
+		double ar_tau[100];
+		double ar_rhoAvg[100];
+		double tau_test = 0.0;
+		double bestrhoavg = unfold_FindTau.GetRhoAvg();
+
+		for(int l=0; l<100; l++) {
+		  tau_test = pow( 10, -6.0 + 0.05*l );
+		  unfold_FindTau.DoUnfold(tau_test, hMeas_unwrapped, tempScaleBias);
+		  ar_tau[l] = tau_test;
+		  ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
+		}
+
+		TGraph* gr_rhoAvg = new TGraph(100, ar_tau, ar_rhoAvg);
+		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
+		c_rhoAvg->SetLogx();
+		gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
+		gr_rhoAvg->SetLineColor(kRed);
+		gr_rhoAvg->Draw("al");
+
+		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
+		m_rhoMin->Draw();
+		c_rhoAvg->SaveAs("2D_" + acceptanceName + "_unfoldTests_minRho.pdf");
+
 
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////// 3. Perform the unfolding procedure ////////////////////////////////////
@@ -473,22 +530,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
 
-
-		/*
-		hMeas_newErr = (TH1D *) hMeas_unwrapped->Clone();
-		hMeas_newErr->Scale( hData_bkgSub->Integral() / hMeas_newErr->Integral() );
-		for( int i=1; i<nbinsunwrapped_reco+1; i++) {
-		  double n_sig = hMeas_unwrapped->GetBinContent(i);
-		  double n_bkg = hBkg_unwrapped->GetBinContent(i);
-		  double bkg_err = hBkg_unwrapped->GetBinError(i);
-		  double mcerr = hMeas_newErr->GetBinError(i);
-		  hMeas_newErr->SetBinError(i, sqrt(n_sig + n_bkg + bkg_err*bkg_err ) );
-		  //hMeas_newErr->SetBinError(i, 2.0);
-		  //hMeas_newErr->SetBinError(i, mcerr*10.);
-		}
-		*/
-
-
 		// Now let's actually do the unfolding.
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
 		unfold_TUnfold.SetInput(hData_bkgSub);
@@ -496,9 +537,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		hTrue_unwrapped->Scale(scaleBias);
 		//unfold_TUnfold.SetBias(hTrue_unwrapped);
 		unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
-		minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, -0.5);
+		// minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, -0.5);
+		unfold_TUnfold.DoUnfold(tau, hData_bkgSub, scaleBias);
 		unfold_TUnfold.GetOutput(hData_unfolded_unwrapped);
-		tau = unfold_TUnfold.GetTau();
+		// tau = unfold_TUnfold.GetTau();
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
 		unfold_TUnfold.GetEmatrixSysUncorr( ematrix, 0, false );
@@ -511,39 +553,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 				m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
 		  }
-        
 
-		// Generate a curve of rhoAvg vs log(tau)
-		double ar_tau[100];
-		double ar_rhoAvg[100];
-		double tau_test = 0.0;
-		double bestrhoavg = unfold_TUnfold.GetRhoAvg();
 
-		TUnfoldSys unfold_getRhoAvg(hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
-		unfold_getRhoAvg.SetInput(hData_bkgSub);
-		//unfold_getRhoAvg.SetBias(hTrue_unwrapped);
-		unfold_getRhoAvg.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
-
-		for(int l=0; l<100; l++) {
-		  tau_test = pow( 10, -5.5 + 0.05*l);
-		  unfold_getRhoAvg.DoUnfold(tau_test, hData_bkgSub, scaleBias);
-		  ar_tau[l] = tau_test;
-		  ar_rhoAvg[l] = unfold_getRhoAvg.GetRhoAvg();
-		}
-
-		TGraph* gr_rhoAvg = new TGraph(100,ar_tau,ar_rhoAvg);
-		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
-		c_rhoAvg->SetLogx();
-		gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
-		gr_rhoAvg->SetLineColor(kRed);
-		gr_rhoAvg->Draw("al");
-
-		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
-		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("2D_minimizeRho_" + acceptanceName + ".pdf");
-		
-
-	  
 		//Re-wrap 1D histograms into 2D
 		rewrap1dhisto(hData_unfolded_unwrapped, hData_unfolded);
 		rewrap1dhisto(hData_bkgSub, hData_bkgSub_rewrapped);
