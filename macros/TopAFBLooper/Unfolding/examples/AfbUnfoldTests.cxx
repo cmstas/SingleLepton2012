@@ -249,15 +249,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 	delete[] recobins;
 	delete[] recobins_2ch;
 
-	// // Load in data, just to get the integrals for scaling purposes //////////////////////////
-	// TChain *ch_data = new TChain("tree");
-	// ch_data->Add("../data_diel_baby.root");
-	// ch_data->Add("../data_dimu_baby.root");
-	// ch_data->Add("../data_mueg_baby.root");
-	// double integral_data = -999.9;
-	// if( iVar<2 || iVar==9 ) integral_data = double(ch_data->GetEntries());
-	// else integral_data = double(ch_data->GetEntries("t_mass > 0 "));
-
 	// Background events /////////////////////////////////////////////////////
 	TChain *ch_bkg = new TChain("tree");
 	ch_bkg->Add("../DY1to4Jeemm_baby.root");
@@ -514,7 +505,22 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         // hMeas_after->Scale(			 integral_signal / integral_top );
 		// hMeas_after_combined->Scale( integral_signal / integral_top );
 
+		switch( iVar ) {
+		case 0:   tau = 0.000184;
+		case 1:   tau = 0.000166;
+		case 2:   tau = 0.000111;
+		case 3:   tau = 0.00011;
+		case 4:   tau = 7.81e-05;
+		case 5:   tau = 9.16e-05;
+		case 6:   tau = 0.000111;
+		case 7:   tau = 0.000125;
+		case 8:   tau = 0.000103;
+		case 9:   tau = 0.00012;
+		case 10:  tau = 0.00011;
+		case 11:  tau = 0.000139;
+		}
 
+		/*
 		// Optimize tau for use in all subsequent unfoldings
 		if (k == 0) {
 
@@ -562,7 +568,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		  cout << "Optimal tau value: " << tau << endl;
 		  cout << "Minimum rho average: " << bestrhoavg << endl;
-		} //End of tau optimization
+		  } //End of tau optimization  */
 
 		////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////// 3. Begin testing ///////////////////////////////////////////////////////
@@ -1537,7 +1543,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         AfbPull[0]->SetMarkerColor(kBlack);
         AfbPull[0]->SetMarkerSize(0.6);
         AfbPull[0]->GetXaxis()->SetTitle(asymlabel + " inclusive pull");
-        AfbPull[0]->GetYaxis()->SetTitle("Number of PEs / 0.2");
+        AfbPull[0]->GetYaxis()->SetTitle("Number of  / 0.2");
         AfbPull[0]->Fit("gaus");
         AfbPull[0]->Draw();
 
