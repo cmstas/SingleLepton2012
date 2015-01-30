@@ -142,7 +142,7 @@ void doAll(bool skipFWLite = true)
   bool runtt_massup  = 0;
   bool runtt_massdw  = 0;
   bool runtt_pythia  = 0;  
-  bool runtt_mcatnlo = 0;
+  bool runtt_mcatnlo = 1;
   bool runtt_powheg  = 0;
   bool runtt_notauola  = 0;
 
@@ -152,7 +152,7 @@ void doAll(bool skipFWLite = true)
   bool run_TT_FullLept_mass175_5_8TeV_mcatnlo = 0;
   bool run_TT_FullLept_scaledown_8TeV_mcatnlo = 0;
   bool run_TT_FullLept_scaleup_8TeV_mcatnlo = 0;
-  bool run_TT_noCorr_8TeV_mcatnlo = 1;
+  bool run_TT_noCorr_8TeV_mcatnlo = 0;
   bool run_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola = 0;
   bool run_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola = 0;
   bool run_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola = 0;
