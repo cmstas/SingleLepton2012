@@ -54,6 +54,7 @@ bool scaleTrigSFup = false;
 bool scaleTrigSFdown = false;
 bool noVertexReweighting = false;
 bool weighttaudecay = false;
+bool calculatePDFsystweights = false;
 
 //these values are also hard-coded in nuSolutions.py
 const double mb_solver = 4.8;
@@ -140,7 +141,13 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     //------------------------------------------------------------------------------------------------------
 
     TPython::LoadMacro("loadBetchart.py");
-    LHAPDF::initPDFSet("pdfs/cteq6mE.LHgrid");
+    //LHAPDF::initPDFSet("pdfs/cteq6mE.LHgrid");
+
+
+    LHAPDF::initPDFSetM(1,"pdfs/cteq6mE.LHgrid");
+    LHAPDF::initPDFM(1, 0);
+    LHAPDF::initPDFSetM(2,"pdfs/cteq6mE.LHgrid");
+
 
     //------------------------------------------------------------------------------------------------------
     // set csv discriminator reshaping
@@ -338,6 +345,44 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             pfcalo_deltamet = sqrt( pow( t1metphicorr * sin(t1metphicorrphi) - stopt.calomet() * sin(stopt.calometphi()) , 2 ) + pow( t1metphicorr * cos(t1metphicorrphi) - stopt.calomet() * cos(stopt.calometphi()) , 2 ) );
             pfcalo_metratio = pfcalo_deltamet / t1metphicorr;
 
+
+            //----------------------------------------------------------------------------
+            //evaluate weights for PDF systematic variations
+            //----------------------------------------------------------------------------
+            PDFsystweights.clear();
+
+            if ( calculatePDFsystweights && name.Contains("tt") ){
+
+                  float   x1          = 0.0;      // momentum fraction for parton1
+                  float   x2          = 0.0;
+                  int     id1         = 0;        // pdgid of parton1
+                  int     id2         = 0;
+                  float   Q           = 0.0;      // event momentum scale
+                  x1          = stopt.pdfx1();
+                  x2          = stopt.pdfx2();
+                  id1         = stopt.pdfid1();
+                  id2         = stopt.pdfid2();
+                  Q           = stopt.pdfQ();
+
+                for (unsigned int subset = 0; subset < 41; subset++)
+                {
+
+                  // std::cout << "doing set, subset: " << set_ << ", " << subset << std::endl;
+                  //LHAPDF::initPDFM(2,0);
+
+                  LHAPDF::initPDFM(2, subset);
+
+                  // generated pdf values
+                  double fx1Q0gen = LHAPDF::xfxM(1, x1, Q, id1) / x1;
+                  double fx2Q0gen = LHAPDF::xfxM(1, x2, Q, id2) / x2;
+                  // subset pdf values
+                  double fx1Qi = LHAPDF::xfxM(2, x1, Q, id1) / x1;
+                  double fx2Qi = LHAPDF::xfxM(2, x2, Q, id2) / x2;
+                  // calculate weight and fill histogram
+                  PDFsystweights.push_back( ((fx1Qi*fx2Qi)/(fx1Q0gen*fx2Q0gen)) );
+
+                }// end of loop over subset of PDFs
+            }
 
             //----------------------------------------------------------------------------
             // get jet information
@@ -2228,8 +2273,8 @@ double StopTreeLooper::get_pdf_weight( TLorentzVector &t1, TLorentzVector &t2 )
 
     vector <double> f1, f2;
 
-    f1 = LHAPDF::xfx(x1, mt_solver);
-    f2 = LHAPDF::xfx(x2, mt_solver);
+    f1 = LHAPDF::xfxM(1, x1, mt_solver);
+    f2 = LHAPDF::xfxM(1, x2, mt_solver);
 
     // The order of f:
     //    -t  -b  -c  -s  -u  -d   g   d   u   s   c   b   t
@@ -2437,6 +2482,7 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("genchannel",                &genchannel,              "genchannel/I"               );
     babyTree_->Branch("t_mass",                &m_top,              "t_mass/F"               );
     babyTree_->Branch("weight",                &weight,              "weight/D"               );
+    babyTree_->Branch("PDFsystweights", "std::vector<double>", &PDFsystweights );
     //babyTree_->Branch("Nsolns",                &Nsolns_,              "Nsolns/I"               );
     //babyTree_->Branch("massltb",               &massltb_,             "massltb/F"              );
     //babyTree_->Branch("massllb",               &massllb_,             "massllb/F"              );

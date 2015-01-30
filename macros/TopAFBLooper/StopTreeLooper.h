@@ -106,6 +106,7 @@ private:
     Int_t   channel;
     Int_t   genchannel;
     double weight;
+    vector<double> PDFsystweights;
 
     float lep_charge_asymmetry;
     float lep_azimuthal_asymmetry;
