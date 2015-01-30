@@ -810,7 +810,9 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                     if ( ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //only events with 2 tops count as ttdl
 
+                    if(ismcatnlo && filename.Contains("noCorr")) ismcatnlo = false; //hack to skip the status=2 W boosting for the uncorrelated mc@nlo (apparently there the leptons already match the status=2 W)
                     fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
+                    if(ismcatnlo && filename.Contains("noCorr")) ismcatnlo = true;
 
                     if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 11 ) myType = 0;
                     else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 11 ) myType = 2;
@@ -1257,7 +1259,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops
         {
             DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
             if ( is_duplicate_stat1(ident) ) {b_dup_stat1++; continue;}
-            if ( is_duplicate_stat1_b(ident) ) {cout<<"***********this should be impossible************"<<endl;}
+            if ( is_duplicate_stat1_b(ident) && ismcatnlo ) {cout<<"***********this should be impossible************"<<endl;}
             //b_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vb_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
         }
@@ -1307,7 +1309,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops
       {
           DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(ident) ) {t_dup_stat1++; continue;}
-          if ( is_duplicate_stat1_t(ident) ) {cout<<"***********this should be impossible************"<<endl;}
+          if ( is_duplicate_stat1_t(ident) && ismcatnlo ) {cout<<"***********this should be impossible************"<<endl;}
           //t_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vt_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
       }
