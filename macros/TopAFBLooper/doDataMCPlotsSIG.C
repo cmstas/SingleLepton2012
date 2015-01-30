@@ -127,6 +127,7 @@ void printYields( vector<TH1F *> mc , const char *labels[] , TH1F *chdata , bool
 void initSymbols(bool);
 void printLine(bool);
 void printHeader();
+void GetAfberr(TH1F* h, Float_t &afb, Float_t  &afberr);
 float GetAfb(TH1F* h);
 float GetAfbLHalf(TH1F* h);
 float GetAfbRHalf(TH1F* h);
@@ -215,7 +216,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //const int MCID = 10;
     const int MCID = 10;
 
-    const int nRegions = 14;
+    const int nRegions = 15;
 
     enum regions {SIG=0,
         CR0,
@@ -227,6 +228,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         CR3v,
         CR4,
         CR4v,
+        CR40,
         CR5,
         CR5v,
         CR6,
@@ -246,6 +248,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "h_cr3v_",
         "h_cr4_",
         "h_cr4v_",
+        "h_cr40_",
         "h_cr5_",
         "h_cr5v_",
         "h_cr6_",
@@ -261,6 +264,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     if(strncmp(region,"CR3v",1000) == 0) histtag_number = CR3v;
     if(strncmp(region,"CR4",1000) == 0) histtag_number = CR4;
     if(strncmp(region,"CR4v",1000) == 0) histtag_number = CR4v;
+    if(strncmp(region,"CR40",1000) == 0) histtag_number = CR40;
     if(strncmp(region,"CR5",1000) == 0) histtag_number = CR5;
     if(strncmp(region,"CR5v",1000) == 0) histtag_number = CR5v;
     if(strncmp(region,"CR6",1000) == 0) histtag_number = CR6;
@@ -279,6 +283,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "CR3v",
         "CR4",
         "CR4v",
+        "CR40",
         "CR5",
         "CR5v",
         "CR6",
@@ -330,6 +335,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         DY,
         TWDL,
         DYTT,
+        DYTT,
         TTSL,
         TTSL,
         TTSL,
@@ -349,10 +355,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         1,
         1,
         0,  //not clear whether the fake and DY SFs are applicable in this region
+        0,  //not clear whether the fake and DY SFs are applicable in this region
         1,
         1,
-        1,
-        1
+        0,  //no MET cut means we don't want to scale the DY
+        0   //no MET cut means we don't want to scale the DY
     };
 
 /*
@@ -370,6 +377,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         1,
         1,
         1,
+        0,
         0,
         1,
         2,
@@ -448,7 +456,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     float CRsferr[nRegions][nCh];
     float CRsftot[nRegions];
     float CRsftoterr[nRegions];
-    if(scalebkgtoCRs) {
+    if(scalebkgtoCRs || (scalettdiltodata && histtag_number != SIG) ) {
 
         TFile *dt_dl_temp[nCh][nRegions];
         TFile *mc_dl_temp[MCID][nRegions];
@@ -578,13 +586,15 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                     CRsf[i][leptype] = CRsftemp;
                     CRsferr[i][leptype] = CRsftemperr;
                     //cout<<"SF from "<<dirtag[i]<<" for "<< (CRtargetsamplenumber[i] == TTSL ? "fakes" : legend[CRtargetsamplenumber[i]]) <<" for "<<leplabel[leptype]<<": "<<CRsftemp<<" +/- "<<CRsftemperr<<endl;
+
+                    //immediately fill ttdl SFs so they can be used for the CRs later in the loop
                     if(i == SIG) {
                         bkgsf[TTDL][leptype] = CRsf[i][leptype];
                         bkgsferr[TTDL][leptype] = CRsferr[i][leptype];
                     }
 
                     //calculate weighted average
-                    if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) ) {
+                    if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || (CRtargetsamplenumber[i] == TTSL && leptype == DIMU) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT && CRtargetsamplenumber[i] != TTSL) ) {
                         CRsftot[i] += CRsf[i][leptype]/CRsferr[i][leptype]/CRsferr[i][leptype];
                         CRsftoterr[i] += 1./CRsferr[i][leptype]/CRsferr[i][leptype];
                     }
@@ -614,10 +624,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                      bkgsferr[DIBO][leptype] = 0.;
                      bkgsf[DY][leptype] = CRsftot[CR1];
                      bkgsferr[DY][leptype] = CRsftoterr[CR1];
-                     bkgsf[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v];
-                     bkgsferr[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2));
-                     //bkgsf[DYTT][leptype] = CRsftot[CR2];
-                     //bkgsferr[DYTT][leptype] = CRsftoterr[CR2];
+                     //bkgsf[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v];
+                     //bkgsferr[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2));
+                     bkgsf[DYTT][leptype] = CRsftot[CR2];
+                     bkgsferr[DYTT][leptype] = CRsftoterr[CR2];
                      bkgsf[TTV][leptype] = 1.;
                      bkgsferr[TTV][leptype] = 0.;
                      bkgsf[VVV][leptype] = 1.;
@@ -641,19 +651,22 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     }
 
+    if(scalebkgtoCRs || (scalettdiltodata && histtag_number != SIG) ) cout<<"Average SR sf for ttdl: "<<CRsftot[SIG]<<" +/- "<<CRsftoterr[SIG]<<endl;
     if(scalebkgtoCRs) cout<<"average CR5 sf for fakes: "<<CRsftot[CR5]<<" +/- "<<CRsftoterr[CR5]<<endl;
     if(scalebkgtoCRs) cout<<"average CR5v sf for fakes: "<<CRsftot[CR5v]<<" +/- "<<CRsftoterr[CR5v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR6 sf for fakes: "<<CRsftot[CR6]<<" +/- "<<CRsftoterr[CR6]<<endl;
     if(scalebkgtoCRs) cout<<"average CR6v sf for fakes: "<<CRsftot[CR6v]<<" +/- "<<CRsftoterr[CR6v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR1 sf for DYeemm:  "<<CRsftot[CR1]<<" +/- "<<CRsftoterr[CR1]<<endl;
-    if(scalebkgtoCRs) cout<<"alternative CR0 sf for DYeemm:  "<<CRsftot[CR0]<<" +/- "<<CRsftoterr[CR0]<<endl;
+    if(scalebkgtoCRs) cout<<"CR0 sf for DYeemm (exc. b modelling SF):  "<<CRsftot[CR0]<<" +/- "<<CRsftoterr[CR0]<<endl;
+    if(scalebkgtoCRs) cout<<"composite sf for DYeemm (CR0*CR2/CR2v):  "<<CRsftot[CR0]*CRsftot[CR2]/CRsftot[CR2v]<<" +/- "<<(CRsftot[CR0]*CRsftot[CR2]/CRsftot[CR2v])*sqrt(pow(CRsftoterr[CR0]/CRsftot[CR0],2)+pow(CRsftoterr[CR2]/CRsftot[CR2],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
     if(scalebkgtoCRs) cout<<"composite sf for DYeemm (CR1v*CR2/CR2v):  "<<CRsftot[CR1v]*CRsftot[CR2]/CRsftot[CR2v]<<" +/- "<<(CRsftot[CR1v]*CRsftot[CR2]/CRsftot[CR2v])*sqrt(pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2]/CRsftot[CR2],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
     if(scalebkgtoCRs) cout<<"average CR3 sf:  "<<CRsftot[CR3]<<" +/- "<<CRsftoterr[CR3]<<endl;
     if(scalebkgtoCRs) cout<<"average CR3v sf:  "<<CRsftot[CR3v]<<" +/- "<<CRsftoterr[CR3v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR2 sf for DYtautau:  "<<CRsftot[CR2]<<" +/- "<<CRsftoterr[CR2]<<endl;
     if(scalebkgtoCRs) cout<<"composite sf for DYtautau (CR1):  "<<(CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
     if(scalebkgtoCRs) cout<<"composite sf for DYtautau (CR3):  "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR3]/CRsftot[CR3],2)+pow(CRsftoterr[CR3v]/CRsftot[CR3v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
-    if(scalebkgtoCRs) cout<<"CR4v sf for DYtautau:  "<<CRsftot[CR4v]<<" +/- "<<CRsftoterr[CR4v]<<endl;
+    if(scalebkgtoCRs) cout<<"CR4v sf for DYtautau (exc. b modelling SF):  "<<CRsftot[CR4v]<<" +/- "<<CRsftoterr[CR4v]<<endl;
+    //if(scalebkgtoCRs) cout<<"CR40 sf for DYtautau:  "<<CRsftot[CR40]<<" +/- "<<CRsftoterr[CR40]<<endl;
 
 
 
@@ -682,7 +695,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 51;
+    const int N1DHISTS = 55;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -714,10 +727,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "met",
         "metphi",
         "met_smeared",
-        //"lep1b_mindR",
-        //"lep1b_mindPhi",
-        //"lep2b_mindR",
-        //"lep2b_mindPhi",
+        "lep1b_mindR",
+        "lep1b_mindPhi",
+        "lep2b_mindR",
+        "lep2b_mindPhi",
         "lep_dR",
         "lep_dEta",
         "Mll",
@@ -781,11 +794,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //logScale.push_back(34+11);
     //logScale.push_back(35+11);
     //logScale.push_back(36+11);
-    logScale.push_back(41+4);
-    logScale.push_back(42+4);
+    logScale.push_back(41+8);
+    logScale.push_back(42+8);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -809,10 +822,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "ME_{T} [GeV]",
         "metphi",
         "ME_{T}^{smeared} [GeV]",
-        //"lep1b_mindR",
-        //"lep1b_mindPhi",
-        //"lep2b_mindR",
-        //"lep2b_mindPhi",
+        "lep1b_mindR",
+        "lep1b_mindPhi",
+        "lep2b_mindR",
+        "lep2b_mindPhi",
         "lep_dR",
         "lep_dEta",
         "Mll",
@@ -887,6 +900,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "GeV",
         "",
         "GeV",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
@@ -1870,6 +1887,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     cout << "**********************ASYMS**********************" << endl;
     cout << "-------------------------------------------------" << endl;
 
+    float asymmetry = 0.;
+    float asymmetryerror = 0.;
+
 for (int k = 0; k < 8; ++k)
 {
     if( strncmp(file1dname[k],"lep_azimuthal_asymmetry", 1000 ) == 0 ){
@@ -1888,10 +1908,13 @@ for (int k = 0; k < 8; ++k)
         printf(" Variable: %s \n", file1dname[k]);
         for (int j = 0; j < MCID; ++j)
         {
-            printf("  %s : %.4f \n", mcsample[j], GetAfb(h_mc1d_comb[k][j]));
+            GetAfberr(h_mc1d_comb[k][j], asymmetry, asymmetryerror);
+            printf("  %s : %.4f \\pm %.4f \n", mcsample[j], asymmetry, asymmetryerror);
         }
-        printf(" Total_MC : %.4f \n", GetAfb(h_mc1d_tot_comb[k]));
-        printf(" Data : %.4f \n", GetAfb(h_dt1d_comb[k]));
+        GetAfberr(h_mc1d_tot_comb[k], asymmetry, asymmetryerror);
+        printf(" Total_MC : %.4f \\pm %.4f \n", asymmetry, asymmetryerror);
+        GetAfberr(h_dt1d_comb[k], asymmetry, asymmetryerror);
+        printf(" Data : %.4f \\pm %.4f \n", asymmetry, asymmetryerror);
         cout << " -------------------------------------------------" << endl;
         cout << " *************************************************" << endl;
         cout << " -------------------------------------------------" << endl;
@@ -2191,6 +2214,30 @@ void print( TH1F *h , string label , bool correlatedError )
 }
 
 
+void GetAfberr(TH1F* h, Float_t &afb, Float_t  &afberr){
+
+  Int_t nbins = h->GetNbinsX();
+  Float_t event_minus;
+  Float_t event_plus;
+  Float_t event_total;
+  Double_t event_plus_err;
+  Double_t event_minus_err;
+
+  //event_minus  = h-> IntegralAndError(0, nbins/2, event_plus_err,"");
+  event_minus  = h-> IntegralAndError(0, nbins/2, event_minus_err,"");
+  //event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_minus_err,"");
+  event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_plus_err,"");
+  event_total = event_plus + event_minus;
+
+  //std::cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<std::endl;
+
+  afb = (event_plus-event_minus)/(event_plus+event_minus);
+  afberr   = sqrt(4*(event_plus*event_plus*event_minus_err*event_minus_err 
+    + event_minus*event_minus*event_plus_err*event_plus_err)/
+    (event_total*event_total*event_total*event_total));
+
+}
+
 float GetAfb(TH1F* h){
 
   Int_t nbins = h->GetNbinsX();
@@ -2218,8 +2265,6 @@ float GetAfb(TH1F* h){
   return afb;
 
 }
-
-
 
 float GetAfbLHalf(TH1F* h){
 
