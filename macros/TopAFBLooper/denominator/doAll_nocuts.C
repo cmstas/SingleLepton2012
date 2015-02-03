@@ -33,6 +33,8 @@ void doAll_nocuts(TString outputDir = "results")
         //cout << "Doing the Fall11 MC@NLO ttbar sample" << endl; ch_ttbar->Add("/nfs-7/userdata/cms2/TT_TuneZ2_7TeV-mcatnlo_Fall11-PU_S6_START42_V14B-v1/V04-02-29_fix_dilepton/merged*root");
         cout << "Doing the 8TeV MC@NLO ttbar sample" << endl; ch_ttbar->Add("/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing_TT_mcatnlo_4/preprocessing/ntuple*.root");
 
+        //cout << "Doing the powheg SC fix ttbar sample" << endl; ch_ttbar->Add("/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing_TT_powheg_SC/preprocessing/ntuple*.root");
+
         //cout << "Doing the 8TeV powheg v1 ttbar sample" << endl; ch_ttbar->Add("/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v1/V05-03-25/merged_ntuple*.root");
         //cout << "Doing the 8TeV powheg v2 ttbar sample" << endl; ch_ttbar->Add("/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v2/V05-03-25/merged_ntuple*.root");
 
@@ -50,13 +52,12 @@ void doAll_nocuts(TString outputDir = "results")
         //cout << "Doing the 8TeV TT_noCorr_8TeV-mcatnlo ttbar sample" << endl; ch_ttbar->Add("/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_TT_noCorr_8TeV-mcatnlo/preprocessing/ntuple*.root");
 
 
-        //for samples with no negative weights
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil",lumiToNormalizeTo*154./157.5);
         //for mc@NLO
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * (154. / 157.5) * (190.41256 / 147.4)); //must mutliply by ratio of per-event xsec and PREP xsec to account for negative weights
         baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/32852589. ); //Apply the evt_scale1fb normalisation missing from the mcatnlo ntuples. Must mutliply by ratio of per-event xsec and PREP xsec to account for negative weights.
 
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo );
+        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 234.*1000./(4001716.) ); //powheg SC fix
+
+        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo ); //if doing powheg SC bug combined v1 + v2 must hard-code normalisation weight in looper ( weight = 234.*1000./(6414753.+21675970.) * lumi; )
         
         //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/3110611. ); //mass down
         //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/3217835. ); //mass up
