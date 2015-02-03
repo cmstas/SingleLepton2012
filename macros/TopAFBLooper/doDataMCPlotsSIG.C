@@ -527,8 +527,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                         h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[i], channelhist[scaletoyieldsafterttbarsol]));
 
                         if(j == TTDL && j != CRtargetsamplenumber[i]) h_mc1d[j]->Scale(bkgsf[1][j][leptype]); //use previously calculated SF for TTDL
-                        if(  j != TTDL && j != CRtargetsamplenumber[i] && SFsApply[i] &&  ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL )  )  ) h_mc1d[j]->Scale(bkgsf[SFsApply[i]][j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
-                        //if(  j != TTDL && j != CRtargetsamplenumber[i] && SFsApply[i] &&  ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL && j != TTFA )  )  ) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
+                        if(  j != TTDL && j != CRtargetsamplenumber[i] && ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL )  )  ) h_mc1d[j]->Scale(bkgsf[SFsApply[i]][j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
+                        //if(  j != TTDL && j != CRtargetsamplenumber[i] && ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL && j != TTFA )  )  ) h_mc1d[j]->Scale(bkgsf[SFsApply[i]][j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
 
                         if (!doinit)
                         {
