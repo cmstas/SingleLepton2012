@@ -1667,7 +1667,7 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
   if(ismcatnlo && prefix.Contains("noCorr")) ismcatnlo = false; //hack to skip the status=2 W boosting for the uncorrelated mc@nlo (apparently there the leptons already match the status=2 W)
   fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
-  if(ismcatnlo && prefix.Contains("noCorr")) ismcatnlo = true;
+  if(prefix.Contains("noCorr")) ismcatnlo = true;
   
 	// if( npartons_ > 0 ){
 	//   cout << endl << endl;

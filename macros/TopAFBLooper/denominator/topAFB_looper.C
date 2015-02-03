@@ -812,7 +812,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                     if(ismcatnlo && filename.Contains("noCorr")) ismcatnlo = false; //hack to skip the status=2 W boosting for the uncorrelated mc@nlo (apparently there the leptons already match the status=2 W)
                     fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
-                    if(ismcatnlo && filename.Contains("noCorr")) ismcatnlo = true;
+                    if(filename.Contains("noCorr")) ismcatnlo = true;
 
                     if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 11 ) myType = 0;
                     else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 11 ) myType = 2;
