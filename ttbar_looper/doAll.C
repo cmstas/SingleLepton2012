@@ -83,10 +83,10 @@ void doAll(bool skipFWLite = true)
 
   // scale_1fb for ntuples with weights = 1
   float s_mcatnlo = 234000.*274.00756/211.1/32852589.;  //274.00756/211.1 is the ratio of the the per-event xsec and the PREP xsec and accounts for the events with negative weights
-  float s_TT_FullLept_mass169_5_8TeV_mcatnlo = 234000.*274.00756/211.1/3110611.;
-  float s_TT_FullLept_mass175_5_8TeV_mcatnlo = 234000.*274.00756/211.1/3217835.;
-  float s_TT_FullLept_scaledown_8TeV_mcatnlo = 234000.*274.00756/211.1/3138155.;
-  float s_TT_FullLept_scaleup_8TeV_mcatnlo = 234000.*274.00756/211.1/3128986.;
+  float s_TT_FullLept_mass169_5_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3110611.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_FullLept_mass175_5_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3217835.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_FullLept_scaledown_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3138155.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_FullLept_scaleup_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3128986.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
   float s_TT_noCorr_8TeV_mcatnlo = 234000.*274.00756/211.1/24766326.;
   float s_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola = 234000./971034.;
   float s_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola = 234000./985684.;

@@ -59,10 +59,10 @@ void doAll_nocuts(TString outputDir = "results")
 
         //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo ); //if doing powheg SC bug combined v1 + v2 must hard-code normalisation weight in looper ( weight = 234.*1000./(6414753.+21675970.) * lumi; )
         
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/3110611. ); //mass down
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/3217835. ); //mass up
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/3138155. ); //scale down
-        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000.*274.00756/211.1/3128986. ); //scale up
+        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 24560.*274.00756/211.1/3110611. ); //mass down
+        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 24560.*274.00756/211.1/3217835. ); //mass up
+        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 24560.*274.00756/211.1/3138155. ); //scale down
+        //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 24560.*274.00756/211.1/3128986. ); //scale up
 
         //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000./956164. );    //ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola
         //baby->ScanChain(ch_ttbar, v_Cuts, "ttdil", lumiToNormalizeTo * 0.945 * 234000./971034. );    //HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola
