@@ -576,18 +576,18 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 		// hMeas_after_combined->Scale( integral_signal / integral_top );
 
 		switch( iVar ) {
-		case 0:   tau = 0.00042;
-		case 1:   tau = 0.000418;
-		case 2:   tau = 0.000148;
-		case 3:   tau = 0.000145;
-		case 4:   tau = 0.000103;
-		case 5:   tau = 0.000122;
-		case 6:   tau = 0.000153;
-		case 7:   tau = 0.000146;
-		case 8:   tau = 0.000127;
-		case 9:   tau = 0.000427;
-		case 10:  tau = 0.000145;
-		case 11:  tau = 0.000164;
+		case 0:   tau = 0.00042;   break;
+		case 1:   tau = 0.000418;  break;
+		case 2:   tau = 0.000148;  break;
+		case 3:   tau = 0.000145;  break;
+		case 4:   tau = 0.000103;  break;
+		case 5:   tau = 0.000122;  break;
+		case 6:   tau = 0.000153;  break;
+		case 7:   tau = 0.000146;  break;
+		case 8:   tau = 0.000127;  break;
+		case 9:   tau = 0.000427;  break;
+		case 10:  tau = 0.000145;  break;
+		case 11:  tau = 0.000164;  break;
 		}
 
 		/*
