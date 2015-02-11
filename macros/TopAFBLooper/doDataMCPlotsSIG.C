@@ -40,6 +40,7 @@
 #include <TLine.h>
 #include <TList.h>
 #include <TLatex.h>
+#include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TCanvas.h>
 #include <vector>
@@ -742,6 +743,75 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //if(scalebkgtoCRs) cout<<"CR40 sf for DYtautau:  "<<CRsftot[CR40]<<" +/- "<<CRsftoterr[CR40]<<endl;
 
 
+    TGraphErrors *graphDYeemm = new TGraphErrors();
+    TGraphErrors *graphDYtt = new TGraphErrors();
+    TGraphErrors *graphfakes = new TGraphErrors();
+
+
+    if(scalebkgtoCRs) {
+
+        cout<<"fakes:"<<endl;
+
+        for (int leptype = 0; leptype < nCh; ++leptype)
+        {
+            cout<<CRsf[CR5][leptype]<<"+/-"<<CRsferr[CR5][leptype]<<endl;
+            cout<<CRsf[CR5v][leptype]<<"+/-"<<CRsferr[CR5v][leptype]<<endl;
+            cout<<CRsf[CR6][leptype]<<"+/-"<<CRsferr[CR6][leptype]<<endl;
+        }
+
+        for (int leptype = 0; leptype < nCh; ++leptype)
+        {
+            graphfakes->SetPoint(leptype+0, leptype+0, CRsf[CR5][leptype]); graphfakes->SetPointError( leptype+0, 0, CRsferr[CR5][leptype] );
+            graphfakes->SetPoint(leptype+3, leptype+3, CRsf[CR5v][leptype]); graphfakes->SetPointError( leptype+3, 0, CRsferr[CR5v][leptype] );
+            graphfakes->SetPoint(leptype+6, leptype+6, CRsf[CR6][leptype]); graphfakes->SetPointError( leptype+6, 0, CRsferr[CR6][leptype] );
+        }
+
+
+
+
+
+
+        cout<<"DY:"<<endl;
+
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR1][leptype]<<"+/-"<<CRsferr[CR1][leptype]<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype]<<" +/- "<<(CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype]<<" +/- "<<(CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype]<<" +/- "<<(CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2))<<endl;
+
+
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR2][leptype]<<"+/-"<<CRsferr[CR2][leptype]<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+
+
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 1+leptype-1, 1+leptype-1, CRsf[CR1][leptype] );    graphDYeemm->SetPointError( 1+leptype-1, 0, CRsferr[CR1][leptype] ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 3+leptype-1, 3+leptype-1, CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype] );    graphDYeemm->SetPointError( 3+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 5+leptype-1, 5+leptype-1, CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 5+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 7+leptype-1, 7+leptype-1, CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 7+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 9+leptype-1, 9+leptype-1, CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 9+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 11+leptype-1, 11+leptype-1, CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 11+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
+
+
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 1+leptype-1, 1+leptype-1, CRsf[CR2][leptype] );    graphDYtt->SetPointError( 1+leptype-1, 0, CRsferr[CR2][leptype] ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 3+leptype-1, 3+leptype-1, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 3+leptype-1, 0, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 5+leptype-1, 5+leptype-1, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 5+leptype-1, 0, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 7+leptype-1, 7+leptype-1, CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 7+leptype-1, 0, (CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+
+        TCanvas *canSFs = new TCanvas("canSFs","canSFs",1800, 600);
+        canSFs->Divide(3,1);
+        canSFs->cd(1);
+        graphDYeemm->Draw("");
+        canSFs->cd(2);
+        graphDYtt->Draw(""); 
+        canSFs->cd(3);
+        graphfakes->Draw(""); 
+        canSFs->Print("SFs.pdf");
+
+
+    }
 
     //initialize
 
@@ -768,7 +838,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 55;
+    const int N1DHISTS = 60;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -847,7 +917,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "maxAMWTweight",
         "maxAMWTweight_closestApproach",
         "otherAMWTweights",
-        "closestDeltaMET_bestcombo"
+        "closestDeltaMET_bestcombo",
+        "nvtx",
+        "top1_pt",
+        "top2_pt",
+        "top1_p_CM",
+        "lep_costheta_cms"
     };
 
 
@@ -871,7 +946,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     logScale.push_back(42+8);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -942,7 +1017,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "maxAMWTweight",
         "maxAMWTweight_closestApproach",
         "otherAMWTweights",
-        "closestDeltaMET_bestcombo"
+        "closestDeltaMET_bestcombo",
+        "nvtx",
+        "top1_pt",
+        "top2_pt",
+        "top1_p_CM",
+        "lep_costheta_cms"
     };
 
     const char *ytitle1d[N1DHISTS] =
@@ -973,6 +1053,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "GeV",
         "",
         "GeV",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
