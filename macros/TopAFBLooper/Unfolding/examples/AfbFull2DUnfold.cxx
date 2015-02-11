@@ -41,7 +41,7 @@ Int_t checkErrors = 0;
 bool draw_truth_before_pT_reweighting = false;
 
 
-void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalefake = 2.27055, double scalewjets = 1., double scaleDYeemm = 1.46211, double scaleDYtautau = 1.17888, double scaletw = 1., double scaleVV = 1.)
+void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1.)
 {
     TH1::SetDefaultSumw2();
 

@@ -507,17 +507,17 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		switch( iVar ) {
 		case 0:   tau = 0.000184;  break;
-		case 1:   tau = 0.000166;  break;
-		case 2:   tau = 0.000111;  break;
-		case 3:   tau = 0.00011;   break;
-		case 4:   tau = 7.81e-05;  break;
-		case 5:   tau = 9.16e-05;  break;
-		case 6:   tau = 0.000111;  break;
-		case 7:   tau = 0.000125;  break;
-		case 8:   tau = 0.000103;  break;
+		case 1:   tau = 0.000165;  break;
+		case 2:   tau = 0.000106;  break;
+		case 3:   tau = 0.000106;   break;
+		case 4:   tau = 7.49e-05;  break;
+		case 5:   tau = 8.87e-05;  break;
+		case 6:   tau = 0.000109;  break;
+		case 7:   tau = 0.000126;  break;
+		case 8:   tau = 9.77e-05;  break;
 		case 9:   tau = 0.00012;   break;
 		case 10:  tau = 0.00011;   break;
-		case 11:  tau = 0.000139;  break;
+		case 11:  tau = 0.000138;  break;
 		}
 
 		/*
