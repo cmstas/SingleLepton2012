@@ -211,6 +211,8 @@ pair<float, float> datamcsf( TH1F *h_dt, vector<TH1F *> h_mc, int minbin, int ma
 void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatnlo")
 {
 
+    TString ttbar_string = ttbar_tag;
+
     //derive scale factors
 
     //list of samples
@@ -474,7 +476,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             {
                 if (j < 2)
                     mc_dl_temp[j][i] = TFile::Open(Form("%soutput/%s_%s_histos.root", dirtag[i],
-                                                mcsample[j], ttbar_tag));
+                                                mcsample[j], ( j != TTDL && ttbar_string.Contains("FullLept") ? "mcatnlo" : ttbar_tag )));
                 else
                     mc_dl_temp[j][i] = TFile::Open(Form("%soutput/%s_histos.root", dirtag[i],
                                                 mcsample[j]));
@@ -826,7 +828,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     {
         if (j < 2)
             mc_dl[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", region,
-                                        mcsample[j], ttbar_tag));
+                                        mcsample[j], ( j != TTDL && ttbar_string.Contains("FullLept") ? "mcatnlo" : ttbar_tag )));
         else
             mc_dl[j] = TFile::Open(Form("%soutput/%s_histos.root", region,
                                         mcsample[j]));
