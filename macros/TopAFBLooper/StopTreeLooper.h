@@ -95,6 +95,7 @@ private:
     vector<LorentzVector> nonbjets;
     vector<LorentzVector> bcandidates;
     vector<float> btag;
+    vector<float> CSVdisc;
     vector<float> sigma_jets;
     vector<int> mc;
     bool tobtecveto_;

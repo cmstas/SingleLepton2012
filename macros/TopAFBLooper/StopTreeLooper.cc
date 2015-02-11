@@ -38,6 +38,18 @@ std::set<DorkyEventIdentifier> already_seen;
 std::set<DorkyEventIdentifier> events_lasercalib;
 std::set<DorkyEventIdentifier> events_hcallasercalib;
 
+struct indCSV{
+    float CSVdisc;
+    int ind;
+};
+
+typedef vector< indCSV > VofiCSV;
+
+inline bool sortICSVByCSV(indCSV iCSV1, indCSV iCSV2) {
+    return iCSV1.CSVdisc > iCSV2.CSVdisc;
+}
+
+    
 bool makeCRplots = true; //For CR studies. If true don't apply the selection until making plots.
 bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
 
@@ -49,10 +61,13 @@ bool scaleJERUp                 = false;
 bool scaleJERDown               = false;
 bool scaleLeptonEnergyUp = false;
 bool scaleLeptonEnergyDown = false;
-bool scaleBTAGSFup = false;
-bool scaleBTAGSFdown = false;
+bool systupBCShape = false;
+bool systdownBCShape = false;
+bool systupLShape = false;
+bool systdownLShape = false;
 bool scaleTrigSFup = false;
 bool scaleTrigSFdown = false;
+
 bool noVertexReweighting = false;
 bool weighttaudecay = false;
 bool calculatePDFsystweights = false;
@@ -155,6 +170,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     //------------------------------------------------------------------------------------------------------
 
     BTagShapeInterface *nominalShape = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root", 0.0, 0.0);
+    //systematic variations for payloads
+    BTagShapeInterface *upBCShape    = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  1.0 ,  0.0);
+    BTagShapeInterface *downBCShape  = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root", -1.0 ,  0.0);
+    BTagShapeInterface *upLShape     = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  0.0 ,  1.0);
+    BTagShapeInterface *downLShape   = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  0.0 , -1.0);
 
     //------------------------------
     // set up histograms
@@ -196,6 +216,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     unsigned int nEventsChain = 0;
     unsigned int nEvents_channel_migrated = 0;
     unsigned int nEvents = chain->GetEntries();
+    unsigned int ntotal[10] = {0};
+    unsigned int ncorrect[10] = {0};
+    unsigned int nwithsol[10] = {0};
+    unsigned int ncorrectwithsol[10] = {0};
+    unsigned int ninaccept[10] = {0};
+    unsigned int ninacceptwithsol[10] = {0};
     nEventsChain = nEvents;
     ULong64_t nEventsTotal = 0;
     int nevt_check = 0;
@@ -393,6 +419,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             bjets.clear();
             nonbjets.clear();
             bcandidates.clear();
+            CSVdisc.clear();
             btag.clear();
             //sigma_jets.clear();
             mc.clear();
@@ -402,9 +429,34 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             n_ljets = 0;
             tobtecveto_ = false;
 
-            //stopt.pfjets() are already sorted by pT
-            for ( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i )
+            //evaluate reshaped CSV values (for MC) and fill vector for sorting
+            VofiCSV viCSV;
+            viCSV.clear();
+
+            for ( unsigned int ijet = 0 ; ijet < stopt.pfjets().size() ; ++ijet ) {
+                float CSVdisc_temp = isData ? stopt.pfjets_csv().at(ijet)
+                                    : nominalShape->reshape( stopt.pfjets().at(ijet).eta(),
+                                            stopt.pfjets().at(ijet).pt(),
+                                            stopt.pfjets_csv().at(ijet),
+                                            stopt.pfjets_mcflavorAlgo().at(ijet) );
+
+                if( systupBCShape && !isData ) CSVdisc_temp = upBCShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+                if( systdownBCShape && !isData ) CSVdisc_temp = downBCShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+                if( systupLShape && !isData ) CSVdisc_temp = upLShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+                if( systdownLShape && !isData ) CSVdisc_temp = downLShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+
+                indCSV iCSV = { CSVdisc_temp, ijet };
+                CSVdisc.push_back( CSVdisc_temp );
+                viCSV.push_back(iCSV);
+            }
+
+            sort(viCSV.begin(), viCSV.end(), sortICSVByCSV);
+
+            //stopt.pfjets() are sorted by pT. Sort by CSV instead.
+            //for ( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i )
+            for ( unsigned int iii = 0 ; iii < stopt.pfjets().size() ; ++iii )
             {
+                int i = viCSV.at(iii).ind;
 
                 if ( stopt.pfjets().at(i).pt() < 30 )  continue;
                 if ( fabs(stopt.pfjets().at(i).eta()) > 2.4 )  continue; //note, this was 2.5 for 7 TeV AFB
@@ -468,13 +520,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     if ((stopt.pfjets_chm().at(i) - stopt.pfjets_neu().at(i)) > 40) tobtecveto_ = true;
                 }
 
-                //to not use reshaped discriminator
-                //float csv_nominal= stopt.pfjets_csv().at(i);
-                float csv_nominal = isData ? stopt.pfjets_csv().at(i)
-                                    : nominalShape->reshape( stopt.pfjets().at(i).eta(),
-                                            stopt.pfjets().at(i).pt(),
-                                            stopt.pfjets_csv().at(i),
-                                            stopt.pfjets_mcflavorAlgo().at(i) );
+                float csv_nominal = CSVdisc.at(i);
+
                 if (csv_nominal > 0.679)
                 {
                     bjets.push_back( stopt.pfjets().at(i) );
@@ -533,7 +580,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 if (fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep2(), bcandidates.at(i))) < lep2b_mindPhi ) lep2b_mindPhi = fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep2(), bcandidates.at(i)));
             }
             //if(lep1b_mindPhi<0.6 || lep2b_mindPhi<0.6 ) continue;
-
 
             //----------------------------------------------------------------------------
             // Veto events with jet(s) with suspected TOB/TEC seeded tracking problem. http://www.t2.ucsd.edu/tastwiki/pub/CMS/20130426OsChats/wh_tobtecprob_olivito_260413.pdf
@@ -927,6 +973,36 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 evtweight *= sqrt( TopPtWeight(pT_topplus_gen) * TopPtWeight(pT_topminus_gen) );
             }
 
+            //check performance of b candidate selection
+            if (  dataset_2l && (passFullSelection(isData) || passFullSelection_bveto(isData)) ) {
+                //test if selected b candidates match the true b quarks
+                if(name.Contains("ttdl")) {
+
+                    int nmatched = 0;
+
+                    if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(0)) < 0.4 ) nmatched++;
+                    else if ( ROOT::Math::VectorUtil::DeltaR(stopt.bMinus_status3(), bcandidates.at(0)) < 0.4 ) nmatched++;
+                    if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(0)) >= 0.4 ) if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(1)) < 0.4 ) nmatched++;
+                    if ( ROOT::Math::VectorUtil::DeltaR(stopt.bMinus_status3(), bcandidates.at(0)) >= 0.4 ) if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(1)) >= 0.4 ) if ( ROOT::Math::VectorUtil::DeltaR(stopt.bMinus_status3(), bcandidates.at(1)) < 0.4 ) nmatched++;
+
+                    if(nmatched==2) ncorrect[n_bjets]++;
+                    if(nmatched>2) cout<<"something went wrong with matching"<<endl;
+                    if(m_top>0 && nmatched==2) ncorrectwithsol[n_bjets]++;
+
+                    if( fabs(stopt.bPlus_status3().eta()) < 2.4 && fabs(stopt.bPlus_status3().pt())>30. && fabs(stopt.bMinus_status3().eta()) < 2.4 && fabs(stopt.bMinus_status3().pt())>30. ) {
+                        ninaccept[n_bjets]++;
+                        if(m_top>0) ninacceptwithsol[n_bjets]++;
+                    }
+                }
+
+                ntotal[n_bjets]++;
+                if(m_top>0) nwithsol[n_bjets]++;
+
+                //if (event % 100 == 0 || n_bjets>2) cout<<n_bjets<<" b-jets, within acceptance: "<<double(ninaccept[n_bjets])/double(ntotal[n_bjets])<<", correct permutation: "<<double(ncorrect[n_bjets])/double(ntotal[n_bjets])<<", with solution: "<<double(nwithsol[n_bjets])/double(ntotal[n_bjets])<<", in acceptance when with solution: "<<double(ninacceptwithsol[n_bjets])/double(nwithsol[n_bjets])<<", correct permutation when with solution: "<<double(ncorrectwithsol[n_bjets])/double(nwithsol[n_bjets])<<", ntotal: "<<ntotal[n_bjets]<<endl;
+            }
+
+            //veto on 3 or more b-tags because the chance of choosing the correct permutation is worse than in 1-tag events (66% [3tag] vs 68% [1tag] vs 96%[2tag] in events with a solution) and because the purity is questionable (data/MC agreement is bad in >2 b-tag bins).
+            if(n_bjets>2) continue;
 
             //
             // SIGNAL REGION - dilepton + b-tag
@@ -1171,6 +1247,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         //stwatch.Start();
 
     } // end file loop
+
+    for (int nb = 0; nb < 6; ++nb)
+    {
+        cout<<nb<<" b-jets, within acceptance: "<<double(ninaccept[nb])/double(ntotal[nb])<<", correct permutation: "<<double(ncorrect[nb])/double(ntotal[nb])<<", with solution: "<<double(nwithsol[nb])/double(ntotal[nb])<<", in acceptance when with solution: "<<double(ninacceptwithsol[nb])/double(nwithsol[nb])<<", correct permutation when with solution: "<<double(ncorrectwithsol[nb])/double(nwithsol[nb])<<", ntotal: "<<ntotal[nb]<<endl;
+    }
 
     //
     // finish
@@ -1486,6 +1567,7 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1D *
 
     plot1DUnderOverFlow(hist_tag+"_n_jets" + tag_selection + flav_tag, n_jets, evtweight, h_1d, 8 , 0, 8);
     plot1DUnderOverFlow(hist_tag+"_n_bjets" + tag_selection + flav_tag, n_bjets, evtweight, h_1d, 8 , 0, 8);
+    plot1DUnderOverFlow(hist_tag+"_nvtx" + tag_selection + flav_tag,  stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
 
     plot1DUnderOverFlow(hist_tag+"_met" + tag_selection + flav_tag, t1metphicorr, evtweight, h_1d, nbins , 0, 500);
     plot1DUnderOverFlow(hist_tag+"_metphi" + tag_selection + flav_tag, t1metphicorrphi, evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
