@@ -268,10 +268,10 @@ pair<int, int> getIndexPair(vector<int> listBJetIndex,vector<LorentzVector> jets
 
 
 //------------------------------------------------------------------------------------------------
-//this is for the jetResolutions
+//this is for the jetResolutions, updated to the 2014 numbers from https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
 //------------------------------------------------------------------------------------------------
 
-float getDataMCRatio(float eta){
+float getDataMCRatioOld(float eta){
   if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.052;
   if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.057;
   if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.096;
@@ -279,6 +279,40 @@ float getDataMCRatio(float eta){
   if (fabs(eta) >=2.3 && fabs(eta) < 5.0) return 1.288;
   return 1.0;
 }
+
+float getDataMCRatio(float eta){
+  if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.079;
+  if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.099;
+  if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.121;
+  if (fabs(eta) >=1.7 && fabs(eta) < 2.3) return 1.208;
+  if (fabs(eta) >=2.3 && fabs(eta) < 2.8) return 1.254;
+  if (fabs(eta) >=2.8 && fabs(eta) < 3.2) return 1.395;
+  if (fabs(eta) >=3.2 && fabs(eta) < 5.0) return 1.056;
+  return 1.0;
+}
+
+float getDataMCRatioSystDown(float eta){
+  if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.053;
+  if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.071;
+  if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.092;
+  if (fabs(eta) >=1.7 && fabs(eta) < 2.3) return 1.162;
+  if (fabs(eta) >=2.3 && fabs(eta) < 2.8) return 1.192;
+  if (fabs(eta) >=2.8 && fabs(eta) < 3.2) return 1.332;
+  if (fabs(eta) >=3.2 && fabs(eta) < 5.0) return 0.865;
+  return 1.0;
+}
+
+float getDataMCRatioSystUp(float eta){
+  if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.105;
+  if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.127;
+  if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.150;
+  if (fabs(eta) >=1.7 && fabs(eta) < 2.3) return 1.254;
+  if (fabs(eta) >=2.3 && fabs(eta) < 2.8) return 1.316;
+  if (fabs(eta) >=2.8 && fabs(eta) < 3.2) return 1.458;
+  if (fabs(eta) >=3.2 && fabs(eta) < 5.0) return 1.247;
+  return 1.0;
+}
+
 
 //------------------------------------------------------------------------------------------------
 // Fix function to partial correction used in looper before 1.16

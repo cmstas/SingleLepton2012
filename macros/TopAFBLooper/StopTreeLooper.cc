@@ -45,7 +45,8 @@ bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charg
 bool applyTopPtWeighting = false;
 bool scaleJESMETUp              = false;
 bool scaleJESMETDown            = false;
-bool scaleJER                   = false;
+bool scaleJERUp                 = false;
+bool scaleJERDown               = false;
 bool scaleLeptonEnergyUp = false;
 bool scaleLeptonEnergyDown = false;
 bool scaleBTAGSFup = false;
@@ -412,10 +413,15 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 float sigma = stopt.pfjets_sigma().at(i);
                 float unc   = stopt.pfjets_uncertainty().at(i);
 
-                if ( scaleJER && !isData ) {
+                //smear the JER
+                if (  !isData ) {
 
                     TRandom3 r3(  stopt.event()*1000 + i  );
-                    double JER_smear_width = sqrt( pow( getDataMCRatio(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatio(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio in the babies for MC, so must divide
+                    double JER_smear_width = 0.;
+                    if(scaleJERUp)            JER_smear_width = sqrt( pow( getDataMCRatioSystUp(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatioOld(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio(Old) in the babies for MC, so must divide
+                    else if(scaleJERDown)     JER_smear_width = sqrt( pow( getDataMCRatioSystDown(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatioOld(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio(Old) in the babies for MC, so must divide
+                    else                      JER_smear_width = sqrt( pow( getDataMCRatio(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatioOld(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio(Old) in the babies for MC, so must divide
+
                     double JER_smear = r3.Gaus(0,JER_smear_width);
 
                     //cout<<stopt.pfjets().at(i)<<endl;
@@ -498,8 +504,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             if (n_jets < min_njets) continue;
 
-            //if making systematic variations, recalculate t1metphicorr using the updated met_x, met_y
-            if( ((scaleJESMETDown || scaleJESMETUp) && isData) || (scaleJER && !isData) ) {
+            //if making systematic variations, recalculate t1metphicorr using the updated met_x, met_y  (for MC we are always varying the JER to the smeared central value)
+            if( ((scaleJESMETDown || scaleJESMETUp) && isData) || (!isData) ) {
                 t1metphicorr = sqrt( met_x*met_x + met_y*met_y );
                 t1metphicorrphi = atan2( met_y , met_x );
             }

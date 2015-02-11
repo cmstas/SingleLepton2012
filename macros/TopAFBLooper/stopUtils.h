@@ -91,6 +91,9 @@ bool pass_T2bw_HM(bool isData, TString name);
 pair<float,float> getPhiCorrMET( float met, float metphi, int nvtx, bool ismc);
 
 float getDataMCRatio(float eta);
+float getDataMCRatioOld(float eta);
+float getDataMCRatioSystDown(float eta);
+float getDataMCRatioSystUp(float eta);
 float getDataMCRatioFix(float eta);
 
 float vtxweight_n( const int nvertices, TH1F *hist, bool isData );
