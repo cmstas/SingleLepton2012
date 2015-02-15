@@ -240,6 +240,99 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
                 print_evt_weight = false;
             }
 
+            //initialise variables filled by fillgenlevel
+            ptwgen_   = -1;
+            ptzgen_   = -1;
+            ptttbar_  = -1;
+            ptt_      = -1;
+            pttbar_   = -1;
+            mttbar_   = -1;
+            etattbar_ = -999;
+            rapidityttbar_ = -999;
+
+            m_topminus_gen_ = -999;
+            m_topplus_gen_ = -999;
+            tt_mass_gen_ = -999;
+            ttRapidity_gen_ = -999;
+            ttRapidity2_gen_ = -999;
+            top_rapiditydiff_cms_gen_ = -999;
+            top_pseudorapiditydiff_cms_gen_ = -999;
+            top_rapiditydiff_Marco_gen_ = -999;
+            tt_pT_gen_ = -999;
+            top_costheta_cms_gen_ = -999;
+            lep_charge_asymmetry_gen_ = -999;
+            lep_azimuthal_asymmetry_gen_ = -999;
+            lep_azimuthal_asymmetry2_gen_ = -999;
+            lepPlus_costheta_cms_gen_ = -999;
+            lepMinus_costheta_cms_gen_ = -999;
+            top_spin_correlation_gen_ = -999;
+            lep_cos_opening_angle_gen_ = -999;
+
+            m_topminus_gen_origleps_ = -999;
+            m_topplus_gen_origleps_ = -999;
+            tt_mass_gen_origleps_ = -999;
+            ttRapidity_gen_origleps_ = -999;
+            ttRapidity2_gen_origleps_ = -999;
+            top_rapiditydiff_cms_gen_origleps_ = -999;
+            top_pseudorapiditydiff_cms_gen_origleps_ = -999;
+            top_rapiditydiff_Marco_gen_origleps_ = -999;
+            tt_pT_gen_origleps_ = -999;
+            top_costheta_cms_gen_origleps_ = -999;
+            lep_charge_asymmetry_gen_origleps_ = -999;
+            lep_azimuthal_asymmetry_gen_origleps_ = -999;
+            lep_azimuthal_asymmetry2_gen_origleps_ = -999;
+            lepPlus_costheta_cms_gen_origleps_ = -999;
+            lepMinus_costheta_cms_gen_origleps_ = -999;
+            top_spin_correlation_gen_origleps_ = -999;
+            lep_cos_opening_angle_gen_origleps_ = -999;
+
+            t_        = 0;
+            tbar_     = 0;
+            ttbar_    = 0;
+            lep_t_    = 0;   
+            lep_tbar_ = 0;   
+            stop_t_   = 0;   
+            stop_tbar_ = 0;   
+            neutralino_t_ = 0;   
+            neutralino_tbar_ = 0;  
+            genc1_    = 0;   
+            genn2_ = 0;   
+            neutralino_c1_ = 0;   
+            neutralino_n2_ = 0;  
+
+            lepPlus_status3_ = 0;
+            lepMinus_status3_ = 0;
+            bPlus_status3_ = 0;
+            bMinus_status3_ = 0;
+            nuPlus_status3_ = 0;
+            nuMinus_status3_ = 0;
+            topPlus_status3_ = 0;
+            topMinus_status3_ = 0;
+            WPlus_status3_ = 0;
+            WMinus_status3_ = 0;
+            lepPlus_status1_ = 0;
+            lepMinus_status1_ = 0;
+            bPlus_status1_ = 0;
+            bMinus_status1_ = 0;
+            nuPlus_status1_ = 0;
+            nuMinus_status1_ = 0;
+            topPlus_status1_ = 0;
+            topMinus_status1_ = 0;
+            //WPlus_status1_ = 0;
+            //WMinus_status1_ = 0;
+            WPlus_status3_orig_ = 0;
+            WMinus_status3_orig_ = 0;
+            topPlus_status3_bW_ = 0;
+            topMinus_status3_bW_ = 0;
+            lepPlus_status3_orig_ = 0;
+            lepMinus_status3_orig_ = 0;
+            nuPlus_status3_orig_ = 0;
+            nuMinus_status3_orig_ = 0;
+
+            npartons_    =  0;
+            nwzpartons_  = -9;
+            maxpartonpt_ = -1;
+
             int myType = 2;
             int ndavtx = 0;
             double weight = 1.0;
