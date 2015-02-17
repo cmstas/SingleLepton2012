@@ -646,6 +646,11 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		cout << "========= Variable: " << acceptanceName << "===================\n";
         Float_t Afb, AfbErr;
 
+        vector<double> afb_m;
+        vector<double> afb_merr;
+        vector<double> afb_m_denom;
+        vector<double> afb_merr_denom;
+
 		cout << "Automatic tau = " << tau << endl;
 		cout << "Minimum rhoAvg = " << bestrhoavg << endl;
 		cout << "Bias scale = " << scaleBias << endl;
@@ -656,27 +661,35 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         GetAfb(hTrue, Afb, AfbErr);
         cout << " True Top: " << Afb << " +/-  " << AfbErr << "\n";
 
-        GetAfb(hData_unfolded, Afb, AfbErr); // Formerly GetCorrectedAfb
-        cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
-        second_output_file << acceptanceName << " " << observablename << " Unfolded: " << Afb << " +/-  " << AfbErr << endl;
+		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
+        cout << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
+        second_output_file << acceptanceName << " " << observablename << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
 
-        GetAfb(denomM_2d, Afb, AfbErr);
-        cout << " True Top from acceptance denominator: " << Afb << " +/-  " << AfbErr << "\n";
-        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator: " << Afb << " +/-  " << AfbErr << "\n";
-
-        vector<double> afb_m;
-        vector<double> afb_merr;
-        vector<double> afb_m_denom;
-        vector<double> afb_merr_denom;
-
-		cout << "From unfolded data:" << endl;
-        GetAvsY2d(hData_unfolded, afb_m, afb_merr, second_output_file);
-
-        cout << " With corrected uncertainty: " << endl;  //this function fills the inclusive asymmetry at array index 0, and then the asym in each y bin
-        GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
-
-		cout << "From acceptance denominator:" << endl;
 		GetAvsY2d(denomM_2d, afb_m_denom, afb_merr_denom, second_output_file);
+        cout << " True Top from acceptance denominator: " << afb_m_denom.at(0) << " +/-  " << afb_merr_denom.at(0) << endl;
+        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator: " << afb_m_denom.at(0) << " +/-  " << afb_merr_denom.at(0) << "\n";
+
+
+		// Asymmetries in each y-bin
+		for( int i=1; i<=nbinsy2D; i++ ) {
+		  cout << Var2D << " bin" << i << ": " << afb_m.at(i) << " +/- " << afb_merr.at(i) << endl;
+		  second_output_file << acceptanceName << " " << observablename << " " << Var2D << "bin" << i << ": " << afb_m.at(i) << " +/- " << afb_merr.at(i) << endl;
+		}
+
+		// Contents in each bin
+		hData_unfolded->Scale( 1. / hData_unfolded->Integral() );
+
+		for( int i=1; i<=nbinsx_gen; i++ ) {
+		  for( int j=1; j<=nbinsy2D; j++ ) {
+			cout << "Bin (" << i << "," << j << "): " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
+			second_output_file << acceptanceName << " " << observablename << " bin" << i << "x" << j << ": " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
+		  }
+		}
+
+		// Pairs: print out asym +/- err for each bin pair
+
+
+
 
 		/*
         if (draw_truth_before_pT_reweighting)

@@ -506,7 +506,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		//scaleBias = 0.0; //set biasScale to 0 when using kRegModeSize, or to compare with unfoldingType == 1
 		//do the unfolding with calculated bias scale (N_data/N_MC), and tau from ScanLcurve if doScanLCurve=true. Note that the results will only be the same as unfoldingType == 1 with scaleBias=0 and the same value of tau.
-		cout << "bias scale for TUnfold: " << scaleBias << endl;
 		unfold_TUnfold.DoUnfold(tau, hData_bkgSub, scaleBias);
 
 		unfold_TUnfold.GetOutput(hData_unfolded);
@@ -653,6 +652,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		cout << "Automated tau value: " << tau << endl;
 		cout << "Minimum rhoAverage: " << bestrhoavg << endl;
+		cout << "bias scale for TUnfold: " << scaleBias << endl;
 
         Float_t Afb, AfbErr;
 

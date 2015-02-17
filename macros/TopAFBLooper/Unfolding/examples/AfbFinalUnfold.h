@@ -260,8 +260,8 @@ void GetAvsY2d (TH2* h2, std::vector<double> &myafb, std::vector<double> &myerr,
 	myafb.push_back(rowafb);
 	myerr.push_back(rowerr);
 
-	std::cout << i << " AFB = " << rowafb << " +/- " << rowerr << std::endl;
-	second_output_file << acceptanceName << " " << observablename << " AFB" << i << ": " << rowafb << " +/- " << rowerr << std::endl;
+	// std::cout << i << " AFB = " << rowafb << " +/- " << rowerr << std::endl;
+	// second_output_file << acceptanceName << " " << observablename << " AFB" << i << ": " << rowafb << " +/- " << rowerr << std::endl;
   }
 
   delete rowhist;
@@ -400,8 +400,8 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
     myafb.push_back(afb[j]);
     myerr.push_back(afberr[j]);
 
-    std::cout<<j<<" AFB = "<<afb[j]<<" +/- "<<afberr[j]<<std::endl;
-    second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << afberr[j] << std::endl; 
+    // std::cout<<j<<" AFB = "<<afb[j]<<" +/- "<<afberr[j]<<std::endl;
+    // second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << afberr[j] << std::endl; 
 
   }
 
