@@ -46,15 +46,26 @@ bool draw_truth_before_pT_reweighting = true; //turn this on when making the fin
 
 void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1. )
 {
-    TH1::SetDefaultSumw2();
+  TH1::SetDefaultSumw2();
 
-    setTDRStyle();
-    gStyle->SetOptFit();
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    cout.precision(3);
+  setTDRStyle();
+  gStyle->SetOptFit();
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  cout.precision(3);
 
-    TString summary_name = "summary_1Dunfolding";
+  for( int iChan=0; iChan<4; iChan++ ) {
+
+	TString channel_name;
+
+	switch (iChan) {
+	case 0:  channel_name = "ee";   break;
+	case 1:  channel_name = "mm";   break;
+	case 2:  channel_name = "em";   break;
+	case 3:  channel_name = "all";  break;
+	}
+
+    TString summary_name = "summary_1Dunfolding_" + channel_name;
 
     // if (!(scalefake == 1. && scalewjets == 1. && scaleDY == 1. && scaletw == 1. && scaleVV == 1.))  summary_name = Form("summary_1Dunfolding_%i_%i_%i_%i_%i", int(10.*scalefake + 0.5), int(10.*scalewjets + 0.5), int(10.*scaleDY + 0.5), int(10.*scaletw + 0.5), int(10.*scaleVV + 0.5));
 
@@ -96,7 +107,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 	Int_t channel = -99;
 
     for (Int_t iVar = 0; iVar < nVars; iVar++)
-    {
+	  {
 
         Initialize1DBinning(iVar);
 
@@ -193,17 +204,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		//ch_data->Add(path + "ttdl_mcatnlo_baby.root");
         //ch_data->Add(path + "data.root");
         for (int iSig = 0; iSig < nSig; ++iSig)
-        {
+		  {
             ch_data->Add(path + dataroot[iSig]);
-        }
+		  }
 
         ch_top->Add(path + "ttdl_mcatnlo_baby.root");
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
-        {
+		  {
             ch_bkg[iBkg] = new TChain("tree");
             ch_bkg[iBkg]->Add(path + bkgroot[iBkg]);
-        }
+		  }
 
 
         ch_data->SetBranchAddress(observablename,    &observable);
@@ -222,8 +233,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		double loBinCenter = hData->GetBinCenter(1);
 
         for (Int_t i = 0; i < ch_data->GetEntries(); i++)
-        {
+		  {
             ch_data->GetEntry(i);
+
+			// If we're unfolding a single channel, skip events that aren't in that channel
+			if( iChan < 3 && channel != iChan) continue;
 
 			// Calculate a correction to the asymmetry value, to put it in the correct bin in a 2x1 histogram.
 			//Use an offset to sort events into 2 superbins: ee/mumu, emu
@@ -236,20 +250,20 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
             if ( iVar<2 || iVar==9 || tmass>0 )
-            {
+			  {
                 // leptonic asymmetries don't need valid top mass solution
                 fillUnderOverFlow(hData, observable, weight, Nsolns);
                 fillUnderOverFlow(hData_split, observable+offset, weight, Nsolns);
 				if (combineLepMinus) {
-                    fillUnderOverFlow(hData, observableMinus, weight, Nsolns);
-                    fillUnderOverFlow(hData_split, observableMinus+offset, weight, Nsolns);
-				  }
-            }
+				  fillUnderOverFlow(hData, observableMinus, weight, Nsolns);
+				  fillUnderOverFlow(hData_split, observableMinus+offset, weight, Nsolns);
+				}
+			  }
 
-        }
+		  }
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
-        {
+		  {
 
             ch_bkg[iBkg]->SetBranchAddress(observablename,    &observable);
             if ( combineLepMinus ) ch_bkg[iBkg]->SetBranchAddress("lepMinus_costheta_cms",    &observableMinus);
@@ -258,23 +272,24 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             ch_bkg[iBkg]->SetBranchAddress("tt_mass", &ttmass);
             ch_bkg[iBkg]->SetBranchAddress("ttRapidity2", &ttRapidity2);
             ch_bkg[iBkg]->SetBranchAddress("t_mass", &tmass);
-			// ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
+			ch_bkg[iBkg]->SetBranchAddress("channel", &channel);
 
             for (Int_t i = 0; i < ch_bkg[iBkg]->GetEntries(); i++)
-            {
+			  {
                 ch_bkg[iBkg]->GetEntry(i);
+				if( iChan < 3 && channel != iChan) continue;
                 weight *= bkgSF[iBkg];
 
                 if ( iVar<2 || iVar==9 || tmass > 0 )
-                {
-				  // leptonic asymmetries don't need valid top mass solution
-				  fillUnderOverFlow(hBkg, observable, weight, Nsolns);
-				  if (combineLepMinus) fillUnderOverFlow(hBkg, observableMinus, weight, Nsolns);
-                }
+				  {
+					// leptonic asymmetries don't need valid top mass solution
+					fillUnderOverFlow(hBkg, observable, weight, Nsolns);
+					if (combineLepMinus) fillUnderOverFlow(hBkg, observableMinus, weight, Nsolns);
+				  }
 
-            }
+			  }
 
-        }
+		  }
 
         ch_top->SetBranchAddress(observablename,    &observable);
         ch_top->SetBranchAddress(observablename + "_gen", &observable_gen);
@@ -288,8 +303,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		ch_top->SetBranchAddress("channel", &channel);
 
         for (Int_t i = 0; i < ch_top->GetEntries(); i++)
-        {
+		  {
             ch_top->GetEntry(i);
+			if( iChan < 3 && channel != iChan) continue;
 			// Calculate a correction to the asymmetry value, to put it in the correct bin in our 3x1 histograms
 			if( channel > 0 ) channel --;
 			offset = double(channel) * recohist_width;
@@ -305,24 +321,24 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
             // if ( (acceptanceName == "lepChargeAsym") || (acceptanceName == "lepAzimAsym") || (acceptanceName == "lepAzimAsym2") )
             if ( iVar<2 || iVar==9 || tmass>0 )
-            {
+			  {
                 //response.Fill (observable, observable_gen, weight);
                 fillUnderOverFlow(hMeas, observable, weight, Nsolns);
                 fillUnderOverFlow(hTrue, observable_gen, weight, Nsolns);
                 fillUnderOverFlow(hTrue_split, observable_gen+offset, weight, Nsolns);
                 fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
                 if ( combineLepMinus )
-                {
+				  {
                     //response.Fill (observableMinus, observableMinus_gen, weight);
                     fillUnderOverFlow(hMeas, observableMinus, weight, Nsolns);
                     fillUnderOverFlow(hTrue, observableMinus_gen, weight, Nsolns);
                     fillUnderOverFlow(hTrue_split, observableMinus_gen+offset, weight, Nsolns);
                     fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
-                }
-            }
+				  }
+			  }
 
 			// if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
-        }
+		  }
 
 		delete[] recobins;
 
@@ -330,11 +346,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
 
-		TH1D *acceptM[3];
-		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
-		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
-
-		acceptM[2]->Scale(1.0 / acceptM[2]->Integral());
+		TH1D *acceptM[4];
+		acceptM[0] = (TH1D*)(file->Get("accept_" + acceptanceName + "_diel"));
+		acceptM[1] = (TH1D*)(file->Get("accept_" + acceptanceName + "_dimu"));
+		acceptM[2] = (TH1D*)(file->Get("accept_" + acceptanceName + "_mueg"));
+		acceptM[3] = (TH1D*)(file->Get("accept_" + acceptanceName + "_all" ));
 
 		TH1D *accNum[3];
 		accNum[0] = (TH1D*)(file->Get("numerator_" + acceptanceName + "_diel"));
@@ -361,44 +377,54 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		gen_integrals[2] = gen_integrals[0] + gen_integrals[1];
 		reco_integrals[2] = reco_integrals[0] + reco_integrals[1];
 
+		if( iChan==3 ) {     // Combined channels...
+		  acceptM[1] = (TH1D*)(accNum[0]->Clone("accept_SF"));
+		  acceptM[1]->Divide( accDen[0] );
 
-		acceptM[0] = (TH1D*)(accNum[0]->Clone("accept_SF"));
-		acceptM[0]->Divide( accDen[0] );
+		  for( int aChannel=0; aChannel<2; aChannel++ ) {
+			for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 
-		for( int aChannel=0; aChannel<2; aChannel++ ) {
+			  double old_error = hTrue_vs_Meas->GetBinError( 0, acceptbin );
+
+			  //Calculate the number of rejected events, and fill it into the smearing matrix underflow
+			  double acceptance = acceptM[aChannel+1]->GetBinContent(acceptbin);
+			  double n_accepted = hTrue_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
+			  double n_rejected = n_accepted/acceptance - n_accepted;
+			  double correction = (reco_integrals[aChannel] / reco_integrals[2]) / (gen_integrals[aChannel] / gen_integrals[2]);
+			  hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_rejected*correction );
+
+			  //Calculate the uncertainty on the rejected events
+			  double num_error = accNum[aChannel]->GetBinError(acceptbin);
+			  double den_error = accDen[aChannel]->GetBinError(acceptbin);
+			  double new_error = sqrt( old_error*old_error + den_error*den_error - num_error*num_error  );
+			  hTrue_vs_Meas->SetBinError( 0, acceptbin, new_error );
+
+			}
+		  }
+		}
+		else {     // Individual channels...
 		  for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
-
-			double old_error = hTrue_vs_Meas->GetBinError( 0, acceptbin );
-
-			//Calculate the number of rejected events, and fill it into the smearing matrix underflow
-			double acceptance = acceptM[aChannel]->GetBinContent(acceptbin);
-			double n_accepted = hTrue_split->GetBinContent(aChannel*nbinsx_gen + acceptbin);
+			double acceptance = acceptM[iChan]->GetBinContent(3);
+			double n_accepted = hTrue->GetBinContent(acceptbin);
 			double n_rejected = n_accepted/acceptance - n_accepted;
-			double correction = (reco_integrals[aChannel] / reco_integrals[2]) / (gen_integrals[aChannel] / gen_integrals[2]);
-			hTrue_vs_Meas->Fill( -999999, hTrue->GetXaxis()->GetBinCenter(acceptbin), n_rejected*correction );
-
-			//Calculate the uncertainty on the rejected events
-			double num_error = accNum[aChannel]->GetBinError(acceptbin);
-			double den_error = accDen[aChannel]->GetBinError(acceptbin);
-			double new_error = sqrt( old_error*old_error + den_error*den_error - num_error*num_error  );
-			hTrue_vs_Meas->SetBinError( 0, acceptbin, new_error );
-
+			hTrue_vs_Meas->SetBinContent( 0, acceptbin, n_rejected );
+			hTrue_vs_Meas->SetBinError(   0, acceptbin, sqrt(n_rejected) );
 		  }
 		}
 
 
 		// Fill purity and stability plots
         if( hMeas->GetNbinsX() == nbinsx_gen ) {
-        	for( int i=1; i<=nbinsx_gen; i++ ) {
-        	  hPurity->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hMeas->GetBinContent(i) );
-        	  hStability->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hTrue->GetBinContent(i) );
-        	}
+		  for( int i=1; i<=nbinsx_gen; i++ ) {
+			hPurity->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hMeas->GetBinContent(i) );
+			hStability->SetBinContent( i, hTrue_vs_Meas->GetBinContent(i,i) / hTrue->GetBinContent(i) );
+		  }
         }
         else if( hMeas->GetNbinsX() ==  2*nbinsx_gen || hMeas->GetNbinsX() == 4*nbinsx_gen ) {
-            for( int i=1; i<=nbinsx_gen; i++ ) {
-              hPurity->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / (hMeas->GetBinContent(2*i)+hMeas->GetBinContent(2*i-1)) );
-              hStability->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / hTrue->GetBinContent(i) );
-            }
+		  for( int i=1; i<=nbinsx_gen; i++ ) {
+			hPurity->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / (hMeas->GetBinContent(2*i)+hMeas->GetBinContent(2*i-1)) );
+			hStability->SetBinContent( i, (hTrue_vs_Meas->GetBinContent(2*i,i)+hTrue_vs_Meas->GetBinContent(2*i-1,i)) / hTrue->GetBinContent(i) );
+		  }
         }
 		else {
 		  cout << "\n***WARNING: Purity and stability plots are broken!!!\n" << endl;
@@ -448,7 +474,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg0->AddEntry(hMeas,  "MC@NLO reco level", "F");
         leg0->AddEntry(hBkg,  "Background", "F");
         leg0->Draw();
-        c_reco->SaveAs("1D_Reco_" + acceptanceName + ".pdf");
+        c_reco->SaveAs("1D_Reco_" + acceptanceName + "_" + channel_name + ".pdf");
 
 		/////////////////////////////////////////////////////
 		// Set data-like stat errors on MC for optimizing tau
@@ -488,7 +514,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("1D_" + acceptanceName + "_unfoldTests_minRho.pdf");
+		c_rhoAvg->SaveAs("1D_" + acceptanceName + "_" + channel_name + "_unfoldTests_minRho.pdf");
 
 		// cout << "Optimal tau value: " << tau << endl;
 		// cout << "Minimum rho average: " << bestrhoavg << endl;
@@ -538,7 +564,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hResp->GetYaxis()->SetTitle(xaxislabel + "_{gen}");
         hResp->Draw("COLZ");
         //c_resp->SaveAs("1D_Response_" + acceptanceName + ".eps");
-        c_resp->SaveAs("1D_Response_" + acceptanceName + ".pdf");
+        c_resp->SaveAs("1D_Response_" + acceptanceName + "_" + channel_name + ".pdf");
         //c_resp->SaveAs("Response_" + acceptanceName + ".C");
         //c_resp->SaveAs("Response_" + acceptanceName + ".root");
 		gStyle->SetPadRightMargin(rmargin);
@@ -547,9 +573,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hPurity->SetTitle("Purity;"+xaxislabel+";"+yaxislabel);
         hStability->SetTitle("Stability;"+xaxislabel+";"+yaxislabel);
         hPurity->Draw();
-        c_purstab->SaveAs("1D_purity_" + acceptanceName + ".pdf");
+        c_purstab->SaveAs("1D_purity_" + acceptanceName + "_" + channel_name + ".pdf");
         hStability->Draw();
-        c_purstab->SaveAs("1D_stability_" + acceptanceName + ".pdf");
+        c_purstab->SaveAs("1D_stability_" + acceptanceName + "_" + channel_name + ".pdf");
 
 
 		TH1D *denominatorM = (TH1D*)file->Get("denominator_" + acceptanceName + "_all"); //Acceptance denominator, all channels
@@ -557,19 +583,20 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		TFile *file_nopTreweighting = new TFile("../denominator/acceptance/mcnlo_nopTreweighting/accept_" + acceptanceName + ".root");
 		TH1D *denominatorM_nopTreweighting_raw = (TH1D *) file_nopTreweighting->Get("denominator_" + acceptanceName + "_all");
 
+		acceptM[iChan]->Scale(1.0 / acceptM[iChan]->Integral());
 
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
-		{
-
-		  if (acceptM[2]->GetBinContent(i) != 0)
 		  {
-			hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[2]->GetBinContent(i));
-			hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[2]->GetBinContent(i));
+
+			if (acceptM[iChan]->GetBinContent(i) != 0)
+			  {
+				hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[iChan]->GetBinContent(i));
+				hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[iChan]->GetBinContent(i));
+			  }
+
+			denominatorM_nopTreweighting->SetBinContent(i, denominatorM_nopTreweighting_raw->GetBinContent(i));
+
 		  }
-
-		  denominatorM_nopTreweighting->SetBinContent(i, denominatorM_nopTreweighting_raw->GetBinContent(i));
-
-		}
 
 		denominatorM_nopTreweighting->Scale(1. / denominatorM_nopTreweighting->Integral(), "width");
 
@@ -588,61 +615,61 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		else if( observablename == "lep_cos_opening_angle" ) predict_corr->SetParameter( 1, 0.1085 );
 
         if (observablename == "lep_azimuthal_asymmetry2")
-        {
+		  {
 
             Float_t dphi, v1, v2, v3;
             Int_t ncols, nlines;
             nlines = 0;
             FILE *fp = fopen("theory/lhc8-dphill-corr.dat", "r");
             while (1)
-            {
+			  {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v3);
                 theoryProfileCorr->Fill(dphi, v3);
                 nlines++;
-            }
+			  }
 
             nlines = 0;
             fp = fopen("theory/lhc8-dphill-uncorr.dat", "r");
             while (1)
-            {
+			  {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v3);
                 theoryProfileUnCorr->Fill(dphi, v3);
                 nlines++;
-            }
-        }
+			  }
+		  }
 
         if (observablename == "top_spin_correlation")
-        {
+		  {
 
             Float_t c1c2, v1, v2, v3;
             Int_t ncols, nlines;
             nlines = 0;
             FILE *fp = fopen("theory/Chelbin-8TeV.dat", "r");
             while (1)
-            {
+			  {
                 ncols = fscanf(fp, "%f %f %f %f", &c1c2, &v1, &v2, &v3);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
                 theoryProfileCorr->Fill(c1c2, v1);
                 nlines++;
-            }
+			  }
 
             nlines = 0;
             fp = fopen("theory/lhc7_uncorr_mu1m_cos1cos2.dat", "r");
             while (1)
-            {
+			  {
                 ncols = fscanf(fp, "%f %f", &c1c2, &v1);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
                 theoryProfileUnCorr->Fill(c1c2, v1);
                 nlines++;
-            }
+			  }
 
-        }
+		  }
 
 
 
@@ -680,12 +707,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
-        {
+		  {
             GetAfb_integratewidth( (TH1D *) theoryProfileCorr, Afb, AfbErr);
             cout << " Bernreuther correlated: " << Afb << " +/-  " << AfbErr << "\n";
             GetAfb_integratewidth( (TH1D *) theoryProfileUnCorr, Afb, AfbErr);
             cout << " Bernreuther uncorrelated: " << Afb << " +/-  " << AfbErr << "\n";
-        }
+		  }
 
         vector<double> afb_bins;
         vector<double> afb_bins_err;
@@ -702,21 +729,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hTrue->Scale(1. / hTrue->Integral(), "width");
 
         for (int i = 1; i < nbinsx_gen + 1; i++)
-        {
+		  {
             cout << i << " bin = " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
             second_output_file << acceptanceName << " " << observablename << " bin" << i << ": " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
             //second_output_file << acceptanceName << " " << observablename << " truthbin" << i << ": " << hTrue->GetBinContent(i) << " +/- " << hTrue->GetBinError(i) << endl;
-        }
+		  }
 
         //calculate covariance matrix for normalised distribution
         for (int l = 0; l < nbinsx_gen; l++)
-        {
+		  {
             for (int j = 0; j < nbinsx_gen; j++)
-            {
+			  {
                 m_correctE(l, j) = m_correctE(l, j) * (hData_unfolded->GetBinContent(l + 1) / hData_unfolded_clone->GetBinContent(l + 1)) * (hData_unfolded->GetBinContent(j + 1) / hData_unfolded_clone->GetBinContent(j + 1)); //this gives the covariance matrix for the bin values
                 //m_correctE(l, j) = m_correctE(l, j) * (hData_unfolded->GetBinWidth(l + 1) * hData_unfolded->GetBinContent(l + 1) / hData_unfolded_clone->GetBinContent(l + 1)) * (hData_unfolded->GetBinWidth(j + 1) * hData_unfolded->GetBinContent(j + 1) / hData_unfolded_clone->GetBinContent(j + 1)); //this gives the covariance matrix for the integrated bin contents
-            }
-        }
+			  }
+		  }
 
         m_correctE.Print("f=%1.5g ");
 
@@ -731,18 +758,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_plussyst = (TH1D *) hData_unfolded->Clone("Data_unfolded_plussyst");
 
         for (Int_t i = 1; i <= nbinsx_gen; i++)
-        {
+		  {
             if (checkErrors)
-            {
+			  {
                 if (includeSys)
-                {
+				  {
                     cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_corr[i - 1] << endl;
-                }
+				  }
                 else
-                {
+				  {
                     cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_uncorr[i - 1] << endl;
-                }
-            }
+				  }
+			  }
             //hData_unfolded          ->SetBinError(i, stat_uncorr[i - 1]);  //running with includeSys = 0 means we can use the RooUnfold stat-only errors
             //hData_unfolded_minussyst->SetBinContent(i, hData_unfolded->GetBinContent(i) - sqrt(  pow(syst_corr[i - 1], 2)));  //hard-coded syst_corr now includes unfolding syst
 			hData_unfolded_minussyst->SetBinContent(i, 0);  //hard-coded syst_corr now includes unfolding syst
@@ -750,7 +777,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             //hData_unfolded_plussyst ->SetBinContent(i, 2 * sqrt( pow(syst_corr[i - 1], 2)));  //hard-coded syst_corr now includes unfolding syst
             hData_unfolded_plussyst ->SetBinContent(i, 0);
             hData_unfolded_plussyst ->SetBinError(i, 0);
-        }
+		  }
 
         THStack *hs = new THStack("hs_systband", "Systematic band");
         hData_unfolded_minussyst->SetLineColor(10);
@@ -809,10 +836,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         else denominatorM_nopTreweighting->Draw("hist same");
         hData_unfolded->Draw("EP same");
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
-        {
+		  {
             theoryProfileUnCorr->Draw("hist same");
             theoryProfileCorr->Draw("hist same");
-        }
+		  }
 		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
 		  predict_corr->Draw("LSAME");
 		  if( observablename == "lep_cos_opening_angle" ) predict_uncorr->Draw("LSAME");
@@ -833,7 +860,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg1->Draw();
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
-        {
+		  {
             TLegend *leg2 = new TLegend(0.18, 0.745, 0.45, 0.88, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
@@ -844,7 +871,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV SM, #mu=^{}m_{t})}", "L");
             leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
             leg2->Draw();
-        }
+		  }
 		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
 		  TLegend *leg2 = new TLegend(0.18, 0.745, 0.45, 0.88, NULL, "brNDC");
 		  leg2->SetEntrySeparation(0.5);
@@ -875,7 +902,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         pt1->Draw();
 
 		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + ".eps");
-		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + ".pdf");
+		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".C");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".root");
 		
@@ -884,20 +911,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         ch_top->Delete();
 
         for (int iBkg = 0; iBkg < nBkg; ++iBkg)
-        {
+		  {
             ch_bkg[iBkg]->Delete();
-        }
+		  }
 
-    }
+	  }
 
     myfile.close();
     second_output_file.close();
+  } // End of loop over channels
+
 }
 
 #ifndef __CINT__
 int main ()
 {
-    AfbUnfoldExample();    // Main program when run stand-alone
-    return 0;
+  AfbUnfoldExample();    // Main program when run stand-alone
+  return 0;
 }
 #endif
