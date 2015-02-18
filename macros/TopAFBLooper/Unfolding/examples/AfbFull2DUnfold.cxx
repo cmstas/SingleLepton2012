@@ -691,14 +691,20 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         GetAfb(hTrue, Afb, AfbErr);
         cout << " True Top: " << Afb << " +/-  " << AfbErr << "\n";
 
+		GetAfb(denomM_2d, Afb, AfbErr);
+        cout << " True Top from acceptance denominator: " << Afb << " +/-  " << AfbErr << endl;
+        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator: " << Afb << " +/-  " << AfbErr << "\n";
+
+		GetAvsY2d(denomM_2d, afb_m_denom, afb_merr_denom, second_output_file);
+		for( int i=0; i<nbinsy2D; i++ ) {
+	        cout << " True Top from acceptance denominator bin" << i << ": " << afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << endl;
+	        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator_bin"<<i<<": "<< afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << "\n";
+	    }
+
+
 		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
         cout << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
-
-		GetAvsY2d(denomM_2d, afb_m_denom, afb_merr_denom, second_output_file);
-        cout << " True Top from acceptance denominator: " << afb_m_denom.at(0) << " +/-  " << afb_merr_denom.at(0) << endl;
-        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator: " << afb_m_denom.at(0) << " +/-  " << afb_merr_denom.at(0) << "\n";
-
 
 		// Asymmetries in each y-bin
 		for( int i=1; i<=nbinsy2D; i++ ) {
@@ -706,13 +712,20 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  second_output_file << acceptanceName << " " << observablename << " " << Var2D << "bin" << i << ": " << afb_m.at(i) << " +/- " << afb_merr.at(i) << endl;
 		}
 
+		for( int j=0; j<nbinsy2D; j++ ) {
+			for( int i=0; i<nbinsx_gen/2; i++ ) {
+				cout << Var2D << " double differential bin (" << j + 1 << "," << i<< "): " << afb_m.at(4 + j*nbinsx_gen/2 + i) << " +/- " << afb_merr.at(4 + j*nbinsx_gen/2 + i) << endl;
+				second_output_file << acceptanceName << " " << observablename << " " << Var2D << "DDbin" << j + 1 << "x" << i<< ": " << afb_m.at(4 + j*nbinsx_gen/2 + i) << " +/- " << afb_merr.at(4 + j*nbinsx_gen/2 + i) << endl;
+			}
+		}
+
 		// Contents in each bin
 		hData_unfolded->Scale( 1. / hData_unfolded->Integral() );
 
-		for( int i=1; i<=nbinsx_gen; i++ ) {
-		  for( int j=1; j<=nbinsy2D; j++ ) {
-			cout << "Bin (" << i << "," << j << "): " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
-			second_output_file << acceptanceName << " " << observablename << " bin" << i << "x" << j << ": " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
+		for( int j=1; j<=nbinsy2D; j++ ) {
+		  for( int i=1; i<=nbinsx_gen; i++ ) {
+			cout << "Bin (" << j << "," << i << "): " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
+			second_output_file << acceptanceName << " " << observablename << " bin" << j << "x" << i << ": " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
 		  }
 		}
 

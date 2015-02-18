@@ -330,12 +330,19 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
   const Int_t numbinsx = nbinsx;
   const Int_t numbinsy = nbinsy;
   const Int_t numbinsxy = numbinsx*numbinsy;
+  const Int_t nbins2 = numbinsx/2;
 
   double afb[numbinsy+1];
   double afberr[numbinsy+1];
 
+  double afbdoublediff[nbins2][numbinsy];
+  double afbdoubledifferr[nbins2][numbinsy];
+
   memset( afb, 0, sizeof(afb) );  //Initialize these arrays to zero
   memset( afberr, 0, sizeof(afberr) );
+
+  memset( afbdoubledifferr, 0, sizeof(afb) );  //Initialize these arrays to zero
+  memset( afbdoubledifferr, 0, sizeof(afberr) );
 
   double n[numbinsx][numbinsy];
   for(int i=0;i<numbinsx;i++){
@@ -349,6 +356,9 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
   for(int i=0;i<numbinsx;i++) if(i < numbinsx/2 ){ alpha[i] = -1;}else{ alpha[i] = 1;}
 
     //Components of the error calculation
+  double sum_n_doublediff[nbins2][numbinsy]; //= {0.};
+  double sum_alpha_n_doublediff[nbins2][numbinsy]; //= {0.};
+
   double sum_n[numbinsy]; //= {0.};
   double sum_alpha_n[numbinsy]; //= {0.};
   double sum_n_Inclusive = 0.;
@@ -363,6 +373,10 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
       sum_alpha_n[j] += alpha[i] * n[i][j];
       sum_n_Inclusive += n[i][j];
       sum_alpha_n_Inclusive += alpha[i] * n[i][j];
+      if(i<nbins2) {
+        sum_n_doublediff[i][j] = n[i][j] + n[numbinsx-1-i][j] ;
+        sum_alpha_n_doublediff[i][j] = alpha[i] * n[i][j] + alpha[numbinsx-1-i] * n[numbinsx-1-i][j] ;        
+      }
     }
   }
     //AFB = SUM( n[i][j]*alpha[i] ) / SUM( n[i][j] )
@@ -376,6 +390,17 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
     }
   }
 
+  double dfdn_doublediff[numbinsx][numbinsy];
+  for(int j=0;j<numbinsy;j++){
+    for(int i=0;i<numbinsx;i++){
+      int k = -999;
+      if (i < nbins2) k = i;
+      else k = numbinsx-1-i;
+      dfdn_doublediff[i][j] = ( alpha[i] * sum_n_doublediff[k][j] - sum_alpha_n_doublediff[k][j] ) / pow(sum_n_doublediff[k][j],2);
+    }
+  }
+
+
     //Error Calculation
   for(int i=0;i<numbinsxy;i++){
     for(int j=0;j<numbinsxy;j++){
@@ -386,6 +411,21 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
       //std::cout<<"i: "<<i<<" "<<i_2di<<" "<<i_2dj<<" j: "<<j<<" "<<j_2di<<" "<<j_2dj<<std::endl;
       afberr[0] += covarianceM(i,j) * dfdnInclusive[i_2di][i_2dj] * dfdnInclusive[j_2di][j_2dj];
       if(i_2dj==j_2dj) afberr[i_2dj+1] += covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj]; 
+    }
+  }
+
+  for(int k=0;k<nbins2;k++){
+    for(int i=0;i<numbinsxy;i++){
+      for(int j=0;j<numbinsxy;j++){
+        int i_2di = i % numbinsx;
+        int i_2dj = i / numbinsx;
+        int j_2di = j % numbinsx;
+        int j_2dj = j / numbinsx;
+
+        if( (i_2dj==j_2dj) &&  (i_2di==k || i_2di==numbinsx-1-k ) && (j_2di==k || j_2di==numbinsx-1-k ) ) {
+          afbdoubledifferr[k][i_2dj] += covarianceM(i,j) * dfdn_doublediff[i_2di][i_2dj] * dfdn_doublediff[j_2di][j_2dj];
+        }
+      }
     }
   }
 
@@ -403,6 +443,16 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
     // std::cout<<j<<" AFB = "<<afb[j]<<" +/- "<<afberr[j]<<std::endl;
     // second_output_file << acceptanceName << " " << observablename << " AFB" << j << ": " << afb[j] << " +/- " << afberr[j] << std::endl; 
 
+  }
+
+  for(int j=0;j<numbinsy;j++){
+    for(int k=0;k<nbins2;k++){
+      afbdoubledifferr[k][j] = sqrt(afbdoubledifferr[k][j]);
+      afbdoublediff[k][j] = sum_alpha_n_doublediff[k][j] / sum_n_doublediff[k][j];
+      //std::cout<<k<<" AFB = "<<afbdoubledifferr[k][j]<<" +/- "<<afbdoublediff[k][j]<<std::endl;
+      myerr.push_back(afbdoubledifferr[k][j]);
+      myafb.push_back(afbdoublediff[k][j]);
+    }
   }
 
 }
