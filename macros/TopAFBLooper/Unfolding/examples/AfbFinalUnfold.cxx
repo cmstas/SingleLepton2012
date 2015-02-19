@@ -752,10 +752,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
         cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
+        second_output_file << acceptanceName << " " << observablename << " Unfolded: " << Afb << " +/-  " << AfbErr << endl;
 
         GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
         cout << " Unfolded with smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
-        second_output_file << acceptanceName << " " << observablename << " Unfolded: " << Afb << " +/-  " << AfbErr << endl;
 
         GetAfb(denominatorM, Afb, AfbErr);
         cout << " True Top from acceptance denominator: " << Afb << " +/-  " << AfbErr << "\n";
