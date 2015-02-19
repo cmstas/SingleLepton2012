@@ -385,6 +385,13 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
     //dAFB/dn_ij = [ SUM( n[i][j] ) * alpha[i] -  SUM( n[i][j]*alpha[i] ) * ( 1 ) ]  / SUM( n[i][j] )^2
   double dfdn[numbinsx][numbinsy];
   double dfdnInclusive[numbinsx][numbinsy];
+  double dfdn_doublediff[numbinsx][numbinsy];
+
+  memset( dfdn, 0, sizeof(dfdn) );
+  memset( dfdnInclusive, 0, sizeof(dfdnInclusive) );
+  memset( dfdn_doublediff, 0, sizeof(dfdn_doublediff) );
+  
+
   for(int i=0;i<numbinsx;i++){
     for(int j=0;j<numbinsy;j++){
       dfdn[i][j] = ( alpha[i] * sum_n[j] - sum_alpha_n[j] ) / pow(sum_n[j],2);
@@ -392,7 +399,6 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
     }
   }
 
-  double dfdn_doublediff[numbinsx][numbinsy];
   for(int j=0;j<numbinsy;j++){
     for(int i=0;i<numbinsx;i++){
       int k = -999;
