@@ -390,7 +390,7 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
   memset( dfdn, 0, sizeof(dfdn) );
   memset( dfdnInclusive, 0, sizeof(dfdnInclusive) );
   memset( dfdn_doublediff, 0, sizeof(dfdn_doublediff) );
-  
+
 
   for(int i=0;i<numbinsx;i++){
     for(int j=0;j<numbinsy;j++){
@@ -573,6 +573,9 @@ void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, std::vector
   Double_t afbbin[nbins2];
   Double_t afberrbin[nbins2];
 
+  memset( afbbin, 0, sizeof(afbbin) );  //Initialize these arrays to zero
+  memset( afberrbin, 0, sizeof(afberrbin) );
+
   double n[16];
   for(int i=0;i<nbins;i++){
     n[i] = histogram->GetBinContent(i+1);
@@ -588,6 +591,8 @@ void GetCorrectedAfbBinByBin(TH1D* histogram, TMatrixD &covarianceM, std::vector
   double sum_n_total = 0.;
   double sum_alpha_n_total = 0.;
 
+  memset( sum_n, 0, sizeof(sum_n) );
+  memset( sum_alpha_n, 0, sizeof(sum_alpha_n) );
 
   for(int i=0;i<nbins2;i++){
     sum_n[i] = n[i] + n[nbins-1-i];
