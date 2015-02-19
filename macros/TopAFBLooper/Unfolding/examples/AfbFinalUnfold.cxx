@@ -286,6 +286,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				offset = double(channel) * recohist_width;
                 weight *= bkgSF[iBkg];
 
+			    if( observable > histmax )        observable = hiBinCenter;
+			    else if( observable < histmin )   observable = loBinCenter;
+			    if( observableMinus > histmax )        observableMinus = hiBinCenter;
+			    else if( observableMinus < histmin )   observableMinus = loBinCenter;
+
                 if ( iVar<2 || iVar==9 || tmass > 0 )
 				  {
 					// leptonic asymmetries don't need valid top mass solution
