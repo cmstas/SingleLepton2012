@@ -127,7 +127,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		//Do all our bin splitting
 		int nbinsx_gen = -99;
 		int nbinsx_reco = -99;
-		int nbinsx_reco_2ch = -99;
+		int nbinsx_reco_split_ch = -99;
 		int nbinsunwrapped_gen = -99;
 		int nbinsunwrapped_reco = -99;
 
@@ -136,15 +136,15 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		nbinsx_reco = nbinsx_gen*2;
 		//nbinsx_reco = nbinsx_gen;
-		nbinsx_reco_2ch = nbinsx_reco*nSig;
+		nbinsx_reco_split_ch = nbinsx_reco*nSig;
 
 		double* genbins;
 		double* recobins;
-		double* recobins_2ch;
+		double* recobins_split_ch;
 
 		genbins = new double[nbinsx_gen+1];
 		recobins = new double[nbinsx_reco+1];
-		recobins_2ch = new double[nbinsx_reco_2ch+1];
+		recobins_split_ch = new double[nbinsx_reco_split_ch+1];
 
 		//Make gen binning array
         if( iVar < 2 || iVar == 9 ) {
@@ -168,11 +168,11 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 		recobins[nbinsx_reco] = genbins[nbinsx_gen];
 
-		// Make reco binning array including the 2-channel split
+		// Make reco binning array including the channel split
 		double recohist_width = fabs(recobins[nbinsx_reco] - recobins[0]);
-		std::copy( recobins, recobins+nbinsx_reco+1, recobins_2ch );
-		for( int i=nbinsx_reco+1; i<nbinsx_reco_2ch+1; i++ ) {
-		  recobins_2ch[i] = recobins_2ch[i-nbinsx_reco] + recohist_width;
+		std::copy( recobins, recobins+nbinsx_reco+1, recobins_split_ch );
+		for( int i=nbinsx_reco+1; i<nbinsx_reco_split_ch+1; i++ ) {
+		  recobins_split_ch[i] = recobins_split_ch[i-nbinsx_reco] + recohist_width;
 		}
 
 		nbinsunwrapped_gen  = nbinsx_gen  * nbinsy2D;
@@ -182,12 +182,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		//Use 2D histograms to store the distributions
         TH2D *hData = new TH2D ("Data", "Data", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-        TH2D *hData_split = new TH2D ("Data_split", "Data_split", nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
+        TH2D *hData_split = new TH2D ("Data_split", "Data_split", nbinsx_reco_split_ch, recobins_split_ch, nbinsy2D, ybins2D);
         TH2D *hBkg = new TH2D ("Background",  "Background", nbinsx_reco, recobins, nbinsy2D, ybins2D);
-        TH2D *hBkg_split = new TH2D ("Background_split",  "Background_split", nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
+        TH2D *hBkg_split = new TH2D ("Background_split",  "Background_split", nbinsx_reco_split_ch, recobins_split_ch, nbinsy2D, ybins2D);
         TH2D *hData_unfolded = new TH2D ("Data_Unfold", "Data with background subtracted and unfolded", nbinsx_gen, genbins, nbinsy2D, ybins2D);
         TH2D *hTrue = new TH2D ("true", "Truth",    nbinsx_gen, genbins, nbinsy2D, ybins2D);
-        TH2D *hTrue_split = new TH2D ("true_split", "Truth",    nbinsx_reco_2ch, recobins_2ch, nbinsy2D, ybins2D);
+        TH2D *hTrue_split = new TH2D ("true_split", "Truth",    nbinsx_reco_split_ch, recobins_split_ch, nbinsy2D, ybins2D);
         TH2D *hMeas = new TH2D ("meas", "Measured", nbinsx_reco, recobins, nbinsy2D, ybins2D);
 		TH2D *hData_bkgSub_rewrapped = new TH2D ("bkgsub", "bkgsub", nbinsx_reco, recobins, nbinsy2D, ybins2D);
 		TH2D *hPurity = new TH2D("purity", "Purity", nbinsx_gen, genbins, nbinsy2D, ybins2D);
@@ -246,7 +246,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		delete[] genbins;
 		delete[] recobins;
-		delete[] recobins_2ch;
+		delete[] recobins_split_ch;
 
 		///// Load data from data chain, and fill hData //////////
         ch_data->SetBranchAddress(observablename,    &observable);
