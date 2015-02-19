@@ -341,7 +341,7 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
   memset( afb, 0, sizeof(afb) );  //Initialize these arrays to zero
   memset( afberr, 0, sizeof(afberr) );
 
-  memset( afbdoubledifferr, 0, sizeof(afb) );  //Initialize these arrays to zero
+  memset( afbdoublediff, 0, sizeof(afb) );  //Initialize these arrays to zero
   memset( afbdoubledifferr, 0, sizeof(afberr) );
 
   double n[numbinsx][numbinsy];
@@ -366,6 +366,8 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
 
   memset( sum_n, 0, sizeof(sum_n) );
   memset( sum_alpha_n, 0, sizeof(sum_alpha_n) );
+  memset( sum_n_doublediff, 0, sizeof(sum_n_doublediff) );
+  memset( sum_alpha_n_doublediff, 0, sizeof(sum_alpha_n_doublediff) );
 
   for(int i=0;i<numbinsx;i++){
     for(int j=0;j<numbinsy;j++){
@@ -411,6 +413,7 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
       //std::cout<<"i: "<<i<<" "<<i_2di<<" "<<i_2dj<<" j: "<<j<<" "<<j_2di<<" "<<j_2dj<<std::endl;
       afberr[0] += covarianceM(i,j) * dfdnInclusive[i_2di][i_2dj] * dfdnInclusive[j_2di][j_2dj];
       if(i_2dj==j_2dj) afberr[i_2dj+1] += covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj]; 
+      //if(i_2dj==j_2dj) cout<<"bin: "<<i_2dj<<": "<<covarianceM(i,j) <<" "<< dfdn[i_2di][i_2dj] <<" "<< dfdn[j_2di][j_2dj]<<" "<<covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj]<<" "<<afberr[i_2dj+1]<<endl;
     }
   }
 
@@ -424,6 +427,7 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
 
         if( (i_2dj==j_2dj) &&  (i_2di==k || i_2di==numbinsx-1-k ) && (j_2di==k || j_2di==numbinsx-1-k ) ) {
           afbdoubledifferr[k][i_2dj] += covarianceM(i,j) * dfdn_doublediff[i_2di][i_2dj] * dfdn_doublediff[j_2di][j_2dj];
+          //cout<<"DDbin: "<<i_2dj<<"x"<<k<<": "<<covarianceM(i,j) <<" "<< dfdn_doublediff[i_2di][i_2dj] <<" "<< dfdn_doublediff[j_2di][j_2dj]<<" "<<covarianceM(i,j) * dfdn_doublediff[i_2di][i_2dj] * dfdn_doublediff[j_2di][j_2dj]<<" "<<afbdoubledifferr[k][i_2dj]<<endl;
         }
       }
     }
