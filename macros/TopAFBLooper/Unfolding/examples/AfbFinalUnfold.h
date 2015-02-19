@@ -341,8 +341,8 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
   memset( afb, 0, sizeof(afb) );  //Initialize these arrays to zero
   memset( afberr, 0, sizeof(afberr) );
 
-  memset( afbdoublediff, 0, sizeof(afb) );  //Initialize these arrays to zero
-  memset( afbdoubledifferr, 0, sizeof(afberr) );
+  memset( afbdoublediff, 0, sizeof(afbdoublediff) );  //Initialize these arrays to zero
+  memset( afbdoubledifferr, 0, sizeof(afbdoubledifferr) );
 
   double n[numbinsx][numbinsy];
   for(int i=0;i<numbinsx;i++){
