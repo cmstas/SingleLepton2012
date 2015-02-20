@@ -656,11 +656,15 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             if( scaleJESMETDown ) {
                 t1metphicorr = stopt.t1metphicorrdn();
                 t1metphicorrphi = stopt.t1metphicorrphidn();
+                met_x = t1metphicorr * cos(t1metphicorrphi);
+                met_y = t1metphicorr * sin(t1metphicorrphi);
             }
 
             if( scaleJESMETUp ) {
                 t1metphicorr = stopt.t1metphicorrup();
                 t1metphicorrphi = stopt.t1metphicorrphiup();
+                met_x = t1metphicorr * cos(t1metphicorrphi);
+                met_y = t1metphicorr * sin(t1metphicorrphi);
             }
 
             //if <2 btagged jets, take the highest pT light jets as b candidates
