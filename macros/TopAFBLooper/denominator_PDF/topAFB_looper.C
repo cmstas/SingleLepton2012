@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <map>
 
-
+#include "LHAPDF/LHAPDF.h"
 #include "TPython.h"
 // ROOT includes
 #include "TSystem.h"
@@ -25,7 +25,6 @@
 // TAS includes
 #include "../../../CORE/CMS2.h"
 #include "../../../CORE/mcSelections.h"
-//#include "../CORE/utilities.cc"
 #include "./topAFB_looper.h"
 #include "Histograms.cc"
 
@@ -187,6 +186,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
     bool isData = false;
     bool applyNoCuts = true;
 
+    LHAPDF::initPDFSetM(1,"../pdfs/cteq6mE.LHgrid");
+    LHAPDF::initPDFM(1, 0);
+    LHAPDF::initPDFSetM(2,"../pdfs/cteq6mE.LHgrid");
+
     //--------------------------
     // File and Event Loop
     //---------------------------
@@ -330,11 +333,10 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
             nwzpartons_  = -9;
             maxpartonpt_ = -1;
 
-
             int myType = 2;
-            unsigned int jetBin = 2;
             int ndavtx = 0;
             double weight = 1.0;
+            double weights[41];
             float lepPlus_costheta_cms , lep_azimuthal_asymmetry , lep_azimuthal_asymmetry_2 , lep_charge_asymmetry , lep_pseudorap_diff , top_costheta_cms;
             float lepMinus_costheta_cms;
             float top_pseudorapiditydiff_cms , top_rapiditydiff_Marco , top_rapiditydiff_cms , top_spin_correlation , ttRapidity , ttRapidity2, tt_mass , tt_mass_nojetsmear , tt_pT;
@@ -523,8 +525,8 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
                     //double weight_lepPlus = 1.+cosTheta_lepPlus_status1/3.;  //approximation: cosTheta dependence varies with x
                     double weight_lepPlus = 1. + cosTheta_lepPlus_status1 * ( 1. - 2.*EoverEmax_lepPlus ) / ( 2.*EoverEmax_lepPlus - 3. );
                     //cout<<"P "<<(weighttaudecay?weight_lepPlus:1.)<<endl;
-                    if (fillEvent) fillHistos( hlepPlusCosThetaTau_gen,  cosTheta_lepPlus_status1, weighttaudecay ? weight_lepPlus : 1., myType, jetBin);
-                    if (fillEvent) fillHistos( hlepPlusxTau_gen,  EoverEmax_lepPlus, weighttaudecay ? weight_lepPlus : 1., myType, jetBin);
+                    if (fillEvent) fillHistos( hlepPlusCosThetaTau_gen,  cosTheta_lepPlus_status1, weighttaudecay ? weight_lepPlus : 1., myType, 0);
+                    if (fillEvent) fillHistos( hlepPlusxTau_gen,  EoverEmax_lepPlus, weighttaudecay ? weight_lepPlus : 1., myType, 0);
                     weight_taudecay *= weight_lepPlus;
                 }
                 if (lepMinusIsTau)
@@ -537,53 +539,13 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
                     //double weight_lepMinus = 1.+cosTheta_lepMinus_status1/3.;  //approximation: cosTheta dependence varies with x
                     double weight_lepMinus = 1. + cosTheta_lepMinus_status1 * ( 1. - 2.*EoverEmax_lepMinus ) / ( 2.*EoverEmax_lepMinus - 3. );
                     //cout<<"M "<<(weighttaudecay?weight_lepMinus:1.)<<endl;
-                    if (fillEvent) fillHistos( hlepMinusCosThetaTau_gen,  cosTheta_lepMinus_status1, weighttaudecay ? weight_lepMinus : 1., myType, jetBin);
-                    if (fillEvent) fillHistos( hlepMinusxTau_gen,  EoverEmax_lepMinus, weighttaudecay ? weight_lepMinus : 1., myType, jetBin);
+                    if (fillEvent) fillHistos( hlepMinusCosThetaTau_gen,  cosTheta_lepMinus_status1, weighttaudecay ? weight_lepMinus : 1., myType, 0);
+                    if (fillEvent) fillHistos( hlepMinusxTau_gen,  EoverEmax_lepMinus, weighttaudecay ? weight_lepMinus : 1., myType, 0);
                     weight_taudecay *= weight_lepMinus;
                 }
 
             } //ntaus>0
             //cout<<weight_taudecay<<endl;
-
-            /*
-            // Caculate PDF Systematics
-            double pdf_weight = 1.0;
-            if (applyPDFWeight && prefix == "ttdil"  ){
-
-                for (unsigned int subset = 0; subset < nsets; subset++)
-                {
-
-                  // std::cout << "doing set, subset: " << set_ << ", " << subset << std::endl;
-                  LHAPDF::initPDFM(2,0);
-
-                  float   x1          = 0.0;      // momentum fraction for parton1
-                  float   x2          = 0.0;
-                  int     id1         = 0;        // pdgid of parton1
-                  int     id2         = 0;
-                  float   Q           = 0.0;      // event momentum scale
-                  x1          = cms2.pdfinfo_x1();
-                  x2          = cms2.pdfinfo_x2();
-                  id1         = cms2.pdfinfo_id1();
-                  id2         = cms2.pdfinfo_id2();
-                  Q           = cms2.pdfinfo_scale();
-                  // generated pdf values
-                  double fx1Q0gen = LHAPDF::xfxM(genset_, x1, Q, id1) / x1;
-                  double fx2Q0gen = LHAPDF::xfxM(genset_, x2, Q, id2) / x2;
-                  // subset pdf values
-                  double fx1Qi = LHAPDF::xfxM(set_, x1, Q, id1) / x1;
-                  double fx2Qi = LHAPDF::xfxM(set_, x2, Q, id2) / x2;
-                  // calculate weight and fill histogram
-                  pdf_weight = ((fx1Qi*fx2Qi)/(fx1Q0gen*fx2Q0gen));
-                  //cout << fx1Qi <<endl;
-                  // cout << fx1Q0gen <<endl;
-                  // cout << pdf_weight <<endl;
-
-
-                }// end of loop over subset of PDFs
-            }
-            */
-
-
 
             if (!isData) weight = evt_scale1fb() * lumi;
             //negative weights for MC@NLO
@@ -904,9 +866,7 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
 
                     if ( ntops != 2 ) { cout<<"*** skipping event with ntops = "<<ntops<<" ***"<<endl; continue; } //only events with 2 tops count as ttdl
 
-                    if(ismcatnlo && filename.Contains("noCorr")) ismcatnlo = false; //hack to skip the status=2 W boosting for the uncorrelated mc@nlo (apparently there the leptons already match the status=2 W)
                     fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
-                    if(filename.Contains("noCorr")) ismcatnlo = true;
 
                     if ( lepPlus_status1_id_ == -11 && lepMinus_status1_id_ == 11 ) myType = 0;
                     else if ( lepPlus_status1_id_ == -13 && lepMinus_status1_id_ == 11 ) myType = 2;
@@ -954,85 +914,134 @@ void topAFB_looper::ScanChain(TChain *chain, vector<TString> v_Cuts, string pref
                     lep_cos_opening_angle_gen = lep_cos_opening_angle_gen_;
 
 
-                    fillHistos( htopMass_plus_gen, m_topplus_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( htopMass_minus_gen, m_topminus_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( httMass_gen, tt_mass_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( httpT_gen, tt_pT_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( hlepChargeAsym_gen, lep_charge_asymmetry_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( hlepAzimAsym_gen, lep_azimuthal_asymmetry_gen ,  weight, myType, jetBin, Nsolns);
-                    fillHistos( hlepAzimAsym2_gen, lep_azimuthal_asymmetry2_gen ,  weight, myType, jetBin, Nsolns);
-                    if (m_top > 0 || applyNoCuts)
-                    {
-                        fillHistos( htopSpinCorr_gen, top_spin_correlation_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosOpeningAngle_gen, lep_cos_opening_angle_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( htopCosTheta_gen, top_costheta_cms_gen   ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_gen, lepPlus_costheta_cms_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_gen, lepMinus_costheta_cms_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepPlusCosTheta_gen, lepPlus_costheta_cms_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepMinusCosTheta_gen, lepMinus_costheta_cms_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hpseudorapiditydiff_gen, top_pseudorapiditydiff_cms_gen ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiff_gen, top_rapiditydiff_cms_gen ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiffMarco_gen, top_rapiditydiff_Marco_gen ,  weight, myType, jetBin, Nsolns);
+                    // Calculate PDF weights
+                    if ( prefix == "ttdil"  ){
+
+
+                          float   x1          = 0.0;      // momentum fraction for parton1
+                          float   x2          = 0.0;
+                          int     id1         = 0;        // pdgid of parton1
+                          int     id2         = 0;
+                          float   Q           = 0.0;      // event momentum scale
+                          x1          = cms2.pdfinfo_x1();
+                          x2          = cms2.pdfinfo_x2();
+                          id1         = cms2.pdfinfo_id1();
+                          id2         = cms2.pdfinfo_id2();
+                          Q           = cms2.pdfinfo_scale();
+
+                        for (unsigned int subset = 0; subset < 41; subset++)
+                        {
+
+                          // std::cout << "doing set, subset: " << set_ << ", " << subset << std::endl;
+                          //LHAPDF::initPDFM(2,0);
+
+                          LHAPDF::initPDFM(2, subset);
+
+                          // generated pdf values
+                          double fx1Q0gen = LHAPDF::xfxM(1, x1, Q, id1) / x1;
+                          double fx2Q0gen = LHAPDF::xfxM(1, x2, Q, id2) / x2;
+                          // subset pdf values
+                          double fx1Qi = LHAPDF::xfxM(2, x1, Q, id1) / x1;
+                          double fx2Qi = LHAPDF::xfxM(2, x2, Q, id2) / x2;
+                          // calculate weight and fill histogram
+                          weights[subset] = ((fx1Qi*fx2Qi)/(fx1Q0gen*fx2Q0gen));
+                          //cout<<subset<<" "<<weights[subset]<<endl;
+                          weights[subset] *= weight;
+                          //cout << fx1Qi <<endl;
+                          // cout << fx1Q0gen <<endl;
+                          // cout << pdf_weight <<endl;
+
+
+                        }// end of loop over subset of PDFs
                     }
 
 
-                    if (m_top > 0 || applyNoCuts)
-                    {
-                        //2D unfolding requires ttbar solution even for the purely leptonic variables
-                        fillHistos( hlepChargeAsym_gen2d, lep_charge_asymmetry_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym_gen2d, lep_azimuthal_asymmetry_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym2_gen2d, lep_azimuthal_asymmetry2_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( htopSpinCorr_gen2d, top_spin_correlation_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosOpeningAngle_gen2d, lep_cos_opening_angle_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( htopCosTheta_gen2d, top_costheta_cms_gen   ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_gen2d, lepPlus_costheta_cms_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_gen2d, lepMinus_costheta_cms_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepPlusCosTheta_gen2d, lepPlus_costheta_cms_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepMinusCosTheta_gen2d, lepMinus_costheta_cms_gen  ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hpseudorapiditydiff_gen2d, top_pseudorapiditydiff_cms_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiff_gen2d, top_rapiditydiff_cms_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiffMarco_gen2d, top_rapiditydiff_Marco_gen ,  tt_mass_gen, weight, myType, jetBin, Nsolns);
 
-                        fillHistos( hlepChargeAsym_ttpT_gen2d, lep_charge_asymmetry_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym_ttpT_gen2d, lep_azimuthal_asymmetry_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym2_ttpT_gen2d, lep_azimuthal_asymmetry2_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( htopSpinCorr_ttpT_gen2d, top_spin_correlation_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosOpeningAngle_ttpT_gen2d, lep_cos_opening_angle_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( htopCosTheta_ttpT_gen2d, top_costheta_cms_gen   ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_ttpT_gen2d, lepPlus_costheta_cms_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_ttpT_gen2d, lepMinus_costheta_cms_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepPlusCosTheta_ttpT_gen2d, lepPlus_costheta_cms_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepMinusCosTheta_ttpT_gen2d, lepMinus_costheta_cms_gen  ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hpseudorapiditydiff_ttpT_gen2d, top_pseudorapiditydiff_cms_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiff_ttpT_gen2d, top_rapiditydiff_cms_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiffMarco_ttpT_gen2d, top_rapiditydiff_Marco_gen ,  tt_pT_gen, weight, myType, jetBin, Nsolns);
+                    for (unsigned int PDFset = 0; PDFset < 41; PDFset++)
+                    {
 
-                        fillHistos( hlepChargeAsym_ttRapidity2_gen2d, lep_charge_asymmetry_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym_ttRapidity2_gen2d, lep_azimuthal_asymmetry_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepAzimAsym2_ttRapidity2_gen2d, lep_azimuthal_asymmetry2_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( htopSpinCorr_ttRapidity2_gen2d, top_spin_correlation_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosOpeningAngle_ttRapidity2_gen2d, lep_cos_opening_angle_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( htopCosTheta_ttRapidity2_gen2d, top_costheta_cms_gen   ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_ttRapidity2_gen2d, lepPlus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepCosTheta_ttRapidity2_gen2d, lepMinus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepPlusCosTheta_ttRapidity2_gen2d, lepPlus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hlepMinusCosTheta_ttRapidity2_gen2d, lepMinus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hpseudorapiditydiff_ttRapidity2_gen2d, top_pseudorapiditydiff_cms_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiff_ttRapidity2_gen2d, top_rapiditydiff_cms_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
-                        fillHistos( hrapiditydiffMarco_ttRapidity2_gen2d, top_rapiditydiff_Marco_gen ,  abs(ttRapidity2_gen), weight, myType, jetBin, Nsolns);
+                        fillHistos( htopMass_plus_gen, m_topplus_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        fillHistos( htopMass_minus_gen, m_topminus_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        fillHistos( httMass_gen, tt_mass_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        fillHistos( httpT_gen, tt_pT_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+
+                        fillHistos( hlepChargeAsym_gen, lep_charge_asymmetry_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        fillHistos( hlepAzimAsym_gen, lep_azimuthal_asymmetry_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        fillHistos( hlepAzimAsym2_gen, lep_azimuthal_asymmetry2_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        if (m_top > 0 || applyNoCuts)
+                        {
+                            fillHistos( htopSpinCorr_gen, top_spin_correlation_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosOpeningAngle_gen, lep_cos_opening_angle_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopCosTheta_gen, top_costheta_cms_gen   ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_gen, lepPlus_costheta_cms_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_gen, lepMinus_costheta_cms_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepPlusCosTheta_gen, lepPlus_costheta_cms_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepMinusCosTheta_gen, lepMinus_costheta_cms_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hpseudorapiditydiff_gen, top_pseudorapiditydiff_cms_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiff_gen, top_rapiditydiff_cms_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiffMarco_gen, top_rapiditydiff_Marco_gen ,  weights[PDFset], myType, PDFset, Nsolns);
+                        }
+
+
+                        if (m_top > 0 || applyNoCuts)
+                        {
+                            //2D unfolding requires ttbar solution even for the purely leptonic variables
+                            fillHistos( hlepChargeAsym_gen2d, lep_charge_asymmetry_gen ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepAzimAsym_gen2d, lep_azimuthal_asymmetry_gen ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepAzimAsym2_gen2d, lep_azimuthal_asymmetry2_gen ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopSpinCorr_gen2d, top_spin_correlation_gen  ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosOpeningAngle_gen2d, lep_cos_opening_angle_gen  ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopCosTheta_gen2d, top_costheta_cms_gen   ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_gen2d, lepPlus_costheta_cms_gen  ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_gen2d, lepMinus_costheta_cms_gen  ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepPlusCosTheta_gen2d, lepPlus_costheta_cms_gen  ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepMinusCosTheta_gen2d, lepMinus_costheta_cms_gen  ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hpseudorapiditydiff_gen2d, top_pseudorapiditydiff_cms_gen ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiff_gen2d, top_rapiditydiff_cms_gen ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiffMarco_gen2d, top_rapiditydiff_Marco_gen ,  tt_mass_gen, weights[PDFset], myType, PDFset, Nsolns);
+
+                            fillHistos( hlepChargeAsym_ttpT_gen2d, lep_charge_asymmetry_gen ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepAzimAsym_ttpT_gen2d, lep_azimuthal_asymmetry_gen ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepAzimAsym2_ttpT_gen2d, lep_azimuthal_asymmetry2_gen ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopSpinCorr_ttpT_gen2d, top_spin_correlation_gen  ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosOpeningAngle_ttpT_gen2d, lep_cos_opening_angle_gen  ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopCosTheta_ttpT_gen2d, top_costheta_cms_gen   ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_ttpT_gen2d, lepPlus_costheta_cms_gen  ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_ttpT_gen2d, lepMinus_costheta_cms_gen  ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepPlusCosTheta_ttpT_gen2d, lepPlus_costheta_cms_gen  ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepMinusCosTheta_ttpT_gen2d, lepMinus_costheta_cms_gen  ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hpseudorapiditydiff_ttpT_gen2d, top_pseudorapiditydiff_cms_gen ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiff_ttpT_gen2d, top_rapiditydiff_cms_gen ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiffMarco_ttpT_gen2d, top_rapiditydiff_Marco_gen ,  tt_pT_gen, weights[PDFset], myType, PDFset, Nsolns);
+
+                            fillHistos( hlepChargeAsym_ttRapidity2_gen2d, lep_charge_asymmetry_gen ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepAzimAsym_ttRapidity2_gen2d, lep_azimuthal_asymmetry_gen ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepAzimAsym2_ttRapidity2_gen2d, lep_azimuthal_asymmetry2_gen ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopSpinCorr_ttRapidity2_gen2d, top_spin_correlation_gen  ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosOpeningAngle_ttRapidity2_gen2d, lep_cos_opening_angle_gen  ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( htopCosTheta_ttRapidity2_gen2d, top_costheta_cms_gen   ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_ttRapidity2_gen2d, lepPlus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepCosTheta_ttRapidity2_gen2d, lepMinus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepPlusCosTheta_ttRapidity2_gen2d, lepPlus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hlepMinusCosTheta_ttRapidity2_gen2d, lepMinus_costheta_cms_gen  ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hpseudorapiditydiff_ttRapidity2_gen2d, top_pseudorapiditydiff_cms_gen ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiff_ttRapidity2_gen2d, top_rapiditydiff_cms_gen ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( hrapiditydiffMarco_ttRapidity2_gen2d, top_rapiditydiff_Marco_gen ,  abs(ttRapidity2_gen), weights[PDFset], myType, PDFset, Nsolns);
+                        }
+                        /*
+                        if (from_gluon == true)
+                        {
+                            fillHistos( httMassGluongenp, tt_mass_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( httRapidityGluongenp, ttRapidity_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                        }
+                        else
+                        {
+                            fillHistos( httMassQuarkgenp, tt_mass_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                            fillHistos( httRapidityQuarkgenp, ttRapidity_gen  ,  weights[PDFset], myType, PDFset, Nsolns);
+                        }
+                        */
+
                     }
-                    /*
-                    if (from_gluon == true)
-                    {
-                        fillHistos( httMassGluongenp, tt_mass_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( httRapidityGluongenp, ttRapidity_gen  ,  weight, myType, jetBin, Nsolns);
-                    }
-                    else
-                    {
-                        fillHistos( httMassQuarkgenp, tt_mass_gen  ,  weight, myType, jetBin, Nsolns);
-                        fillHistos( httRapidityQuarkgenp, ttRapidity_gen  ,  weight, myType, jetBin, Nsolns);
-                    }
-                    */
 
                 }//only for mc
 
@@ -1121,32 +1130,26 @@ void topAFB_looper::fillOverFlow(TH2D *h2, float xvalue, float yvalue, float wei
 
 //--------------------------------------------------------------------
 
-void topAFB_looper::fillHistos(TH1D *h1[4][4], float value, double weight, int myType, int nJetsIdx, int Nsolns)
+void topAFB_looper::fillHistos(TH1D *h1[4][41], float value, double weight, int myType, int PDFset, int Nsolns)
 {
-    //fillUnderOverFlow(h1[myType][nJetsIdx], value, weight, Nsolns);
-    fillUnderOverFlow(h1[myType][3],        value, weight, Nsolns);
-    //fillUnderOverFlow(h1[3][nJetsIdx],      value, weight, Nsolns);
-    fillUnderOverFlow(h1[3][3],             value, weight, Nsolns);
+    fillUnderOverFlow(h1[myType][PDFset], value, weight, Nsolns);
+    fillUnderOverFlow(h1[3][PDFset],      value, weight, Nsolns);
 }
 
 //--------------------------------------------------------------------
 
-void topAFB_looper::fillHistos(TH2D *h2[4][4], float xvalue, float yvalue, double weight, int myType, int nJetsIdx, int Nsolns)
+void topAFB_looper::fillHistos(TH2D *h2[4][41], float xvalue, float yvalue, double weight, int myType, int PDFset, int Nsolns)
 {
-    //fillUnderOverFlow(h2[myType][nJetsIdx], xvalue, yvalue, weight, Nsolns);
-    fillUnderOverFlow(h2[myType][3],        xvalue, yvalue, weight, Nsolns);
-    //fillUnderOverFlow(h2[3][nJetsIdx],      xvalue, yvalue, weight, Nsolns);
-    fillUnderOverFlow(h2[3][3],             xvalue, yvalue, weight, Nsolns);
+    fillUnderOverFlow(h2[myType][PDFset], xvalue, yvalue, weight, Nsolns);
+    fillUnderOverFlow(h2[3][PDFset],      xvalue, yvalue, weight, Nsolns);
 }
 
 //--------------------------------------------------------------------
 
-void topAFB_looper::fillHistos(TProfile *h2[4][4], float xvalue, float yvalue, int myType, int nJetsIdx)
+void topAFB_looper::fillHistos(TProfile *h2[4][41], float xvalue, float yvalue, int myType, int PDFset)
 {
-    //h2[myType][nJetsIdx] -> Fill(xvalue, yvalue);
-    h2[myType][3]        -> Fill(xvalue, yvalue);
-    //h2[3][nJetsIdx]      -> Fill(xvalue, yvalue);
-    h2[3][3]             -> Fill(xvalue, yvalue);
+    h2[myType][PDFset] -> Fill(xvalue, yvalue);
+    h2[3][PDFset]      -> Fill(xvalue, yvalue);
 }
 
 
@@ -1353,7 +1356,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops
         {
             DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
             if ( is_duplicate_stat1(ident) ) {b_dup_stat1++; continue;}
-            if ( is_duplicate_stat1_b(ident) && ismcatnlo ) {cout<<"***********this should be impossible************"<<endl;}
+            if ( is_duplicate_stat1_b(ident) ) {cout<<"***********this should be impossible************"<<endl;}
             //b_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vb_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
         }
@@ -1403,7 +1406,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops
       {
           DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(ident) ) {t_dup_stat1++; continue;}
-          if ( is_duplicate_stat1_t(ident) && ismcatnlo ) {cout<<"***********this should be impossible************"<<endl;}
+          if ( is_duplicate_stat1_t(ident) ) {cout<<"***********this should be impossible************"<<endl;}
           //t_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vt_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
       }
@@ -1611,7 +1614,7 @@ void topAFB_looper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int ntops
     if( !( pid==1 || pid==2 || pid==3 || pid==4 || pid==5 || pid==6 || pid == 21 ) ) continue;
 
     // save status 3 quarks/gluons
-    genqgs_.push_back(genps_p4().at(igen));
+    //genqgs_.push_back(genps_p4().at(igen)); //for some reason this started crashing
 
     // require mother is not a top or W
     if( mothid == 6 || mothid == 24) continue;

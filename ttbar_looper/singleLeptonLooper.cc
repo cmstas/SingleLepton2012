@@ -1665,7 +1665,9 @@ int singleLeptonLooper::ScanChain(TChain* chain, const TString& prefix, float kF
 
   //if( !(nleps == 2 && ntops == 2) ) continue;  //temporary to avoid huge babies including ttsl
 
+  if(ismcatnlo && prefix.Contains("noCorr")) ismcatnlo = false; //hack to skip the status=2 W boosting for the uncorrelated mc@nlo (apparently there the leptons already match the status=2 W)
   fillgenlevel(ismcatnlo, nleps, ntaus, ntops);
+  if(prefix.Contains("noCorr")) ismcatnlo = true;
   
 	// if( npartons_ > 0 ){
 	//   cout << endl << endl;
@@ -5179,7 +5181,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int 
         {
             DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
             if ( is_duplicate_stat1(ident) ) {b_dup_stat1++; continue;}
-            if ( is_duplicate_stat1_b(ident) ) {cout<<"***********this should be impossible************"<<endl;}
+            if ( is_duplicate_stat1_b(ident) && ismcatnlo ) {cout<<"***********this should be impossible************"<<endl;}
             //b_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
             vb_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
         }
@@ -5229,7 +5231,7 @@ void singleLeptonLooper::fillgenlevel(bool ismcatnlo, int nleps, int ntaus, int 
       {
           DorkyStatus1Identifier ident = { cms2.genps_lepdaughter_id()[igen][kk], cms2.genps_lepdaughter_p4()[igen][kk].Px(), cms2.genps_lepdaughter_p4()[igen][kk].Py(), cms2.genps_lepdaughter_p4()[igen][kk].Pz(), cms2.genps_lepdaughter_p4()[igen][kk].E() };
           if ( is_duplicate_stat1(ident) ) {t_dup_stat1++; continue;}
-          if ( is_duplicate_stat1_t(ident) ) {cout<<"***********this should be impossible************"<<endl;}
+          if ( is_duplicate_stat1_t(ident) && ismcatnlo ) {cout<<"***********this should be impossible************"<<endl;}
           //t_daughters.push_back(cms2.genps_lepdaughter_p4()[igen][kk]);
           vt_stat1 += cms2.genps_lepdaughter_p4()[igen][kk];
       }

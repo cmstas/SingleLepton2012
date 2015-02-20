@@ -81,6 +81,22 @@ void doAll(bool skipFWLite = true)
   float ktW       = 1.;
   float kttV      = 1.;
 
+  // scale_1fb for ntuples with weights = 1
+  float s_mcatnlo = 234000.*274.00756/211.1/32852589.;  //274.00756/211.1 is the ratio of the the per-event xsec and the PREP xsec and accounts for the events with negative weights
+  float s_TT_FullLept_mass169_5_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3110611.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_FullLept_mass175_5_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3217835.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_FullLept_scaledown_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3138155.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_FullLept_scaleup_8TeV_mcatnlo = (24560./0.945)*274.00756/211.1/3128986.;  //divide by the mgcorr factor 0.945 because it is automatically multiplied in the looper
+  float s_TT_noCorr_8TeV_mcatnlo = 234000.*274.00756/211.1/24766326.;
+  float s_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola = 234000./971034.;
+  float s_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola = 234000./985684.;
+  float s_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola = 234000./992939.;
+  float s_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola = 234000./993386.;
+  float s_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola = 234000./996380.;
+  float s_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola = 234000./956164.;
+
+
+
   // prescales
   int preqcd      = 1;
   int prettall    = 1;
@@ -129,6 +145,24 @@ void doAll(bool skipFWLite = true)
   bool runtt_mcatnlo = 1;
   bool runtt_powheg  = 0;
   bool runtt_notauola  = 0;
+
+  //systematics and new physics
+
+  bool run_TT_FullLept_mass169_5_8TeV_mcatnlo = 0;
+  bool run_TT_FullLept_mass175_5_8TeV_mcatnlo = 0;
+  bool run_TT_FullLept_scaledown_8TeV_mcatnlo = 0;
+  bool run_TT_FullLept_scaleup_8TeV_mcatnlo = 0;
+  bool run_TT_noCorr_8TeV_mcatnlo = 0;
+  bool run_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola = 0;
+  bool run_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola = 0;
+  bool run_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola = 0;
+  bool run_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola = 0;
+  bool run_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola = 0;
+  bool run_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola = 0;
+
+
+
+
 
   if( useMCSkims )  cout << "Using MC skims" << endl;
   else              cout << "Using full MC samples" << endl;
@@ -292,7 +326,8 @@ void doAll(bool skipFWLite = true)
 
   TChain* chtt_powheg = new TChain("Events");
   if (runtt_powheg) {
-    pickSkimIfExists(chtt_powheg,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing_TT_powheg_SC/preprocessing/ntuple*.root");
+    //pickSkimIfExists(chtt_powheg,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postprocessing_TT_powheg_SC/preprocessing/ntuple*.root");
+    pickSkimIfExists(chtt_powheg,"/hadoop/cms/store/group/snt/papers2012/Summer12_53X_MC/TT_CT10_TuneZ2star_8TeV-powheg-tauola_Summer12_DR53X-PU_S10_START53_V7A-v2/V05-03-25/merged_ntuple*.root");
   }
   TChain* chtt_notauola = new TChain("Events");
   if (runtt_notauola) {
@@ -301,6 +336,57 @@ void doAll(bool skipFWLite = true)
 
     pickSkimIfExists(chtt_notauola,"/nfs-4/userdata/cms2/TTTo2L2Nu2B_7TeV-powheg-pythia6_Summer11-PU_S4_START42_V11-v1/V04-02-29/merged*root");
   }
+
+//systematics and new physics samples
+
+
+  TChain* ch_TT_FullLept_mass169_5_8TeV_mcatnlo = new TChain("Events");
+  if(run_TT_FullLept_mass169_5_8TeV_mcatnlo) {
+    pickSkimIfExists(ch_TT_FullLept_mass169_5_8TeV_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_TT_FullLept_mass169_5_8TeV-mcatnlo/preprocessing/ntuple*.root");
+  }
+  TChain* ch_TT_FullLept_mass175_5_8TeV_mcatnlo = new TChain("Events");
+  if(run_TT_FullLept_mass175_5_8TeV_mcatnlo) {
+    pickSkimIfExists(ch_TT_FullLept_mass175_5_8TeV_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_TT_FullLept_mass175_5_8TeV-mcatnlo/preprocessing/ntuple*.root");
+  }
+  TChain* ch_TT_FullLept_scaledown_8TeV_mcatnlo = new TChain("Events");
+  if(run_TT_FullLept_scaledown_8TeV_mcatnlo) {
+    pickSkimIfExists(ch_TT_FullLept_scaledown_8TeV_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_TT_FullLept_scaledown_8TeV-mcatnlo/preprocessing/ntuple*.root");
+  }
+  TChain* ch_TT_FullLept_scaleup_8TeV_mcatnlo = new TChain("Events");
+  if(run_TT_FullLept_scaleup_8TeV_mcatnlo) {
+    pickSkimIfExists(ch_TT_FullLept_scaleup_8TeV_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_TT_FullLept_scaleup_8TeV-mcatnlo/preprocessing/ntuple*.root");
+  }
+  TChain* ch_TT_noCorr_8TeV_mcatnlo = new TChain("Events");
+  if(run_TT_noCorr_8TeV_mcatnlo) {
+    pickSkimIfExists(ch_TT_noCorr_8TeV_mcatnlo,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_TT_noCorr_8TeV-mcatnlo/preprocessing/ntuple*.root");
+  }
+  TChain* ch_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola = new TChain("Events");
+  if(run_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola) {
+    pickSkimIfExists(ch_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_HeavyGluonToTT_axial_M-2000_TuneZ2star_8TeV-madgraph-tauola/preprocessing/ntuple*.root");
+  }
+  TChain* ch_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola = new TChain("Events");
+  if(run_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola) {
+    pickSkimIfExists(ch_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_HeavyGluonToTT_axial_M-200_TuneZ2star_8TeV-madgraph-tauola/preprocessing/ntuple*.root");
+  }
+  TChain* ch_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola = new TChain("Events");
+  if(run_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola) {
+    pickSkimIfExists(ch_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_HeavyGluonToTT_left_M-200_TuneZ2star_8TeV-madgraph-tauola/preprocessing/ntuple*.root");
+  }
+  TChain* ch_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola = new TChain("Events");
+  if(run_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola) {
+    pickSkimIfExists(ch_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_HeavyGluonToTT_right_M-2000_TuneZ2star_8TeV-madgraph-tauola/preprocessing/ntuple*.root");
+  }
+  TChain* ch_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola = new TChain("Events");
+  if(run_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola) {
+    pickSkimIfExists(ch_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_HeavyGluonToTT_right_M-200_TuneZ2star_8TeV-madgraph-tauola/preprocessing/ntuple*.root");
+  }
+  TChain* ch_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola = new TChain("Events");
+  if(run_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola) {
+    pickSkimIfExists(ch_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola,"/home/users/linacre/CMSSW_5_3_2_patch5_V05-03-32/crabnew/postProcessing_ZprimeTtoTTU_M-220_TuneZ2star_8TeV-madgraph-tauola/preprocessing/ntuple*.root");
+  }
+
+
+
 
   //----------------------------------------
   // W+jets
@@ -702,7 +788,7 @@ void doAll(bool skipFWLite = true)
   //--------------------------------------------------------------------
   if (runtt_mcatnlo) {
     cout << "Processing ttbar mcatnlo.. " << endl;
-    looper->ScanChain(chtt_mcatnlo,"tt_mcatnlo", kttall, prettall, lumi);
+    looper->ScanChain(chtt_mcatnlo,"tt_mcatnlo", s_mcatnlo, prettall, lumi);
     cout << "Done processing ttbar mcatnlo.. " << endl;
   }
   //--------------------------------------------------------------------
@@ -717,6 +803,77 @@ void doAll(bool skipFWLite = true)
     looper->ScanChain(chtt_notauola,"tt_notauola", kttall, prettall, lumi);
     cout << "Done processing ttbar notauola.. " << endl;
   }
+
+  //------TT_FullLept_mass169_5_8TeV_mcatnlo---------------
+  if (run_TT_FullLept_mass169_5_8TeV_mcatnlo) {
+    cout << "Processing TT_FullLept_mass169_5_8TeV_mcatnlo ..." <<endl;
+    looper->ScanChain(ch_TT_FullLept_mass169_5_8TeV_mcatnlo,"TT_FullLept_mass169_5_8TeV_mcatnlo", s_TT_FullLept_mass169_5_8TeV_mcatnlo, prettall, lumi);
+    cout << "Done processing TT_FullLept_mass169_5_8TeV_mcatnlo ..."<<endl;
+  }
+  //------TT_FullLept_mass175_5_8TeV_mcatnlo---------------
+  if (run_TT_FullLept_mass175_5_8TeV_mcatnlo) {
+    cout << "Processing TT_FullLept_mass175_5_8TeV_mcatnlo ..." <<endl;
+    looper->ScanChain(ch_TT_FullLept_mass175_5_8TeV_mcatnlo,"TT_FullLept_mass175_5_8TeV_mcatnlo", s_TT_FullLept_mass175_5_8TeV_mcatnlo, prettall, lumi);
+    cout << "Done processing TT_FullLept_mass175_5_8TeV_mcatnlo ..."<<endl;
+  }
+  //------TT_FullLept_scaledown_8TeV_mcatnlo---------------
+  if (run_TT_FullLept_scaledown_8TeV_mcatnlo) {
+    cout << "Processing TT_FullLept_scaledown_8TeV_mcatnlo ..." <<endl;
+    looper->ScanChain(ch_TT_FullLept_scaledown_8TeV_mcatnlo,"TT_FullLept_scaledown_8TeV_mcatnlo", s_TT_FullLept_scaledown_8TeV_mcatnlo, prettall, lumi);
+    cout << "Done processing TT_FullLept_scaledown_8TeV_mcatnlo ..."<<endl;
+  }
+  //------TT_FullLept_scaleup_8TeV_mcatnlo---------------
+  if (run_TT_FullLept_scaleup_8TeV_mcatnlo) {
+    cout << "Processing TT_FullLept_scaleup_8TeV_mcatnlo ..." <<endl;
+    looper->ScanChain(ch_TT_FullLept_scaleup_8TeV_mcatnlo,"TT_FullLept_scaleup_8TeV_mcatnlo", s_TT_FullLept_scaleup_8TeV_mcatnlo, prettall, lumi);
+    cout << "Done processing TT_FullLept_scaleup_8TeV_mcatnlo ..."<<endl;
+  }
+  //------TT_noCorr_8TeV_mcatnlo---------------
+  if (run_TT_noCorr_8TeV_mcatnlo) {
+    cout << "Processing TT_noCorr_8TeV_mcatnlo ..." <<endl;
+    looper->ScanChain(ch_TT_noCorr_8TeV_mcatnlo,"TT_noCorr_8TeV_mcatnlo", s_TT_noCorr_8TeV_mcatnlo, prettall, lumi);
+    cout << "Done processing TT_noCorr_8TeV_mcatnlo ..."<<endl;
+  }
+  //------HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola---------------
+  if (run_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola) {
+    cout << "Processing HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola ..." <<endl;
+    looper->ScanChain(ch_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola,"HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola", s_HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola, prettall, lumi);
+    cout << "Done processing HeavyGluonToTT_axial_M_2000_TuneZ2star_8TeV_madgraph_tauola ..."<<endl;
+  }
+  //------HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola---------------
+  if (run_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola) {
+    cout << "Processing HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola ..." <<endl;
+    looper->ScanChain(ch_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola,"HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola", s_HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola, prettall, lumi);
+    cout << "Done processing HeavyGluonToTT_axial_M_200_TuneZ2star_8TeV_madgraph_tauola ..."<<endl;
+  }
+  //------HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola---------------
+  if (run_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola) {
+    cout << "Processing HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola ..." <<endl;
+    looper->ScanChain(ch_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola,"HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola", s_HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola, prettall, lumi);
+    cout << "Done processing HeavyGluonToTT_left_M_200_TuneZ2star_8TeV_madgraph_tauola ..."<<endl;
+  }
+  //------HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola---------------
+  if (run_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola) {
+    cout << "Processing HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola ..." <<endl;
+    looper->ScanChain(ch_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola,"HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola", s_HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola, prettall, lumi);
+    cout << "Done processing HeavyGluonToTT_right_M_2000_TuneZ2star_8TeV_madgraph_tauola ..."<<endl;
+  }
+  //------HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola---------------
+  if (run_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola) {
+    cout << "Processing HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola ..." <<endl;
+    looper->ScanChain(ch_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola,"HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola", s_HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola, prettall, lumi);
+    cout << "Done processing HeavyGluonToTT_right_M_200_TuneZ2star_8TeV_madgraph_tauola ..."<<endl;
+  }
+  //------ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola---------------
+  if (run_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola) {
+    cout << "Processing ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola ..." <<endl;
+    looper->ScanChain(ch_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola,"ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola", s_ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola, prettall, lumi);
+    cout << "Done processing ZprimeTtoTTU_M_220_TuneZ2star_8TeV_madgraph_tauola ..."<<endl;
+  }
+
+
+
+
   //--------------------------------------------------------------------
   if (runDYtot) {
     cout << "Processing DY->all" << endl;

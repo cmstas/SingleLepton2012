@@ -40,6 +40,7 @@
 #include <TLine.h>
 #include <TList.h>
 #include <TLatex.h>
+#include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TCanvas.h>
 #include <vector>
@@ -127,6 +128,7 @@ void printYields( vector<TH1F *> mc , const char *labels[] , TH1F *chdata , bool
 void initSymbols(bool);
 void printLine(bool);
 void printHeader();
+void GetAfberr(TH1F* h, Float_t &afb, Float_t  &afberr);
 float GetAfb(TH1F* h);
 float GetAfbLHalf(TH1F* h);
 float GetAfbRHalf(TH1F* h);
@@ -209,13 +211,15 @@ pair<float, float> datamcsf( TH1F *h_dt, vector<TH1F *> h_mc, int minbin, int ma
 void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatnlo")
 {
 
+    TString ttbar_string = ttbar_tag;
+
     //derive scale factors
 
     //list of samples
     //const int MCID = 10;
     const int MCID = 10;
 
-    const int nRegions = 14;
+    const int nRegions = 15;
 
     enum regions {SIG=0,
         CR0,
@@ -227,6 +231,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         CR3v,
         CR4,
         CR4v,
+        CR40,
         CR5,
         CR5v,
         CR6,
@@ -246,6 +251,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "h_cr3v_",
         "h_cr4_",
         "h_cr4v_",
+        "h_cr40_",
         "h_cr5_",
         "h_cr5v_",
         "h_cr6_",
@@ -261,6 +267,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     if(strncmp(region,"CR3v",1000) == 0) histtag_number = CR3v;
     if(strncmp(region,"CR4",1000) == 0) histtag_number = CR4;
     if(strncmp(region,"CR4v",1000) == 0) histtag_number = CR4v;
+    if(strncmp(region,"CR40",1000) == 0) histtag_number = CR40;
     if(strncmp(region,"CR5",1000) == 0) histtag_number = CR5;
     if(strncmp(region,"CR5v",1000) == 0) histtag_number = CR5v;
     if(strncmp(region,"CR6",1000) == 0) histtag_number = CR6;
@@ -279,6 +286,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "CR3v",
         "CR4",
         "CR4v",
+        "CR40",
         "CR5",
         "CR5v",
         "CR6",
@@ -330,12 +338,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         DY,
         TWDL,
         DYTT,
+        DYTT,
         TTSL,
         TTSL,
         TTSL,
         TTSL
     };
-
+/*
     //apply SFs to other backgrounds when deriving the SFs for this CR?
     const int SFsApply[nRegions] = 
     {
@@ -349,34 +358,37 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         1,
         1,
         0,  //not clear whether the fake and DY SFs are applicable in this region
+        0,  //not clear whether the fake and DY SFs are applicable in this region
         1,
         1,
-        1,
-        1
-    };
-
-/*
-    //0: no SFs (except for TTDL)
-    //1: full SFs
-    //2: full except DY b 
-    const int SFsApply[nRegions] = 
-    {
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        0,
-        1,
-        2,
-        1,
-        2
+        0,  //no MET cut means we don't want to scale the DY
+        0   //no MET cut means we don't want to scale the DY
     };
 */
+
+    //0: only fakes
+    //1: full SFs
+    //2: full except DY b 
+    //3: only DY b and fakes
+    const int SFsApply[nRegions] = 
+    {
+        1, //SIG
+        2, //CR0
+        1, //CR1
+        2, //CR1v
+        3, //CR2
+        0, //CR2v
+        3, //CR3
+        0, //CR3v
+        1, //CR4
+        2, //CR4v
+        0, //CR40
+        1, //CR5
+        2, //CR5v
+        3, //CR6
+        0  //CR6v
+    };
+
 
     const char *legend[MCID] =
     {
@@ -442,13 +454,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     const char *channelhist[2] = {"channel", "channel_withttbarsol"};
 
     //calculate background SFs from CRs
-    double bkgsf[MCID][nCh];
-    double bkgsferr[MCID][nCh];
+    double bkgsf[4][MCID][nCh];
+    double bkgsferr[4][MCID][nCh];
     float CRsf[nRegions][nCh];
     float CRsferr[nRegions][nCh];
     float CRsftot[nRegions];
     float CRsftoterr[nRegions];
-    if(scalebkgtoCRs) {
+    if(scalebkgtoCRs || (scalettdiltodata && histtag_number != SIG) ) {
 
         TFile *dt_dl_temp[nCh][nRegions];
         TFile *mc_dl_temp[MCID][nRegions];
@@ -464,7 +476,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             {
                 if (j < 2)
                     mc_dl_temp[j][i] = TFile::Open(Form("%soutput/%s_%s_histos.root", dirtag[i],
-                                                mcsample[j], ttbar_tag));
+                                                mcsample[j], ( j != TTDL && ttbar_string.Contains("FullLept") ? "mcatnlo" : ttbar_tag )));
                 else
                     mc_dl_temp[j][i] = TFile::Open(Form("%soutput/%s_histos.root", dirtag[i],
                                                 mcsample[j]));
@@ -475,8 +487,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         {
             for (int leptype = 0; leptype < nCh; ++leptype)
             {
-                bkgsf[j][leptype] = 1.;
-                bkgsferr[j][leptype] = 0.;
+                for (int sftype = 0; sftype < 4; ++sftype)
+                {
+                    bkgsf[sftype][j][leptype] = 1.;
+                    bkgsferr[sftype][j][leptype] = 0.;
+                }
             }
         }
 
@@ -514,9 +529,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                         }
                         h_mc1d[j]->SetName(Form("%s_%s%s", mcsample[j], histtag[i], channelhist[scaletoyieldsafterttbarsol]));
 
-                        if(j == TTDL && j != CRtargetsamplenumber[i]) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SF for TTDL
-                        if(  j != TTDL && j != CRtargetsamplenumber[i] && SFsApply[i] &&  ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL )  )  ) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
-                        //if(  j != TTDL && j != CRtargetsamplenumber[i] && SFsApply[i] &&  ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL && j != TTFA )  )  ) h_mc1d[j]->Scale(bkgsf[j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
+                        if(j == TTDL && j != CRtargetsamplenumber[i]) h_mc1d[j]->Scale(bkgsf[1][j][leptype]); //use previously calculated SF for TTDL
+                        if(  j != TTDL && j != CRtargetsamplenumber[i] && ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL )  )  ) h_mc1d[j]->Scale(bkgsf[SFsApply[i]][j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
+                        //if(  j != TTDL && j != CRtargetsamplenumber[i] && ( (CRtargetsamplenumber[i] != TTSL ) || (CRtargetsamplenumber[i] == TTSL && j != TTSL && j != WJETS && j != TWSL && j != TTFA )  )  ) h_mc1d[j]->Scale(bkgsf[SFsApply[i]][j][leptype]); //use previously calculated SFs for the other backgrounds, if SFsApply[region]
 
                         if (!doinit)
                         {
@@ -544,14 +559,14 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                         if( j==WJETS || j==TWSL ) continue; //these uncertainties are correlated and these components are always scaled together, so sum them linearly before combining (below)
                         if( j==DYTT && CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) continue; //DYTT is correlated with DY, but these components are not scaled together. For non-DY CRs, continue and sum the uncertainties linearly.
 
-                        mcallerrsf[j] = bkgsferr[j][leptype] * h_mc1d[j]->Integral();
+                        mcallerrsf[j] = bkgsferr[SFsApply[i]][j][leptype] * h_mc1d[j]->Integral();
 
-                        if( j==TTSL ) mcallerrsf[j] += bkgsferr[WJETS][leptype] * h_mc1d[WJETS]->Integral();
-                        if( j==TTSL ) mcallerrsf[j] += bkgsferr[TWSL][leptype] * h_mc1d[TWSL]->Integral();
-                        //if( j==TTSL ) mcallerrsf[j] += bkgsferr[TTFA][leptype] * h_mc1d[TTFA]->Integral();
+                        if( j==TTSL ) mcallerrsf[j] += bkgsferr[SFsApply[i]][WJETS][leptype] * h_mc1d[WJETS]->Integral();
+                        if( j==TTSL ) mcallerrsf[j] += bkgsferr[SFsApply[i]][TWSL][leptype] * h_mc1d[TWSL]->Integral();
+                        //if( j==TTSL ) mcallerrsf[j] += bkgsferr[SFsApply[i]][TTFA][leptype] * h_mc1d[TTFA]->Integral();
 
                         //for non-DY CRs, add the DYTT and DY uncertainties assuming 100% correlation (this is slightly conservative because the true correlation is <100%)
-                        if( j==DY && CRtargetsamplenumber[i] != DYTT && CRtargetsamplenumber[i] != DY ) mcallerrsf[j] += bkgsferr[DYTT][leptype] * h_mc1d[DYTT]->Integral();
+                        if( j==DY && CRtargetsamplenumber[i] != DYTT && CRtargetsamplenumber[i] != DY ) mcallerrsf[j] += bkgsferr[SFsApply[i]][DYTT][leptype] * h_mc1d[DYTT]->Integral();
 
                         mcallerrsftotalsquared += mcallerrsf[j]*mcallerrsf[j] ; 
                     }
@@ -578,13 +593,15 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                     CRsf[i][leptype] = CRsftemp;
                     CRsferr[i][leptype] = CRsftemperr;
                     //cout<<"SF from "<<dirtag[i]<<" for "<< (CRtargetsamplenumber[i] == TTSL ? "fakes" : legend[CRtargetsamplenumber[i]]) <<" for "<<leplabel[leptype]<<": "<<CRsftemp<<" +/- "<<CRsftemperr<<endl;
+
+                    //immediately fill ttdl SFs so they can be used for the CRs later in the loop
                     if(i == SIG) {
-                        bkgsf[TTDL][leptype] = CRsf[i][leptype];
-                        bkgsferr[TTDL][leptype] = CRsferr[i][leptype];
+                        bkgsf[1][TTDL][leptype] = CRsf[i][leptype];
+                        bkgsferr[1][TTDL][leptype] = CRsferr[i][leptype];
                     }
 
                     //calculate weighted average
-                    if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT ) ) {
+                    if( (CRtargetsamplenumber[i] == DY && leptype < MUEG) || (CRtargetsamplenumber[i] == DYTT && leptype == MUEG) || (CRtargetsamplenumber[i] == TTSL && leptype == DIMU) || ( CRtargetsamplenumber[i] != DY && CRtargetsamplenumber[i] != DYTT && CRtargetsamplenumber[i] != TTSL) ) {
                         CRsftot[i] += CRsf[i][leptype]/CRsferr[i][leptype]/CRsferr[i][leptype];
                         CRsftoterr[i] += 1./CRsferr[i][leptype]/CRsferr[i][leptype];
                     }
@@ -595,33 +612,102 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 CRsftoterr[i] = 1./sqrt(CRsftoterr[i]);
             }
 
-            cout<<bkgsf[TTDL][0]<<" ± "<<bkgsferr[TTDL][0]<<" "<<bkgsf[TTDL][1]<<" ± "<<bkgsferr[TTDL][1]<<" "<<bkgsf[TTDL][2]<<" ± "<<bkgsferr[TTDL][2]<<" "<<bkgsf[TTSL][0]<<" ± "<<bkgsferr[TTSL][0]<<" "<<bkgsf[DY][0]<<" ± "<<bkgsferr[DY][0]<<" "<<bkgsf[DYTT][0]<<" ± "<<bkgsferr[DYTT][0]<<" "<<endl;
+            cout<<bkgsf[1][TTDL][0]<<" ± "<<bkgsferr[1][TTDL][0]<<" "<<bkgsf[1][TTDL][1]<<" ± "<<bkgsferr[1][TTDL][1]<<" "<<bkgsf[1][TTDL][2]<<" ± "<<bkgsferr[1][TTDL][2]<<" "<<bkgsf[1][TTSL][0]<<" ± "<<bkgsferr[1][TTSL][0]<<" "<<bkgsf[1][DY][0]<<" ± "<<bkgsferr[1][DY][0]<<" "<<bkgsf[1][DYTT][0]<<" ± "<<bkgsferr[1][DYTT][0]<<" "<<endl;
 
 
             for (int leptype = 0; leptype < nCh; ++leptype)
             {
-                     bkgsf[TTSL][leptype] = CRsftot[CR5];
-                     bkgsferr[TTSL][leptype] = CRsftoterr[CR5];
-                     //bkgsf[TTFA][leptype] = CRsftot[CR5];
-                     //bkgsferr[TTFA][leptype] = CRsftoterr[CR5];
-                     bkgsf[WJETS][leptype] = CRsftot[CR5];
-                     bkgsferr[WJETS][leptype] = CRsftoterr[CR5];
-                     bkgsf[TWSL][leptype] = CRsftot[CR5];
-                     bkgsferr[TWSL][leptype] = CRsftoterr[CR5];
-                     bkgsf[TWDL][leptype] = 1.;
-                     bkgsferr[TWDL][leptype] = 0.;
-                     bkgsf[DIBO][leptype] = 1.;
-                     bkgsferr[DIBO][leptype] = 0.;
-                     bkgsf[DY][leptype] = CRsftot[CR1];
-                     bkgsferr[DY][leptype] = CRsftoterr[CR1];
-                     bkgsf[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v];
-                     bkgsferr[DYTT][leptype] = (CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2));
-                     //bkgsf[DYTT][leptype] = CRsftot[CR2];
-                     //bkgsferr[DYTT][leptype] = CRsftoterr[CR2];
-                     bkgsf[TTV][leptype] = 1.;
-                     bkgsferr[TTV][leptype] = 0.;
-                     bkgsf[VVV][leptype] = 1.;
-                     bkgsferr[VVV][leptype] = 0.;
+
+                     bkgsf[1][TTSL][leptype] = CRsftot[CR5];
+                     bkgsferr[1][TTSL][leptype] = CRsftoterr[CR5];
+                     //bkgsf[1][TTFA][leptype] = CRsftot[CR5];
+                     //bkgsferr[1][TTFA][leptype] = CRsftoterr[CR5];
+                     bkgsf[1][WJETS][leptype] = CRsftot[CR5];
+                     bkgsferr[1][WJETS][leptype] = CRsftoterr[CR5];
+                     bkgsf[1][TWSL][leptype] = CRsftot[CR5];
+                     bkgsferr[1][TWSL][leptype] = CRsftoterr[CR5];
+                     bkgsf[1][TWDL][leptype] = 1.;
+                     bkgsferr[1][TWDL][leptype] = 0.;
+                     bkgsf[1][DIBO][leptype] = 1.;
+                     bkgsferr[1][DIBO][leptype] = 0.;
+                     bkgsf[1][DY][leptype] = CRsftot[CR1];
+                     bkgsferr[1][DY][leptype] = CRsftoterr[CR1];
+                     bkgsf[1][DYTT][leptype] = CRsftot[CR2];
+                     bkgsferr[1][DYTT][leptype] = CRsftoterr[CR2];
+                     bkgsf[1][TTV][leptype] = 1.;
+                     bkgsferr[1][TTV][leptype] = 0.;
+                     bkgsf[1][VVV][leptype] = 1.;
+                     bkgsferr[1][VVV][leptype] = 0.;
+
+                     bkgsf[2][TTSL][leptype] = CRsftot[CR5];
+                     bkgsferr[2][TTSL][leptype] = CRsftoterr[CR5];
+                     //bkgsf[2][TTFA][leptype] = CRsftot[CR5];
+                     //bkgsferr[2][TTFA][leptype] = CRsftoterr[CR5];
+                     bkgsf[2][WJETS][leptype] = CRsftot[CR5];
+                     bkgsferr[2][WJETS][leptype] = CRsftoterr[CR5];
+                     bkgsf[2][TWSL][leptype] = CRsftot[CR5];
+                     bkgsferr[2][TWSL][leptype] = CRsftoterr[CR5];
+                     bkgsf[2][TWDL][leptype] = 1.;
+                     bkgsferr[2][TWDL][leptype] = 0.;
+                     bkgsf[2][DIBO][leptype] = 1.;
+                     bkgsferr[2][DIBO][leptype] = 0.;
+                     bkgsf[2][DY][leptype] = CRsftot[CR0];
+                     bkgsferr[2][DY][leptype] = CRsftoterr[CR0];
+                     bkgsf[2][DYTT][leptype] = 1.;
+                     bkgsferr[2][DYTT][leptype] = 1.;
+                     bkgsf[2][TTV][leptype] = 1.;
+                     bkgsferr[2][TTV][leptype] = 0.;
+                     bkgsf[2][VVV][leptype] = 1.;
+                     bkgsferr[2][VVV][leptype] = 0.;
+
+                     bkgsf[3][TTSL][leptype] = CRsftot[CR5];
+                     bkgsferr[3][TTSL][leptype] = CRsftoterr[CR5];
+                     //bkgsf[3][TTFA][leptype] = CRsftot[CR5];
+                     //bkgsferr[3][TTFA][leptype] = CRsftoterr[CR5];
+                     bkgsf[3][WJETS][leptype] = CRsftot[CR5];
+                     bkgsferr[3][WJETS][leptype] = CRsftoterr[CR5];
+                     bkgsf[3][TWSL][leptype] = CRsftot[CR5];
+                     bkgsferr[3][TWSL][leptype] = CRsftoterr[CR5];
+                     bkgsf[3][TWDL][leptype] = 1.;
+                     bkgsferr[3][TWDL][leptype] = 0.;
+                     bkgsf[3][DIBO][leptype] = 1.;
+                     bkgsferr[3][DIBO][leptype] = 0.;
+                     bkgsf[3][DY][leptype] = CRsftot[CR2];
+                     bkgsferr[3][DY][leptype] = CRsftoterr[CR2];
+                     bkgsf[3][DYTT][leptype] = CRsftot[CR2];
+                     bkgsferr[3][DYTT][leptype] = CRsftoterr[CR2];
+                     bkgsf[3][TTV][leptype] = 1.;
+                     bkgsferr[3][TTV][leptype] = 0.;
+                     bkgsf[3][VVV][leptype] = 1.;
+                     bkgsferr[3][VVV][leptype] = 0.;
+
+                     bkgsf[0][TTSL][leptype] = CRsftot[CR5];
+                     bkgsferr[0][TTSL][leptype] = CRsftoterr[CR5];
+                     //bkgsf[0][TTFA][leptype] = CRsftot[CR5];
+                     //bkgsferr[0][TTFA][leptype] = CRsftoterr[CR5];
+                     bkgsf[0][WJETS][leptype] = CRsftot[CR5];
+                     bkgsferr[0][WJETS][leptype] = CRsftoterr[CR5];
+                     bkgsf[0][TWSL][leptype] = CRsftot[CR5];
+                     bkgsferr[0][TWSL][leptype] = CRsftoterr[CR5];
+                     bkgsf[0][TWDL][leptype] = 1.;
+                     bkgsferr[0][TWDL][leptype] = 0.;
+                     bkgsf[0][DIBO][leptype] = 1.;
+                     bkgsferr[0][DIBO][leptype] = 0.;
+                     bkgsf[0][DY][leptype] = 1.;
+                     bkgsferr[0][DY][leptype] = 0.;
+                     bkgsf[0][DYTT][leptype] = 1.;
+                     bkgsferr[0][DYTT][leptype] = 0.;
+                     bkgsf[0][TTV][leptype] = 1.;
+                     bkgsferr[0][TTV][leptype] = 0.;
+                     bkgsf[0][VVV][leptype] = 1.;
+                     bkgsferr[0][VVV][leptype] = 0.;
+
+                     bkgsf[0][TTDL][leptype] = bkgsf[1][TTDL][leptype];
+                     bkgsferr[0][TTDL][leptype] = bkgsferr[1][TTDL][leptype];
+                     bkgsf[2][TTDL][leptype] = bkgsf[1][TTDL][leptype];
+                     bkgsferr[2][TTDL][leptype] = bkgsferr[1][TTDL][leptype];
+                     bkgsf[3][TTDL][leptype] = bkgsf[1][TTDL][leptype];
+                     bkgsferr[3][TTDL][leptype] = bkgsferr[1][TTDL][leptype];
             }
 
         }
@@ -641,21 +727,93 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     }
 
+    if(scalebkgtoCRs || (scalettdiltodata && histtag_number != SIG) ) cout<<"Average SR sf for ttdl: "<<CRsftot[SIG]<<" +/- "<<CRsftoterr[SIG]<<endl;
     if(scalebkgtoCRs) cout<<"average CR5 sf for fakes: "<<CRsftot[CR5]<<" +/- "<<CRsftoterr[CR5]<<endl;
     if(scalebkgtoCRs) cout<<"average CR5v sf for fakes: "<<CRsftot[CR5v]<<" +/- "<<CRsftoterr[CR5v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR6 sf for fakes: "<<CRsftot[CR6]<<" +/- "<<CRsftoterr[CR6]<<endl;
     if(scalebkgtoCRs) cout<<"average CR6v sf for fakes: "<<CRsftot[CR6v]<<" +/- "<<CRsftoterr[CR6v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR1 sf for DYeemm:  "<<CRsftot[CR1]<<" +/- "<<CRsftoterr[CR1]<<endl;
-    if(scalebkgtoCRs) cout<<"alternative CR0 sf for DYeemm:  "<<CRsftot[CR0]<<" +/- "<<CRsftoterr[CR0]<<endl;
+    if(scalebkgtoCRs) cout<<"CR0 sf for DYeemm (exc. b modelling SF):  "<<CRsftot[CR0]<<" +/- "<<CRsftoterr[CR0]<<endl;
+    if(scalebkgtoCRs) cout<<"composite sf for DYeemm (CR0*CR2/CR2v):  "<<CRsftot[CR0]*CRsftot[CR2]/CRsftot[CR2v]<<" +/- "<<(CRsftot[CR0]*CRsftot[CR2]/CRsftot[CR2v])*sqrt(pow(CRsftoterr[CR0]/CRsftot[CR0],2)+pow(CRsftoterr[CR2]/CRsftot[CR2],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
     if(scalebkgtoCRs) cout<<"composite sf for DYeemm (CR1v*CR2/CR2v):  "<<CRsftot[CR1v]*CRsftot[CR2]/CRsftot[CR2v]<<" +/- "<<(CRsftot[CR1v]*CRsftot[CR2]/CRsftot[CR2v])*sqrt(pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2]/CRsftot[CR2],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
     if(scalebkgtoCRs) cout<<"average CR3 sf:  "<<CRsftot[CR3]<<" +/- "<<CRsftoterr[CR3]<<endl;
     if(scalebkgtoCRs) cout<<"average CR3v sf:  "<<CRsftot[CR3v]<<" +/- "<<CRsftoterr[CR3v]<<endl;
     if(scalebkgtoCRs) cout<<"average CR2 sf for DYtautau:  "<<CRsftot[CR2]<<" +/- "<<CRsftoterr[CR2]<<endl;
     if(scalebkgtoCRs) cout<<"composite sf for DYtautau (CR1):  "<<(CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR1]/CRsftot[CR1v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR1]/CRsftot[CR1],2)+pow(CRsftoterr[CR1v]/CRsftot[CR1v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
     if(scalebkgtoCRs) cout<<"composite sf for DYtautau (CR3):  "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]<<" +/- "<<(CRsftot[CR3]/CRsftot[CR3v])*CRsftot[CR2v]*sqrt(pow(CRsftoterr[CR3]/CRsftot[CR3],2)+pow(CRsftoterr[CR3v]/CRsftot[CR3v],2)+pow(CRsftoterr[CR2v]/CRsftot[CR2v],2))<<endl;
-    if(scalebkgtoCRs) cout<<"CR4v sf for DYtautau:  "<<CRsftot[CR4v]<<" +/- "<<CRsftoterr[CR4v]<<endl;
+    if(scalebkgtoCRs) cout<<"CR4v sf for DYtautau (exc. b modelling SF):  "<<CRsftot[CR4v]<<" +/- "<<CRsftoterr[CR4v]<<endl;
+    //if(scalebkgtoCRs) cout<<"CR40 sf for DYtautau:  "<<CRsftot[CR40]<<" +/- "<<CRsftoterr[CR40]<<endl;
 
 
+    TGraphErrors *graphDYeemm = new TGraphErrors();
+    TGraphErrors *graphDYtt = new TGraphErrors();
+    TGraphErrors *graphfakes = new TGraphErrors();
+
+
+    if(scalebkgtoCRs) {
+
+        cout<<"fakes:"<<endl;
+
+        for (int leptype = 0; leptype < nCh; ++leptype)
+        {
+            cout<<CRsf[CR5][leptype]<<"+/-"<<CRsferr[CR5][leptype]<<endl;
+            cout<<CRsf[CR5v][leptype]<<"+/-"<<CRsferr[CR5v][leptype]<<endl;
+            cout<<CRsf[CR6][leptype]<<"+/-"<<CRsferr[CR6][leptype]<<endl;
+        }
+
+        for (int leptype = 0; leptype < nCh; ++leptype)
+        {
+            graphfakes->SetPoint(leptype+0, leptype+0, CRsf[CR5][leptype]); graphfakes->SetPointError( leptype+0, 0, CRsferr[CR5][leptype] );
+            graphfakes->SetPoint(leptype+3, leptype+3, CRsf[CR5v][leptype]); graphfakes->SetPointError( leptype+3, 0, CRsferr[CR5v][leptype] );
+            graphfakes->SetPoint(leptype+6, leptype+6, CRsf[CR6][leptype]); graphfakes->SetPointError( leptype+6, 0, CRsferr[CR6][leptype] );
+        }
+
+
+
+
+
+
+        cout<<"DY:"<<endl;
+
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR1][leptype]<<"+/-"<<CRsferr[CR1][leptype]<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype]<<" +/- "<<(CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype]<<" +/- "<<(CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype]<<" +/- "<<(CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2))<<endl;
+
+
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR2][leptype]<<"+/-"<<CRsferr[CR2][leptype]<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+
+
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 1+leptype-1, 1+leptype-1, CRsf[CR1][leptype] );    graphDYeemm->SetPointError( 1+leptype-1, 0, CRsferr[CR1][leptype] ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 3+leptype-1, 3+leptype-1, CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype] );    graphDYeemm->SetPointError( 3+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 5+leptype-1, 5+leptype-1, CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 5+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 7+leptype-1, 7+leptype-1, CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 7+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 9+leptype-1, 9+leptype-1, CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 9+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 11+leptype-1, 11+leptype-1, CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 11+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
+
+
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 1+leptype-1, 1+leptype-1, CRsf[CR2][leptype] );    graphDYtt->SetPointError( 1+leptype-1, 0, CRsferr[CR2][leptype] ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 3+leptype-1, 3+leptype-1, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 3+leptype-1, 0, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 5+leptype-1, 5+leptype-1, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 5+leptype-1, 0, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 7+leptype-1, 7+leptype-1, CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 7+leptype-1, 0, (CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+
+        TCanvas *canSFs = new TCanvas("canSFs","canSFs",1800, 600);
+        canSFs->Divide(3,1);
+        canSFs->cd(1);
+        graphDYeemm->Draw("");
+        canSFs->cd(2);
+        graphDYtt->Draw(""); 
+        canSFs->cd(3);
+        graphfakes->Draw(""); 
+        canSFs->Print("SFs.pdf");
+
+
+    }
 
     //initialize
 
@@ -670,7 +828,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     {
         if (j < 2)
             mc_dl[j] = TFile::Open(Form("%soutput/%s_%s_histos.root", region,
-                                        mcsample[j], ttbar_tag));
+                                        mcsample[j], ( j != TTDL && ttbar_string.Contains("FullLept") ? "mcatnlo" : ttbar_tag )));
         else
             mc_dl[j] = TFile::Open(Form("%soutput/%s_histos.root", region,
                                         mcsample[j]));
@@ -682,7 +840,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 51;
+    const int N1DHISTS = 60;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -714,10 +872,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "met",
         "metphi",
         "met_smeared",
-        //"lep1b_mindR",
-        //"lep1b_mindPhi",
-        //"lep2b_mindR",
-        //"lep2b_mindPhi",
+        "lep1b_mindR",
+        "lep1b_mindPhi",
+        "lep2b_mindR",
+        "lep2b_mindPhi",
         "lep_dR",
         "lep_dEta",
         "Mll",
@@ -761,7 +919,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "maxAMWTweight",
         "maxAMWTweight_closestApproach",
         "otherAMWTweights",
-        "closestDeltaMET_bestcombo"
+        "closestDeltaMET_bestcombo",
+        "nvtx",
+        "top1_pt",
+        "top2_pt",
+        "top1_p_CM",
+        "lep_costheta_cms"
     };
 
 
@@ -781,11 +944,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //logScale.push_back(34+11);
     //logScale.push_back(35+11);
     //logScale.push_back(36+11);
-    logScale.push_back(41+4);
-    logScale.push_back(42+4);
+    logScale.push_back(41+8);
+    logScale.push_back(42+8);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -809,10 +972,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "ME_{T} [GeV]",
         "metphi",
         "ME_{T}^{smeared} [GeV]",
-        //"lep1b_mindR",
-        //"lep1b_mindPhi",
-        //"lep2b_mindR",
-        //"lep2b_mindPhi",
+        "lep1b_mindR",
+        "lep1b_mindPhi",
+        "lep2b_mindR",
+        "lep2b_mindPhi",
         "lep_dR",
         "lep_dEta",
         "Mll",
@@ -856,7 +1019,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "maxAMWTweight",
         "maxAMWTweight_closestApproach",
         "otherAMWTweights",
-        "closestDeltaMET_bestcombo"
+        "closestDeltaMET_bestcombo",
+        "nvtx",
+        "top1_pt",
+        "top2_pt",
+        "top1_p_CM",
+        "lep_costheta_cms"
     };
 
     const char *ytitle1d[N1DHISTS] =
@@ -887,6 +1055,15 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "GeV",
         "",
         "GeV",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
@@ -1062,7 +1239,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 //if(j==TTDL||j==TTSL||j==TTFA) h_mc1d[i][j]->Scale(303732. / 32852589.); //scale to xsec
 
 
-                if(scalebkgtoCRs && j!=TTDL) h_mc1d[i][j]->Scale(bkgsf[j][leptype]);
+                if(scalebkgtoCRs && j!=TTDL) h_mc1d[i][j]->Scale(bkgsf[SFsApply[histtag_number]][j][leptype]);
 
                 // Rebin, set limits
                 h_mc1d[i][j]->Rebin(rebinFactor[i]);
@@ -1097,7 +1274,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             float mcttdil_all = h_mc1d[i][TTDL]->Integral();
             float ttdilsf_all = 1. + (dtall-mcall)/mcttdil_all;
             if(scalettdiltodata && histtag_number==0) h_mc1d[i][TTDL]->Scale(ttdilsf_all);
-            else if(scalettdiltodata) h_mc1d[i][TTDL]->Scale(bkgsf[TTDL][leptype]); 
+            else if(scalettdiltodata) h_mc1d[i][TTDL]->Scale(bkgsf[1][TTDL][leptype]); 
 
         }
 
@@ -1870,6 +2047,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     cout << "**********************ASYMS**********************" << endl;
     cout << "-------------------------------------------------" << endl;
 
+    float asymmetry = 0.;
+    float asymmetryerror = 0.;
+
 for (int k = 0; k < 8; ++k)
 {
     if( strncmp(file1dname[k],"lep_azimuthal_asymmetry", 1000 ) == 0 ){
@@ -1888,10 +2068,13 @@ for (int k = 0; k < 8; ++k)
         printf(" Variable: %s \n", file1dname[k]);
         for (int j = 0; j < MCID; ++j)
         {
-            printf("  %s : %.4f \n", mcsample[j], GetAfb(h_mc1d_comb[k][j]));
+            GetAfberr(h_mc1d_comb[k][j], asymmetry, asymmetryerror);
+            printf("  %s : %.4f \\pm %.4f \n", mcsample[j], asymmetry, asymmetryerror);
         }
-        printf(" Total_MC : %.4f \n", GetAfb(h_mc1d_tot_comb[k]));
-        printf(" Data : %.4f \n", GetAfb(h_dt1d_comb[k]));
+        GetAfberr(h_mc1d_tot_comb[k], asymmetry, asymmetryerror);
+        printf(" Total_MC : %.4f \\pm %.4f \n", asymmetry, asymmetryerror);
+        GetAfberr(h_dt1d_comb[k], asymmetry, asymmetryerror);
+        printf(" Data : %.4f \\pm %.4f \n", asymmetry, asymmetryerror);
         cout << " -------------------------------------------------" << endl;
         cout << " *************************************************" << endl;
         cout << " -------------------------------------------------" << endl;
@@ -2191,6 +2374,30 @@ void print( TH1F *h , string label , bool correlatedError )
 }
 
 
+void GetAfberr(TH1F* h, Float_t &afb, Float_t  &afberr){
+
+  Int_t nbins = h->GetNbinsX();
+  Float_t event_minus;
+  Float_t event_plus;
+  Float_t event_total;
+  Double_t event_plus_err;
+  Double_t event_minus_err;
+
+  //event_minus  = h-> IntegralAndError(0, nbins/2, event_plus_err,"");
+  event_minus  = h-> IntegralAndError(0, nbins/2, event_minus_err,"");
+  //event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_minus_err,"");
+  event_plus   = h-> IntegralAndError(nbins/2+1, nbins+1, event_plus_err,"");
+  event_total = event_plus + event_minus;
+
+  //std::cout<<event_minus<<" "<<event_minus_err<<" "<<event_plus<<" "<<event_plus_err<<" "<<event_total<<std::endl;
+
+  afb = (event_plus-event_minus)/(event_plus+event_minus);
+  afberr   = sqrt(4*(event_plus*event_plus*event_minus_err*event_minus_err 
+    + event_minus*event_minus*event_plus_err*event_plus_err)/
+    (event_total*event_total*event_total*event_total));
+
+}
+
 float GetAfb(TH1F* h){
 
   Int_t nbins = h->GetNbinsX();
@@ -2218,8 +2425,6 @@ float GetAfb(TH1F* h){
   return afb;
 
 }
-
-
 
 float GetAfbLHalf(TH1F* h){
 

@@ -38,22 +38,46 @@ std::set<DorkyEventIdentifier> already_seen;
 std::set<DorkyEventIdentifier> events_lasercalib;
 std::set<DorkyEventIdentifier> events_hcallasercalib;
 
+struct indCSV{
+    float CSVdisc;
+    int ind;
+};
+
+typedef vector< indCSV > VofiCSV;
+
+inline bool sortICSVByCSV(indCSV iCSV1, indCSV iCSV2) {
+    return iCSV1.CSVdisc > iCSV2.CSVdisc;
+}
+
+    
 bool makeCRplots = true; //For CR studies. If true don't apply the selection until making plots.
 bool doTobTecVeto = true; //Veto events in TOB/TEC transition region with (charged multiplicity) - (neutral multiplity) > 40 (due to large number of spurious fake tracks due to algoritm problem in 5_X)
 
 //control systematic variations
-bool applyTopPtWeighting = true;
+bool applyTopPtWeighting = false;
 bool scaleJESMETUp              = false;
 bool scaleJESMETDown            = false;
-bool scaleJER                   = false;
+bool scaleJERUp                 = false;
+bool scaleJERDown               = false;
 bool scaleLeptonEnergyUp = false;
 bool scaleLeptonEnergyDown = false;
-bool scaleBTAGSFup = false;
-bool scaleBTAGSFdown = false;
+//bool scaleUnclusteredEnergyUp = true;
+//bool scaleUnclusteredEnergyDown = false;
+
+bool systupBCShape = false;
+bool systdownBCShape = false;
+bool systupLShape = false;
+bool systdownLShape = false;
 bool scaleTrigSFup = false;
 bool scaleTrigSFdown = false;
-bool noVertexReweighting = false;
+
+bool systupPUShape = false;
+bool systdownPUShape = false;
+bool systnoPUReweighting = false;
+bool systidisoeffweighting = false;
+
 bool weighttaudecay = false;
+bool calculatePDFsystweights = false;
 
 //these values are also hard-coded in nuSolutions.py
 const double mb_solver = 4.8;
@@ -140,13 +164,24 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     //------------------------------------------------------------------------------------------------------
 
     TPython::LoadMacro("loadBetchart.py");
-    LHAPDF::initPDFSet("pdfs/cteq6mE.LHgrid");
+    //LHAPDF::initPDFSet("pdfs/cteq6mE.LHgrid");
+
+
+    LHAPDF::initPDFSetM(1,"pdfs/cteq6mE.LHgrid");
+    LHAPDF::initPDFM(1, 0);
+    LHAPDF::initPDFSetM(2,"pdfs/cteq6mE.LHgrid");
+
 
     //------------------------------------------------------------------------------------------------------
     // set csv discriminator reshaping
     //------------------------------------------------------------------------------------------------------
 
     BTagShapeInterface *nominalShape = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root", 0.0, 0.0);
+    //systematic variations for payloads
+    BTagShapeInterface *upBCShape    = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  1.0 ,  0.0);
+    BTagShapeInterface *downBCShape  = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root", -1.0 ,  0.0);
+    BTagShapeInterface *upLShape     = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  0.0 ,  1.0);
+    BTagShapeInterface *downLShape   = new BTagShapeInterface("../../Tools/BTagReshaping/csvdiscr.root",  0.0 , -1.0);
 
     //------------------------------
     // set up histograms
@@ -181,6 +216,45 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TH1F *h_pu_wgt = (TH1F *)pu_file->Get("puWeights");
     h_pu_wgt->SetName("h_pu_wgt");
 
+    TH1F *h_pu_wgt_systup = (TH1F *)pu_file->Get("puWeights");
+    h_pu_wgt_systup->SetName("h_pu_wgt_systup");
+
+    TH1F *h_pu_wgt_systdown = (TH1F *)pu_file->Get("puWeights");
+    h_pu_wgt_systdown->SetName("h_pu_wgt_systdown");
+
+
+    for (Int_t i = 1; i <= h_pu_wgt->GetNbinsX(); i++)
+    {
+
+        double max_nvtx = 14.;
+        double widthparameter = 5.;
+        double errorweightparameter = (h_pu_wgt->GetBinCenter(i) - max_nvtx)/widthparameter;
+        if(errorweightparameter > 1.) errorweightparameter=1.;
+        if(errorweightparameter <-1.) errorweightparameter=-1.;
+        errorweightparameter *= 2.; //multiply uncertainty by two to make it visible because it is so small
+
+        if (h_pu_wgt_systup->GetBinContent(i) != 0)
+        {
+            h_pu_wgt_systup->SetBinContent(i, h_pu_wgt_systup->GetBinContent(i) + h_pu_wgt_systup->GetBinError(i)*errorweightparameter );
+            h_pu_wgt_systup->SetBinError  (i, h_pu_wgt_systup->GetBinError(i));
+        }
+
+        if (h_pu_wgt_systdown->GetBinContent(i) != 0)
+        {
+            h_pu_wgt_systdown->SetBinContent(i, h_pu_wgt_systdown->GetBinContent(i) - h_pu_wgt_systdown->GetBinError(i)*errorweightparameter );
+            h_pu_wgt_systdown->SetBinError  (i, h_pu_wgt_systdown->GetBinError(i));
+        }
+
+    }
+
+    TCanvas *canPUweights = new TCanvas("canPUweights","canPUweights",800, 600);
+    h_pu_wgt->Draw("hist");
+    h_pu_wgt_systdown->SetLineColor(kRed);
+    h_pu_wgt_systup->SetLineColor(kGreen-2);
+    h_pu_wgt_systdown->Draw("hist sames"); 
+    h_pu_wgt_systup->Draw("hist sames"); 
+    canPUweights->Print("PUweights.pdf");
+
     //------------------------------
     // file loop
     //------------------------------
@@ -188,6 +262,12 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     unsigned int nEventsChain = 0;
     unsigned int nEvents_channel_migrated = 0;
     unsigned int nEvents = chain->GetEntries();
+    unsigned int ntotal[10] = {0};
+    unsigned int ncorrect[10] = {0};
+    unsigned int nwithsol[10] = {0};
+    unsigned int ncorrectwithsol[10] = {0};
+    unsigned int ninaccept[10] = {0};
+    unsigned int ninacceptwithsol[10] = {0};
     nEventsChain = nEvents;
     ULong64_t nEventsTotal = 0;
     int nevt_check = 0;
@@ -295,6 +375,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             // float evtweight = isData ? 1. :
             //    ( stopt.weight() * 19.5 * stopt.nvtxweight() );
             float puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt, isData );
+            if (systupPUShape) puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt_systup, isData );
+            if (systdownPUShape) puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt_systdown, isData );
+            if (systnoPUReweighting) puweight = 1.;
+
+
             float evtweight = isData ? 1. :
                               ( stopt.weight() * 19.5 * puweight );
 
@@ -303,10 +388,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                   if( stopt.lepPlus_status3_id() == -9999 && stopt.lepMinus_status3_id() == -9999 ) evtweight *= 1.028;
                   else if( stopt.lepPlus_status3_id() != -9999 && stopt.lepMinus_status3_id() != -9999 ) evtweight *= 0.945;
                   else evtweight *= 0.986;
-            }
-            //apply the evt_scale1fb normalisation missing from the mcatnlo babies
-            if (name.Contains("mcatnlo")) {
-                evtweight *= 234000.*274.00756/211.1/32852589.;  //274.00756/211.1 is the ratio of the the per-event xsec and the PREP xsec and accounts for the events with negative weights
             }
 
 
@@ -344,6 +425,44 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
 
             //----------------------------------------------------------------------------
+            //evaluate weights for PDF systematic variations
+            //----------------------------------------------------------------------------
+            PDFsystweights.clear();
+
+            if ( calculatePDFsystweights && name.Contains("tt") ){
+
+                  float   x1          = 0.0;      // momentum fraction for parton1
+                  float   x2          = 0.0;
+                  int     id1         = 0;        // pdgid of parton1
+                  int     id2         = 0;
+                  float   Q           = 0.0;      // event momentum scale
+                  x1          = stopt.pdfx1();
+                  x2          = stopt.pdfx2();
+                  id1         = stopt.pdfid1();
+                  id2         = stopt.pdfid2();
+                  Q           = stopt.pdfQ();
+
+                for (unsigned int subset = 0; subset < 41; subset++)
+                {
+
+                  // std::cout << "doing set, subset: " << set_ << ", " << subset << std::endl;
+                  //LHAPDF::initPDFM(2,0);
+
+                  LHAPDF::initPDFM(2, subset);
+
+                  // generated pdf values
+                  double fx1Q0gen = LHAPDF::xfxM(1, x1, Q, id1) / x1;
+                  double fx2Q0gen = LHAPDF::xfxM(1, x2, Q, id2) / x2;
+                  // subset pdf values
+                  double fx1Qi = LHAPDF::xfxM(2, x1, Q, id1) / x1;
+                  double fx2Qi = LHAPDF::xfxM(2, x2, Q, id2) / x2;
+                  // calculate weight and fill histogram
+                  PDFsystweights.push_back( ((fx1Qi*fx2Qi)/(fx1Q0gen*fx2Q0gen)) );
+
+                }// end of loop over subset of PDFs
+            }
+
+            //----------------------------------------------------------------------------
             // get jet information
             //----------------------------------------------------------------------------
 
@@ -351,6 +470,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             bjets.clear();
             nonbjets.clear();
             bcandidates.clear();
+            CSVdisc.clear();
             btag.clear();
             //sigma_jets.clear();
             mc.clear();
@@ -360,9 +480,34 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             n_ljets = 0;
             tobtecveto_ = false;
 
-            //stopt.pfjets() are already sorted by pT
-            for ( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i )
+            //evaluate reshaped CSV values (for MC) and fill vector for sorting
+            VofiCSV viCSV;
+            viCSV.clear();
+
+            for ( unsigned int ijet = 0 ; ijet < stopt.pfjets().size() ; ++ijet ) {
+                float CSVdisc_temp = isData ? stopt.pfjets_csv().at(ijet)
+                                    : nominalShape->reshape( stopt.pfjets().at(ijet).eta(),
+                                            stopt.pfjets().at(ijet).pt(),
+                                            stopt.pfjets_csv().at(ijet),
+                                            stopt.pfjets_mcflavorAlgo().at(ijet) );
+
+                if( systupBCShape && !isData ) CSVdisc_temp = upBCShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+                if( systdownBCShape && !isData ) CSVdisc_temp = downBCShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+                if( systupLShape && !isData ) CSVdisc_temp = upLShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+                if( systdownLShape && !isData ) CSVdisc_temp = downLShape->reshape( stopt.pfjets().at(ijet).eta(), stopt.pfjets().at(ijet).pt(), stopt.pfjets_csv().at(ijet), stopt.pfjets_mcflavorAlgo().at(ijet) );
+
+                indCSV iCSV = { CSVdisc_temp, ijet };
+                CSVdisc.push_back( CSVdisc_temp );
+                viCSV.push_back(iCSV);
+            }
+
+            sort(viCSV.begin(), viCSV.end(), sortICSVByCSV);
+
+            //stopt.pfjets() are sorted by pT. Sort by CSV instead.
+            //for ( unsigned int i = 0 ; i < stopt.pfjets().size() ; ++i )
+            for ( unsigned int iii = 0 ; iii < stopt.pfjets().size() ; ++iii )
             {
+                int i = viCSV.at(iii).ind;
 
                 if ( stopt.pfjets().at(i).pt() < 30 )  continue;
                 if ( fabs(stopt.pfjets().at(i).eta()) > 2.4 )  continue; //note, this was 2.5 for 7 TeV AFB
@@ -371,10 +516,15 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 float sigma = stopt.pfjets_sigma().at(i);
                 float unc   = stopt.pfjets_uncertainty().at(i);
 
-                if ( scaleJER && !isData ) {
+                //smear the JER
+                if (  !isData ) {
 
                     TRandom3 r3(  stopt.event()*1000 + i  );
-                    double JER_smear_width = sqrt( pow( getDataMCRatio(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatio(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio in the babies for MC, so must divide
+                    double JER_smear_width = 0.;
+                    if(scaleJERUp)            JER_smear_width = sqrt( pow( getDataMCRatioSystUp(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatioOld(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio(Old) in the babies for MC, so must divide
+                    else if(scaleJERDown)     JER_smear_width = sqrt( pow( getDataMCRatioSystDown(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatioOld(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio(Old) in the babies for MC, so must divide
+                    else                      JER_smear_width = sqrt( pow( getDataMCRatio(stopt.pfjets().at(i).eta()) , 2 ) - 1. ) * sigma  / getDataMCRatioOld(stopt.pfjets().at(i).eta());  //pfjets_sigma() is already scaled by getDataMCRatio(Old) in the babies for MC, so must divide
+
                     double JER_smear = r3.Gaus(0,JER_smear_width);
 
                     //cout<<stopt.pfjets().at(i)<<endl;
@@ -394,15 +544,19 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                     //cout<<stopt.pfjets().at(i)<<endl;
 
-                    met_x -= vardirection*unc*stopt.pfjets().at(i).px();
-                    met_y -= vardirection*unc*stopt.pfjets().at(i).py();
+                    //met_x -= vardirection*unc*stopt.pfjets().at(i).px(); //only jets with pt>30 GeV are stored, so can't recompute the deltaMET. Using the value from the stop babies instead.
+                    //met_y -= vardirection*unc*stopt.pfjets().at(i).py(); //only jets with pt>30 GeV are stored, so can't recompute the deltaMET. Using the value from the stop babies instead.
                     stopt.pfjets().at(i) *= (1. + vardirection*unc);
 
                     //cout<<stopt.pfjets().at(i)<<" "<<vardirection<<" "<<unc<<" "<<endl;
                 }
 
+                TString currentfilename = currentFile->GetTitle();
+
                 //  bool passMediumPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(),stopt.pfjets_mvaPUid().at(i),1);
-                bool passTightPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(), stopt.pfjets_mva5xPUid().at(i), 0);
+                bool passTightPUid = true;
+                //hack due to missing pfjets_mva5xPUid in the low mass DY baby
+                if(! currentfilename.Contains("Mll10to50")  ) passTightPUid = passMVAJetId(stopt.pfjets().at(i).pt(), stopt.pfjets().at(i).eta(), stopt.pfjets_mva5xPUid().at(i), 0);
 
                 if (!passTightPUid) continue;
 
@@ -417,13 +571,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                     if ((stopt.pfjets_chm().at(i) - stopt.pfjets_neu().at(i)) > 40) tobtecveto_ = true;
                 }
 
-                //to not use reshaped discriminator
-                //float csv_nominal= stopt.pfjets_csv().at(i);
-                float csv_nominal = isData ? stopt.pfjets_csv().at(i)
-                                    : nominalShape->reshape( stopt.pfjets().at(i).eta(),
-                                            stopt.pfjets().at(i).pt(),
-                                            stopt.pfjets_csv().at(i),
-                                            stopt.pfjets_mcflavorAlgo().at(i) );
+                float csv_nominal = CSVdisc.at(i);
+
                 if (csv_nominal > 0.679)
                 {
                     bjets.push_back( stopt.pfjets().at(i) );
@@ -453,10 +602,69 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             if (n_jets < min_njets) continue;
 
-            //if making systematic variations, recalculate t1metphicorr using the updated met_x, met_y
-            if( ((scaleJESMETDown || scaleJESMETUp) && isData) || (scaleJER && !isData) ) {
+
+            if ( (scaleLeptonEnergyDown || scaleLeptonEnergyUp) && isData ) {
+
+                if(scaleLeptonEnergyDown==scaleLeptonEnergyUp) {cout<<"error: can't vary LES up and down at the same time"<<endl; exit(0);}
+
+                float vardirection = scaleLeptonEnergyUp?1:-1;
+
+                if( abs(stopt.id1())==11 ) {
+                    float Lunc = abs(stopt.lep1().eta()) > 1.4442 ? 0.015 : 0.006;
+                    met_x -= vardirection*Lunc*stopt.lep1().px();
+                    met_y -= vardirection*Lunc*stopt.lep1().py();
+                    stopt.lep1() *= (1. + vardirection*Lunc);
+                    if ( stopt.id1() > 0 ) stopt.lepp() *= (1. + vardirection*Lunc);
+                    else stopt.lepm() *= (1. + vardirection*Lunc);
+                    //cout<<(1. + vardirection*Lunc)<<endl;
+                }
+
+                if( abs(stopt.id2())==11 ) {
+                    float Lunc = abs(stopt.lep2().eta()) > 1.4442 ? 0.015 : 0.006;
+                    met_x -= vardirection*Lunc*stopt.lep2().px();
+                    met_y -= vardirection*Lunc*stopt.lep2().py();
+                    stopt.lep2() *= (1. + vardirection*Lunc);
+                    if ( stopt.id2() > 0 ) stopt.lepp() *= (1. + vardirection*Lunc);
+                    else stopt.lepm() *= (1. + vardirection*Lunc);
+                    //cout<<(1. + vardirection*Lunc)<<endl;
+                }
+
+
+            }
+
+/*
+//insufficient information in babies to do unclustered energy variation separately. It's included in t1metphicorrup and t1metphicorrdn.
+            if ( scaleUnclusteredEnergyUp || scaleUnclusteredEnergyDown ) {
+                float pfmetx = stopt.t1metphicorr() * cos( stopt.t1metphicorrphi() );
+                float pfmety = stopt.t1metphicorr() * sin( stopt.t1metphicorrphi() );
+                float pfmetxup = stopt.t1metphicorrup() * cos( stopt.t1metphicorrphiup() );
+                float pfmetyup = stopt.t1metphicorrup() * sin( stopt.t1metphicorrphiup() );
+                float pfmetxdn = stopt.t1metphicorrdn() * cos( stopt.t1metphicorrphidn() );
+                float pfmetydn = stopt.t1metphicorrdn() * sin( stopt.t1metphicorrphidn() );
+
+                cout<<pfmetxup-pfmetx<<" "<<pfmetxdn-pfmetx<<" "<<met_x<<" "<<pfmetxup<<" "<<pfmetx<<" "<<pfmetxdn<<endl;
+                //met_x - pfmetxup
+            }
+*/
+
+            //if making systematic variations, recalculate t1metphicorr using the updated met_x, met_y  (for MC we are always varying the JER to the smeared central value)
+            if( ( (scaleLeptonEnergyDown || scaleLeptonEnergyUp) && isData ) || (!isData) ) {
                 t1metphicorr = sqrt( met_x*met_x + met_y*met_y );
                 t1metphicorrphi = atan2( met_y , met_x );
+            }
+
+            if( scaleJESMETDown ) {
+                t1metphicorr = stopt.t1metphicorrdn();
+                t1metphicorrphi = stopt.t1metphicorrphidn();
+                met_x = t1metphicorr * cos(t1metphicorrphi);
+                met_y = t1metphicorr * sin(t1metphicorrphi);
+            }
+
+            if( scaleJESMETUp ) {
+                t1metphicorr = stopt.t1metphicorrup();
+                t1metphicorrphi = stopt.t1metphicorrphiup();
+                met_x = t1metphicorr * cos(t1metphicorrphi);
+                met_y = t1metphicorr * sin(t1metphicorrphi);
             }
 
             //if <2 btagged jets, take the highest pT light jets as b candidates
@@ -482,7 +690,6 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 if (fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep2(), bcandidates.at(i))) < lep2b_mindPhi ) lep2b_mindPhi = fabs(ROOT::Math::VectorUtil::DeltaPhi(stopt.lep2(), bcandidates.at(i)));
             }
             //if(lep1b_mindPhi<0.6 || lep2b_mindPhi<0.6 ) continue;
-
 
             //----------------------------------------------------------------------------
             // Veto events with jet(s) with suspected TOB/TEC seeded tracking problem. http://www.t2.ucsd.edu/tastwiki/pub/CMS/20130426OsChats/wh_tobtecprob_olivito_260413.pdf
@@ -876,6 +1083,55 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 evtweight *= sqrt( TopPtWeight(pT_topplus_gen) * TopPtWeight(pT_topminus_gen) );
             }
 
+            if ( systidisoeffweighting ) {
+                double idisoweight = 1.;
+                float lep1eta_temp = fabs(stopt.lep1().Eta());
+                if ( abs(stopt.id1())==11 )  lep1eta_temp = lep1eta_temp > 1.44 ? 1.44 : lep1eta_temp;
+                if ( abs(stopt.id1())==13 )  lep1eta_temp = lep1eta_temp > 2.09 ? 2.09 : lep1eta_temp;
+
+                float lep2eta_temp = fabs(stopt.lep2().Eta());
+                if ( abs(stopt.id2())==11 )  lep2eta_temp = lep2eta_temp > 1.44 ? 1.44 : lep2eta_temp;
+                if ( abs(stopt.id2())==13 )  lep2eta_temp = lep2eta_temp > 2.09 ? 2.09 : lep2eta_temp;
+
+                idisoweight *= getisoeffweight( stopt.id1(), stopt.lep1().Pt(), lep1eta_temp );
+                idisoweight *= getisoeffweight( stopt.id2(), stopt.lep2().Pt(), lep2eta_temp );
+                idisoweight *= getideffweight( stopt.id1(), stopt.lep1().Pt(), lep1eta_temp );
+                idisoweight *= getideffweight( stopt.id2(), stopt.lep2().Pt(), lep2eta_temp );
+
+                evtweight*=idisoweight;
+                //cout<<idisoweight<<endl;
+            }
+
+            //check performance of b candidate selection
+            if (  dataset_2l && (passFullSelection(isData) || passFullSelection_bveto(isData)) ) {
+                //test if selected b candidates match the true b quarks
+                if(name.Contains("ttdl")) {
+
+                    int nmatched = 0;
+
+                    if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(0)) < 0.4 ) nmatched++;
+                    else if ( ROOT::Math::VectorUtil::DeltaR(stopt.bMinus_status3(), bcandidates.at(0)) < 0.4 ) nmatched++;
+                    if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(0)) >= 0.4 ) if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(1)) < 0.4 ) nmatched++;
+                    if ( ROOT::Math::VectorUtil::DeltaR(stopt.bMinus_status3(), bcandidates.at(0)) >= 0.4 ) if ( ROOT::Math::VectorUtil::DeltaR(stopt.bPlus_status3(), bcandidates.at(1)) >= 0.4 ) if ( ROOT::Math::VectorUtil::DeltaR(stopt.bMinus_status3(), bcandidates.at(1)) < 0.4 ) nmatched++;
+
+                    if(nmatched==2) ncorrect[n_bjets]++;
+                    if(nmatched>2) cout<<"something went wrong with matching"<<endl;
+                    if(m_top>0 && nmatched==2) ncorrectwithsol[n_bjets]++;
+
+                    if( fabs(stopt.bPlus_status3().eta()) < 2.4 && fabs(stopt.bPlus_status3().pt())>30. && fabs(stopt.bMinus_status3().eta()) < 2.4 && fabs(stopt.bMinus_status3().pt())>30. ) {
+                        ninaccept[n_bjets]++;
+                        if(m_top>0) ninacceptwithsol[n_bjets]++;
+                    }
+                }
+
+                ntotal[n_bjets]++;
+                if(m_top>0) nwithsol[n_bjets]++;
+
+                //if (event % 100 == 0 || n_bjets>2) cout<<n_bjets<<" b-jets, within acceptance: "<<double(ninaccept[n_bjets])/double(ntotal[n_bjets])<<", correct permutation: "<<double(ncorrect[n_bjets])/double(ntotal[n_bjets])<<", with solution: "<<double(nwithsol[n_bjets])/double(ntotal[n_bjets])<<", in acceptance when with solution: "<<double(ninacceptwithsol[n_bjets])/double(nwithsol[n_bjets])<<", correct permutation when with solution: "<<double(ncorrectwithsol[n_bjets])/double(nwithsol[n_bjets])<<", ntotal: "<<ntotal[n_bjets]<<endl;
+            }
+
+            //veto on 3 or more b-tags because the chance of choosing the correct permutation is worse than in 1-tag events (66% [3tag] vs 68% [1tag] vs 96%[2tag] in events with a solution) and because the purity is questionable (data/MC agreement is bad in >2 b-tag bins).
+            if(n_bjets>2) continue;
 
             //
             // SIGNAL REGION - dilepton + b-tag
@@ -885,7 +1141,7 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             {
                 //check cuts
                 if ( (stopt.lep1().Pt() < 20.0 || stopt.lep2().Pt() < 20.0 ) ) cout << stopt.lep1().Pt() << " " << stopt.lep2().Pt() << endl;
-                if ( (stopt.lep1() + stopt.lep2()).M() < 30.0 )  cout << (stopt.lep1() + stopt.lep2()).M() << endl;
+                if ( (stopt.lep1() + stopt.lep2()).M() < 20.0 )  cout << (stopt.lep1() + stopt.lep2()).M() << endl;
                 if ( t1metphicorr < 40. && basic_flav_tag_dl != "_mueg" )  cout << "MET: " << t1metphicorr << " " + basic_flav_tag_dl << endl;
 
                 weight = evtweight * trigweight_dl;
@@ -1120,6 +1376,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
         //stwatch.Start();
 
     } // end file loop
+
+    for (int nb = 0; nb < 6; ++nb)
+    {
+        cout<<nb<<" b-jets, within acceptance: "<<double(ninaccept[nb])/double(ntotal[nb])<<", correct permutation: "<<double(ncorrect[nb])/double(ntotal[nb])<<", with solution: "<<double(nwithsol[nb])/double(ntotal[nb])<<", in acceptance when with solution: "<<double(ninacceptwithsol[nb])/double(nwithsol[nb])<<", correct permutation when with solution: "<<double(ncorrectwithsol[nb])/double(nwithsol[nb])<<", ntotal: "<<ntotal[nb]<<endl;
+    }
 
     //
     // finish
@@ -1435,6 +1696,7 @@ void StopTreeLooper::makeSIGPlots( float evtweight, std::map<std::string, TH1D *
 
     plot1DUnderOverFlow(hist_tag+"_n_jets" + tag_selection + flav_tag, n_jets, evtweight, h_1d, 8 , 0, 8);
     plot1DUnderOverFlow(hist_tag+"_n_bjets" + tag_selection + flav_tag, n_bjets, evtweight, h_1d, 8 , 0, 8);
+    plot1DUnderOverFlow(hist_tag+"_nvtx" + tag_selection + flav_tag,  stopt.nvtx(), evtweight, h_1d, 40, 0, 40);
 
     plot1DUnderOverFlow(hist_tag+"_met" + tag_selection + flav_tag, t1metphicorr, evtweight, h_1d, nbins , 0, 500);
     plot1DUnderOverFlow(hist_tag+"_metphi" + tag_selection + flav_tag, t1metphicorrphi, evtweight, h_1d, nbins , -TMath::Pi(), TMath::Pi());
@@ -2228,8 +2490,8 @@ double StopTreeLooper::get_pdf_weight( TLorentzVector &t1, TLorentzVector &t2 )
 
     vector <double> f1, f2;
 
-    f1 = LHAPDF::xfx(x1, mt_solver);
-    f2 = LHAPDF::xfx(x2, mt_solver);
+    f1 = LHAPDF::xfxM(1, x1, mt_solver);
+    f2 = LHAPDF::xfxM(1, x2, mt_solver);
 
     // The order of f:
     //    -t  -b  -c  -s  -u  -d   g   d   u   s   c   b   t
@@ -2285,7 +2547,7 @@ bool StopTreeLooper::passFullSelection(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             && n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2303,7 +2565,7 @@ bool StopTreeLooper::passFullSelection_bveto(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             && n_bjets == 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2320,7 +2582,7 @@ bool StopTreeLooper::passFullSelection_1jet_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets == 1
             && n_jets == 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2336,7 +2598,7 @@ bool StopTreeLooper::passFullSelection_0jets(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets == 0
             && n_jets == 0
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2353,7 +2615,7 @@ bool StopTreeLooper::passFullSelection_Zpeak_inclusiveb(bool isData)
             && fabs( stopt.dilmass() - 91.) <= 15.
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2370,7 +2632,7 @@ bool StopTreeLooper::passFullSelection_noMETcut_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             //&& (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2388,7 +2650,7 @@ bool StopTreeLooper::passFullSelection_SS_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             && (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2405,7 +2667,7 @@ bool StopTreeLooper::passFullSelection_SS_noMETcut_inclusiveb(bool isData)
             && (abs(stopt.id1()) != abs(stopt.id2()) || fabs( stopt.dilmass() - 91.) > 15. )
             //&& n_bjets > 0
             && n_jets > 1
-            && stopt.dilmass() >= 30.0
+            && stopt.dilmass() >= 20.0
             //&& (abs(stopt.id1()) != abs(stopt.id2()) || t1metphicorr >= 40. )
        ) passFull = true;
 
@@ -2437,6 +2699,7 @@ void StopTreeLooper::MakeBabyNtuple(const char *babyFilename)
     babyTree_->Branch("genchannel",                &genchannel,              "genchannel/I"               );
     babyTree_->Branch("t_mass",                &m_top,              "t_mass/F"               );
     babyTree_->Branch("weight",                &weight,              "weight/D"               );
+    babyTree_->Branch("PDFsystweights", "std::vector<double>", &PDFsystweights );
     //babyTree_->Branch("Nsolns",                &Nsolns_,              "Nsolns/I"               );
     //babyTree_->Branch("massltb",               &massltb_,             "massltb/F"              );
     //babyTree_->Branch("massllb",               &massllb_,             "massllb/F"              );
