@@ -615,7 +615,7 @@ float getideffweight(int id1, float pt, float eta)
   if ( abs(id1)==13 ) {
 
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9839;
       else if (pt>=30. && pt<40.) 	return 0.9850;
       else if (pt>=40. && pt<50.) 	return 0.9865;
@@ -627,7 +627,7 @@ float getideffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 0.9937;
       else if (pt>=300. ) 		return 0.9754;
     } else if ( fabs(eta)<1.5) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9850;
       else if (pt>=30. && pt<40.) 	return 0.9846;
       else if (pt>=40. && pt<50.) 	return 0.9866;
@@ -639,7 +639,7 @@ float getideffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 0.9867;
       else if (pt>=300. ) 		return 1.0348; 
     } else if ( fabs(eta)<2.1) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9876;
       else if (pt>=30. && pt<40.) 	return 0.9890;
       else if (pt>=40. && pt<50.) 	return 0.9902;
@@ -655,7 +655,7 @@ float getideffweight(int id1, float pt, float eta)
   //electron efficiencies
   else if ( abs(id1)==11 ) {
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9923;
       else if (pt>=30. && pt<40.) 	return 0.9883;
       else if (pt>=40. && pt<50.) 	return 0.9900;
@@ -667,7 +667,7 @@ float getideffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 0.9869;
       else if (pt>=300. ) 		return 1.0789; 
     } else if ( fabs(eta)<1.4442 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9632;
       else if (pt>=30. && pt<40.) 	return 0.9707;
       else if (pt>=40. && pt<50.) 	return 0.9755;
@@ -700,7 +700,7 @@ float getisoeffweight(int id1, float pt, float eta)
   if ( abs(id1)==13 ) {
 
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9934;
       else if (pt>=30. && pt<40.) 	return 0.9969;
       else if (pt>=40. && pt<50.) 	return 0.9979;
@@ -712,7 +712,7 @@ float getisoeffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 1.0016;
       else if (pt>=300. ) 		return 0.9923;
     } else if ( fabs(eta)<1.5) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9974;
       else if (pt>=30. && pt<40.) 	return 1.0004;
       else if (pt>=40. && pt<50.) 	return 1.0001;
@@ -724,7 +724,7 @@ float getisoeffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 1.0059;
       else if (pt>=300. ) 		return 0.9822; 
     } else if ( fabs(eta)<2.1) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 1.0068;
       else if (pt>=30. && pt<40.) 	return 1.0039;
       else if (pt>=40. && pt<50.) 	return 1.0023;
@@ -742,7 +742,7 @@ float getisoeffweight(int id1, float pt, float eta)
   else if ( abs(id1)==11 ) {
 
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9938;
       else if (pt>=30. && pt<40.) 	return 0.9968;
       else if (pt>=40. && pt<50.) 	return 0.9973;
@@ -754,7 +754,7 @@ float getisoeffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 1.0025;
       else if (pt>=300. ) 		return 1.1525; 
     } else if ( fabs(eta)<1.4442 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9939;
       else if (pt>=30. && pt<40.) 	return 0.9963;
       else if (pt>=40. && pt<50.) 	return 0.9965;

@@ -61,6 +61,9 @@ bool scaleJERUp                 = false;
 bool scaleJERDown               = false;
 bool scaleLeptonEnergyUp = false;
 bool scaleLeptonEnergyDown = false;
+//bool scaleUnclusteredEnergyUp = true;
+//bool scaleUnclusteredEnergyDown = false;
+
 bool systupBCShape = false;
 bool systdownBCShape = false;
 bool systupLShape = false;
@@ -68,7 +71,11 @@ bool systdownLShape = false;
 bool scaleTrigSFup = false;
 bool scaleTrigSFdown = false;
 
-bool noVertexReweighting = false;
+bool systupPUShape = false;
+bool systdownPUShape = false;
+bool systnoPUReweighting = false;
+bool systidisoeffweighting = false;
+
 bool weighttaudecay = false;
 bool calculatePDFsystweights = false;
 
@@ -209,6 +216,45 @@ void StopTreeLooper::loop(TChain *chain, TString name)
     TH1F *h_pu_wgt = (TH1F *)pu_file->Get("puWeights");
     h_pu_wgt->SetName("h_pu_wgt");
 
+    TH1F *h_pu_wgt_systup = (TH1F *)pu_file->Get("puWeights");
+    h_pu_wgt_systup->SetName("h_pu_wgt_systup");
+
+    TH1F *h_pu_wgt_systdown = (TH1F *)pu_file->Get("puWeights");
+    h_pu_wgt_systdown->SetName("h_pu_wgt_systdown");
+
+
+    for (Int_t i = 1; i <= h_pu_wgt->GetNbinsX(); i++)
+    {
+
+        double max_nvtx = 14.;
+        double widthparameter = 5.;
+        double errorweightparameter = (h_pu_wgt->GetBinCenter(i) - max_nvtx)/widthparameter;
+        if(errorweightparameter > 1.) errorweightparameter=1.;
+        if(errorweightparameter <-1.) errorweightparameter=-1.;
+        errorweightparameter *= 2.; //multiply uncertainty by two to make it visible because it is so small
+
+        if (h_pu_wgt_systup->GetBinContent(i) != 0)
+        {
+            h_pu_wgt_systup->SetBinContent(i, h_pu_wgt_systup->GetBinContent(i) + h_pu_wgt_systup->GetBinError(i)*errorweightparameter );
+            h_pu_wgt_systup->SetBinError  (i, h_pu_wgt_systup->GetBinError(i));
+        }
+
+        if (h_pu_wgt_systdown->GetBinContent(i) != 0)
+        {
+            h_pu_wgt_systdown->SetBinContent(i, h_pu_wgt_systdown->GetBinContent(i) - h_pu_wgt_systdown->GetBinError(i)*errorweightparameter );
+            h_pu_wgt_systdown->SetBinError  (i, h_pu_wgt_systdown->GetBinError(i));
+        }
+
+    }
+
+    TCanvas *canPUweights = new TCanvas("canPUweights","canPUweights",800, 600);
+    h_pu_wgt->Draw("hist");
+    h_pu_wgt_systdown->SetLineColor(kRed);
+    h_pu_wgt_systup->SetLineColor(kGreen-2);
+    h_pu_wgt_systdown->Draw("hist sames"); 
+    h_pu_wgt_systup->Draw("hist sames"); 
+    canPUweights->Print("PUweights.pdf");
+
     //------------------------------
     // file loop
     //------------------------------
@@ -329,6 +375,11 @@ void StopTreeLooper::loop(TChain *chain, TString name)
             // float evtweight = isData ? 1. :
             //    ( stopt.weight() * 19.5 * stopt.nvtxweight() );
             float puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt, isData );
+            if (systupPUShape) puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt_systup, isData );
+            if (systdownPUShape) puweight = vtxweight_n( stopt.ntruepu(), h_pu_wgt_systdown, isData );
+            if (systnoPUReweighting) puweight = 1.;
+
+
             float evtweight = isData ? 1. :
                               ( stopt.weight() * 19.5 * puweight );
 
@@ -493,8 +544,8 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
                     //cout<<stopt.pfjets().at(i)<<endl;
 
-                    met_x -= vardirection*unc*stopt.pfjets().at(i).px();
-                    met_y -= vardirection*unc*stopt.pfjets().at(i).py();
+                    //met_x -= vardirection*unc*stopt.pfjets().at(i).px(); //only jets with pt>30 GeV are stored, so can't recompute the deltaMET. Using the value from the stop babies instead.
+                    //met_y -= vardirection*unc*stopt.pfjets().at(i).py(); //only jets with pt>30 GeV are stored, so can't recompute the deltaMET. Using the value from the stop babies instead.
                     stopt.pfjets().at(i) *= (1. + vardirection*unc);
 
                     //cout<<stopt.pfjets().at(i)<<" "<<vardirection<<" "<<unc<<" "<<endl;
@@ -551,10 +602,65 @@ void StopTreeLooper::loop(TChain *chain, TString name)
 
             if (n_jets < min_njets) continue;
 
+
+            if ( (scaleLeptonEnergyDown || scaleLeptonEnergyUp) && isData ) {
+
+                if(scaleLeptonEnergyDown==scaleLeptonEnergyUp) {cout<<"error: can't vary LES up and down at the same time"<<endl; exit(0);}
+
+                float vardirection = scaleLeptonEnergyUp?1:-1;
+
+                if( abs(stopt.id1())==11 ) {
+                    float Lunc = abs(stopt.lep1().eta()) > 1.4442 ? 0.015 : 0.006;
+                    met_x -= vardirection*Lunc*stopt.lep1().px();
+                    met_y -= vardirection*Lunc*stopt.lep1().py();
+                    stopt.lep1() *= (1. + vardirection*Lunc);
+                    if ( stopt.id1() > 0 ) stopt.lepp() *= (1. + vardirection*Lunc);
+                    else stopt.lepm() *= (1. + vardirection*Lunc);
+                    //cout<<(1. + vardirection*Lunc)<<endl;
+                }
+
+                if( abs(stopt.id2())==11 ) {
+                    float Lunc = abs(stopt.lep2().eta()) > 1.4442 ? 0.015 : 0.006;
+                    met_x -= vardirection*Lunc*stopt.lep2().px();
+                    met_y -= vardirection*Lunc*stopt.lep2().py();
+                    stopt.lep2() *= (1. + vardirection*Lunc);
+                    if ( stopt.id2() > 0 ) stopt.lepp() *= (1. + vardirection*Lunc);
+                    else stopt.lepm() *= (1. + vardirection*Lunc);
+                    //cout<<(1. + vardirection*Lunc)<<endl;
+                }
+
+
+            }
+
+/*
+//insufficient information in babies to do unclustered energy variation separately. It's included in t1metphicorrup and t1metphicorrdn.
+            if ( scaleUnclusteredEnergyUp || scaleUnclusteredEnergyDown ) {
+                float pfmetx = stopt.t1metphicorr() * cos( stopt.t1metphicorrphi() );
+                float pfmety = stopt.t1metphicorr() * sin( stopt.t1metphicorrphi() );
+                float pfmetxup = stopt.t1metphicorrup() * cos( stopt.t1metphicorrphiup() );
+                float pfmetyup = stopt.t1metphicorrup() * sin( stopt.t1metphicorrphiup() );
+                float pfmetxdn = stopt.t1metphicorrdn() * cos( stopt.t1metphicorrphidn() );
+                float pfmetydn = stopt.t1metphicorrdn() * sin( stopt.t1metphicorrphidn() );
+
+                cout<<pfmetxup-pfmetx<<" "<<pfmetxdn-pfmetx<<" "<<met_x<<" "<<pfmetxup<<" "<<pfmetx<<" "<<pfmetxdn<<endl;
+                //met_x - pfmetxup
+            }
+*/
+
             //if making systematic variations, recalculate t1metphicorr using the updated met_x, met_y  (for MC we are always varying the JER to the smeared central value)
-            if( ((scaleJESMETDown || scaleJESMETUp) && isData) || (!isData) ) {
+            if( ( (scaleLeptonEnergyDown || scaleLeptonEnergyUp) && isData ) || (!isData) ) {
                 t1metphicorr = sqrt( met_x*met_x + met_y*met_y );
                 t1metphicorrphi = atan2( met_y , met_x );
+            }
+
+            if( scaleJESMETDown ) {
+                t1metphicorr = stopt.t1metphicorrdn();
+                t1metphicorrphi = stopt.t1metphicorrphidn();
+            }
+
+            if( scaleJESMETUp ) {
+                t1metphicorr = stopt.t1metphicorrup();
+                t1metphicorrphi = stopt.t1metphicorrphiup();
             }
 
             //if <2 btagged jets, take the highest pT light jets as b candidates
@@ -971,6 +1077,25 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 float pT_topplus_gen = stopt.t().Pt();
                 float pT_topminus_gen = stopt.tbar().Pt();
                 evtweight *= sqrt( TopPtWeight(pT_topplus_gen) * TopPtWeight(pT_topminus_gen) );
+            }
+
+            if ( systidisoeffweighting ) {
+                double idisoweight = 1.;
+                float lep1eta_temp = fabs(stopt.lep1().Eta());
+                if ( abs(stopt.id1())==11 )  lep1eta_temp = lep1eta_temp > 1.44 ? 1.44 : lep1eta_temp;
+                if ( abs(stopt.id1())==13 )  lep1eta_temp = lep1eta_temp > 2.09 ? 2.09 : lep1eta_temp;
+
+                float lep2eta_temp = fabs(stopt.lep2().Eta());
+                if ( abs(stopt.id2())==11 )  lep2eta_temp = lep2eta_temp > 1.44 ? 1.44 : lep2eta_temp;
+                if ( abs(stopt.id2())==13 )  lep2eta_temp = lep2eta_temp > 2.09 ? 2.09 : lep2eta_temp;
+
+                idisoweight *= getisoeffweight( stopt.id1(), stopt.lep1().Pt(), lep1eta_temp );
+                idisoweight *= getisoeffweight( stopt.id2(), stopt.lep2().Pt(), lep2eta_temp );
+                idisoweight *= getideffweight( stopt.id1(), stopt.lep1().Pt(), lep1eta_temp );
+                idisoweight *= getideffweight( stopt.id2(), stopt.lep2().Pt(), lep2eta_temp );
+
+                evtweight*=idisoweight;
+                //cout<<idisoweight<<endl;
             }
 
             //check performance of b candidate selection
