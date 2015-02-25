@@ -502,6 +502,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
             for (int i = 0; i < nRegions; ++i)
             {   
+                if(i==CR40) continue;
                 CRsftot[i] = 0;
                 CRsftoterr[i] = 0;
 
@@ -763,9 +764,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         for (int leptype = 0; leptype < nCh; ++leptype)
         {
-            graphfakes->SetPoint(leptype+0, leptype+0, CRsf[CR5][leptype]); graphfakes->SetPointError( leptype+0, 0, CRsferr[CR5][leptype] );
-            graphfakes->SetPoint(leptype+3, leptype+3, CRsf[CR5v][leptype]); graphfakes->SetPointError( leptype+3, 0, CRsferr[CR5v][leptype] );
-            graphfakes->SetPoint(leptype+6, leptype+6, CRsf[CR6][leptype]); graphfakes->SetPointError( leptype+6, 0, CRsferr[CR6][leptype] );
+            graphfakes->SetPoint(leptype*3+0, leptype*3+0+0.5, CRsf[CR5][leptype]); graphfakes->SetPointError( leptype*3+0, 0, CRsferr[CR5][leptype] );
+            graphfakes->SetPoint(leptype*3+1, leptype*3+1+0.5, CRsf[CR5v][leptype]); graphfakes->SetPointError( leptype*3+1, 0, CRsferr[CR5v][leptype] );
+            graphfakes->SetPoint(leptype*3+2, leptype*3+2+0.5, CRsf[CR6][leptype]); graphfakes->SetPointError( leptype*3+2, 0, CRsferr[CR6][leptype] );
         }
 
 
@@ -789,27 +790,166 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
 
 
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 1+leptype-1, 1+leptype-1, CRsf[CR1][leptype] );    graphDYeemm->SetPointError( 1+leptype-1, 0, CRsferr[CR1][leptype] ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 3+leptype-1, 3+leptype-1, CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype] );    graphDYeemm->SetPointError( 3+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 5+leptype-1, 5+leptype-1, CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 5+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 7+leptype-1, 7+leptype-1, CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 7+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 9+leptype-1, 9+leptype-1, CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 9+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 11+leptype-1, 11+leptype-1, CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 11+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 1+leptype-1, 1+leptype-1+0.5, CRsf[CR1][leptype] );    graphDYeemm->SetPointError( 1+leptype-1, 0, CRsferr[CR1][leptype] ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 3+leptype-1, 3+leptype-1+0.5, CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype] );    graphDYeemm->SetPointError( 3+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR1][leptype]/CRsf[CR1v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 5+leptype-1, 5+leptype-1+0.5, CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 5+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 7+leptype-1, 7+leptype-1+0.5, CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 7+leptype-1, 0, (CRsf[CR0][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR0][leptype]/CRsf[CR0][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 9+leptype-1, 9+leptype-1+0.5, CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYeemm->SetPointError( 9+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYeemm->SetPoint( 11+leptype-1, 11+leptype-1+0.5, CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype] );    graphDYeemm->SetPointError( 11+leptype-1, 0, (CRsf[CR1v][leptype]*CRsf[CR3][leptype]/CRsf[CR3v][leptype])*sqrt(pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)) ); }
 
 
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 1+leptype-1, 1+leptype-1, CRsf[CR2][leptype] );    graphDYtt->SetPointError( 1+leptype-1, 0, CRsferr[CR2][leptype] ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 3+leptype-1, 3+leptype-1, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 3+leptype-1, 0, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 5+leptype-1, 5+leptype-1, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 5+leptype-1, 0, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 7+leptype-1, 7+leptype-1, CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 7+leptype-1, 0, (CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 1+leptype-1, 1+leptype-1+0.5, CRsf[CR2][leptype] );    graphDYtt->SetPointError( 1+leptype-1, 0, CRsferr[CR2][leptype] ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 3+leptype-1, 3+leptype-1+0.5, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 3+leptype-1, 0, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 5+leptype-1, 5+leptype-1+0.5, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 5+leptype-1, 0, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 7+leptype-1, 7+leptype-1+0.5, CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 7+leptype-1, 0, (CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+
+
+
+        TH2F* hdummyDYeemm = new TH2F("hdummyDYeemm","",12,0,12,100,0.9,1.8);
+        
+        hdummyDYeemm->GetXaxis()->SetBinLabel(1,"CR1 ee");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(1+1,"CR1 #mu#mu");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(3,"CR0#times1 ee");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(3+1,"CR0#times1 #mu#mu");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(5,"CR0#times2 ee");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(5+1,"CR0#times2 #mu#mu");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(7,"CR0#times3 ee");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(7+1,"CR0#times3 #mu#mu");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(9,"CR1v#times2 ee");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(9+1,"CR1v#times2 #mu#mu");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(11,"CR1v#times3 ee");
+        hdummyDYeemm->GetXaxis()->SetBinLabel(11+1,"CR1v#times3 #mu#mu");
+        
+        hdummyDYeemm->GetXaxis()->SetTitle("Control Region");
+        hdummyDYeemm->GetXaxis()->SetTitleOffset(1.05);
+        hdummyDYeemm->GetYaxis()->SetTitle("DY #rightarrow ee/#mu#mu SF");
+        
+        
+        TH1F* hupDYeemm = new TH1F("hupDYeemm","",12,0,12);
+        TH1F* hcnDYeemm = new TH1F("hcnDYeemm","",12,0,12);
+        TH1F* hdnDYeemm = new TH1F("hdnDYeemm","",12,0,12);
+        for (int ibin = 0; ibin < 12; ++ibin)
+        {
+            hupDYeemm->SetBinContent(ibin+1,CRsftot[CR1]+0.2);
+            hcnDYeemm->SetBinContent(ibin+1,CRsftot[CR1]);
+            hdnDYeemm->SetBinContent(ibin+1,CRsftot[CR1]-0.2);
+        }
+        
+        hupDYeemm->SetLineWidth(3);
+        hupDYeemm->SetLineColor(kRed);
+        hcnDYeemm->SetLineWidth(3);
+        hcnDYeemm->SetLineColor(kBlue);
+        hdnDYeemm->SetLineWidth(3);
+        hdnDYeemm->SetLineColor(kRed);
+    
+
+
+
+        TH2F* hdummyDYtt = new TH2F("hdummyDYtt","",8,0,8,100,1.0,1.35);
+        
+        hdummyDYtt->GetXaxis()->SetBinLabel(1,"CR2 ee");
+        hdummyDYtt->GetXaxis()->SetBinLabel(1+1,"CR2 #mu#mu");
+        hdummyDYtt->GetXaxis()->SetBinLabel(3,"CR1/v ee");
+        hdummyDYtt->GetXaxis()->SetBinLabel(3+1,"CR1/v #mu#mu");
+        hdummyDYtt->GetXaxis()->SetBinLabel(5,"CR3/v ee");
+        hdummyDYtt->GetXaxis()->SetBinLabel(5+1,"CR3/v #mu#mu");
+        hdummyDYtt->GetXaxis()->SetBinLabel(7,"CR4v#times2/v ee");
+        hdummyDYtt->GetXaxis()->SetBinLabel(7+1,"CR4v#times2/v #mu#mu");
+
+        
+        hdummyDYtt->GetXaxis()->SetTitle("Control Region");
+        hdummyDYtt->GetXaxis()->SetTitleOffset(1.05);
+        hdummyDYtt->GetYaxis()->SetTitle("DY #rightarrow #tau#tau SF");
+        
+        
+        TH1F* hupDYtt = new TH1F("hupDYtt","",8,0,8);
+        TH1F* hcnDYtt = new TH1F("hcnDYtt","",8,0,8);
+        TH1F* hdnDYtt = new TH1F("hdnDYtt","",8,0,8);
+        for (int ibin = 0; ibin < 8; ++ibin)
+        {
+            hupDYtt->SetBinContent(ibin+1,CRsftot[CR2]+0.1);
+            hcnDYtt->SetBinContent(ibin+1,CRsftot[CR2]);
+            hdnDYtt->SetBinContent(ibin+1,CRsftot[CR2]-0.1);
+        }
+        
+        hupDYtt->SetLineWidth(3);
+        hupDYtt->SetLineColor(kRed);
+        hcnDYtt->SetLineWidth(3);
+        hcnDYtt->SetLineColor(kBlue);
+        hdnDYtt->SetLineWidth(3);
+        hdnDYtt->SetLineColor(kRed);
+    
+
+
+
+        TH2F* hdummyfakes = new TH2F("hdummyfakes","",9,0,9,100,0.5,4.0);
+        
+        hdummyfakes->GetXaxis()->SetBinLabel(1,"CR5 ee");
+        hdummyfakes->GetXaxis()->SetBinLabel(2,"CR5v ee");
+        hdummyfakes->GetXaxis()->SetBinLabel(3,"CR6 ee");
+        hdummyfakes->GetXaxis()->SetBinLabel(1+3,"CR5 #mu#mu");
+        hdummyfakes->GetXaxis()->SetBinLabel(2+3,"CR5v #mu#mu");
+        hdummyfakes->GetXaxis()->SetBinLabel(3+3,"CR6 #mu#mu");
+        hdummyfakes->GetXaxis()->SetBinLabel(1+6,"CR5 e#mu");
+        hdummyfakes->GetXaxis()->SetBinLabel(2+6,"CR5v e#mu");
+        hdummyfakes->GetXaxis()->SetBinLabel(3+6,"CR6 e#mu");
+
+        
+        hdummyfakes->GetXaxis()->SetTitle("Control Region");
+        hdummyfakes->GetXaxis()->SetTitleOffset(1.05);
+        hdummyfakes->GetYaxis()->SetTitle("Fakes SF");
+        
+        
+        TH1F* hupfakes = new TH1F("hupfakes","",9,0,9);
+        TH1F* hcnfakes = new TH1F("hcnfakes","",9,0,9);
+        TH1F* hdnfakes = new TH1F("hdnfakes","",9,0,9);
+        for (int ibin = 0; ibin < 9; ++ibin)
+        {
+            hupfakes->SetBinContent(ibin+1,CRsftot[CR5]+1.);
+            hcnfakes->SetBinContent(ibin+1,CRsftot[CR5]);
+            hdnfakes->SetBinContent(ibin+1,CRsftot[CR5]-1.);
+        }
+        
+        hupfakes->SetLineWidth(3);
+        hupfakes->SetLineColor(kRed);
+        hcnfakes->SetLineWidth(3);
+        hcnfakes->SetLineColor(kBlue);
+        hdnfakes->SetLineWidth(3);
+        hdnfakes->SetLineColor(kRed);
+    
+
+
+
+
+
+
+
+
+
+
 
         TCanvas *canSFs = new TCanvas("canSFs","canSFs",1800, 600);
         canSFs->Divide(3,1);
         canSFs->cd(1);
-        graphDYeemm->Draw("");
+        //gPad->SetGridx();
+        //gPad->SetGridy();
+        hdummyDYeemm->Draw();
+        hupDYeemm->Draw("samehist");
+        hcnDYeemm->Draw("samehist");
+        hdnDYeemm->Draw("samehist");
+        graphDYeemm->Draw("sameP");
         canSFs->cd(2);
-        graphDYtt->Draw(""); 
+        hdummyDYtt->Draw();
+        hupDYtt->Draw("samehist");
+        hcnDYtt->Draw("samehist");
+        hdnDYtt->Draw("samehist");
+        graphDYtt->Draw("sameP"); 
         canSFs->cd(3);
-        graphfakes->Draw(""); 
+        hdummyfakes->Draw();
+        hupfakes->Draw("samehist");
+        hcnfakes->Draw("samehist");
+        hdnfakes->Draw("samehist");
+        graphfakes->Draw("sameP"); 
         canSFs->Print("SFs.pdf");
 
 
