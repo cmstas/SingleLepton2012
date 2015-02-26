@@ -462,6 +462,66 @@ void StopTreeLooper::loop(TChain *chain, TString name)
                 }// end of loop over subset of PDFs
             }
 
+
+
+            //----------------------------------------------------------------------------------------------------------------------------------------------
+            //evaluate weights to correct unpolarised tau decay in mcatnlo (only really correct for 3-body tau decay, so use for systematic estimate only)
+            //----------------------------------------------------------------------------------------------------------------------------------------------
+
+            if ( weighttaudecay && name.Contains("mcatnlo") && name.Contains("ttdl") ) 
+            {
+                double weight_taudecay = 1.;
+
+                TLorentzVector lepPlus_gen_status3(0, 0, 0, 0), lepMinus_gen_status3(0, 0, 0, 0), lepPlus_gen_status1(0, 0, 0, 0), lepMinus_gen_status1(0, 0, 0, 0);
+                bool lepPlusIsTau = false;
+                bool lepMinusIsTau = false;
+
+                if( abs(stopt.lepPlus_status3_id()) == 15 ) {
+                    lepPlusIsTau = true;
+                    lepPlus_gen_status1.SetXYZT( stopt.lepPlus_status1().x(), stopt.lepPlus_status1().y(), stopt.lepPlus_status1().z(), stopt.lepPlus_status1().t() );
+                    lepPlus_gen_status3.SetXYZT( stopt.lepPlus_status3_orig().x(), stopt.lepPlus_status3_orig().y(), stopt.lepPlus_status3_orig().z(), stopt.lepPlus_status3_orig().t() );
+                }
+
+                if( abs(stopt.lepMinus_status3_id()) == 15 ) {
+                    lepMinusIsTau = true;
+                    lepMinus_gen_status1.SetXYZT( stopt.lepMinus_status1().x(), stopt.lepMinus_status1().y(), stopt.lepMinus_status1().z(), stopt.lepMinus_status1().t() );
+                    lepMinus_gen_status3.SetXYZT( stopt.lepMinus_status3_orig().x(), stopt.lepMinus_status3_orig().y(), stopt.lepMinus_status3_orig().z(), stopt.lepMinus_status3_orig().t() );
+                }
+
+                if (lepPlusIsTau)
+                {
+                    lepPlus_gen_status1.Boost(-lepPlus_gen_status3.BoostVector());
+                    double cosTheta_lepPlus_status1 = lepPlus_gen_status1.Vect().Dot(lepPlus_gen_status3.Vect()) / (lepPlus_gen_status1.Vect().Mag() * lepPlus_gen_status3.Vect().Mag());
+                    double EoverEmax_lepPlus = 2.*lepPlus_gen_status1.E() / lepPlus_gen_status3.M();
+                    if (EoverEmax_lepPlus > 1.) EoverEmax_lepPlus = 1.;
+                    //if(EoverEmax_lepPlus>1.) {cout<<"**********x>1********"<<endl; cout<<EoverEmax_lepPlus<<" "<<lepPlus_gen_status1.E()<<" "<<lepPlus_gen_status3.M()<<endl;}
+                    //double weight_lepPlus = 1.+cosTheta_lepPlus_status1/3.;  //approximation: cosTheta dependence varies with x
+                    double weight_lepPlus = 1. + cosTheta_lepPlus_status1 * ( 1. - 2.*EoverEmax_lepPlus ) / ( 2.*EoverEmax_lepPlus - 3. );
+                    //cout<<"P "<<(weighttaudecay?weight_lepPlus:1.)<<endl;
+                    weight_taudecay *= weight_lepPlus;
+                    //cout<<weight_lepPlus<<" ";
+                }
+                if (lepMinusIsTau)
+                {
+                    lepMinus_gen_status1.Boost(-lepMinus_gen_status3.BoostVector());
+                    double cosTheta_lepMinus_status1 = lepMinus_gen_status1.Vect().Dot(lepMinus_gen_status3.Vect()) / (lepMinus_gen_status1.Vect().Mag() * lepMinus_gen_status3.Vect().Mag());
+                    double EoverEmax_lepMinus = 2.*lepMinus_gen_status1.E() / lepMinus_gen_status3.M();
+                    if (EoverEmax_lepMinus > 1.) EoverEmax_lepMinus = 1.;
+                    //if(EoverEmax_lepMinus>1.) {cout<<"**********x>1********"<<endl; cout<<EoverEmax_lepMinus<<" "<<lepMinus_gen_status1.E()<<" "<<lepMinus_gen_status3.M()<<endl;}
+                    //double weight_lepMinus = 1.+cosTheta_lepMinus_status1/3.;  //approximation: cosTheta dependence varies with x
+                    double weight_lepMinus = 1. + cosTheta_lepMinus_status1 * ( 1. - 2.*EoverEmax_lepMinus ) / ( 2.*EoverEmax_lepMinus - 3. );
+                    //cout<<"M "<<(weighttaudecay?weight_lepMinus:1.)<<endl;
+                    weight_taudecay *= weight_lepMinus;
+                    //cout<<weight_lepMinus<<" ";
+                }
+
+                //cout<<weight_taudecay<<endl;
+                evtweight *= weight_taudecay;
+
+            } //weighttaudecay
+
+
+
             //----------------------------------------------------------------------------
             // get jet information
             //----------------------------------------------------------------------------
