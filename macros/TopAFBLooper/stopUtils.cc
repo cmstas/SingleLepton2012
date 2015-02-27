@@ -268,10 +268,10 @@ pair<int, int> getIndexPair(vector<int> listBJetIndex,vector<LorentzVector> jets
 
 
 //------------------------------------------------------------------------------------------------
-//this is for the jetResolutions
+//this is for the jetResolutions, updated to the 2014 numbers from https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
 //------------------------------------------------------------------------------------------------
 
-float getDataMCRatio(float eta){
+float getDataMCRatioOld(float eta){
   if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.052;
   if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.057;
   if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.096;
@@ -279,6 +279,40 @@ float getDataMCRatio(float eta){
   if (fabs(eta) >=2.3 && fabs(eta) < 5.0) return 1.288;
   return 1.0;
 }
+
+float getDataMCRatio(float eta){
+  if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.079;
+  if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.099;
+  if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.121;
+  if (fabs(eta) >=1.7 && fabs(eta) < 2.3) return 1.208;
+  if (fabs(eta) >=2.3 && fabs(eta) < 2.8) return 1.254;
+  if (fabs(eta) >=2.8 && fabs(eta) < 3.2) return 1.395;
+  if (fabs(eta) >=3.2 && fabs(eta) < 5.0) return 1.056;
+  return 1.0;
+}
+
+float getDataMCRatioSystDown(float eta){
+  if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.053;
+  if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.071;
+  if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.092;
+  if (fabs(eta) >=1.7 && fabs(eta) < 2.3) return 1.162;
+  if (fabs(eta) >=2.3 && fabs(eta) < 2.8) return 1.192;
+  if (fabs(eta) >=2.8 && fabs(eta) < 3.2) return 1.332;
+  if (fabs(eta) >=3.2 && fabs(eta) < 5.0) return 0.865;
+  return 1.0;
+}
+
+float getDataMCRatioSystUp(float eta){
+  if (fabs(eta) >=0.0 && fabs(eta) < 0.5) return 1.105;
+  if (fabs(eta) >=0.5 && fabs(eta) < 1.1) return 1.127;
+  if (fabs(eta) >=1.1 && fabs(eta) < 1.7) return 1.150;
+  if (fabs(eta) >=1.7 && fabs(eta) < 2.3) return 1.254;
+  if (fabs(eta) >=2.3 && fabs(eta) < 2.8) return 1.316;
+  if (fabs(eta) >=2.8 && fabs(eta) < 3.2) return 1.458;
+  if (fabs(eta) >=3.2 && fabs(eta) < 5.0) return 1.247;
+  return 1.0;
+}
+
 
 //------------------------------------------------------------------------------------------------
 // Fix function to partial correction used in looper before 1.16
@@ -581,7 +615,7 @@ float getideffweight(int id1, float pt, float eta)
   if ( abs(id1)==13 ) {
 
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9839;
       else if (pt>=30. && pt<40.) 	return 0.9850;
       else if (pt>=40. && pt<50.) 	return 0.9865;
@@ -593,7 +627,7 @@ float getideffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 0.9937;
       else if (pt>=300. ) 		return 0.9754;
     } else if ( fabs(eta)<1.5) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9850;
       else if (pt>=30. && pt<40.) 	return 0.9846;
       else if (pt>=40. && pt<50.) 	return 0.9866;
@@ -605,7 +639,7 @@ float getideffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 0.9867;
       else if (pt>=300. ) 		return 1.0348; 
     } else if ( fabs(eta)<2.1) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9876;
       else if (pt>=30. && pt<40.) 	return 0.9890;
       else if (pt>=40. && pt<50.) 	return 0.9902;
@@ -621,7 +655,7 @@ float getideffweight(int id1, float pt, float eta)
   //electron efficiencies
   else if ( abs(id1)==11 ) {
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9923;
       else if (pt>=30. && pt<40.) 	return 0.9883;
       else if (pt>=40. && pt<50.) 	return 0.9900;
@@ -633,7 +667,7 @@ float getideffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 0.9869;
       else if (pt>=300. ) 		return 1.0789; 
     } else if ( fabs(eta)<1.4442 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9632;
       else if (pt>=30. && pt<40.) 	return 0.9707;
       else if (pt>=40. && pt<50.) 	return 0.9755;
@@ -666,7 +700,7 @@ float getisoeffweight(int id1, float pt, float eta)
   if ( abs(id1)==13 ) {
 
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9934;
       else if (pt>=30. && pt<40.) 	return 0.9969;
       else if (pt>=40. && pt<50.) 	return 0.9979;
@@ -678,7 +712,7 @@ float getisoeffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 1.0016;
       else if (pt>=300. ) 		return 0.9923;
     } else if ( fabs(eta)<1.5) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9974;
       else if (pt>=30. && pt<40.) 	return 1.0004;
       else if (pt>=40. && pt<50.) 	return 1.0001;
@@ -690,7 +724,7 @@ float getisoeffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 1.0059;
       else if (pt>=300. ) 		return 0.9822; 
     } else if ( fabs(eta)<2.1) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 1.0068;
       else if (pt>=30. && pt<40.) 	return 1.0039;
       else if (pt>=40. && pt<50.) 	return 1.0023;
@@ -708,7 +742,7 @@ float getisoeffweight(int id1, float pt, float eta)
   else if ( abs(id1)==11 ) {
 
     if ( fabs(eta)<0.8 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9938;
       else if (pt>=30. && pt<40.) 	return 0.9968;
       else if (pt>=40. && pt<50.) 	return 0.9973;
@@ -720,7 +754,7 @@ float getisoeffweight(int id1, float pt, float eta)
       else if (pt>=200. && pt<300.) 	return 1.0025;
       else if (pt>=300. ) 		return 1.1525; 
     } else if ( fabs(eta)<1.4442 ) {
-      if ( pt<20. ) 			return 0.;
+      if ( pt<20. ) 			return 1.;
       else if (pt>=20. && pt<30.) 	return 0.9939;
       else if (pt>=30. && pt<40.) 	return 0.9963;
       else if (pt>=40. && pt<50.) 	return 0.9965;

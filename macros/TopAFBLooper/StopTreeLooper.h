@@ -95,6 +95,7 @@ private:
     vector<LorentzVector> nonbjets;
     vector<LorentzVector> bcandidates;
     vector<float> btag;
+    vector<float> CSVdisc;
     vector<float> sigma_jets;
     vector<int> mc;
     bool tobtecveto_;
@@ -106,6 +107,7 @@ private:
     Int_t   channel;
     Int_t   genchannel;
     double weight;
+    vector<double> PDFsystweights;
 
     float lep_charge_asymmetry;
     float lep_azimuthal_asymmetry;
