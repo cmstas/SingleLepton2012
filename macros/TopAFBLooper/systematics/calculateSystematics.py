@@ -11,27 +11,51 @@ def calculateVariation(refNominal, systematic, binname):
     """
 
     vartype = systematic['vartype']
+    usenotes = systematic['usenotes']
 
     if vartype == 'updown_newnom': nominal = systematic['nominal'][binname][0]
     else: nominal = refNominal
 
     #Calculate the contribution from this systematic.
     #Calculation method depends on the vartype flag, determined in parseSystematics.py
+
+    # Max of the 'up' and 'down' variations (potentially with respect to a special nominal value)
     if vartype == 'updown' or vartype == 'updown_newnom':
         upvar   = systematic['up'][binname][0]   - nominal
         downvar = systematic['down'][binname][0] - nominal
         varsign = sign(systematic['up'][binname][0] - systematic['down'][binname][0])
         if abs(upvar) >= abs(downvar): maxvar  = abs(upvar)*varsign
         elif abs(upvar) < abs(downvar): maxvar = abs(downvar)*varsign
+
+    # Half the difference between the 'up' and the 'down' variation
     elif vartype == 'half':
         maxvar = ( systematic['up'][binname][0] - systematic['down'][binname][0] ) /2
+
+    # Simple difference from nominal
     elif vartype == 'diffnom':
         maxvar = systematic['diffnom'][binname][0] - nominal
+
+    # Anything else we don't understand
     else:
         print ""
         print "I don't know what to do with this variation type:", vartype
         #print systematic, subtype
         sys.exit(1)
+
+    if 'divideby' in usenotes:
+        idx = usenotes.index('divideby')
+        factor = float( usenotes[idx+1] )
+        maxvar /= factor
+
+    # Find the max stat error on all the directions, then take the max of that and the systematic error
+    if 'maxstat' in usenotes:
+        varsyst = maxvar
+        directionlist = systematic.keys()
+        directionlist.remove('vartype')
+        directionlist.remove('usenotes')
+        staterrlist = [ systematic[i][binname][1] for i in directionlist ]
+        varstat = max( staterrlist )
+        maxvar = max(varsyst, varstat)
 
     return maxvar
 

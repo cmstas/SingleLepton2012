@@ -24,16 +24,22 @@ def parseSystFiles(systfiles):
     for syst in systfiles.keys():
         for subtype in systfiles[syst].keys():
 
-            #Figure out how to calculate the variation, based on which
-            #variation directions are specified in the steering file.
+            #Figure out how to calculate the variation
             directionlist = list( systfiles[syst][subtype].keys() )
+            directionlist.remove('usenotes')
+            noteslist = systfiles[syst][subtype]['usenotes'].split('/')
+
             if ('up' in directionlist and 'down' in directionlist ):
                 if 'nominal' in directionlist: vartype = 'updown_newnom'
-                elif 'nominal' not in directionlist:
-                    if subtype == 'default': vartype = 'updown'
-                    elif subtype != 'default': vartype = 'half'
-            elif systfiles[syst][subtype].keys() == ['diffnom']: vartype = 'diffnom'
-            elif systfiles[syst][subtype].keys() == ['nominal']: vartype = 'nominal'
+                elif 'halfdiff' in noteslist: vartype = 'half'
+                elif noteslist[0] == 'none': vartype = 'updown'
+                else:
+                    print ""
+                    print "I can't understand what kind of variation this is:"
+                    print syst, subtype, subtype.keys()
+                    sys.exit(1)
+            elif directionlist == ['diffnom']: vartype = 'diffnom'
+            elif directionlist == ['nominal']: vartype = 'nominal'
             else:
                 print ""
                 print "I can't understand what kind of variation this is:"
@@ -41,7 +47,7 @@ def parseSystFiles(systfiles):
                 sys.exit(1)
 
             #Parse the unfolding summary file
-            for direction in systfiles[syst][subtype].keys():
+            for direction in directionlist:
                 try:
                     systfile = open(systfiles[syst][subtype][direction])
                 except:
@@ -67,6 +73,7 @@ def parseSystFiles(systfiles):
                     if direction not in systematics[identifier][syst][subtype].keys(): systematics[identifier][syst][subtype][direction] = {}
                     systematics[identifier][syst][subtype][direction][type] = [asymmetry,error]
                     systematics[identifier][syst][subtype]['vartype'] = vartype
+                    systematics[identifier][syst][subtype]['usenotes'] = noteslist
             
     return systematics
             
@@ -106,13 +113,15 @@ def main():
         systname =  array[0]
         subtype  =  array[1]
         direction = array[2]
-        filename =  array[3]
+        usage    =  array[3]
+        filename =  array[4]
 
         if systname not in systfiles.keys(): systfiles[systname] = {}
         if subtype not in systfiles[systname].keys(): systfiles[systname][subtype] = {}
         if direction in systfiles[systname][subtype].keys():
             print 'systematics:',systname,subtype,direction,'was entered twice in steering file:',steeringfilename,'Please choose only one entry per systematics, using last entry.'
         systfiles[systname][subtype][direction] = filename
+        systfiles[systname][subtype]['usenotes'] = usage
         
     systematics = parseSystFiles(systfiles)
     

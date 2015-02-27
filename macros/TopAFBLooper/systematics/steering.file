@@ -1,26 +1,28 @@
 # steering file
 # 
-# systematic, subtype, direction, filename (cannot contain spaces)
+# systematic, subtype, direction, usage notes, filename (cannot contain spaces)
 #
-JES            default up      summary_1Dunfolding_JESup_formated.txt
-JES            default down    summary_1Dunfolding_JESdown_formated.txt
-JER            default diffnom summary_1Dunfolding_JER_formated.txt
-Lep_E_scale    default up      summary_1Dunfolding_lepenergyup_formated.txt
-Lep_E_scale    default down    summary_1Dunfolding_lepenergydown_formated.txt
-SFb            default down    summary_1Dunfolding_sfbdown_formated.txt
-SFb            default up      summary_1Dunfolding_sfbup_formated.txt
-tau            default diffnom summary_1Dunfolding_tau_formated.txt
-TrigSF         default down    summary_1Dunfolding_trigSFdown_formated.txt
-TrigSF         default up      summary_1Dunfolding_trigSFup_formated.txt
-Nominal        default nominal summary_1Dunfolding_default_formated.txt
 #
-#Because the subtype isn't "default", these get calculated using half
-#the difference, i.e. (up-down)/2
-Scale_fastsim  fastsim up	   summary_1Dunfolding_fastsim_scaleup_formated.txt
-Scale_fastsim  fastsim down	   summary_1Dunfolding_fastsim_scaledown_formated.txt
+Nominal        default nominal  none  summary_1Dunfolding_all_default_formated.txt
 #
-#Because the subtype isn't "default", but we specify a new nominal file, these
-#get calculated w/ respect to their specific nominal
-Mass_fastsim   fastsim nominal summary_1Dunfolding_fastsim_massnominal_formated.txt
-Mass_fastsim   fastsim up	   summary_1Dunfolding_fastsim_massup_formated.txt
-Mass_fastsim   fastsim down	   summary_1Dunfolding_fastsim_massdown_formated.txt
+IDisoeff	   default diffnom  none  summary_1Dunfolding_all_IDisoeff_formated.txt
+pt_reweight	   default diffnom  none  summary_1Dunfolding_all_top_pt_rw_formated.txt
+#
+CSVshapeBC	   default down		none  summary_1Dunfolding_all_CSVshapeBCdown_formated.txt
+CSVshapeBC	   default up	   	none  summary_1Dunfolding_all_CSVshapeBCup_formated.txt
+CSVshapeL	   default down	   	none  summary_1Dunfolding_all_CSVshapeLdown_formated.txt
+CSVshapeL	   default up	   	none  summary_1Dunfolding_all_CSVshapeLup_formated.txt
+JER            default down    	none  summary_1Dunfolding_all_JERdown_formated.txt
+JER            default up	   	none  summary_1Dunfolding_all_JERup_formated.txt
+JESMET         default down    	none  summary_1Dunfolding_all_JESMETdown_formated.txt
+JESMET         default up      	none  summary_1Dunfolding_all_JESMETup_formated.txt
+LES    		   default down    	none  summary_1Dunfolding_all_LESdown_formated.txt
+LES    		   default up      	none  summary_1Dunfolding_all_LESup_formated.txt
+PUshape		   default down	   	none  summary_1Dunfolding_all_PUshapedown_formated.txt
+PUshape		   default up	   	none  summary_1Dunfolding_all_PUshapeup_formated.txt
+#
+Scale		   default down	 halfdiff/maxstat  summary_1Dunfolding_all_scaledown_formated.txt
+Scale		   default up	 halfdiff/maxstat  summary_1Dunfolding_all_scaleup_formated.txt
+#
+Mass		   default down	 halfdiff/maxstat/divideby/3  summary_1Dunfolding_all_massdown_formated.txt
+Mass		   default up	 halfdiff/maxstat/divideby/3  summary_1Dunfolding_all_massup_formated.txt
