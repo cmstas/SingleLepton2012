@@ -209,6 +209,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		hTrue_split->RebinX(2);
 
+        TMatrixD m_smearingE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_unfoldE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_correctE(nbinsunwrapped_gen, nbinsunwrapped_gen);
 
@@ -634,12 +635,14 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// tau = unfold_TUnfold.GetTau();
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
-		unfold_TUnfold.GetEmatrixSysUncorr( ematrix, 0, false );
+		TH2D *ematrix_smearing = (TH2D*)ematrix->Clone("ematrix_smearing");
+		unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, false );
 
 		for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
 		  {
 			for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
 			  {
+				m_smearingE(cmi, cmj) = ematrix_smearing->GetBinContent(cmi + 1, cmj + 1);
 				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 				m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
@@ -763,6 +766,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator_bin"<<i<<": "<< afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << "\n";
 	    }
 
+		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m, afb_merr, second_output_file);
+        cout << " Unfolded with smearing errors: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
 
 		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
         cout << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
