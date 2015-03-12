@@ -686,8 +686,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			  {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
                 if (ncols < 0) break;
-                if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v3);
-                theoryProfileCorr->Fill(dphi, v3);
+                if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v1);
+                theoryProfileCorr->Fill(dphi, v1);
                 nlines++;
 			  }
 
@@ -697,8 +697,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			  {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
                 if (ncols < 0) break;
-                if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v3);
-                theoryProfileUnCorr->Fill(dphi, v3);
+                if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v1);
+                theoryProfileUnCorr->Fill(dphi, v1);
                 nlines++;
 			  }
 		  }
