@@ -844,8 +844,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  }
 
         tdrStyle->SetErrorX(0.5);
-        hAfbVsMtt->SetMinimum( hAfbVsMtt->GetMinimum() - 0.1 );
-        hAfbVsMtt->SetMaximum( hAfbVsMtt->GetMaximum() + 0.1 );
+		double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
+		double maxmax = max( hAfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hAfbVsMtt->GetMaximumBin()), hTop_AfbVsMtt->GetMaximum() + hTop_AfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMaximumBin()));
+		double spread = maxmax - minmin;
+		if( spread > 0.25 ) maxmax += 0.25*spread;
+        hAfbVsMtt->SetMinimum( minmin - 0.1 );
+        hAfbVsMtt->SetMaximum( maxmax + 0.1 );
         hAfbVsMtt->SetLineWidth( 2.0 );
         hAfbVsMtt->Draw("E");
         hAfbVsMtt_statonly->Draw("E1 same");
