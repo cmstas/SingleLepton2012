@@ -876,7 +876,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         TText *blah;
         //blah = pt1->AddText("CMS Preliminary, 5.0 fb^{-1} at  #sqrt{s}=7 TeV");
-        blah = pt1->AddText("CMS, 5.0 fb^{-1} at  #sqrt{s}=7 TeV");
+        blah = pt1->AddText("CMS, 19.5 fb^{-1} at  #sqrt{s}=8 TeV");
         blah->SetTextSize(0.032);
         blah->SetTextAlign(11);
         pt1->Draw();
