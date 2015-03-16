@@ -103,7 +103,7 @@ def main():
 
         #if plot not in results.keys(): results[plot] = {}
 
-        print plot
+        print 'Variable:', plot
 
         if 'Nominal' not in systematics[plot].keys(): 
             print 'Could not find Nominal values'
