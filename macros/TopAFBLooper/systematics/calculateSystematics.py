@@ -13,7 +13,7 @@ def calculateVariation(refNominal, systematic, binname):
     vartype = systematic['vartype']
     usenotes = systematic['usenotes']
 
-    if vartype == 'updown_newnom': nominal = systematic['nominal'][binname][0]
+    if 'newnom' in usenotes: nominal = systematic['nominal'][binname]
     else: nominal = refNominal
 
     #Calculate the contribution from this systematic.
@@ -21,8 +21,8 @@ def calculateVariation(refNominal, systematic, binname):
 
     # Max of the 'up' and 'down' variations (potentially with respect to a special nominal value)
     if vartype == 'updown' or vartype == 'updown_newnom':
-        upvar   = systematic['up'][binname][0]   - nominal
-        downvar = systematic['down'][binname][0] - nominal
+        upvar   = systematic['up'][binname][0]   - nominal[0]
+        downvar = systematic['down'][binname][0] - nominal[0]
         varsign = sign(systematic['up'][binname][0] - systematic['down'][binname][0])
         if abs(upvar) >= abs(downvar): maxvar  = abs(upvar)*varsign
         elif abs(upvar) < abs(downvar): maxvar = abs(downvar)*varsign
@@ -33,7 +33,7 @@ def calculateVariation(refNominal, systematic, binname):
 
     # Simple difference from nominal
     elif vartype == 'diffnom':
-        maxvar = systematic['diffnom'][binname][0] - nominal
+        maxvar = systematic['diffnom'][binname][0] - nominal[0]
 
     # Anything else we don't understand
     else:
@@ -121,7 +121,7 @@ def main():
         bin_nominals = {}
 
         #Get the nominal values for each bin, and overall
-        for i in binlist: bin_nominals[i] = systematics[plot]['Nominal']['default']['nominal'][i][0]
+        for i in binlist: bin_nominals[i] = systematics[plot]['Nominal']['default']['nominal'][i]
         (nominal_unfolded, stat_unfolded) = systematics[plot]['Nominal']['default']['nominal']['Unfolded'] 
 
         #Loop over the different systematics...
@@ -139,7 +139,7 @@ def main():
                 bin_variations = {}
 
                 #Calculate the variation in the overall asymmetry
-                var_overall = calculateVariation( nominal_unfolded, systematics[plot][systematic][subtype], 'Unfolded' )
+                var_overall = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' )
                 sumsq_subtype = var_overall*var_overall
 
                 #Calculate the variation in individual bins

@@ -30,8 +30,7 @@ def parseSystFiles(systfiles):
             noteslist = systfiles[syst][subtype]['usenotes'].split('/')
 
             if ('up' in directionlist and 'down' in directionlist ):
-                if 'nominal' in directionlist: vartype = 'updown_newnom'
-                elif 'halfdiff' in noteslist: vartype = 'half'
+                if 'halfdiff' in noteslist: vartype = 'half'
                 elif noteslist[0] == 'none': vartype = 'updown'
                 else:
                     print ""
