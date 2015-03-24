@@ -111,9 +111,16 @@ def main():
 
         #Count how many bins we're dealing with
         typelist = list( systematics[plot]['Nominal']['default']['nominal'].keys() )
-        binlist = fnmatch.filter(typelist, 'bin*')
-        binlist.sort()
-        nbins = len(binlist)
+        binnames = fnmatch.filter(typelist, 'bin*')
+        binnames.sort()
+        nbins = len(binnames)
+
+        binlist = ['bin'+str(i) for i in range(1, nbins+1)]
+
+        if sorted(binlist) != sorted(binnames):
+            print 'There\'s a problem with this list of bin names:'
+            print binnames
+            sys.exit(1)
 
         sumsq_total = 0
         covar_total = zeros( [nbins,nbins] )
