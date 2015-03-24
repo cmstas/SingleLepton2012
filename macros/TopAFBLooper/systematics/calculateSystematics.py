@@ -176,9 +176,11 @@ def main():
         print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, nominal_unfolded, stat_unfolded, math.sqrt(sumsq_total))
         print ""
         print "%s covariance matrix:" % plot
+        print binlist
         print covar_total
         print ""
         print "%s correlation matrix:" % plot
+        print binlist
         print corr_total
         print ""
         print ""
