@@ -975,7 +975,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  {
             ch_bkg[iBkg]->Delete();
 		  }
-
+		file->Close();
 	  }
 
     myfile.close();

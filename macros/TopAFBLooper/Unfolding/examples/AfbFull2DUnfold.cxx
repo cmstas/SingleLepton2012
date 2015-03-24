@@ -940,7 +940,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  {
             ch_bkg[iBkg]->Delete();
 		  }
-
+		file->Close();
 	  }
     myfile.close();
     second_output_file.close();
