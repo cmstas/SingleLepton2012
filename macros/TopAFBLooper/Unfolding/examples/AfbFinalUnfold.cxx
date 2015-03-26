@@ -575,7 +575,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("1D_" + acceptanceName + "_" + channel_name + "_unfoldTests_minRho.pdf");
+		c_rhoAvg->SaveAs("1D_" + acceptanceName + "_" + channel_name + "_minRho.pdf");
 
 		// cout << "Optimal tau value: " << tau << endl;
 		// cout << "Minimum rho average: " << bestrhoavg << endl;

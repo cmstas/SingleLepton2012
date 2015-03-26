@@ -607,7 +607,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		TMarker* m_rhoMin = new TMarker(tau,bestrhoavg,kCircle);
 		m_rhoMin->Draw();
-		c_rhoAvg->SaveAs("2D_" + acceptanceName + "_" + Var2D + "_" + channel_name + "_unfoldTests_minRho.pdf");
+		c_rhoAvg->SaveAs("2D_" + acceptanceName + "_" + Var2D + "_" + channel_name + "_minRho.pdf");
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////
