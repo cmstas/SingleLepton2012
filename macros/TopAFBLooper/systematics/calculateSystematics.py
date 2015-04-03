@@ -66,6 +66,7 @@ def main():
     parser = OptionParser(usage=usage)
     parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose", help="verbose output")
     parser.add_option("-f", "--file", action="store", type="string", default=None, dest="systematicsjsonfilename", help="Name of systematics file in json format")
+    parser.add_option("-n", "--nomatrix", action="store_true", default=False, dest="nomatrix", help="Suppress printout of covariance and correlation matrices")
 
     (opts, args) = parser.parse_args()
     
@@ -78,6 +79,7 @@ def main():
 
     verbose = opts.verbose
     systematicsjsonfilename = opts.systematicsjsonfilename
+    nomatrix = opts.nomatrix
 
     try:
         systematicsjsonfile = open(systematicsjsonfilename)
@@ -175,14 +177,15 @@ def main():
 
         print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, nominal_unfolded, stat_unfolded, math.sqrt(sumsq_total))
         print ""
-        print "%s covariance matrix:" % plot
-        print binlist
-        print covar_total
-        print ""
-        print "%s correlation matrix:" % plot
-        print binlist
-        print corr_total
-        print ""
+        if nomatrix == False:
+            print "%s covariance matrix:" % plot
+            print binlist
+            print covar_total
+            print ""
+            print "%s correlation matrix:" % plot
+            print binlist
+            print corr_total
+            print ""
         print ""
 
     #end loop over asymmetries
