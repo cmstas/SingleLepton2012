@@ -806,7 +806,23 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			  }
 		  }
 
-        m_correctE.Print("f=%1.5g ");
+		cout << "Statistical covariance matrix:" << endl;
+        // m_correctE.Print("f=%1.5g ");
+		char mystring[15];
+
+		cout << "_____|";
+		for( int col=0; col<nbinsx_gen; col++ ) cout << "_____" << col+1 << "_____|";
+		cout << endl;
+
+		for( int row=0; row<nbinsx_gen; row++ ) {
+		  sprintf(mystring, "%4d | ", row+1);
+		  cout << mystring;
+		  for( int col=0; col<nbinsx_gen; col++ ){
+			sprintf(mystring, "%1.5g  ", m_correctE(row, col) );
+			cout << mystring;
+		  }
+		  cout << endl;
+		}
 
         //confirm covariance matrix for normalised distribution is correct by re-calculating Afb
         GetCorrectedAfb_integratewidth_V(hData_unfolded, m_correctE, Afb, AfbErr); //uses covariance matrix for the bin values
