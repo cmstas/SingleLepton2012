@@ -39,6 +39,8 @@ Int_t kterm = 3; //for SVD
 Double_t tau = 0.005; //for TUnfold - this is a more reasonable default (1E-4 gives very little regularisation)
 Int_t nVars = 12;
 Int_t includeSys = 0;
+bool drawDiffs = true;
+int lineWidthDiffs=drawDiffs?lineWidth*2/3:lineWidth;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
 bool draw_truth_before_pT_reweighting = true; //turn this on when making the final plots for the paper (want to compare the data against the unweighted MC)
 //bool drawTheory = true; //turn this on to show Bernreuther's predictions for AdeltaPhi and Ac1c2
@@ -866,28 +868,46 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_plussyst->SetFillColor(15);
         hs->Add(hData_unfolded_plussyst);
         //hs->SetMinimum( 0 );
-        hs->SetMinimum( hData_unfolded->GetMinimum() - ( 0.3 * hData_unfolded->GetMaximum() ) > 0.15 ? hData_unfolded->GetMinimum() - ( 0.3 * hData_unfolded->GetMaximum() ) : 0 );
+        hs->SetMinimum( hData_unfolded->GetMinimum() - ( 0.3 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.3 * hData_unfolded->GetMaximum() ) : 0 );
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hs->SetMaximum(1.35 * hData_unfolded->GetMaximum());
         else hs->SetMaximum(1.3 * hData_unfolded->GetMaximum());
 
 
-        TCanvas *c_test = new TCanvas("c_final", "c_final", 500, 500);
+        TCanvas *c_test;
+        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 725);
+        else c_test = new TCanvas("c_final", "c_final", 500, 500);
+
+        TPad *p1, *p2;
+        TLine *line;
+        if(!drawDiffs) {
+            p1 = new TPad("p1", "dist", 0.0, 0.0, 1, 1.);
+            p1->Draw();
+            p1->cd();
+
+        }
+        if(drawDiffs) {
+            p1 = new TPad("p1", "dist", 0.0, 0.31, 1, 1.);
+            p2 = new TPad("p2", "diff", 0.0, 0.0, 1, 0.31);
+            p1->Draw();
+            p2->Draw();
+            p1->cd();
+        }
 
         theoryProfileCorr->SetLineColor(kBlue);
-        theoryProfileCorr->SetLineWidth(2);
+        theoryProfileCorr->SetLineWidth(lineWidthDiffs);
         theoryProfileCorr->SetMarkerStyle(1);
 
         theoryProfileUnCorr->SetLineColor(kBlue);
-        theoryProfileUnCorr->SetLineWidth(2);
+        theoryProfileUnCorr->SetLineWidth(lineWidthDiffs);
         theoryProfileUnCorr->SetLineStyle(2);
         theoryProfileUnCorr->SetMarkerStyle(1);
 
 		predict_corr->SetLineColor(kBlue);
-		predict_corr->SetLineWidth(2);
+		predict_corr->SetLineWidth(lineWidthDiffs);
 		predict_corr->SetLineStyle(1);
 
 		predict_uncorr->SetLineColor(kBlue);
-		predict_uncorr->SetLineWidth(2);
+		predict_uncorr->SetLineWidth(lineWidthDiffs);
 		predict_uncorr->SetLineStyle(2);
 
         hs->Draw();
@@ -901,11 +921,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded->SetMarkerSize(1);
         hData_unfolded->SetFillStyle(0);
         hData_unfolded->Draw("E same");
-        hData_unfolded->SetLineWidth(lineWidth);
-        denominatorM_nopTreweighting->SetLineWidth(lineWidth);
+        hData_unfolded->SetLineWidth(lineWidthDiffs);
+        denominatorM_nopTreweighting->SetLineWidth(lineWidthDiffs);
         denominatorM_nopTreweighting->SetLineColor(TColor::GetColorDark(kRed));
         denominatorM_nopTreweighting->SetFillStyle(0);
-        hTrue->SetLineWidth(lineWidth);
+        hTrue->SetLineWidth(lineWidthDiffs);
         hTrue->SetLineColor(TColor::GetColorDark(kRed));
         //hTrue->SetFillColor(TColor::GetColorDark(kGreen));
         hTrue->SetFillStyle(0);
@@ -977,6 +997,97 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         blah->SetTextSize(0.032);
         blah->SetTextAlign(11);
         pt1->Draw();
+
+        if(drawDiffs) {
+
+			p2->cd();
+			int tempnbins = hData_unfolded->GetNbinsX();
+			TString s_hname = "diff_";
+			TH1D *h_diff = (TH1D *) hData_unfolded->Clone(s_hname +  acceptanceName);
+
+			TH1D *h_diff_minussyst;
+			TH1D *h_diff_plussyst;
+			h_diff_minussyst = (TH1D *) hData_unfolded->Clone("Data_unfolded_minussyst");
+			h_diff_plussyst = (TH1D *) hData_unfolded->Clone("Data_unfolded_plussyst");
+
+
+			h_diff->Reset();
+			line = new TLine(hData_unfolded->GetXaxis()->GetBinLowEdge(1), 1.0, 
+			hData_unfolded->GetXaxis()->GetBinUpEdge(tempnbins), 1.0);
+			h_diff->TH1D::Sumw2();  
+
+            for(int tempbin = 1; tempbin < hData_unfolded->GetNbinsX()+1; tempbin++) {
+				double mc, mcerr;
+
+				if (!draw_truth_before_pT_reweighting) mc = hTrue->GetBinContent(tempbin);
+				else mc = denominatorM_nopTreweighting->GetBinContent(tempbin);
+				mcerr = 0.;
+				
+				double data = hData_unfolded->GetBinContent(tempbin);
+				double dataerr = hData_unfolded->GetBinError(tempbin);
+				double err2 = pow(mcerr*data/mc/mc,2) + pow(dataerr/mc,2);
+				if(mc < 1e-10) 
+				continue;
+				h_diff->SetBinContent(tempbin, (data)/mc);
+				h_diff->SetBinError(tempbin, sqrt(err2));         
+				//h_diff->GetXaxis()->SetBinLabel(tempbin, hData_unfolded->GetXaxis()->GetBinLabel(tempbin));
+
+
+				//cout<<data<<" "<<mc<<" "<<syst_corr[tempbin - 1]<<endl;
+
+
+				h_diff_minussyst->SetBinContent(tempbin, (data)/mc
+				                                    - syst_corr[tempbin - 1]/mc );  //hard-coded syst_corr now includes unfolding syst
+				h_diff_minussyst->SetBinError(tempbin, 0);
+				h_diff_plussyst ->SetBinContent(tempbin, 2 * syst_corr[tempbin - 1]/mc );  //hard-coded syst_corr now includes unfolding syst
+				h_diff_plussyst ->SetBinError(tempbin, 0);
+            }
+
+            //p2->SetTopMargin(0.1);
+            p2->SetBottomMargin(0.28);
+
+            THStack *hsd = new THStack("hsd_systband", "Systematic band");
+            h_diff_minussyst->SetLineColor(kWhite);
+            h_diff_minussyst->SetFillColor(kWhite);
+            h_diff_minussyst->SetFillStyle(0);
+            hsd->Add(h_diff_minussyst);
+            h_diff_plussyst->SetFillStyle(3353);
+            h_diff_plussyst->SetLineColor(kWhite);
+            h_diff_plussyst->SetFillColor(15);
+            hsd->Add(h_diff_plussyst);
+
+            hsd->Draw();
+
+            hsd->SetMinimum(0.921);
+            hsd->SetMaximum(1.079/1.05); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
+
+            hsd->GetXaxis()->SetTitle( hs->GetXaxis()->GetTitle() );
+            hsd->GetXaxis()->SetTitleSize( hs->GetXaxis()->GetTitleSize()*0.69/0.31);
+            hsd->GetXaxis()->SetLabelSize( hs->GetXaxis()->GetLabelSize()*0.69/0.31);
+            //hsd->GetXaxis()->SetLabelOffset(-0.88);
+
+            hsd->GetYaxis()->SetTitle("Data/Simulation");
+            hsd->GetYaxis()->SetNdivisions(805);
+            //hsd->GetYaxis()->SetTitleFont(hData_unfolded->GetYaxis()->GetTitleFont());
+            hsd->GetYaxis()->SetTitleOffset(0.7);
+            hsd->GetYaxis()->SetTitleSize(0.120);
+            hsd->GetYaxis()->SetLabelSize( hs->GetYaxis()->GetLabelSize()*0.69/0.31);
+            //hsd->GetYaxis()->SetLabelFont(hData_unfolded->GetYaxis()->GetLabelFont());
+
+            //hsd->SetMarkerSize(0.8);
+
+            //hsd->Draw("same");
+
+
+            h_diff->Draw("Pesames");
+            line->Draw();
+            c_test->Modified();
+            c_test->Update();
+
+
+            p1->cd();   
+        }
+
 
 		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + ".eps");
 		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
