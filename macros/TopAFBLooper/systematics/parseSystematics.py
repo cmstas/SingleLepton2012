@@ -32,6 +32,7 @@ def parseSystFiles(systfiles):
             if ('up' in directionlist and 'down' in directionlist ):
                 if 'halfdiff' in noteslist: vartype = 'half'
                 elif noteslist[0] == 'none': vartype = 'updown'
+                elif noteslist[0] == 'extrapolate': vartype = 'half'
                 else:
                     print ""
                     print "I can't understand what kind of variation this is:"

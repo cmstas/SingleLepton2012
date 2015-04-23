@@ -5,7 +5,53 @@ from optparse import OptionParser
 from numpy import *
 
 
-def calculateVariation(refNominal, systematic, binname):
+#def calculateVariation(refNominal, systematic, binname):
+#    """
+#    Calculates the variation due to a particular systematic/subtype
+#    """
+#
+#    vartype = systematic['vartype']
+#    usenotes = systematic['usenotes']
+#
+#    if 'newnom' in usenotes: nominal = systematic['nominal'][binname]
+#    else: nominal = refNominal
+#
+#    #Calculate the contribution from this systematic.
+#    #Calculation method depends on the vartype flag, determined in parseSystematics.py
+#
+#    # Max of the 'up' and 'down' variations (potentially with respect to a special nominal value)
+#    if vartype == 'updown' or vartype == 'updown_newnom':
+#        upvar   = systematic['up'][binname][0]   - nominal[0]
+#        downvar = systematic['down'][binname][0] - nominal[0]
+#        varsign = sign(systematic['up'][binname][0] - systematic['down'][binname][0])
+#        if abs(upvar) >= abs(downvar): maxvar  = abs(upvar)*varsign
+#        elif abs(upvar) < abs(downvar): maxvar = abs(downvar)*varsign
+#
+#    # Half the difference between the 'up' and the 'down' variation
+#    elif vartype == 'half':
+#        maxvar = ( systematic['up'][binname][0] - systematic['down'][binname][0] ) /2
+#
+#    # Simple difference from nominal
+#    elif vartype == 'diffnom':
+#        maxvar = systematic['diffnom'][binname][0] - nominal[0]
+#
+#    # Anything else we don't understand
+#    else:
+#        print ""
+#        print "I don't know what to do with this variation type:", vartype
+#        #print systematic, subtype
+#        sys.exit(1)
+#
+#    if 'divideby' in usenotes:
+#        idx = usenotes.index('divideby')
+#        factor = float( usenotes[idx+1] )
+#        maxvar /= factor
+#
+#    return maxvar
+
+
+
+def calculateVariation(refNominal, systematic, binname, allowmaxstat = 0):
     """
     Calculates the variation due to a particular systematic/subtype
     """
@@ -42,22 +88,79 @@ def calculateVariation(refNominal, systematic, binname):
         #print systematic, subtype
         sys.exit(1)
 
+    # Find the max stat error on all the directions, then take the max of that and the systematic error
+    # Only do this for the inclusive asymmetry (because this is the best criterion for the statistical significance of the uncertainty), and multiply the covariance matrix by corresponding factor if necessary
+    if allowmaxstat and 'maxstat' in usenotes and binname == 'Unfolded':
+        varsyst = abs(maxvar)
+        directionlist = systematic.keys()
+        directionlist.remove('vartype')
+        directionlist.remove('usenotes')
+        staterrlist = [ systematic[i][binname][1] for i in directionlist ]
+        varstat = 0
+        #print vartype
+        if vartype == 'half': varstat = sqrt(systematic['up'][binname][1]*systematic['up'][binname][1] + systematic['down'][binname][1]*systematic['down'][binname][1])/2.
+        elif vartype == 'diffnom': varstat = sqrt(systematic['diffnom'][binname][1]*systematic['diffnom'][binname][1] + nominal[1]*nominal[1])
+        else: varstat = max( staterrlist ) / sqrt(2.)  #this is an approximate upper limit on the stat uncertainty
+        #print  max( staterrlist )
+        #print varstat
+        #print varsyst
+        if(maxvar>=0): maxvar = max(varsyst, varstat)
+        else: maxvar = -max(varsyst, varstat)
+        #print maxvar
+
+
     if 'divideby' in usenotes:
         idx = usenotes.index('divideby')
         factor = float( usenotes[idx+1] )
         maxvar /= factor
 
-    # Find the max stat error on all the directions, then take the max of that and the systematic error
-    if 'maxstat' in usenotes:
-        varsyst = maxvar
-        directionlist = systematic.keys()
-        directionlist.remove('vartype')
-        directionlist.remove('usenotes')
-        staterrlist = [ systematic[i][binname][1] for i in directionlist ]
-        varstat = max( staterrlist )
-        maxvar = max(varsyst, varstat)
-
     return maxvar
+
+
+
+
+
+def GetCorrectedAfb(covarianceM, nbins, n):
+    """
+    WARNING: DOESN'T WORK FOR NON-UNIFORM BIN WIDTH
+    """
+
+    # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
+
+    # Setup Alpha Vector
+    alpha = zeros( [nbins] )
+    for i in range(nbins):
+        if i < nbins/2: alpha[i] = -1
+        else: alpha[i] = 1
+
+    # Components of the error calculation
+    sum_n = 0.;
+    sum_alpha_n = 0.;
+    for i in range(nbins):
+        sum_n += n[i]
+        sum_alpha_n += alpha[i] * n[i]
+
+    dfdn = zeros( [nbins] )
+    for i in range(nbins):
+        dfdn[i] = ( alpha[i] * sum_n - sum_alpha_n ) / pow(sum_n,2)
+
+    # Error Calculation
+    afberr = 0.;
+    for i in range(nbins):
+        for j in range(nbins):
+            afberr += covarianceM[i,j] * dfdn[i] * dfdn[j];
+
+    afberr = sqrt(afberr);
+
+    # Calculate Afb
+    afb = sum_alpha_n / sum_n;
+
+    print "afb: %2.6f , afberr: %2.6f " % (afb, afberr )  
+    return afberr
+
+
+
+
 
 
 def main():
@@ -101,7 +204,7 @@ def main():
     print ""
 
     #Loop over the different asymmetry variables...
-    for plot in systematics.keys():
+    for plot in sorted(systematics.keys()):
 
         #if plot not in results.keys(): results[plot] = {}
 
@@ -128,41 +231,136 @@ def main():
         covar_total = zeros( [nbins,nbins] )
         corr_total  = zeros( [nbins,nbins] )
         bin_nominals = {}
+        bin_nominals_i = zeros( [nbins] )
 
         #Get the nominal values for each bin, and overall
         for i in binlist: bin_nominals[i] = systematics[plot]['Nominal']['default']['nominal'][i]
         (nominal_unfolded, stat_unfolded) = systematics[plot]['Nominal']['default']['nominal']['Unfolded'] 
+        #print nominal_unfolded
+
+        for i in range(nbins): 
+            #print bin_nominals[binlist[i]][0]
+            bin_nominals_i[i] = bin_nominals[binlist[i]][0]
 
         #Loop over the different systematics...
-        for systematic in systematics[plot].keys():
+        for systematic in sorted(systematics[plot].keys()):
             if systematic == 'Nominal': continue
             if systematic == 'name': continue
 
             sumsq_syst = 0
             covar_syst = zeros( [nbins,nbins] )
 
+            maxstat_factor = 1
+
             #Loop over the subtypes within each systematic...
-            for subtype in systematics[plot][systematic].keys():
-                sumsq_subtype = 0
-                covar_subtype = zeros( [nbins,nbins] )
-                bin_variations = {}
+            #print 'test0'
+            #print  systematics[plot][systematic].keys()
+            #for subtype in systematics[plot][systematic].keys(): print systematics[plot][systematic][subtype]['usenotes']
+            if 'extrapolate' in (systematics[plot][systematic][subtype]['usenotes'][0] for subtype in systematics[plot][systematic].keys() ):
+                #print 'extrapolating'
+                #now do the extrapolation
+                subtypenum =0
+                weightedaveragegradient = 0.;
+                bin_weightedaveragegradient = zeros( [nbins] )
+                bin_variations_0 = {}
+                #sort the subtypes into numerical order before doing the extrapolation
+                for subtype in sorted(systematics[plot][systematic].keys()):
+                    #use only the first 6 points for the extrapolation
+                    if subtypenum > 5: continue
+                    sumsq_subtype = 0
+                    covar_subtype = zeros( [nbins,nbins] )
+                    bin_variations = {}
 
-                #Calculate the variation in the overall asymmetry
-                var_overall = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' )
-                sumsq_subtype = var_overall*var_overall
+                    #Calculate the variation in the overall asymmetry
+                    var_overall = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' )
+                    sumsq_subtype = var_overall*var_overall
+                    if subtypenum == 0:
+                        var_overall_maxstat = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' , 1)
+                        maxstat_factor = abs(var_overall_maxstat/var_overall)
+                        if(maxstat_factor<1): print "something went wrong with maxstat_factor"
 
-                #Calculate the variation in individual bins
-                for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
 
-                #Calculate the covariance matrix using the individual bin variations:
-                #covar_ij = var(bin i) * var(bin j)
-                for row in range(nbins):
-                    for col in range(nbins):
-                        covar_subtype[row, col] = bin_variations[binlist[row]] * bin_variations[binlist[col]]
+                    #Calculate the variation in individual bins
+                    for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
+                    if subtypenum == 0: bin_variations_0 = bin_variations
 
-                #Add to the running total of the variance and covariance
-                sumsq_syst += sumsq_subtype
-                covar_syst += covar_subtype
+                    #Calculate the covariance matrix using the individual bin variations:
+                    #covar_ij = var(bin i) * var(bin j)
+                    if subtypenum == 0:
+                        for row in range(nbins):
+                            for col in range(nbins):
+                                covar_subtype[row, col] = bin_variations[binlist[row]] * bin_variations[binlist[col]]
+                    else:
+                        for i in range(nbins):
+                            bin_weightedaveragegradient[i] += ( sqrt(covar_syst[i, i]) -  sqrt( bin_variations[binlist[i]] * bin_variations[binlist[i]] ) )/subtypenum
+
+
+                    #Add to the running total of the variance and covariance
+                    if subtypenum == 0:
+                        sumsq_syst = sumsq_subtype
+                        covar_syst = covar_subtype
+                    else:
+                        weightedaveragegradient += (sqrt(sumsq_syst) - sqrt(sumsq_subtype))/subtypenum
+                        #print (sqrt(sumsq_syst) - sqrt(sumsq_subtype))/subtypenum
+                        #print 15.*weightedaveragegradient/subtypenum
+                    subtypenum += 1
+                weightedaveragegradient/=subtypenum
+                bin_weightedaveragegradient/=subtypenum
+                #print 15.*weightedaveragegradient
+
+                #afberr = GetCorrectedAfb(covar_syst, nbins, bin_nominals_i)
+
+                extrapfactor = 1 + 15.*weightedaveragegradient / sqrt(sumsq_syst)
+                #take maximum from extrapolation or maxstat_factor due to the MC statistical uncertainty (guaranteed to be >=1)
+                print "          %s extrapolation factor: %2.3f , maxstat_factor: %2.3f " % (systematic,extrapfactor,maxstat_factor)
+                if(extrapfactor<maxstat_factor):  extrapfactor = maxstat_factor
+                #print "extrapolation factor: %2.3f , extrapolation amount: %2.3f " % (extrapfactor,100.*15.*weightedaveragegradient )
+                sumsq_syst *= extrapfactor*extrapfactor
+                #instead of extrapolating for every bin, use same SF as for asymmetry (automatically ensures the covariance matrix is consistent with the uncertainty on the asymmetry, so no need to recalculate it)
+                covar_syst *= extrapfactor*extrapfactor
+
+#The code below extrapolates the uncertainty on each bin individually, calculates the resulting new covariance matrix, then recalculates the inclusive uncertainty. Currently only working for variables with uniform bin width.
+#Results are typically the same or less conservative than the simple method above, so use that instead.
+#                bin_extrapfactor = zeros( [nbins] )
+#                for i in range(nbins):
+#                    bin_extrapfactor[i] = 1 + 15.*bin_weightedaveragegradient[i] / sqrt(covar_syst[i, i])
+#                    print "extrapolation factor bin %1.1i: %2.3f , extrapolation amount: %2.3f " % (i,bin_extrapfactor[i],100.*15.*bin_weightedaveragegradient[i]  )     
+#                    if bin_extrapfactor[i] < 1: bin_extrapfactor[i] = 1
+#                    if bin_extrapfactor[i] > 3: bin_extrapfactor[i] = 3
+#
+#                for row in range(nbins):
+#                    for col in range(nbins):
+#                        covar_syst[row, col] = bin_variations_0[binlist[row]] * bin_variations_0[binlist[col]] * bin_extrapfactor[row] * bin_extrapfactor[col]
+#
+#                afberr = GetCorrectedAfb(covar_syst, nbins, bin_nominals_i)
+
+
+            else:
+                for subtype in systematics[plot][systematic].keys():
+                    sumsq_subtype = 0
+                    covar_subtype = zeros( [nbins,nbins] )
+                    bin_variations = {}
+
+                    #Calculate the variation in the overall asymmetry
+                    var_overall = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' )
+                    sumsq_subtype = var_overall*var_overall
+                    var_overall_maxstat = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' , 1)
+                    maxstat_factor = abs(var_overall_maxstat/var_overall)
+                    if(maxstat_factor<1): print "something went wrong with maxstat_factor"
+
+
+                    #Calculate the variation in individual bins
+                    for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
+
+                    #Calculate the covariance matrix using the individual bin variations:
+                    #covar_ij = var(bin i) * var(bin j)
+                    for row in range(nbins):
+                        for col in range(nbins):
+                            covar_subtype[row, col] = bin_variations[binlist[row]] * bin_variations[binlist[col]]
+
+                    #Add to the running total of the variance and covariance
+                    sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
+                    covar_syst += covar_subtype*maxstat_factor*maxstat_factor
 
             #end loop over subtypes
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
