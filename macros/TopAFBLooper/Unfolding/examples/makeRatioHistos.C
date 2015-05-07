@@ -297,8 +297,8 @@ void makeRatioHistos()
 		/////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////// 3. Calculate the ratios (data/MC) /////////////////////////////
 
-		TH2D *h2ratio = (TH2D*)h2Data->Clone(acceptanceName+"_"+Var2D+"_ratio_2d");
-		TH1D *h1ratio = (TH1D*)h1Data->Clone(acceptanceName+"_ratio_1d");
+		TH2D *h2ratio = (TH2D*)h2Data->Clone(acceptanceName+"_ratio_"+Var2D);
+		TH1D *h1ratio = (TH1D*)h1Data->Clone(acceptanceName+"_ratio_1D");
 
 		h2ratio->Divide(h2Meas);
 		h1ratio->Divide(h1Meas);
