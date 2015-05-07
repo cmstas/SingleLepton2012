@@ -352,7 +352,8 @@ def main():
                     var_overall = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' )
                     sumsq_subtype = var_overall*var_overall
                     var_overall_maxstat = calculateVariation( [nominal_unfolded, stat_unfolded], systematics[plot][systematic][subtype], 'Unfolded' , 1)
-                    maxstat_factor = abs(var_overall_maxstat/var_overall)
+                    if var_overall == 0.0: maxstat_factor = 1
+                    else: maxstat_factor = abs(var_overall_maxstat/var_overall)
                     if(maxstat_factor<1): print "something went wrong with maxstat_factor"
 
 
