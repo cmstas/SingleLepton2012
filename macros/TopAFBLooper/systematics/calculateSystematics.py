@@ -220,11 +220,18 @@ def main():
         binnames.sort()
         nbins = len(binnames)
 
-        binlist = ['bin'+str(i) for i in range(1, nbins+1)]
+        if 'x' in binnames[1]:  #2D binning
+            binlist = []
+            for i in range(1,3+1):
+                for j in range(1, (nbins/3)+1):
+                    binlist.append('bin' + str(i) + 'x' + str(j))
+        else:
+            binlist = ['bin'+str(i) for i in range(1, nbins+1)]   #1D binning
 
         if sorted(binlist) != sorted(binnames):
-            print 'There\'s a problem with this list of bin names:'
-            print binnames
+            print 'Problem: these lists of bin names don\'t match:'
+            print sorted(binnames)
+            print sorted(binlist)
             sys.exit(1)
 
         sumsq_total = 0
