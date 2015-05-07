@@ -300,6 +300,13 @@ void makeRatioHistos()
 		TH2D *h2ratio = (TH2D*)h2Data->Clone(acceptanceName+"_ratio_"+Var2D);
 		TH1D *h1ratio = (TH1D*)h1Data->Clone(acceptanceName+"_ratio_1D");
 
+		// Subtrack background from data
+		h2ratio->Add( h2Bkg, -1. );
+		h1ratio->Add( h1Bkg, -1. );
+
+		h2Meas->Scale( h2ratio->Integral() / h2Meas->Integral() );
+		h1Meas->Scale( h1ratio->Integral() / h1Meas->Integral() );
+
 		h2ratio->Divide(h2Meas);
 		h1ratio->Divide(h1Meas);
 
