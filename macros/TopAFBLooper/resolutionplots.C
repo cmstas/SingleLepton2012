@@ -66,7 +66,7 @@ void resolutionplots(TString histname = "ttMasspull",  int drawlog =0, double ra
   if(drawlog && is2D) gStyle->SetOptLogz(1);
   else gStyle->SetOptLogz(0);
 
-  if(histname.Contains("lep_")) gStyle->SetOptLogy(1);
+  if(histname.Contains("lep_charge_asymmetry") || histname.Contains("lep_azimuthal_asymmetry")) gStyle->SetOptLogy(1);
 
   if(!is2D) histo1->Rebin(rebin);
   histo1->GetXaxis()->SetRangeUser(rangelow,rangehigh);
