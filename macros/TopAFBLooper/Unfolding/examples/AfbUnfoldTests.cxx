@@ -707,7 +707,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", Int_t slopeO
 
                   //measure stat uncertainty on tau from the width of its distribution in PEs
                   TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
-                  unfold_FindTau.SetBias(hTrue_before);
+                  //unfold_FindTau.SetBias(hTrue_before); //now that hTrue_vs_Meas has an acceptance correction, the automatic bias scale corresponds to the denominator, so setting it to the numerator (hTrue) here is wrong.
                   unfold_FindTau.SetInput(hSmeared);
                   minimizeRhoAverage(&unfold_FindTau, hSmeared, -5.0, 0.0);
                   double tauPE = unfold_FindTau.GetTau();
@@ -719,8 +719,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", Int_t slopeO
 			  TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 			  scaleBias =  hSmeared->Integral() / hMeas_before->Integral() ;
 			  cout << "bias scale for TUnfold: " << scaleBias << endl;
-			  unfold_TUnfold.SetBias(hTrue_before);
-              //unfold_TUnfold.SetBias(hTrue_after); //confirmed that setting the bias distribution to hTrue_after gives perfect linearity for all bins when slopeOption = 1
+			  //unfold_TUnfold.SetBias(hTrue_before); //now that hTrue_vs_Meas has an acceptance correction, the automatic bias scale corresponds to the denominator, so setting it to the numerator (hTrue) here is wrong.
+              //unfold_TUnfold.SetBias(hTrue_after); //confirmed that setting the bias distribution to hTrue_after gives perfect linearity for all bins when slopeOption = 1. note hTrue_after has been corrected for acceptance, so this corresponds to the denominator after reweighting.
 			  unfold_TUnfold.SetInput(hSmeared);
 			  unfold_TUnfold.DoUnfold(tau, hSmeared, scaleBias);
 			  unfold_TUnfold.GetOutput(hUnfolded);
