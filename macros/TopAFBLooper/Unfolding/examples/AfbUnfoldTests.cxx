@@ -38,7 +38,7 @@ TString Region = "";
 
 Int_t kterm = 3;
 Double_t tau = 0.003;
-Int_t nPseudos = 10000;   // Linearity tests can use 1. For pull width tests, normally set to 10k
+Int_t nPseudos = 1;   // Linearity tests can use 1. For pull width tests, normally set to 10k
 Int_t includeSys = 0;
 
 // int lineWidth = 5;
@@ -57,7 +57,7 @@ Double_t myfunction(Double_t * x, Double_t * par)
 
 //TestType: "Pull" or "Linearity"
 //slopeOption: 0 = continuous reweighting, 1 = 6-binned reweighting
-void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slopeOption = 0,*/ Int_t Nfunction = 0)
+void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", Int_t slopeOption = 0, Int_t Nfunction = 0)
 {
     TH1::SetDefaultSumw2();
 
@@ -382,19 +382,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
             evtree->GetEntry(i);
             double orig_weight = weight;
 
-            /*if (slopeOption == 1)
-            {
-			  //fix the observable values to the bin centres so the acceptance function is unaffected by any reweighting
-			  observable =  hEmpty->GetBinCenter( hEmpty->FindBin( observable ) );
-			  observable_gen =  hEmpty_gen->GetBinCenter( hEmpty_gen->FindBin( observable_gen ) );
-			  if ( combineLepMinus )
-                {
-				  observableMinus =  hEmpty->GetBinCenter( hEmpty->FindBin( observableMinus ) );
-				  observableMinus_gen =  hEmpty_gen->GetBinCenter( hEmpty_gen->FindBin( observableMinus_gen ) );
-                }
-			}*/
-
-			//if( channel>0 ) channel -= 1;
 			offset = double(channel) * recohist_width;
 			if( observable > histmax )        observable = hiBinCenter;
 			else if( observable < histmin )   observable = loBinCenter;
@@ -404,6 +391,13 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			else if( observable_gen < histmin )   observable_gen = loBinCenter;
 			if( observableMinus_gen > histmax )        observableMinus_gen = hiBinCenter;
 			else if( observableMinus_gen < histmin )   observableMinus_gen = loBinCenter;
+
+            if (slopeOption == 1)
+            {
+              //fix the gen observable values to the bin centres so the acceptance function is unaffected by any reweighting
+              observable_gen =  hTrue_before->GetBinCenter( hTrue_before->FindBin( observable_gen ) );
+              observableMinus_gen =  hTrue_before->GetBinCenter( hTrue_before->FindBin( observableMinus_gen ) );
+            }
 
             double xval = (observable_gen - asym_centre) / fabs(xmax1D - asym_centre);
             double xsign = sign(xval);
@@ -476,12 +470,6 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
         accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
         accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
         accDen[3] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_all"));
-
-        //Tricks to make "channel 0" hold the combined same-flavor histograms
-        //accNum[0]->Add( accNum[1] );
-        //accDen[0]->Add( accDen[1] );
-        //acceptM[0] = (TH1D*)(accNum[0]->Clone("accept_SF"));
-        //acceptM[0]->Divide( accDen[0] );
 
 
         double gen_integrals[4] = {0.};
@@ -611,10 +599,10 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
 		{
-		  if (acceptM[2]->GetBinContent(i) != 0)
+		  if (acceptM[nSig]->GetBinContent(i) != 0)
 		  {
-			hTrue_after->SetBinContent(i, hTrue_after->GetBinContent(i) * 1.0 / acceptM[2]->GetBinContent(i));
-			hTrue_after->SetBinError (i, hTrue_after->GetBinError(i) * 1.0 / acceptM[2]->GetBinContent(i));
+			hTrue_after->SetBinContent(i, hTrue_after->GetBinContent(i) * 1.0 / acceptM[nSig]->GetBinContent(i));
+			hTrue_after->SetBinError (i, hTrue_after->GetBinError(i) * 1.0 / acceptM[nSig]->GetBinContent(i));
 		  }
 		}
 
@@ -665,10 +653,12 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 				  hSmeared_split->SetBinError(x, sqrt(fluct));
 				}
 			  for (int x = 1; x <= hSmeared->GetNbinsX(); x++) {
-				double content1 = hSmeared_split->GetBinContent(x);
-				double content2 = hSmeared_split->GetBinContent(x+nbinsx_reco);
-				hSmeared->SetBinContent( x, content1+content2 );
-				hSmeared->SetBinError( x, sqrt(content1+content2) );
+                double content = 0;
+                for( int aChannel=0; aChannel<nSig; aChannel++ ) {
+                    content += hSmeared_split->GetBinContent(x+nbinsx_reco*aChannel);
+                }
+				hSmeared->SetBinContent( x, content );
+				hSmeared->SetBinError( x, sqrt(content) );
 			  }
 
 			  //Reset acceptance bins
@@ -729,7 +719,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slop
 			  TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 			  scaleBias =  hSmeared->Integral() / hMeas_before->Integral() ;
 			  cout << "bias scale for TUnfold: " << scaleBias << endl;
-			  unfold_TUnfold.SetBias(hTrue_before);  //doesn't make any difference, because if not set the bias distribution is automatically determined from hTrue_vs_Meas, which gives exactly hTrue
+			  unfold_TUnfold.SetBias(hTrue_before);
+              //unfold_TUnfold.SetBias(hTrue_after); //confirmed that setting the bias distribution to hTrue_after gives perfect linearity for all bins when slopeOption = 1
 			  unfold_TUnfold.SetInput(hSmeared);
 			  unfold_TUnfold.DoUnfold(tau, hSmeared, scaleBias);
 			  unfold_TUnfold.GetOutput(hUnfolded);
