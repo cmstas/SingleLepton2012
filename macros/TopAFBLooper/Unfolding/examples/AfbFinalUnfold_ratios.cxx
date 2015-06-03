@@ -601,9 +601,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		unfold_TUnfold.SetInput(hData_bkgSub);
 
 
+		//apply acceptance correction to hTrueBias
+		for (Int_t i = 1; i <= nbinsx_gen; i++)
+		  {
+
+			if (acceptM[nSig]->GetBinContent(i) != 0)
+			  {
+				hTrueBias->SetBinContent(i, hTrueBias->GetBinContent(i) * 1.0 / acceptM[nSig]->GetBinContent(i));
+				hTrueBias->SetBinError (i, hTrueBias->GetBinError(i) * 1.0 / acceptM[nSig]->GetBinContent(i));
+			  }
+
+		  }
+
+
 		unfold_TUnfold.SetBias(hTrueBias);  //doesn't make any difference, because if not set the bias distribution is
 		//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
-		scaleBias *= hTrue->Integral() / hTrueBias->Integral() ;
+		//scaleBias *= hTrue->Integral() / hTrueBias->Integral() ;
 		cout<<"****scaleBias correction:**** "<<hTrue->Integral() / hTrueBias->Integral()<<endl;
 
 
@@ -667,10 +680,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
 		  {
 
-			if (acceptM[3]->GetBinContent(i) != 0)
+			if (acceptM[nSig]->GetBinContent(i) != 0)
 			  {
-				hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[3]->GetBinContent(i));
-				hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[3]->GetBinContent(i));
+				hTrue->SetBinContent(i, hTrue->GetBinContent(i) * 1.0 / acceptM[nSig]->GetBinContent(i));
+				hTrue->SetBinError (i, hTrue->GetBinError(i) * 1.0 / acceptM[nSig]->GetBinContent(i));
 			  }
 
 			denominatorM_nopTreweighting->SetBinContent(i, denominatorM_nopTreweighting_raw->GetBinContent(i));
