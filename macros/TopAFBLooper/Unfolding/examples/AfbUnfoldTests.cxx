@@ -38,11 +38,11 @@ TString Region = "";
 
 Int_t kterm = 3;
 Double_t tau = 0.003;
-Int_t nPseudos = 1;   // Linearity tests can use 1. For pull width tests, normally set to 10k
+Int_t nPseudos = 10000;   // Linearity tests can use 1. For pull width tests, normally set to 10k
 Int_t includeSys = 0;
 
 // int lineWidth = 5;
-bool plot_inclusive_only = false;
+bool plot_inclusive_only = true;
 bool measure_tau_uncertainty = true;
 
 TF1 *fx;
@@ -1392,8 +1392,8 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", Int_t slopeO
         Asym2D_PullWidth->SetMarkerStyle(23);
         Asym2D_PullWidth->SetMarkerColor(kBlack);
         Asym2D_PullWidth->SetMarkerSize(0.6);
-        Asym2D_PullWidth->GetXaxis()->SetTitle("inclusive (true)");
-        Asym2D_PullWidth->GetYaxis()->SetTitle("inclusive pull width");
+        Asym2D_PullWidth->GetXaxis()->SetTitle(asymlabel + " inclusive (true)");
+        Asym2D_PullWidth->GetYaxis()->SetTitle(asymlabel + " inclusive pull width");
         Asym2D_PullWidth->Draw("AP same");
         //Asym2D_PullWidth->Fit("pol1");
         TFitResultPtr rpw = Asym2D_PullWidth->Fit("pol1", "S");
