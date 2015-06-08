@@ -39,6 +39,7 @@ Int_t kterm = 3; //for SVD
 Double_t tau = 0.005; //for TUnfold - this is a more reasonable default (1E-4 gives very little regularisation)
 Int_t nVars = 12;
 Int_t includeSys = 0;
+bool reweightbiasonly = true;
 bool drawDiffs = true;
 int lineWidthDiffs=drawDiffs?lineWidth*2/3:lineWidth;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
@@ -359,7 +360,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				fillUnderOverFlow(hTrue_split, observable_gen+offset, weight, Nsolns);
 				// fillUnderOverFlow(hTrue_unweighted, observable_gen, weight, Nsolns);
 				// fillUnderOverFlow(hTrue_split_unweighted, observable_gen+offset, weight, Nsolns);
-				fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
+				if (reweightbiasonly) fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight, Nsolns);
+				else fillUnderOverFlow(hTrue_vs_Meas, observable, observable_gen, weight*ratio, Nsolns);
 
 				// fillUnderOverFlow(hData, observable, weight*ratio, Nsolns);
 				// fillUnderOverFlow(hData_split, observable+offset, weight*ratio, Nsolns);
@@ -373,7 +375,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 					fillUnderOverFlow(hTrue_split, observableMinus_gen+offset, weight, Nsolns);
 					// fillUnderOverFlow(hTrue_unweighted, observableMinus_gen, weight, Nsolns);
 					// fillUnderOverFlow(hTrue_split_unweighted, observableMinus_gen+offset, weight, Nsolns);
-					fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
+					if (reweightbiasonly) fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight, Nsolns);
+					else fillUnderOverFlow(hTrue_vs_Meas, observableMinus, observableMinus_gen, weight*ratioMinus, Nsolns);
 
 					// fillUnderOverFlow(hData, observableMinus, weight*ratio, Nsolns);
 					// fillUnderOverFlow(hData_split, observableMinus+offset, weight*ratio, Nsolns);
@@ -457,7 +460,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		// to be fully correct, we should really reweight the events by correction[aChannel] when we fill hTrue and hTrue_vs_Meas too
 		for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
 		  double acceptance = acceptMcorrected->GetBinContent(acceptbin);
-		  double n_accepted = hTrue->GetBinContent(acceptbin);
+		  double n_accepted = 0.;
+		  if (reweightbiasonly)  n_accepted = hTrue->GetBinContent(acceptbin);
+		  else n_accepted = hTrueBias->GetBinContent(acceptbin); //if we reweighted the smearing matrix we must use the reweighted hTrue for the acceptance correction (to keep the numerators consistent)
 		  double n_rejected = n_accepted/acceptance - n_accepted;
 		  hTrue_vs_Meas->SetBinContent( 0, acceptbin, n_rejected );
 		  double num_error = accNum[nSig]->GetBinError(acceptbin);
@@ -614,8 +619,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  }
 
 
-		unfold_TUnfold.SetBias(hTrueBias);  //doesn't make any difference, because if not set the bias distribution is
-		//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
+		unfold_TUnfold.SetBias(hTrueBias);
+
 		//scaleBias *= hTrue->Integral() / hTrueBias->Integral() ;
 		cout<<"****scaleBias correction:**** "<<hTrue->Integral() / hTrueBias->Integral()<<endl;
 
