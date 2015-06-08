@@ -32,6 +32,8 @@
 
 #include "TRandom3.h"
 
+#include "denominator/acceptanceplots.h"
+
 using namespace Stop;
 
 std::set<DorkyEventIdentifier> already_seen;
@@ -1995,29 +1997,48 @@ void StopTreeLooper::makettPlots( float evtweight, std::map<std::string, TH1D *>
 
     //ttbar solution resolution plots
 
-    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry_Delta" + tag_selection + flav_tag, lep_charge_asymmetry - lep_charge_asymmetry_gen , evtweight, h_1d, nbins, -5, 5);
+    plot1DUnderOverFlow("h_sig_lep_charge_asymmetry_Delta" + tag_selection + flav_tag, lep_charge_asymmetry - lep_charge_asymmetry_gen , evtweight, h_1d, nbins, -3.5, 3.5);
+    plot2DUnderOverFlow("h_sig_lep_charge_asymmetry_Delta_2D" + tag_selection + flav_tag, lep_charge_asymmetry - lep_charge_asymmetry_gen ,              lep_charge_asymmetry_gen  , evtweight, h_2d, nbins, -3.5, 3.5,    12, bins_lepChargeAsym);
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_Delta" + tag_selection + flav_tag, lep_azimuthal_asymmetry - lep_azimuthal_asymmetry_gen , evtweight, h_1d, nbins, -2.*TMath::Pi(), 2.*TMath::Pi());
+    plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry_Delta_2D" + tag_selection + flav_tag, lep_azimuthal_asymmetry - lep_azimuthal_asymmetry_gen ,              lep_azimuthal_asymmetry_gen  , evtweight, h_2d, nbins, -2.*TMath::Pi(), 2.*TMath::Pi(),    12, bins_lepAzimAsym);
     plot1DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_Delta" + tag_selection + flav_tag, lep_azimuthal_asymmetry2 - lep_azimuthal_asymmetry2_gen , evtweight, h_1d, nbins, -TMath::Pi(), TMath::Pi());
+    plot2DUnderOverFlow("h_sig_lep_azimuthal_asymmetry2_Delta_2D" + tag_selection + flav_tag, lep_azimuthal_asymmetry2 - lep_azimuthal_asymmetry2_gen ,              lep_azimuthal_asymmetry2_gen  , evtweight, h_2d, nbins, -TMath::Pi(), TMath::Pi(),    12, bins_lepAzimAsym2);
 
     if (m_top > 0)
     {
-        plot1DUnderOverFlow("h_sig_top_rapiditydiff_cms_Delta" + tag_selection + flav_tag, top_rapiditydiff_cms - top_rapiditydiff_cms_gen , evtweight, h_1d, nbins, -5, 5);
-        plot1DUnderOverFlow("h_sig_top_pseudorapiditydiff_cms_Delta" + tag_selection + flav_tag, top_pseudorapiditydiff_cms - top_pseudorapiditydiff_cms_gen , evtweight, h_1d, nbins, -5, 5);
-        plot1DUnderOverFlow("h_sig_top_rapiditydiff_Marco_Delta" + tag_selection + flav_tag, top_rapiditydiff_Marco - top_rapiditydiff_Marco_gen , evtweight, h_1d, nbins, -5, 5);
+        plot1DUnderOverFlow("h_sig_top_rapiditydiff_cms_Delta" + tag_selection + flav_tag, top_rapiditydiff_cms - top_rapiditydiff_cms_gen , evtweight, h_1d, nbins, -3.5, 3.5);
+        plot2DUnderOverFlow("h_sig_top_rapiditydiff_cms_Delta_2D" + tag_selection + flav_tag, top_rapiditydiff_cms - top_rapiditydiff_cms_gen ,              top_rapiditydiff_cms_gen  , evtweight, h_2d, nbins, -3.5, 3.5,    6, bins_rapiditydiff);
+        plot1DUnderOverFlow("h_sig_top_pseudorapiditydiff_cms_Delta" + tag_selection + flav_tag, top_pseudorapiditydiff_cms - top_pseudorapiditydiff_cms_gen , evtweight, h_1d, nbins, -3.5, 3.5);
+        plot2DUnderOverFlow("h_sig_top_pseudorapiditydiff_cms_Delta_2D" + tag_selection + flav_tag, top_pseudorapiditydiff_cms - top_pseudorapiditydiff_cms_gen ,              top_pseudorapiditydiff_cms_gen  , evtweight, h_2d, nbins, -3.5, 3.5,    6, bins_pseudorapiditydiff);
+        plot1DUnderOverFlow("h_sig_top_rapiditydiff_Marco_Delta" + tag_selection + flav_tag, top_rapiditydiff_Marco - top_rapiditydiff_Marco_gen , evtweight, h_1d, nbins, -3.5, 3.5);
+        plot2DUnderOverFlow("h_sig_top_rapiditydiff_Marco_Delta_2D" + tag_selection + flav_tag, top_rapiditydiff_Marco - top_rapiditydiff_Marco_gen ,              top_rapiditydiff_Marco_gen  , evtweight, h_2d, nbins, -3.5, 3.5,    6, bins_rapiditydiffMarco);
         plot1DUnderOverFlow("h_sig_top_costheta_cms_Delta" + tag_selection + flav_tag, top_costheta_cms - top_costheta_cms_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_top_costheta_cms_Delta_2D" + tag_selection + flav_tag, top_costheta_cms - top_costheta_cms_gen ,              top_costheta_cms_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_topCosTheta);
         plot1DUnderOverFlow("h_sig_lepPlus_costheta_cms_Delta" + tag_selection + flav_tag, lepPlus_costheta_cms - lepPlus_costheta_cms_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_lepPlus_costheta_cms_Delta_2D" + tag_selection + flav_tag, lepPlus_costheta_cms - lepPlus_costheta_cms_gen ,              lepPlus_costheta_cms_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_lepCosTheta);
         plot1DUnderOverFlow("h_sig_lepMinus_costheta_cms_Delta" + tag_selection + flav_tag, lepMinus_costheta_cms - lepMinus_costheta_cms_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_lepMinus_costheta_cms_Delta_2D" + tag_selection + flav_tag, lepMinus_costheta_cms - lepMinus_costheta_cms_gen ,              lepMinus_costheta_cms_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_lepCosTheta);
         plot1DUnderOverFlow("h_sig_lep_costheta_cms_Delta" + tag_selection + flav_tag, lepPlus_costheta_cms - lepPlus_costheta_cms_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_lep_costheta_cms_Delta_2D" + tag_selection + flav_tag, lepPlus_costheta_cms - lepPlus_costheta_cms_gen ,              lepPlus_costheta_cms_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_lepCosTheta);
         plot1DUnderOverFlow("h_sig_lep_costheta_cms_Delta" + tag_selection + flav_tag, lepMinus_costheta_cms - lepMinus_costheta_cms_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_lep_costheta_cms_Delta_2D" + tag_selection + flav_tag, lepMinus_costheta_cms - lepMinus_costheta_cms_gen ,              lepMinus_costheta_cms_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_lepCosTheta);
         plot1DUnderOverFlow("h_sig_top_spin_correlation_Delta" + tag_selection + flav_tag, top_spin_correlation - top_spin_correlation_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_top_spin_correlation_Delta_2D" + tag_selection + flav_tag, top_spin_correlation - top_spin_correlation_gen ,              top_spin_correlation_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_topSpinCorr);
         plot1DUnderOverFlow("h_sig_lep_cos_opening_angle_Delta" + tag_selection + flav_tag, lep_cos_opening_angle - lep_cos_opening_angle_gen , evtweight, h_1d, nbins, -2, 2);
+        plot2DUnderOverFlow("h_sig_lep_cos_opening_angle_Delta_2D" + tag_selection + flav_tag, lep_cos_opening_angle - lep_cos_opening_angle_gen ,              lep_cos_opening_angle_gen  , evtweight, h_2d, nbins, -2, 2,    6, bins_lepCosOpeningAngle);
 
         plot1DUnderOverFlow("h_sig_tt_mass_Delta" + tag_selection + flav_tag, tt_mass - tt_mass_gen , evtweight, h_1d, nbins, -500, 500);
-        plot1DUnderOverFlow("h_sig_ttRapidity2_Delta" + tag_selection + flav_tag, ttRapidity2 - ttRapidity2_gen , evtweight, h_1d, nbins, -5, 5);
-        plot1DUnderOverFlow("h_sig_absttRapidity2_Delta" + tag_selection + flav_tag, fabs(ttRapidity2) - fabs(ttRapidity2_gen) , evtweight, h_1d, nbins, -5, 5);
+        plot2DUnderOverFlow("h_sig_tt_mass_Delta_2D" + tag_selection + flav_tag, tt_mass - tt_mass_gen ,              tt_mass_gen  , evtweight, h_2d, nbins, -500, 500,    3, ybinsmtt);
+        plot1DUnderOverFlow("h_sig_ttRapidity2_Delta" + tag_selection + flav_tag, ttRapidity2 - ttRapidity2_gen , evtweight, h_1d, nbins, -3.5, 3.5);
+        plot2DUnderOverFlow("h_sig_ttRapidity2_Delta_2D" + tag_selection + flav_tag, ttRapidity2 - ttRapidity2_gen ,              fabs(ttRapidity2_gen)  , evtweight, h_2d, nbins, -3.5, 3.5,    3, ybinsttrapidity2);
+        plot1DUnderOverFlow("h_sig_absttRapidity2_Delta" + tag_selection + flav_tag, fabs(ttRapidity2) - fabs(ttRapidity2_gen) , evtweight, h_1d, nbins, -3.5, 3.5);
+        plot2DUnderOverFlow("h_sig_absttRapidity2_Delta_2D" + tag_selection + flav_tag, fabs(ttRapidity2) - fabs(ttRapidity2_gen) ,              fabs(ttRapidity2_gen)  , evtweight, h_2d, nbins, -3.5, 3.5,    3, ybinsttrapidity2);
         plot1DUnderOverFlow("h_sig_tt_pT_Delta" + tag_selection + flav_tag, tt_pT - tt_pT_gen , evtweight, h_1d, nbins, -200, 200);
+        plot2DUnderOverFlow("h_sig_tt_pT_Delta_2D" + tag_selection + flav_tag, tt_pT - tt_pT_gen ,              tt_pT_gen  , evtweight, h_2d, nbins, -200, 200,    3, ybinsttpt);
         plot1DUnderOverFlow("h_sig_top1_pt_Delta" + tag_selection + flav_tag, top1_pt - top1_pt_gen , evtweight, h_1d, nbins, -300, 300);
+        plot2DUnderOverFlow("h_sig_top1_pt_Delta_2D" + tag_selection + flav_tag, top1_pt - top1_pt_gen ,              top1_pt_gen  , evtweight, h_2d, nbins, -300, 300,    3, 0, 300);
         plot1DUnderOverFlow("h_sig_top2_pt_Delta" + tag_selection + flav_tag, top2_pt - top2_pt_gen , evtweight, h_1d, nbins, -300, 300);
+        plot2DUnderOverFlow("h_sig_top2_pt_Delta_2D" + tag_selection + flav_tag, top2_pt - top2_pt_gen ,              top2_pt_gen  , evtweight, h_2d, nbins, -300, 300,    3, 0, 300);
     }
 
     if (m_top > 0)

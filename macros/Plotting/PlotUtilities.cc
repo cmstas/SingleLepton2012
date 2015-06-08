@@ -425,3 +425,31 @@ void plot2DUnderOverFlow(string title, double xval, double yval, double weight, 
   return;
 
 }
+
+
+void plot2DUnderOverFlow(string title, double xval, double yval, double weight, std::map<string, TH2D*> &allhistos, 
+      int numbinsx, double xmin, double xmax, int numbinsy, const double* ybins){
+
+  double ymin = ybins[0];
+  double ymax = ybins[numbinsy];
+
+  if (xval >= xmax) xval = xmax - (xmax-xmin)/double(numbinsx)/1000.;
+  if (xval <= xmin) xval = xmin + (xmax-xmin)/double(numbinsx)/1000.;
+  if (yval >= ymax) yval = ymax - (ymax-ymin)/double(numbinsy)/1000.;
+  if (yval <= ymin) yval = ymin + (ymax-ymin)/double(numbinsy)/1000.;
+ 
+  std::map<string, TH2D*>::iterator iter= allhistos.find(title);
+  if(iter == allhistos.end()) //no histo for this yet, so make a new one
+    {
+      TH2D* currentHisto= new TH2D(title.c_str(), title.c_str(), numbinsx, xmin, xmax, numbinsy, ybins);
+      currentHisto->Fill(xval, yval, weight);
+      allhistos.insert(std::pair<string, TH2D*> (title,currentHisto) );
+    }
+  else // exists already, so just fill it
+    {
+      (*iter).second->Fill(xval, yval, weight);
+    }
+
+  return;
+
+}
