@@ -570,7 +570,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		TUnfoldSys unfold_FindTau (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 		unfold_FindTau.SetInput(hMeas);
-		minimizeRhoAverage(&unfold_FindTau, hMeas, -5.5, -0.5);
+		minimizeRhoAverage(&unfold_FindTau, hMeas, -5.0, -0.5);
 		tau = unfold_FindTau.GetTau();
 
 		// Generate a curve of rhoAvg vs tau
@@ -579,8 +579,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		double tau_test = 0.0;
 		double bestrhoavg = unfold_FindTau.GetRhoAvg();
 
-		for(int l=0; l<100; l++) {
-		  tau_test = pow( 10, -5.5 + 0.05*l );
+		for(int l=0; l<90; l++) {
+		  tau_test = pow( 10, -5.0 + 0.05*l );
 		  unfold_FindTau.DoUnfold(tau_test, hMeas, tempScaleBias);
 		  ar_tau[l] = tau_test;
 		  ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
