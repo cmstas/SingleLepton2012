@@ -605,6 +605,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
 		unfold_TUnfold.SetInput(hData_bkgSub);
 
+		//note the 2D reweighting of the 1D purely lep var distributions is broken, but we don't need it
+		cout<<"****Normalisation check:**** "<<hTrueBias->Integral() / hTrue->Integral()<<endl;
+
 
 		//apply acceptance correction to hTrueBias
 		for (Int_t i = 1; i <= nbinsx_gen; i++)
@@ -619,10 +622,19 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  }
 
 
+		TCanvas *c_hTrue_rw = new TCanvas("c_hTrue_rw", "c_hTrue_rw");
+		hTrueBias->SetTitle("hTrue;"+xaxislabel+";"+yaxislabel);
+		hTrueBias->Draw("hist");
+		accDen[3]->Draw("histsame");
+		c_hTrue_rw->SaveAs("hTrue_rw_" + Var2D + "_" + acceptanceName + "_KITratio.pdf");
+
+		
+
+
 		unfold_TUnfold.SetBias(hTrueBias);
 
 		//scaleBias *= hTrue->Integral() / hTrueBias->Integral() ;
-		cout<<"****scaleBias correction:**** "<<hTrue->Integral() / hTrueBias->Integral()<<endl;
+		//cout<<"****scaleBias correction:**** "<<hTrue->Integral() / hTrueBias->Integral()<<endl;
 
 
 		// minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, 0.0);
