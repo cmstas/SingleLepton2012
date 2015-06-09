@@ -752,12 +752,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         GetAfb(hTrue, Afb, AfbErr);
         cout << " True Top: " << Afb << " +/-  " << AfbErr << "\n";
 
-        GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
+        GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
         cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << Afb << " +/-  " << AfbErr << endl;
 
-        GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
-        cout << " Unfolded with smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
+        GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
+        cout << " Unfolded without smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(denominatorM, Afb, AfbErr);
         cout << " True Top from acceptance denominator: " << Afb << " +/-  " << AfbErr << "\n";
@@ -779,7 +779,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         vector<double> afb_bins;
         vector<double> afb_bins_err;
-        GetCorrectedAfbBinByBin(hData_unfolded, m_correctE, afb_bins, afb_bins_err, second_output_file);
+        GetCorrectedAfbBinByBin(hData_unfolded, m_smearingE, afb_bins, afb_bins_err, second_output_file);
 
         //scale to total xsec with option "width",  so that differential xsec is plotted
         //hData_unfolded->Scale(xsection/hData_unfolded->Integral(),"width");
@@ -846,8 +846,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
         //confirm covariance matrix for normalised distribution is correct by re-calculating Afb
-        GetCorrectedAfb_integratewidth_V(hData_unfolded, m_correctE, Afb, AfbErr); //uses covariance matrix for the bin values
-        //GetCorrectedAfb_integratewidth(hData_unfolded, m_correctE, Afb, AfbErr); //uses covariance matrix for the integrated bin contents
+        GetCorrectedAfb_integratewidth_V(hData_unfolded, m_smearingE, Afb, AfbErr); //uses covariance matrix for the bin values
+        //GetCorrectedAfb_integratewidth(hData_unfolded, m_smearingE, Afb, AfbErr); //uses covariance matrix for the integrated bin contents
         cout << " Unfolded_after_scaling: " << Afb << " +/-  " << AfbErr << "\n";
 
         TH1D *hData_unfolded_minussyst;
