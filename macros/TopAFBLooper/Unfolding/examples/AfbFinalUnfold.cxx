@@ -805,6 +805,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			  {
                 m_correctE(l, j) = m_correctE(l, j) * (hData_unfolded->GetBinContent(l + 1) / hData_unfolded_clone->GetBinContent(l + 1)) * (hData_unfolded->GetBinContent(j + 1) / hData_unfolded_clone->GetBinContent(j + 1)); //this gives the covariance matrix for the bin values
                 //m_correctE(l, j) = m_correctE(l, j) * (hData_unfolded->GetBinWidth(l + 1) * hData_unfolded->GetBinContent(l + 1) / hData_unfolded_clone->GetBinContent(l + 1)) * (hData_unfolded->GetBinWidth(j + 1) * hData_unfolded->GetBinContent(j + 1) / hData_unfolded_clone->GetBinContent(j + 1)); //this gives the covariance matrix for the integrated bin contents
+                m_smearingE(l, j) = m_smearingE(l, j) * (hData_unfolded->GetBinContent(l + 1) / hData_unfolded_clone->GetBinContent(l + 1)) * (hData_unfolded->GetBinContent(j + 1) / hData_unfolded_clone->GetBinContent(j + 1)); //this gives the covariance matrix for the bin values
 			  }
 		  }
 
@@ -825,6 +826,24 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  }
 		  cout << endl;
 		}
+
+		cout << "Statistical covariance matrix including MC stats:" << endl;
+
+		cout << "_____|";
+		for( int col=0; col<nbinsx_gen; col++ ) cout << "_____" << col+1 << "_____|";
+		cout << endl;
+
+		for( int row=0; row<nbinsx_gen; row++ ) {
+		  sprintf(mystring, "%4d | ", row+1);
+		  cout << mystring;
+		  for( int col=0; col<nbinsx_gen; col++ ){
+			sprintf(mystring, "%1.5g  ", m_smearingE(row, col) );
+			cout << mystring;
+		  }
+		  cout << endl;
+		}
+
+
 
         //confirm covariance matrix for normalised distribution is correct by re-calculating Afb
         GetCorrectedAfb_integratewidth_V(hData_unfolded, m_correctE, Afb, AfbErr); //uses covariance matrix for the bin values
@@ -1043,8 +1062,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				h_diff_plussyst ->SetBinError(tempbin, 0);
             }
 
-            //p2->SetTopMargin(0.1);
-            p2->SetBottomMargin(0.28);
+            p2->SetTopMargin(0.02);
+            p2->SetBottomMargin(0.15);
 
             THStack *hsd = new THStack("hsd_systband", "Systematic band");
             h_diff_minussyst->SetLineColor(kWhite);
@@ -1061,7 +1080,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             hsd->SetMinimum(0.921);
             hsd->SetMaximum(1.079/1.05); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
 
-            hsd->GetXaxis()->SetTitle( hs->GetXaxis()->GetTitle() );
+            //hsd->GetXaxis()->SetTitle( hs->GetXaxis()->GetTitle() );
             hsd->GetXaxis()->SetTitleSize( hs->GetXaxis()->GetTitleSize()*0.69/0.31);
             hsd->GetXaxis()->SetLabelSize( hs->GetXaxis()->GetLabelSize()*0.69/0.31);
             //hsd->GetXaxis()->SetLabelOffset(-0.88);
