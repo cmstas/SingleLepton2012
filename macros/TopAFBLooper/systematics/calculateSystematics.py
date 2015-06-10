@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys,getopt,urllib2,json,math,fnmatch
+import sys,getopt,urllib2,json,math,fnmatch,numpy
 from optparse import OptionParser
 from numpy import *
 
@@ -55,6 +55,9 @@ def calculateVariation(refNominal, systematic, binname, allowmaxstat = 0):
     """
     Calculates the variation due to a particular systematic/subtype
     """
+
+    numpy.set_printoptions(linewidth=500)
+    numpy.set_printoptions(precision=6)
 
     vartype = systematic['vartype']
     usenotes = systematic['usenotes']

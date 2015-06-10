@@ -791,13 +791,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded->Scale(1. / hData_unfolded->Integral(), "width");
         hTrue->Scale(1. / hTrue->Integral(), "width");
 
-        for (int i = 1; i < nbinsx_gen + 1; i++)
-		  {
-            cout << i << " bin = " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
-            second_output_file << acceptanceName << " " << observablename << " bin" << i << ": " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
-            //second_output_file << acceptanceName << " " << observablename << " truthbin" << i << ": " << hTrue->GetBinContent(i) << " +/- " << hTrue->GetBinError(i) << endl;
-		  }
-
         //calculate covariance matrix for normalised distribution
         for (int l = 0; l < nbinsx_gen; l++)
 		  {
@@ -808,6 +801,16 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 m_smearingE(l, j) = m_smearingE(l, j) * (hData_unfolded->GetBinContent(l + 1) / hData_unfolded_clone->GetBinContent(l + 1)) * (hData_unfolded->GetBinContent(j + 1) / hData_unfolded_clone->GetBinContent(j + 1)); //this gives the covariance matrix for the bin values
 			  }
 		  }
+
+
+        for (int i = 1; i < nbinsx_gen + 1; i++)
+		  {
+            cout << i << " bin = " << hData_unfolded->GetBinContent(i) << " +/- " << sqrt(m_smearingE(i-1, i-1)) << endl;
+            second_output_file << acceptanceName << " " << observablename << " bin" << i << ": " << hData_unfolded->GetBinContent(i) << " +/- " << sqrt(m_smearingE(i-1, i-1)) << endl;
+            //second_output_file << acceptanceName << " " << observablename << " truthbin" << i << ": " << hTrue->GetBinContent(i) << " +/- " << hTrue->GetBinError(i) << endl;
+		  }
+
+
 
 		cout << "Statistical covariance matrix:" << endl;
         // m_correctE.Print("f=%1.5g ");
@@ -821,7 +824,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  sprintf(mystring, "%4d | ", row+1);
 		  cout << mystring;
 		  for( int col=0; col<nbinsx_gen; col++ ){
-			sprintf(mystring, "%1.5g  ", m_correctE(row, col) );
+			sprintf(mystring, "%1.6g  ", m_correctE(row, col) );
 			cout << mystring;
 		  }
 		  cout << endl;
@@ -837,7 +840,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  sprintf(mystring, "%4d | ", row+1);
 		  cout << mystring;
 		  for( int col=0; col<nbinsx_gen; col++ ){
-			sprintf(mystring, "%1.5g  ", m_smearingE(row, col) );
+			sprintf(mystring, "%1.6g  ", m_smearingE(row, col) );
 			cout << mystring;
 		  }
 		  cout << endl;
