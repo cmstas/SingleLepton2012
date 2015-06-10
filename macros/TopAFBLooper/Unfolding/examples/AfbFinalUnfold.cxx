@@ -44,6 +44,7 @@ int lineWidthDiffs=drawDiffs?lineWidth*2/3:lineWidth;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
 bool draw_truth_before_pT_reweighting = true; //turn this on when making the final plots for the paper (want to compare the data against the unweighted MC)
 //bool drawTheory = true; //turn this on to show Bernreuther's predictions for AdeltaPhi and Ac1c2
+bool maketauplots = false;
 
 
 void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1. )
@@ -191,6 +192,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         TH1D *hData_bkgSub_split;
 
 		hTrue_split->Rebin(2); //This gives us the gen bin-widths, while preserving the split channel layout.
+
+		int ntau = 1000;
+		double taulogrange = 2.;
+		
+		TH1D *AFB_vs_tau = new TH1D("AFB_vs_tau", "AFB_vs_tau", ntau, -taulogrange, taulogrange);
+		TH1D *AFB_vs_tau_u = new TH1D("AFB_vs_tau_u", "AFB_vs_tau_u", ntau, -taulogrange, taulogrange);
+		TH1D *AFB_vs_tau_d = new TH1D("AFB_vs_tau_d", "AFB_vs_tau_d", ntau, -taulogrange, taulogrange);
+		TH1D *AFB_vs_tau0_c = new TH1D("AFB_vs_tau0_c", "AFB_vs_tau0_c", ntau, -taulogrange, taulogrange);
+		TH1D *AFB_vs_tau0_u = new TH1D("AFB_vs_tau0_u", "AFB_vs_tau0_u", ntau, -taulogrange, taulogrange);
+		TH1D *AFB_vs_tau0_d = new TH1D("AFB_vs_tau0_d", "AFB_vs_tau0_d", ntau, -taulogrange, taulogrange);
+
 
 		//delete[] genbins;
 		//delete[] recobins;
@@ -556,8 +568,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		tau = unfold_FindTau.GetTau();
 
 		// Generate a curve of rhoAvg vs tau
-		double ar_tau[100];
-		double ar_rhoAvg[100];
+		double ar_tau[90];
+		double ar_rhoAvg[90];
 		double tau_test = 0.0;
 		double bestrhoavg = unfold_FindTau.GetRhoAvg();
 
@@ -568,7 +580,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  ar_rhoAvg[l] = unfold_FindTau.GetRhoAvg();
 		}
 
-		TGraph* gr_rhoAvg = new TGraph(100, ar_tau, ar_rhoAvg);
+		TGraph* gr_rhoAvg = new TGraph(90, ar_tau, ar_rhoAvg);
 		TCanvas* c_rhoAvg = new TCanvas("c_rhoAvg","c_rhoAvg");
 		c_rhoAvg->SetLogx();
 		gr_rhoAvg->SetTitle("Global Correlation Coefficient;#tau;#rho_{avg}");
@@ -592,6 +604,67 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		// minimizeRhoAverage(&unfold_TUnfold, hData_bkgSub, -5.0, 0.0);
 		// tau = unfold_TUnfold.GetTau();
+		if(maketauplots) {
+
+	        Float_t Afb0, AfbErr0;
+			unfold_TUnfold.DoUnfold(tau, hData_bkgSub, scaleBias);
+
+			unfold_TUnfold.GetOutput(hData_unfolded);
+
+			TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+			TH2D *ematrix_smearing = (TH2D*)ematrix->Clone("ematrix_smearing");
+			unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, false );
+			for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
+			  {
+				for (Int_t cmj = 0; cmj < nbinsx_gen; cmj++)
+				  {
+					m_smearingE(cmi, cmj) = ematrix_smearing->GetBinContent(cmi + 1, cmj + 1);
+					m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+				  }
+			  }
+		  	GetCorrectedAfb(hData_unfolded, m_smearingE, Afb0, AfbErr0);
+		  	//cout << " Unfolded0: " << Afb0 << " +/-  " << AfbErr0 << "\n";
+
+
+			for (int itau = 0; itau < ntau; ++itau)
+			{
+				double taufact = 10.;
+				double power = double(2*itau+1)/double(ntau) - 1.;
+				power *= taulogrange;
+
+				double taumult = pow(taufact,power);
+				unfold_TUnfold.DoUnfold(tau*taumult, hData_bkgSub, scaleBias);
+
+				unfold_TUnfold.GetOutput(hData_unfolded);
+
+		        Float_t Afb, AfbErr;
+
+				ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
+				ematrix_smearing = (TH2D*)ematrix->Clone("ematrix_smearing");
+				unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, false );
+				for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
+				  {
+					for (Int_t cmj = 0; cmj < nbinsx_gen; cmj++)
+					  {
+						m_smearingE(cmi, cmj) = ematrix_smearing->GetBinContent(cmi + 1, cmj + 1);
+						m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
+					  }
+				  }
+			  	GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
+
+		        //GetAfb(hData_unfolded, Afb, AfbErr);
+		        //cout <<taumult<< " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
+
+		        AFB_vs_tau->Fill(power, Afb);
+		        AFB_vs_tau_u->Fill(power, Afb+AfbErr);
+		        AFB_vs_tau_d->Fill(power, Afb-AfbErr);
+		        AFB_vs_tau0_c->Fill(power, Afb0);
+		        AFB_vs_tau0_u->Fill(power, Afb0+AfbErr0);
+		        AFB_vs_tau0_d->Fill(power, Afb0-AfbErr0);
+		    }
+
+		}
+
 
 		//scaleBias = 0.0; //set biasScale to 0 when using kRegModeSize, or to compare with unfoldingType == 1
 		//do the unfolding with calculated bias scale (N_data/N_MC), and tau from ScanLcurve if doScanLCurve=true. Note that the results will only be the same as unfoldingType == 1 with scaleBias=0 and the same value of tau.
@@ -1115,7 +1188,27 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".C");
         //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".root");
-		
+
+        if(maketauplots){
+	        TCanvas *c_AFBvsTau = new TCanvas("c_AFBvsTau", "c_AFBvsTau");
+	        AFB_vs_tau->SetMaximum( AFB_vs_tau0_u->GetMaximum() + 1.*(AFB_vs_tau0_u->GetMaximum()-AFB_vs_tau0_d->GetMinimum()) );
+	        AFB_vs_tau->SetMinimum( AFB_vs_tau0_d->GetMinimum() - 1.*(AFB_vs_tau0_u->GetMaximum()-AFB_vs_tau0_d->GetMinimum()) );
+	        AFB_vs_tau->SetTitle("tau dependence;log_{10}(#tau/#tau_{0});"+asymlabel);
+	        AFB_vs_tau0_c->SetLineColor(kBlue);
+	        AFB_vs_tau0_u->SetLineColor(kRed);
+	        AFB_vs_tau0_d->SetLineColor(kRed);
+	        AFB_vs_tau_u->SetLineStyle(2);
+	        AFB_vs_tau_d->SetLineStyle(2);
+	        AFB_vs_tau->Draw("hist");
+	        AFB_vs_tau0_c->Draw("hist same");
+	        AFB_vs_tau0_d->Draw("hist same");
+	        AFB_vs_tau0_u->Draw("hist same");
+	        AFB_vs_tau_d->Draw("hist same");
+	        AFB_vs_tau_u->Draw("hist same");
+	        c_AFBvsTau->SaveAs("1D_tau_" + acceptanceName + "_" + channel_name + ".pdf");
+	    }
+
+
         ch_data->Delete();
 
         ch_top->Delete();
