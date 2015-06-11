@@ -365,7 +365,9 @@ def main():
                         if(plot=='lepAzimAsym' or plot=='lepAzimAsym2' or plot=='lepChargeAsym'):
                             maxstat_factor = 1
                             #print "setting maxstat_factor to 1 for purely leptonic variable because hadronization systematic only affects S matrix"
-                        elif (maxstat_factor * 0.9 > 1): maxstat_factor = maxstat_factor * 0.9 #hack to remove component due to acceptance correction
+                        elif (maxstat_factor > 1):
+                            maxstat_factor = maxstat_factor * 0.9 #hack to remove component due to acceptance correction
+                            if (maxstat_factor<1): maxstat_factor = 1
 
                     #Calculate the variation in individual bins
                     for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
