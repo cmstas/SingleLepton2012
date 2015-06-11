@@ -858,6 +858,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //hData_unfolded->Scale(xsection/hData_unfolded->Integral(),"width");
         //hTrue->Scale(xsection/hTrue->Integral(),"width");
 
+        //include the MC stat uncertainty in the stat error bars
+        for (int i = 1; i < nbinsx_gen + 1; i++)
+		  {
+            //cout <<"bin"<< i <<": "<< hData_unfolded->GetBinError(i)/sqrt(m_correctE(i-1, i-1)) << " " << hData_unfolded->GetBinError(i)/sqrt(m_smearingE(i-1, i-1)) << endl;
+            hData_unfolded->SetBinError(i,sqrt(m_smearingE(i-1, i-1)));
+		  }
+
+
 
         TH1D* hData_unfolded_clone = (TH1D *) hData_unfolded->Clone("Data_unfolded_clone");
 
@@ -878,8 +886,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         for (int i = 1; i < nbinsx_gen + 1; i++)
 		  {
-            cout << i << " bin = " << hData_unfolded->GetBinContent(i) << " +/- " << sqrt(m_smearingE(i-1, i-1)) << endl;
-            second_output_file << acceptanceName << " " << observablename << " bin" << i << ": " << hData_unfolded->GetBinContent(i) << " +/- " << sqrt(m_smearingE(i-1, i-1)) << endl;
+            cout << i << " bin = " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
+            second_output_file << acceptanceName << " " << observablename << " bin" << i << ": " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
             //second_output_file << acceptanceName << " " << observablename << " truthbin" << i << ": " << hTrue->GetBinContent(i) << " +/- " << hTrue->GetBinError(i) << endl;
 		  }
 
@@ -937,19 +945,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			  {
                 if (includeSys)
 				  {
-                    cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_corr[i - 1] << endl;
+                    //cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_corr[i - 1] << endl;
 				  }
                 else
 				  {
-                    cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_uncorr[i - 1] << endl;
+                    //cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_uncorr[i - 1] << endl;
 				  }
 			  }
             //hData_unfolded          ->SetBinError(i, stat_uncorr[i - 1]);  //running with includeSys = 0 means we can use the RooUnfold stat-only errors
-            //hData_unfolded_minussyst->SetBinContent(i, hData_unfolded->GetBinContent(i) - sqrt(  pow(syst_corr[i - 1], 2)));  //hard-coded syst_corr now includes unfolding syst
-			hData_unfolded_minussyst->SetBinContent(i, 0);  //hard-coded syst_corr now includes unfolding syst
+            hData_unfolded_minussyst->SetBinContent(i, hData_unfolded->GetBinContent(i) - syst_corr[i - 1] );  //hard-coded systs
             hData_unfolded_minussyst->SetBinError(i, 0);
-            //hData_unfolded_plussyst ->SetBinContent(i, 2 * sqrt( pow(syst_corr[i - 1], 2)));  //hard-coded syst_corr now includes unfolding syst
-            hData_unfolded_plussyst ->SetBinContent(i, 0);
+            hData_unfolded_plussyst ->SetBinContent(i, 2 * syst_corr[i - 1]);  //hard-coded systs
             hData_unfolded_plussyst ->SetBinError(i, 0);
 		  }
 
@@ -963,14 +969,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_plussyst->SetFillColor(15);
         hs->Add(hData_unfolded_plussyst);
         //hs->SetMinimum( 0 );
-        hs->SetMinimum( hData_unfolded->GetMinimum() - ( 0.3 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.3 * hData_unfolded->GetMaximum() ) : 0 );
+        Float_t hsmin = hData_unfolded->GetMinimum() - ( 0.2 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.2 * hData_unfolded->GetMaximum() ) : 0;
+        hs->SetMinimum( hsmin );
+        //printf("min = %8f \n", hsmin);
+        if( int(200.*hsmin) - 10*int(20.*hsmin) > 8 ) hs->SetMinimum( hsmin + 0.01 ); //avoid axis label very close to bottom
+
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hs->SetMaximum(1.35 * hData_unfolded->GetMaximum());
         else hs->SetMaximum(1.3 * hData_unfolded->GetMaximum());
 
 
         TCanvas *c_test;
-        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 725);
+        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 650);
         else c_test = new TCanvas("c_final", "c_final", 500, 500);
+
+        float r = 0.31;
+        float epsilon = 0.02;
 
         TPad *p1, *p2;
         TLine *line;
@@ -981,8 +994,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         }
         if(drawDiffs) {
-            p1 = new TPad("p1", "dist", 0.0, 0.31, 1, 1.);
-            p2 = new TPad("p2", "diff", 0.0, 0.0, 1, 0.31);
+            p1 = new TPad("p1", "dist", 0.0, r - epsilon, 1, 1.);
+            p2 = new TPad("p2", "diff", 0.0, 0.0, 1, r*(1. - epsilon));
             p1->Draw();
             p2->Draw();
             p1->cd();
@@ -1008,7 +1021,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
-        //hData_unfolded->GetXaxis()->SetTitle(xaxislabel);
+        hData_unfolded->GetXaxis()->SetTitle(xaxislabel);
         //hData_unfolded->GetYaxis()->SetTitle("1/#sigma d#sigma/d("+xaxislabel+")");
         //hData_unfolded->SetMinimum(0.0);
         //hData_unfolded->SetMaximum( 2.0* hData_unfolded->GetMaximum());
@@ -1095,6 +1108,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         if(drawDiffs) {
 
+            //p1->SetTopMargin(0.02);
+            p1->SetBottomMargin(epsilon);
+            p2->SetTopMargin(0.0);
+            p2->SetBottomMargin(0.29);
+            p2->SetFillColor(0);
+            p2->SetFillStyle(0);
+
+
 			p2->cd();
 			int tempnbins = hData_unfolded->GetNbinsX();
 			TString s_hname = "diff_";
@@ -1138,9 +1159,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				h_diff_plussyst ->SetBinError(tempbin, 0);
             }
 
-            p2->SetTopMargin(0.02);
-            p2->SetBottomMargin(0.15);
-
             THStack *hsd = new THStack("hsd_systband", "Systematic band");
             h_diff_minussyst->SetLineColor(kWhite);
             h_diff_minussyst->SetFillColor(kWhite);
@@ -1156,23 +1174,36 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             hsd->SetMinimum(0.921);
             hsd->SetMaximum(1.079/1.05); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
 
+            if(h_diff->GetBinContent(h_diff->GetMaximumBin()) > 1.079) {
+            	hsd->SetMaximum(h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01/1.05);
+            	hsd->SetMinimum(2. - h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01);
+            }
+
+            if(h_diff->GetBinContent(h_diff->GetMinimumBin()) < 0.921  &&  (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99) > (h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01)  ) {
+            	hsd->SetMaximum( (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99)/1.05);
+            	hsd->SetMinimum(h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99);
+            }
+
             //hsd->GetXaxis()->SetTitle( hs->GetXaxis()->GetTitle() );
-            hsd->GetXaxis()->SetTitleSize( hs->GetXaxis()->GetTitleSize()*0.69/0.31);
-            hsd->GetXaxis()->SetLabelSize( hs->GetXaxis()->GetLabelSize()*0.69/0.31);
+            hsd->GetXaxis()->SetTitle(xaxislabel);
+            hsd->GetXaxis()->SetTitleSize( hs->GetXaxis()->GetTitleSize()*(1.-r)/r);
+            hsd->GetXaxis()->SetLabelSize( hs->GetXaxis()->GetLabelSize()*(1.-r)/r);
             //hsd->GetXaxis()->SetLabelOffset(-0.88);
 
-            hsd->GetYaxis()->SetTitle("Data/Simulation");
+            hsd->GetYaxis()->SetTitle("Data/Simulation ");
             hsd->GetYaxis()->SetNdivisions(805);
             //hsd->GetYaxis()->SetTitleFont(hData_unfolded->GetYaxis()->GetTitleFont());
             hsd->GetYaxis()->SetTitleOffset(0.7);
             hsd->GetYaxis()->SetTitleSize(0.120);
-            hsd->GetYaxis()->SetLabelSize( hs->GetYaxis()->GetLabelSize()*0.69/0.31);
+            hsd->GetYaxis()->SetLabelSize( hs->GetYaxis()->GetLabelSize()*(1.-r)/r);
             //hsd->GetYaxis()->SetLabelFont(hData_unfolded->GetYaxis()->GetLabelFont());
 
             //hsd->SetMarkerSize(0.8);
 
             //hsd->Draw("same");
 
+        	hs->GetXaxis()->SetLabelSize(0.);
+        	hs->GetXaxis()->SetTitleSize(0.);
 
             h_diff->Draw("Pesames");
             line->Draw();
