@@ -102,7 +102,7 @@ def calculateVariation(refNominal, systematic, binname, allowmaxstat = 0):
         varstat = 0
         #print vartype
         if vartype == 'half': varstat = sqrt(systematic['up'][binname][1]*systematic['up'][binname][1] + systematic['down'][binname][1]*systematic['down'][binname][1])/2.
-        elif vartype == 'diffnom': varstat = sqrt(systematic['diffnom'][binname][1]*systematic['diffnom'][binname][1] + nominal[1]*nominal[1])
+        elif vartype == 'diffnom': varstat = systematic['diffnom'][binname][1] # nominal MC stat uncertainty is accounted for separately so don't add it here too
         else: varstat = max( staterrlist ) / sqrt(2.)  #this is an approximate upper limit on the stat uncertainty
         #print  max( staterrlist )
         #print varstat
@@ -358,7 +358,11 @@ def main():
                     if var_overall == 0.0: maxstat_factor = 1
                     else: maxstat_factor = abs(var_overall_maxstat/var_overall)
                     if(maxstat_factor<1): print "something went wrong with maxstat_factor"
-
+                    if(systematic == 'hadronization'):
+                        if(plot=='lepAzimAsym' or plot=='lepAzimAsym2' or plot=='lepChargeAsym'):
+                            maxstat_factor = 1
+                            print "setting maxstat_factor to 1 for purely leptonic variable because hadronization systematic only affects S matrix"
+                        else: maxstat_factor = maxstat_factor * 0.9 #hack to remove component due to acceptance correction
 
                     #Calculate the variation in individual bins
                     for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
@@ -369,6 +373,7 @@ def main():
                         for col in range(nbins):
                             covar_subtype[row, col] = bin_variations[binlist[row]] * bin_variations[binlist[col]]
 
+                    if(maxstat_factor>1): print "          %s maxstat_factor: %2.3f " % (systematic,maxstat_factor)
                     #Add to the running total of the variance and covariance
                     sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
                     covar_syst += covar_subtype*maxstat_factor*maxstat_factor
