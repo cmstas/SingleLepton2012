@@ -240,6 +240,7 @@ def main():
         sumsq_total = 0
         covar_total = zeros( [nbins,nbins] )
         corr_total  = zeros( [nbins,nbins] )
+        binsyst_total = zeros( [nbins] )
         bin_nominals = {}
         bin_nominals_i = zeros( [nbins] )
 
@@ -397,6 +398,8 @@ def main():
             for col in range(nbins):
                 corr_total[row,col] = covar_total[row,col] / math.sqrt( covar_total[row,row] * covar_total[col,col] )
 
+        for row in range(nbins): binsyst_total[row] = sqrt(covar_total[row,row])
+
         print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, nominal_unfolded, stat_unfolded, math.sqrt(sumsq_total))
         print ""
         if nomatrix == False:
@@ -408,7 +411,13 @@ def main():
             print binlist
             print corr_total
             print ""
+            #print "%s bin systematics:" % plot
+            #print binlist
+            #print binsyst_total
+            #print ""
         print ""
+        print "code fragment to paste in AfbFinalUnfold.h:"
+        for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_total[row])
 
     #end loop over asymmetries
     
