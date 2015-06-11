@@ -324,7 +324,9 @@ def main():
                 #take maximum from extrapolation or maxstat_factor due to the MC statistical uncertainty (guaranteed to be >=1)
                 print "          %s extrapolation factor: %2.3f , maxstat_factor: %2.3f " % (systematic,extrapfactor,maxstat_factor)
                 if(extrapfactor<maxstat_factor):  extrapfactor = maxstat_factor
-                if(extrapfactor>3.0): extrapfactor = 3.0  #don't extrapolate more than a factor of 3 to avoid producing highly (anti)correlated covariance matrix
+                if(extrapfactor>3.0):
+                    extrapfactor = 3.0  #don't extrapolate more than a factor of 3 to avoid producing highly (anti)correlated covariance matrix
+                    print "limiting uncertainty scaling factor to 3.0 to maintain sensible covariance matrix"
                 #print "extrapolation factor: %2.3f , extrapolation amount: %2.3f " % (extrapfactor,100.*15.*weightedaveragegradient )
                 sumsq_syst *= extrapfactor*extrapfactor
                 #instead of extrapolating for every bin, use same SF as for asymmetry (automatically ensures the covariance matrix is consistent with the uncertainty on the asymmetry, so no need to recalculate it)
@@ -362,7 +364,7 @@ def main():
                     if(systematic == 'hadronization'):
                         if(plot=='lepAzimAsym' or plot=='lepAzimAsym2' or plot=='lepChargeAsym'):
                             maxstat_factor = 1
-                            print "setting maxstat_factor to 1 for purely leptonic variable because hadronization systematic only affects S matrix"
+                            #print "setting maxstat_factor to 1 for purely leptonic variable because hadronization systematic only affects S matrix"
                         elif (maxstat_factor * 0.9 > 1): maxstat_factor = maxstat_factor * 0.9 #hack to remove component due to acceptance correction
 
                     #Calculate the variation in individual bins
@@ -375,7 +377,9 @@ def main():
                             covar_subtype[row, col] = bin_variations[binlist[row]] * bin_variations[binlist[col]]
 
                     if(maxstat_factor>1): print "          %s maxstat_factor: %2.3f " % (systematic,maxstat_factor)
-                    if(maxstat_factor>3.0): maxstat_factor = 3.0  #don't extrapolate more than a factor of 3 to avoid producing highly (anti)correlated covariance matrix
+                    if(maxstat_factor>3.0):
+                        maxstat_factor = 3.0  #don't extrapolate more than a factor of 3 to avoid producing highly (anti)correlated covariance matrix
+                        print "limiting uncertainty scaling factor to 3.0 to maintain sensible covariance matrix"
                     #Add to the running total of the variance and covariance
                     sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
                     covar_syst += covar_subtype*maxstat_factor*maxstat_factor
