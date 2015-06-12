@@ -689,6 +689,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //m_unfoldE.Print("f=%1.5g ");
         //m_unfoldcorr.Print("f=%1.5g ");
 
+        //include the MC stat uncertainty in the stat error bars
+        for (int i = 1; i < nbinsx_gen + 1; i++)
+		{
+            hData_unfolded->SetBinError(i,sqrt(m_smearingE(i-1, i-1)));
+		}
+
+
 		float rmargin = gStyle->GetPadRightMargin();
 		gStyle->SetPadRightMargin(0.13);
 
@@ -857,14 +864,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //scale to total xsec with option "width",  so that differential xsec is plotted
         //hData_unfolded->Scale(xsection/hData_unfolded->Integral(),"width");
         //hTrue->Scale(xsection/hTrue->Integral(),"width");
-
-        //include the MC stat uncertainty in the stat error bars
-        for (int i = 1; i < nbinsx_gen + 1; i++)
-		  {
-            //cout <<"bin"<< i <<": "<< hData_unfolded->GetBinError(i)/sqrt(m_correctE(i-1, i-1)) << " " << hData_unfolded->GetBinError(i)/sqrt(m_smearingE(i-1, i-1)) << endl;
-            hData_unfolded->SetBinError(i,sqrt(m_smearingE(i-1, i-1)));
-		  }
-
 
 
         TH1D* hData_unfolded_clone = (TH1D *) hData_unfolded->Clone("Data_unfolded_clone");

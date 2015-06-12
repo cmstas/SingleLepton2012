@@ -36,9 +36,6 @@ using std::endl;
 Int_t kterm = 3;  //note we used 4 here for ICHEP
 Double_t tau = 3E-2;
 Int_t nVars = 12;
-Int_t includeSys = 0;
-Int_t checkErrors = 0;
-bool draw_truth_before_pT_reweighting = false;
 
 
 void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1.)
@@ -210,7 +207,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		hTrue_split->RebinX(2);
 
         TMatrixD m_smearingE(nbinsunwrapped_gen, nbinsunwrapped_gen);
-        TMatrixD m_unfoldE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_correctE(nbinsunwrapped_gen, nbinsunwrapped_gen);
 
 		/////////////////////////////////////////////////////////////////////////////////////////
@@ -625,7 +621,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// Now let's actually do the unfolding.
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
 		unfold_TUnfold.SetInput(hData_bkgSub);
-		scaleBias = (hData->Integral() - hBkg->Integral()) / hTrue_unwrapped->Integral();
+		scaleBias = (hData->Integral() - hBkg->Integral()) / hTrue_unwrapped->Integral();  //looks slightly strange, but confirmed this is identical to (hData_unwrapped->Integral() - hBkg_unwrapped->Integral()) / hMeas_unwrapped->Integral()
+
 		hTrue_unwrapped->Scale(scaleBias);
 		//unfold_TUnfold.SetBias(hTrue_unwrapped);
 		unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
@@ -643,10 +640,16 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			for (Int_t cmj = 0; cmj < nbinsunwrapped_gen; cmj++)
 			  {
 				m_smearingE(cmi, cmj) = ematrix_smearing->GetBinContent(cmi + 1, cmj + 1);
-				m_unfoldE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 				m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 			  }
 		  }
+
+        //include the MC stat uncertainty in the stat error bars
+        for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
+        {
+            //cout <<"unwrappedbin"<< i <<": "<< hData_unfolded_unwrapped->GetBinError(i)/sqrt(m_correctE(i-1, i-1)) << " " << hData_unfolded_unwrapped->GetBinError(i)/sqrt(m_smearingE(i-1, i-1)) << endl;
+            hData_unfolded_unwrapped->SetBinError(i,sqrt(m_smearingE(i-1, i-1)));
+		}
 
 
 		//Re-wrap 1D histograms into 2D
@@ -766,10 +769,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator_bin"<<i<<": "<< afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << "\n";
 	    }
 
-		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m, afb_merr, second_output_file);
-        cout << " Unfolded with smearing errors: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
-
 		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
+        cout << " Unfolded without smearing errors: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
+
+		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m, afb_merr, second_output_file);
         cout << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
 
@@ -800,16 +803,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
 
-
-		/*
-		  if (draw_truth_before_pT_reweighting)
-		  {
-		  GetAfb(denomM_nopTreweighting_0, AfbG[0], AfbErr);
-		  GetAfb(denomM_nopTreweighting_1, AfbG[1], AfbErr);
-		  GetAfb(denomM_nopTreweighting_2, AfbG[2], AfbErr);
-		  }
-		*/
-
         TCanvas *c_afb = new TCanvas("c_afb", "c_afb", 500, 500);
         double ybinsForHisto[4] = {ybins2D[0], ybins2D[1], ybins2D[2], ybins2D[3]};
         if (Var2D == "mtt") ybinsForHisto[0] = 300.0;
@@ -818,23 +811,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         for (int nb = 0; nb < 3; nb++)
 		  {
             hAfbVsMtt->SetBinContent(nb + 1, afb_m[nb+1]);
-            if (checkErrors)
-			  {
-                if (includeSys)
-				  {
-                    cout << "Difference between calculated and hard-coded stat errors: " << afb_merr[nb+1] - stat_corr[nb] << endl;
-				  }
-                else
-				  {
-                    cout << "Difference between calculated and hard-coded stat errors: " << afb_merr[nb+1] - stat_uncorr[nb] << endl;
-				  }
-			  }
             hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(syst_corr[nb], 2) ) );
             hAfbVsMtt_statonly->SetBinContent(nb + 1, afb_m[nb+1]);
             hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]);
 		  }
-
-        //  GetAvsY(hTrue, m_unfoldE, afb_m, afb_merr);
 
         TH1D *hTop_AfbVsMtt = new TH1D ("Top_AfbVsMtt",  "Top_AfbVsMtt",  3, ybinsForHisto);
         for (int nb = 0; nb < 3; nb++)
