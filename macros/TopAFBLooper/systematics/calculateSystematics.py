@@ -56,7 +56,8 @@ def calculateVariation(refNominal, systematic, binname, allowmaxstat = 0):
     Calculates the variation due to a particular systematic/subtype
     """
 
-    numpy.set_printoptions(linewidth=500)
+    numpy.set_printoptions(linewidth=800)
+    numpy.set_printoptions(threshold=10000)
     numpy.set_printoptions(precision=6)
 
     vartype = systematic['vartype']
@@ -242,9 +243,6 @@ def main():
         binlist2D = [str(opts.unfoldingtype)+"bin1",str(opts.unfoldingtype)+"bin2",str(opts.unfoldingtype)+"bin3"]
         nbins2D = 0
         if opts.unfoldingtype: nbins2D = len(binlist2D)
-        print binlist2D
-        print sorted(binlist2D)
-        print nbins2D
 
         sumsq_total = 0
         sumsq_total_2D = zeros( [nbins2D] )
@@ -264,8 +262,8 @@ def main():
             for i in sorted(binlist2D):
                 nominal_2D[binindex] = systematics[plot]['Nominal']['default']['nominal'][i]
                 binindex += 1
-            print nominal_2D
-
+        
+        #print nominal_2D
         #print nominal_unfolded
 
         for i in range(nbins): 
@@ -361,9 +359,7 @@ def main():
                     print "limiting uncertainty scaling factor to sqrt(3.0) to maintain sensible covariance matrix"
                 #print "extrapolation factor: %2.3f , extrapolation amount: %2.3f " % (extrapfactor,100.*15.*weightedaveragegradient )
                 sumsq_syst *= extrapfactor*extrapfactor
-                print sumsq_syst_2D
                 sumsq_syst_2D *= extrapfactor*extrapfactor
-                print sumsq_syst_2D
                 #instead of extrapolating for every bin, use same SF as for asymmetry (automatically ensures the covariance matrix is consistent with the uncertainty on the asymmetry, so no need to recalculate it)
                 covar_syst *= extrapfactor*extrapfactor
 
@@ -434,6 +430,7 @@ def main():
 
             #end loop over subtypes
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
+            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], math.sqrt(sumsq_syst_2D[binindex]))
             sumsq_total += sumsq_syst
             sumsq_total_2D += sumsq_syst_2D
             covar_total += covar_syst
@@ -463,13 +460,12 @@ def main():
             #print binlist
             #print binsyst_total
             #print ""
-        print ""
         print "code fragment to paste in AfbFinalUnfold.h:"
         if not opts.unfoldingtype: 
             for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_total[row])
         else:
             for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, math.sqrt(sumsq_total_2D[binindex]))
-
+        print ""
     #end loop over asymmetries
     
 
