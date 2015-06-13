@@ -173,6 +173,7 @@ def main():
     parser.add_option("-v", "--verbose", action="store_true", default=False, dest="verbose", help="verbose output")
     parser.add_option("-f", "--file", action="store", type="string", default=None, dest="systematicsjsonfilename", help="Name of systematics file in json format")
     parser.add_option("-n", "--nomatrix", action="store_true", default=False, dest="nomatrix", help="Suppress printout of covariance and correlation matrices")
+    parser.add_option("-t", "--type", action="store", type="string", default=None, dest="unfoldingtype", help="None gives 1D, options are mtt, ttpt, ttrapidity2")
 
     (opts, args) = parser.parse_args()
     
@@ -237,16 +238,34 @@ def main():
             print sorted(binlist)
             sys.exit(1)
 
+
+        binlist2D = [str(opts.unfoldingtype)+"bin1",str(opts.unfoldingtype)+"bin2",str(opts.unfoldingtype)+"bin3"]
+        nbins2D = 0
+        if opts.unfoldingtype: nbins2D = len(binlist2D)
+        print binlist2D
+        print sorted(binlist2D)
+        print nbins2D
+
         sumsq_total = 0
+        sumsq_total_2D = zeros( [nbins2D] )
         covar_total = zeros( [nbins,nbins] )
         corr_total  = zeros( [nbins,nbins] )
         binsyst_total = zeros( [nbins] )
         bin_nominals = {}
         bin_nominals_i = zeros( [nbins] )
+        nominal_2D = {}
+
 
         #Get the nominal values for each bin, and overall
         for i in binlist: bin_nominals[i] = systematics[plot]['Nominal']['default']['nominal'][i]
         (nominal_unfolded, stat_unfolded) = systematics[plot]['Nominal']['default']['nominal']['Unfolded'] 
+        if opts.unfoldingtype:
+            binindex = 0
+            for i in sorted(binlist2D):
+                nominal_2D[binindex] = systematics[plot]['Nominal']['default']['nominal'][i]
+                binindex += 1
+            print nominal_2D
+
         #print nominal_unfolded
 
         for i in range(nbins): 
@@ -259,6 +278,7 @@ def main():
             if systematic == 'name': continue
 
             sumsq_syst = 0
+            sumsq_syst_2D = zeros( [nbins2D] )
             covar_syst = zeros( [nbins,nbins] )
 
             maxstat_factor = 1
@@ -279,6 +299,7 @@ def main():
                     #use only the first 6 points for the extrapolation
                     if subtypenum > 5: continue
                     sumsq_subtype = 0
+                    sumsq_subtype_2D = zeros( [nbins2D] )
                     covar_subtype = zeros( [nbins,nbins] )
                     bin_variations = {}
 
@@ -290,6 +311,15 @@ def main():
                         maxstat_factor = abs(var_overall_maxstat/var_overall)
                         if(maxstat_factor<1): print "something went wrong with maxstat_factor"
 
+                    #Calculate the variation in the 2D asymmetries
+                    if opts.unfoldingtype: 
+                        for binindex in range(nbins2D):
+                            var_overall_2D = calculateVariation( nominal_2D[binindex], systematics[plot][systematic][subtype], sorted(binlist2D)[binindex] )
+                            if subtypenum == 0: sumsq_subtype_2D[binindex] = var_overall_2D*var_overall_2D
+                            #if subtypenum == 0:  #reuse maxstatfactor from inclusive result
+                            #    var_overall_2D_maxstat = calculateVariation( nominal_2D[binindex], systematics[plot][systematic][subtype], sorted(binlist2D)[binindex] , 1)
+                            #    maxstat_factor_2D = abs(var_overall_2D_maxstat/var_overall_2D)
+                            #    if(maxstat_factor_2D<1): print "something went wrong with maxstat_factor_2D"
 
                     #Calculate the variation in individual bins
                     for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
@@ -309,6 +339,7 @@ def main():
                     #Add to the running total of the variance and covariance
                     if subtypenum == 0:
                         sumsq_syst = sumsq_subtype
+                        sumsq_syst_2D = sumsq_subtype_2D
                         covar_syst = covar_subtype
                     else:
                         weightedaveragegradient += (sqrt(sumsq_syst) - sqrt(sumsq_subtype))/subtypenum
@@ -330,6 +361,9 @@ def main():
                     print "limiting uncertainty scaling factor to sqrt(3.0) to maintain sensible covariance matrix"
                 #print "extrapolation factor: %2.3f , extrapolation amount: %2.3f " % (extrapfactor,100.*15.*weightedaveragegradient )
                 sumsq_syst *= extrapfactor*extrapfactor
+                print sumsq_syst_2D
+                sumsq_syst_2D *= extrapfactor*extrapfactor
+                print sumsq_syst_2D
                 #instead of extrapolating for every bin, use same SF as for asymmetry (automatically ensures the covariance matrix is consistent with the uncertainty on the asymmetry, so no need to recalculate it)
                 covar_syst *= extrapfactor*extrapfactor
 
@@ -352,6 +386,7 @@ def main():
             else:
                 for subtype in systematics[plot][systematic].keys():
                     sumsq_subtype = 0
+                    sumsq_subtype_2D = zeros( [nbins2D] )
                     covar_subtype = zeros( [nbins,nbins] )
                     bin_variations = {}
 
@@ -370,6 +405,15 @@ def main():
                             maxstat_factor = maxstat_factor * 0.9 #hack to remove component due to acceptance correction
                             if (maxstat_factor<1): maxstat_factor = 1
 
+
+
+                    #Calculate the variation in the 2D asymmetries
+                    if opts.unfoldingtype:
+                        for binindex in range(nbins2D):
+                            var_overall_2D = calculateVariation( nominal_2D[binindex], systematics[plot][systematic][subtype], sorted(binlist2D)[binindex] )
+                            sumsq_subtype_2D[binindex] = var_overall_2D*var_overall_2D
+
+
                     #Calculate the variation in individual bins
                     for i in binlist: bin_variations[i] = calculateVariation( bin_nominals[i], systematics[plot][systematic][subtype], i )
 
@@ -385,11 +429,13 @@ def main():
                         print "limiting uncertainty scaling factor to sqrt(3.0) to maintain sensible covariance matrix"
                     #Add to the running total of the variance and covariance
                     sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
+                    sumsq_syst_2D += sumsq_subtype_2D*maxstat_factor*maxstat_factor
                     covar_syst += covar_subtype*maxstat_factor*maxstat_factor
 
             #end loop over subtypes
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
             sumsq_total += sumsq_syst
+            sumsq_total_2D += sumsq_syst_2D
             covar_total += covar_syst
 
         #end loop over systematics
@@ -401,6 +447,8 @@ def main():
         for row in range(nbins): binsyst_total[row] = sqrt(covar_total[row,row])
 
         print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, nominal_unfolded, stat_unfolded, math.sqrt(sumsq_total))
+        if opts.unfoldingtype:
+            for binindex in range(nbins2D): print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, sorted(binlist2D)[binindex], nominal_2D[binindex][0], nominal_2D[binindex][1], math.sqrt(sumsq_total_2D[binindex]))
         print ""
         if nomatrix == False:
             print "%s covariance matrix:" % plot
@@ -417,7 +465,10 @@ def main():
             #print ""
         print ""
         print "code fragment to paste in AfbFinalUnfold.h:"
-        for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_total[row])
+        if not opts.unfoldingtype: 
+            for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_total[row])
+        else:
+            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, math.sqrt(sumsq_total_2D[binindex]))
 
     #end loop over asymmetries
     
