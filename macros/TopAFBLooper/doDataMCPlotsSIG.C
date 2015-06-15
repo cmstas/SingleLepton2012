@@ -786,7 +786,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR2][leptype]<<"+/-"<<CRsferr[CR2][leptype]<<endl;
         for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
-        for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
+        for (int leptype = 0; leptype < 2; ++leptype) cout<<(CRsf[CR3][leptype])<<" +/- "<<CRsferr[CR3][leptype] <<endl;
         for (int leptype = 0; leptype < 2; ++leptype) cout<<CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype]<<" +/- "<<(CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2))<<endl;
 
 
@@ -800,7 +800,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 1+leptype-1, 1+leptype-1+0.5, CRsf[CR2][leptype] );    graphDYtt->SetPointError( 1+leptype-1, 0, CRsferr[CR2][leptype] ); }
         for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 3+leptype-1, 3+leptype-1+0.5, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 3+leptype-1, 0, (CRsf[CR1][leptype]/CRsf[CR1v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR1][leptype]/CRsf[CR1][leptype],2)+pow(CRsferr[CR1v][leptype]/CRsf[CR1v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
-        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 5+leptype-1, 5+leptype-1+0.5, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 5+leptype-1, 0, (CRsf[CR3][leptype]/CRsf[CR3v][leptype])*CRsf[CR2v][leptype]*sqrt(pow(CRsferr[CR3][leptype]/CRsf[CR3][leptype],2)+pow(CRsferr[CR3v][leptype]/CRsf[CR3v][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
+        for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 5+leptype-1, 5+leptype-1+0.5, (CRsf[CR3][leptype]) );    graphDYtt->SetPointError( 5+leptype-1, 0, CRsferr[CR3][leptype]  ); }
         for (int leptype = 0; leptype < 2; ++leptype) { graphDYtt->SetPoint( 7+leptype-1, 7+leptype-1+0.5, CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype] );    graphDYtt->SetPointError( 7+leptype-1, 0, (CRsf[CR4v][2]*CRsf[CR2][leptype]/CRsf[CR2v][leptype])*sqrt(pow(CRsferr[CR4v][2]/CRsf[CR4v][2],2)+pow(CRsferr[CR2][leptype]/CRsf[CR2][leptype],2)+pow(CRsferr[CR2v][leptype]/CRsf[CR2v][leptype],2)) ); }
 
 
@@ -851,8 +851,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         hdummyDYtt->GetXaxis()->SetBinLabel(1+1,"CR2 #mu#mu");
         hdummyDYtt->GetXaxis()->SetBinLabel(3,"CR1/v ee");
         hdummyDYtt->GetXaxis()->SetBinLabel(3+1,"CR1/v #mu#mu");
-        hdummyDYtt->GetXaxis()->SetBinLabel(5,"CR3/v ee");
-        hdummyDYtt->GetXaxis()->SetBinLabel(5+1,"CR3/v #mu#mu");
+        hdummyDYtt->GetXaxis()->SetBinLabel(5,"CR3 ee");
+        hdummyDYtt->GetXaxis()->SetBinLabel(5+1,"CR3 #mu#mu");
         hdummyDYtt->GetXaxis()->SetBinLabel(7,"CR4v#times2/v ee");
         hdummyDYtt->GetXaxis()->SetBinLabel(7+1,"CR4v#times2/v #mu#mu");
 
@@ -2163,7 +2163,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
 
 
-/*
+
     cout << "-------------------------------------------------" << endl;
     cout << "**********************YIELDS*********************" << endl;
     cout << "-------------------------------------------------" << endl;
@@ -2171,16 +2171,16 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //printf("%s MC \t\t \n", leptag[leptype]);
     for (int j = 0; j < MCID; ++j)
     {
-        printf(" %s : %.1f ± ", legend[j], h_mc1d_comb[0][j]->IntegralAndError(0,h_mc1d_comb[0][j]->GetNbinsX()+1,error_temp));
+        printf(" %s : %.1f ± ", legend[j], h_mc1d_comb[54][j]->IntegralAndError(0,h_mc1d_comb[54][j]->GetNbinsX()+1,error_temp));
         printf("%.1f \n", error_temp);
     }
-    printf(" Total_MC : %.1f ± ", h_mc1d_tot_comb[0]->IntegralAndError(0,h_mc1d_tot_comb[0]->GetNbinsX()+1,error_temp));
+    printf(" Total_MC : %.1f ± ", h_mc1d_tot_comb[54]->IntegralAndError(0,h_mc1d_tot_comb[54]->GetNbinsX()+1,error_temp));
     printf("%.1f \n", error_temp);
-    printf(" Data : %.0f \n", h_dt1d_comb[0]->Integral());
+    printf(" Data : %.0f \n", h_dt1d_comb[54]->Integral());
     cout << "-------------------------------------------------" << endl;
     cout << "*************************************************" << endl;
     cout << "-------------------------------------------------" << endl;
-*/
+
 
 
     cout << "-------------------------------------------------" << endl;
@@ -2368,6 +2368,8 @@ void printYields( vector<TH1F *> h_mc , const char *labels[] , TH1F *h_data , bo
 
     TH1F *hmctot;
 
+    TH1F *hmctotbkg;
+
     //----------------------
     // print SM MC samples
     //----------------------
@@ -2379,6 +2381,8 @@ void printYields( vector<TH1F *> h_mc , const char *labels[] , TH1F *h_data , bo
 
         if ( imc == 0 ) hmctot = (TH1F *) h_mc.at(imc)->Clone();
         else           hmctot->Add(h_mc.at(imc));
+        if ( imc == 1 ) hmctotbkg = (TH1F *) h_mc.at(imc)->Clone();
+        else if ( imc > 1 ) hmctotbkg->Add(h_mc.at(imc));
     }
 
     printLine(latex);
@@ -2388,6 +2392,7 @@ void printYields( vector<TH1F *> h_mc , const char *labels[] , TH1F *h_data , bo
     //-------------------------------
 
     print( hmctot , "total SM MC" );
+    print( hmctotbkg , "total SM background" );
 
     printLine(latex);
 
