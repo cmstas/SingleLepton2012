@@ -455,6 +455,28 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		accDen[2] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_mueg"));
 		accDen[3] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_all"));
 
+		//hack to add back the overflow bin missing from the ttrapidity2 acceptance
+		if (Var2D == "ttrapidity2") {
+			for (int iChannel = 0; iChannel < 4; ++iChannel)
+			{
+				for (int xBin = 1; xBin <= nbinsx_gen; ++xBin)
+				{
+					accNum[iChannel]->SetBinContent(xBin, 3,  accNum[iChannel]->GetBinContent(xBin, 3) + accNum[iChannel]->GetBinContent(xBin, 4) );
+					accNum[iChannel]->SetBinError(xBin, 3, sqrt( accNum[iChannel]->GetBinError(xBin, 3)*accNum[iChannel]->GetBinError(xBin, 3) + accNum[iChannel]->GetBinError(xBin, 4)*accNum[iChannel]->GetBinError(xBin, 4) ) );
+					accDen[iChannel]->SetBinContent(xBin, 3,  accDen[iChannel]->GetBinContent(xBin, 3) + accDen[iChannel]->GetBinContent(xBin, 4) );
+					accDen[iChannel]->SetBinError(xBin, 3, sqrt( accDen[iChannel]->GetBinError(xBin, 3)*accDen[iChannel]->GetBinError(xBin, 3) + accDen[iChannel]->GetBinError(xBin, 4)*accDen[iChannel]->GetBinError(xBin, 4) ) );
+
+					accNum[iChannel]->SetBinContent(xBin, 4, 0);
+					accNum[iChannel]->SetBinError(xBin, 4, 0);
+					accDen[iChannel]->SetBinContent(xBin, 4, 0);
+					accDen[iChannel]->SetBinError(xBin, 4, 0);
+				}
+				acceptM[iChannel]->Reset(); 
+				acceptM[iChannel]->Divide(accNum[iChannel],accDen[iChannel],1., 1.);
+			}
+
+		}
+
 		//Tricks to make "channel 0" hold the combined same-flavor histograms
 		//accNum[0]->Add( accNum[1] );
 		//accDen[0]->Add( accDen[1] );
@@ -784,7 +806,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  }
 		}
 
-        TH2D *denomM_2d = (TH2D*) file->Get("denominator_" + acceptanceName + "_" + Var2D + "_" + ChannelName[iChan]);
+        //TH2D *denomM_2d = (TH2D*) file->Get("denominator_" + acceptanceName + "_" + Var2D + "_" + ChannelName[iChan]);
 
 
         //==================================================================
@@ -807,11 +829,11 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         GetAfb(hTrue, Afb, AfbErr);
         cout << " True Top: " << Afb << " +/-  " << AfbErr << "\n";
 
-		GetAfb(denomM_2d, Afb, AfbErr);
+		GetAfb(accDen[iChan], Afb, AfbErr);
         cout << " True Top from acceptance denominator: " << Afb << " +/-  " << AfbErr << endl;
         second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator: " << Afb << " +/-  " << AfbErr << "\n";
 
-		GetAvsY2d(denomM_2d, afb_m_denom, afb_merr_denom, second_output_file);
+		GetAvsY2d(accDen[iChan], afb_m_denom, afb_merr_denom, second_output_file);
 		for( int i=0; i<nbinsy2D; i++ ) {
 	        cout << " True Top from acceptance denominator bin" << i << ": " << afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << endl;
 	        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator_bin"<<i<<": "<< afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << "\n";
