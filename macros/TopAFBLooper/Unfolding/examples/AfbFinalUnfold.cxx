@@ -596,7 +596,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		/////// Do the unfolding! /////////////////////////////////////////////////////
 
-		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea);
+		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature, TUnfold::kEConstraintArea); //Set kEConstraintNone instead of kEConstraintArea here to give bug-free covariance matrix (for us, None gives the same result as Area anyway)
 		unfold_TUnfold.SetInput(hData_bkgSub);
 		//unfold_TUnfold.SetBias(hTrue);  //doesn't make any difference, because if not set the bias distribution is
 		//automatically determined from hTrue_vs_Meas, which gives exactly hTrue
@@ -890,6 +890,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             //second_output_file << acceptanceName << " " << observablename << " truthbin" << i << ": " << hTrue->GetBinContent(i) << " +/- " << hTrue->GetBinError(i) << endl;
 		  }
 
+
+        for (int i = 1; i < nbinsx_gen + 1; i++)
+		  {
+            //cout << i << " bin = " << hData_unfolded->GetBinContent(i) << " +/- " << hData_unfolded->GetBinError(i) << endl;
+            second_output_file << acceptanceName << " " << observablename << " bwidth" << i << ": " << hData_unfolded->GetBinWidth(i) << " +/- " << 0 << endl;
+		  }
 
 
 		cout << "Statistical covariance matrix:" << endl;

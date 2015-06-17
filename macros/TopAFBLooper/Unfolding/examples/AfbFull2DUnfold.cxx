@@ -641,7 +641,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
 
 		// Now let's actually do the unfolding.
-		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand
+		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand //Set kEConstraintNone instead of kEConstraintArea here to give bug-free covariance matrix (for us, None gives the same result as Area anyway)
 		unfold_TUnfold.SetInput(hData_bkgSub);
 		scaleBias = (hData->Integral() - hBkg->Integral()) / hTrue_unwrapped->Integral();  //looks slightly strange, but confirmed this is identical to (hData_unwrapped->Integral() - hBkg_unwrapped->Integral()) / hMeas_unwrapped->Integral()
 
