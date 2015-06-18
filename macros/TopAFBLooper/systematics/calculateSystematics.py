@@ -202,7 +202,7 @@ def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
     # Calculate Afb
     afb = sum_alpha_n / sum_n
 
-    print "afb: %2.6f , afberr: %2.6f " % (afb, afberr )  
+    #print "afb: %2.6f , afberr: %2.6f " % (afb, afberr )  
     return afberr
 
 
@@ -255,7 +255,7 @@ def GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n):
         afberr[i] = sqrt(afberr[i])
         afb[i] = sum_alpha_n[i] / sum_n[i]
 
-    print (afb, afberr )  
+    #print afberr
     return afberr
 
 
@@ -527,9 +527,10 @@ def main():
                     sumsq_syst_2D += sumsq_subtype_2D*maxstat_factor*maxstat_factor
                     covar_syst += covar_subtype*maxstat_factor*maxstat_factor
 
-            #check afberr from covariance matrix is consistent with sqrt(sumsq_syst)
-            if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
-            else: afberr = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+            #check afberr from covariance matrix is consistent with sqrt(sumsq_syst) and sqrt(sumsq_syst_2D)
+            #the slight differences for the 2D asymmetries are because GetCorrectedAfb2D uses the nominal bins whereas sumsq_syst_2D effectively uses the average of the up and down variations, which are not necessarily centred at nominal
+            #if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
+            #else: afberr = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
             #end loop over subtypes
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
             for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], math.sqrt(sumsq_syst_2D[binindex]))
@@ -545,16 +546,19 @@ def main():
 
         for row in range(nbins): binsyst_total[row] = sqrt(covar_total[row,row])
 
-        #check afberr from covariance matrix is consistent with sqrt(sumsq_total)
+        #check afberr from covariance matrix is consistent with sqrt(sumsq_total) and sqrt(sumsq_total_2D) - again, the slight differences for the 2D asymmetries are because we use the nominal bins with the covariance matrix
         if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
         else: afberr = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
-        #print afberr
+        
+        if nbins2D==0 and abs(afberr-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr-math.sqrt(sumsq_total) )
+        if nbins2D>0 and abs(afberr[nbins2D]-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr[nbins2D]-math.sqrt(sumsq_total) )
 
 
         print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][0], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], math.sqrt(sumsq_total))
         binindex = 0
         for i in sorted(binlist2D):
-            print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, i, systematics[plot]['Nominal']['default']['nominal'][i][0], systematics[plot]['Nominal']['default']['nominal'][i][1], math.sqrt(sumsq_total_2D[binindex]))
+            #print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, i, systematics[plot]['Nominal']['default']['nominal'][i][0], systematics[plot]['Nominal']['default']['nominal'][i][1], math.sqrt(sumsq_total_2D[binindex]))
+            print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, i, systematics[plot]['Nominal']['default']['nominal'][i][0], systematics[plot]['Nominal']['default']['nominal'][i][1], afberr[binindex])
             binindex += 1
         print ""
         if nomatrix == False:
@@ -574,7 +578,7 @@ def main():
         if nbins2D==0: 
             for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_total[row])
         else:
-            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, math.sqrt(sumsq_total_2D[binindex]))
+            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr[binindex] )
         print ""
     #end loop over asymmetries
     
