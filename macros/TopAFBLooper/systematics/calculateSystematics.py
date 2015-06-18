@@ -144,8 +144,8 @@ def GetCorrectedAfb(covarianceM, nbins, n):
         else: alpha[i] = 1
 
     # Components of the error calculation
-    sum_n = 0.;
-    sum_alpha_n = 0.;
+    sum_n = 0.
+    sum_alpha_n = 0.
     for i in range(nbins):
         sum_n += n[i]
         sum_alpha_n += alpha[i] * n[i]
@@ -155,15 +155,15 @@ def GetCorrectedAfb(covarianceM, nbins, n):
         dfdn[i] = ( alpha[i] * sum_n - sum_alpha_n ) / pow(sum_n,2)
 
     # Error Calculation
-    afberr = 0.;
+    afberr = 0.
     for i in range(nbins):
         for j in range(nbins):
-            afberr += covarianceM[i,j] * dfdn[i] * dfdn[j];
+            afberr += covarianceM[i,j] * dfdn[i] * dfdn[j]
 
-    afberr = sqrt(afberr);
+    afberr = sqrt(afberr)
 
     # Calculate Afb
-    afb = sum_alpha_n / sum_n;
+    afb = sum_alpha_n / sum_n
 
     print "afb: %2.6f , afberr: %2.6f " % (afb, afberr )  
     return afberr
@@ -171,9 +171,6 @@ def GetCorrectedAfb(covarianceM, nbins, n):
 
 
 def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
-    """
-    WARNING: DOESN'T WORK FOR NON-UNIFORM BIN WIDTH
-    """
 
     # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
 
@@ -184,8 +181,8 @@ def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
         else: alpha[i] = 1
 
     # Components of the error calculation
-    sum_n = 0.;
-    sum_alpha_n = 0.;
+    sum_n = 0.
+    sum_alpha_n = 0.
     for i in range(nbins):
         sum_n += n[i] * binwidth[i]
         sum_alpha_n += alpha[i] * n[i] * binwidth[i]
@@ -195,19 +192,71 @@ def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
         dfdn[i] = ( alpha[i] * sum_n - sum_alpha_n ) / pow(sum_n,2)
 
     # Error Calculation
-    afberr = 0.;
+    afberr = 0.
     for i in range(nbins):
         for j in range(nbins):
-            afberr += covarianceM[i,j] * dfdn[i] * dfdn[j] * binwidth[i] * binwidth[j];
+            afberr += covarianceM[i,j] * dfdn[i] * dfdn[j] * binwidth[i] * binwidth[j]
 
-    afberr = sqrt(afberr);
+    afberr = sqrt(afberr)
 
     # Calculate Afb
-    afb = sum_alpha_n / sum_n;
+    afb = sum_alpha_n / sum_n
 
     print "afb: %2.6f , afberr: %2.6f " % (afb, afberr )  
     return afberr
 
+
+
+def GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n):
+
+    # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
+
+    numbinsx = nbins/nbins2D
+    numbinsy = nbins2D
+
+    # Setup Alpha Vector
+    alpha = zeros( [numbinsx] )
+    for i in range(numbinsx):
+        if i < numbinsx/2: alpha[i] = -1
+        else: alpha[i] = 1
+
+    # Components of the error calculation
+    sum_n = zeros( [numbinsy+1] )
+    sum_alpha_n = zeros( [numbinsy+1] )
+    for i in range(nbins):
+        i_2di = i % numbinsx
+        i_2dj = i / numbinsx
+        sum_n[i_2dj] += n[i]
+        sum_alpha_n[i_2dj] += alpha[i_2di] * n[i]
+        sum_n[numbinsy] += n[i]
+        sum_alpha_n[numbinsy] += alpha[i_2di] * n[i]
+
+    dfdn = zeros( [nbins,numbinsy+1] )
+    for i in range(nbins):
+        i_2di = i % numbinsx
+        i_2dj = i / numbinsx
+        dfdn[i][i_2dj] = ( alpha[i_2di] * sum_n[i_2dj] - sum_alpha_n[i_2dj] ) / pow(sum_n[i_2dj],2)
+        dfdn[i][numbinsy] = ( alpha[i_2di] * sum_n[numbinsy] - sum_alpha_n[numbinsy] ) / pow(sum_n[numbinsy],2)
+
+    # Error Calculation
+    afb = zeros( [numbinsy+1] )
+    afberr = zeros( [numbinsy+1] )
+    for i in range(nbins):
+        for j in range(nbins):
+            i_2di = i % numbinsx
+            i_2dj = i / numbinsx
+            j_2di = j % numbinsx
+            j_2dj = j / numbinsx
+            afberr[numbinsy] += covarianceM[i,j] * dfdn[i][numbinsy] * dfdn[j][numbinsy]
+            if(i_2dj==j_2dj): afberr[i_2dj] += covarianceM[i,j] * dfdn[i][i_2dj] * dfdn[j][i_2dj]
+
+    # Calculate Afb
+    for i in range(numbinsy+1):
+        afberr[i] = sqrt(afberr[i])
+        afb[i] = sum_alpha_n[i] / sum_n[i]
+
+    print (afb, afberr )  
+    return afberr
 
 
 
@@ -347,7 +396,7 @@ def main():
                 #print 'extrapolating'
                 #now do the extrapolation
                 subtypenum =0
-                weightedaveragegradient = 0.;
+                weightedaveragegradient = 0.
                 bin_weightedaveragegradient = zeros( [nbins] )
                 bin_variations_0 = {}
                 #sort the subtypes into numerical order before doing the extrapolation
@@ -479,7 +528,8 @@ def main():
                     covar_syst += covar_subtype*maxstat_factor*maxstat_factor
 
             #check afberr from covariance matrix is consistent with sqrt(sumsq_syst)
-            #if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
+            if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
+            else: afberr = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
             #end loop over subtypes
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
             for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], math.sqrt(sumsq_syst_2D[binindex]))
@@ -497,7 +547,7 @@ def main():
 
         #check afberr from covariance matrix is consistent with sqrt(sumsq_total)
         if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
-        #else: afberr = GetCorrectedAfb_2D(covar_total, nbins, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+        else: afberr = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
         #print afberr
 
 
