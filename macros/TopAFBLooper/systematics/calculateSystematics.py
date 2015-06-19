@@ -56,10 +56,6 @@ def calculateVariation(refNominal, systematic, binname, allowmaxstat = 0):
     Calculates the variation due to a particular systematic/subtype
     """
 
-    numpy.set_printoptions(linewidth=800)
-    numpy.set_printoptions(threshold=10000)
-    numpy.set_printoptions(precision=6)
-
     vartype = systematic['vartype']
     usenotes = systematic['usenotes']
 
@@ -260,6 +256,45 @@ def GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n):
 
 
 
+def increasevariance_integratewidth_V(covarianceM, nbins, n, binwidth, factor):
+
+    #create new array for covarianceM0. covarianceM0 = covarianceM doesn't work because it binds the new name to the same object.
+    covarianceM0 = zeros( [nbins] )
+    for i in range(nbins):
+        covarianceM0[i] = covarianceM[i,i]
+
+    afberr0 = GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth)
+    afberr = afberr0
+    nit = 0
+    while afberr < afberr0*factor:
+        nit += 1
+        for i in range(nbins):
+            covarianceM[i,i] = covarianceM0[i] + 0.0000001*nit*n[i]*n[i]
+            #covarianceM[i,i] = covarianceM0[i]*pow(1.0001,nit)
+            #covarianceM[i,i] *= 1.0001
+        afberr = GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth)
+
+
+def increasevariance2D(covarianceM, nbins, nbins2D, n, factor):
+
+    #create new array for covarianceM0. covarianceM0 = covarianceM doesn't work because it binds the new name to the same object.
+    covarianceM0 = zeros( [nbins] )
+    for i in range(nbins):
+        covarianceM0[i] = covarianceM[i,i]
+
+    afberr0 = GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n)
+    afberr = GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n)
+    nit = 0
+    while afberr[nbins2D] < afberr0[nbins2D]*factor:
+        nit += 1
+        for i in range(nbins):
+            covarianceM[i,i] = covarianceM0[i] + 0.000001*nit*n[i]*n[i]
+            #covarianceM[i,i] = covarianceM0[i]*pow(1.001,nit)
+            #covarianceM[i,i] *= 1.0001
+        afberr = GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n)
+
+
+
 
 def main():
 
@@ -271,6 +306,10 @@ def main():
     parser.add_option("-t", "--type", action="store", type="string", default=None, dest="unfoldingtype", help="None gives 1D, options are mtt, ttpt, ttrapidity2")
 
     (opts, args) = parser.parse_args()
+
+    numpy.set_printoptions(linewidth=800)
+    numpy.set_printoptions(threshold=10000)
+    numpy.set_printoptions(precision=6)
     
     if ( opts.systematicsjsonfilename == None ) :
         print ""
@@ -454,14 +493,16 @@ def main():
                 #take maximum from extrapolation or maxstat_factor due to the MC statistical uncertainty (guaranteed to be >=1)
                 print "          %s extrapolation factor: %2.3f , maxstat_factor: %2.3f " % (systematic,extrapfactor,maxstat_factor)
                 if(extrapfactor<maxstat_factor):  extrapfactor = maxstat_factor
-                if(extrapfactor>sqrt(3.0)):
-                    extrapfactor = sqrt(3.0)  #don't extrapolate more than a factor of 3 to avoid producing highly (anti)correlated covariance matrix
-                    print "limiting uncertainty scaling factor to sqrt(3.0) to maintain sensible covariance matrix"
+                if(extrapfactor>1000.00):
+                    extrapfactor = 1000.00  #don't extrapolate more than a factor of 1000.00 to avoid producing highly (anti)correlated covariance matrix
+                    print "limiting uncertainty scaling factor to 1000.00"
                 #print "extrapolation factor: %2.3f , extrapolation amount: %2.3f " % (extrapfactor,100.*15.*weightedaveragegradient )
                 sumsq_syst *= extrapfactor*extrapfactor
                 sumsq_syst_2D *= extrapfactor*extrapfactor
                 #instead of extrapolating for every bin, use same SF as for asymmetry (automatically ensures the covariance matrix is consistent with the uncertainty on the asymmetry, so no need to recalculate it)
-                covar_syst *= extrapfactor*extrapfactor
+                if nbins2D==0: increasevariance_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth, extrapfactor)
+                else: increasevariance2D(covar_syst, nbins, nbins2D, bin_nominals_i, extrapfactor)
+                #covar_syst *= extrapfactor*extrapfactor
 
 #The code below extrapolates the uncertainty on each bin individually, calculates the resulting new covariance matrix, then recalculates the inclusive uncertainty. Currently only working for variables with uniform bin width.
 #Results are typically the same or less conservative than the simple method above, so use that instead.
@@ -519,21 +560,24 @@ def main():
                             covar_subtype[row, col] = bin_variations[binlist[row]] * bin_variations[binlist[col]]
 
                     if(maxstat_factor>1): print "          %s maxstat_factor: %2.3f " % (systematic,maxstat_factor)
-                    if(maxstat_factor>sqrt(3.0)):
-                        maxstat_factor = sqrt(3.0)  #don't extrapolate more than a factor of 3 to avoid producing highly (anti)correlated covariance matrix
-                        print "limiting uncertainty scaling factor to sqrt(3.0) to maintain sensible covariance matrix"
+                    if(maxstat_factor>1000.00):
+                        maxstat_factor = 1000.00  #don't extrapolate more than a factor of 1000.00 to avoid producing highly (anti)correlated covariance matrix
+                        print "limiting uncertainty scaling factor to 1000.00"
+
                     #Add to the running total of the variance and covariance
                     sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
                     sumsq_syst_2D += sumsq_subtype_2D*maxstat_factor*maxstat_factor
-                    covar_syst += covar_subtype*maxstat_factor*maxstat_factor
+                    if nbins2D==0: increasevariance_integratewidth_V(covar_subtype, nbins, bin_nominals_i, binwidth, maxstat_factor)
+                    else: increasevariance2D(covar_subtype, nbins, nbins2D, bin_nominals_i, maxstat_factor)
+                    covar_syst += covar_subtype
 
             #check afberr from covariance matrix is consistent with sqrt(sumsq_syst) and sqrt(sumsq_syst_2D)
             #the slight differences for the 2D asymmetries are because GetCorrectedAfb2D uses the nominal bins whereas sumsq_syst_2D effectively uses the average of the up and down variations, which are not necessarily centred at nominal
-            #if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
-            #else: afberr = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+            if nbins2D==0: afberr = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
+            else: afberr = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
             #end loop over subtypes
             print "%15s systematic: %2.6f" % (systematic, math.sqrt(sumsq_syst))
-            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], math.sqrt(sumsq_syst_2D[binindex]))
+            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], afberr[binindex])
             sumsq_total += sumsq_syst
             sumsq_total_2D += sumsq_syst_2D
             covar_total += covar_syst
