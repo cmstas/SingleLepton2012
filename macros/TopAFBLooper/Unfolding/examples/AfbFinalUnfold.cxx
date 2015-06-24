@@ -622,7 +622,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 					m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 				  }
 			  }
-		  	GetCorrectedAfb(hData_unfolded, m_smearingE, Afb0, AfbErr0);
+		  	GetCorrectedAfb(hData_unfolded, m_correctE, Afb0, AfbErr0);
 		  	//cout << " Unfolded0: " << Afb0 << " +/-  " << AfbErr0 << "\n";
 
 
@@ -650,7 +650,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 						m_correctE(cmi, cmj) = ematrix->GetBinContent(cmi + 1, cmj + 1);
 					  }
 				  }
-			  	GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
+			  	GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
 
 		        //GetAfb(hData_unfolded, Afb, AfbErr);
 		        //cout <<taumult<< " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
@@ -674,7 +674,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
 		TH2D *ematrix_smearing = (TH2D*)ematrix->Clone("ematrix_smearing");
-		unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, false );
+		unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, true );
 		TH2D *cmatrix = unfold_TUnfold.GetRhoIJ("cmatrix", "correlation matrix", 0, 0);
 		for (Int_t cmi = 0; cmi < nbinsx_gen; cmi++)
 		  {
@@ -689,11 +689,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //m_unfoldE.Print("f=%1.5g ");
         //m_unfoldcorr.Print("f=%1.5g ");
 
+
+		/*
         //include the MC stat uncertainty in the stat error bars
         for (int i = 1; i < nbinsx_gen + 1; i++)
 		{
             hData_unfolded->SetBinError(i,sqrt(m_smearingE(i-1, i-1)));
 		}
+		*/
 
 
 		float rmargin = gStyle->GetPadRightMargin();
@@ -832,12 +835,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         GetAfb(hTrue, Afb, AfbErr);
         cout << " True Top: " << Afb << " +/-  " << AfbErr << "\n";
 
-        GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
+        GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
         cout << " Unfolded: " << Afb << " +/-  " << AfbErr << "\n";
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << Afb << " +/-  " << AfbErr << endl;
 
-        GetCorrectedAfb(hData_unfolded, m_correctE, Afb, AfbErr);
-        cout << " Unfolded without smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
+        GetCorrectedAfb(hData_unfolded, m_smearingE, Afb, AfbErr);
+        cout << " Unfolded with only smearing errors: " << Afb << " +/-  " << AfbErr << "\n";
 
         GetAfb(denominatorM, Afb, AfbErr);
         cout << " True Top from acceptance denominator: " << Afb << " +/-  " << AfbErr << "\n";
@@ -859,7 +862,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         vector<double> afb_bins;
         vector<double> afb_bins_err;
-        GetCorrectedAfbBinByBin(hData_unfolded, m_smearingE, afb_bins, afb_bins_err, second_output_file);
+        GetCorrectedAfbBinByBin(hData_unfolded, m_correctE, afb_bins, afb_bins_err, second_output_file);
 
         //scale to total xsec with option "width",  so that differential xsec is plotted
         //hData_unfolded->Scale(xsection/hData_unfolded->Integral(),"width");
@@ -916,7 +919,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  cout << endl;
 		}
 
-		cout << "Statistical covariance matrix including MC stats:" << endl;
+		cout << "Statistical covariance matrix for MC stats:" << endl;
 
 		cout << "_____|";
 		for( int col=0; col<nbinsx_gen; col++ ) cout << "_____" << col+1 << "_____|";
@@ -935,8 +938,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
         //confirm covariance matrix for normalised distribution is correct by re-calculating Afb
-        GetCorrectedAfb_integratewidth_V(hData_unfolded, m_smearingE, Afb, AfbErr); //uses covariance matrix for the bin values
-        //GetCorrectedAfb_integratewidth(hData_unfolded, m_smearingE, Afb, AfbErr); //uses covariance matrix for the integrated bin contents
+        GetCorrectedAfb_integratewidth_V(hData_unfolded, m_correctE, Afb, AfbErr); //uses covariance matrix for the bin values
+        //GetCorrectedAfb_integratewidth(hData_unfolded, m_correctE, Afb, AfbErr); //uses covariance matrix for the integrated bin contents
         cout << " Unfolded_after_scaling: " << Afb << " +/-  " << AfbErr << "\n";
 
         TH1D *hData_unfolded_minussyst;
@@ -946,18 +949,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         for (Int_t i = 1; i <= nbinsx_gen; i++)
 		  {
-            if (checkErrors)
-			  {
-                if (includeSys)
-				  {
-                    //cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_corr[i - 1] << endl;
-				  }
-                else
-				  {
-                    //cout << "Difference between calculated and hard-coded stat errors: " << hData_unfolded->GetBinError(i) -  stat_uncorr[i - 1] << endl;
-				  }
-			  }
-            //hData_unfolded          ->SetBinError(i, stat_uncorr[i - 1]);  //running with includeSys = 0 means we can use the RooUnfold stat-only errors
+		  	syst_corr[i - 1] = sqrt(syst_corr[i - 1]*syst_corr[i - 1] + m_smearingE(i-1, i-1)); //include MC stat uncertainty in systematics
+
             hData_unfolded_minussyst->SetBinContent(i, hData_unfolded->GetBinContent(i) - syst_corr[i - 1] );  //hard-coded systs
             hData_unfolded_minussyst->SetBinError(i, 0);
             hData_unfolded_plussyst ->SetBinContent(i, 2 * syst_corr[i - 1]);  //hard-coded systs
@@ -1154,13 +1147,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				//h_diff->GetXaxis()->SetBinLabel(tempbin, hData_unfolded->GetXaxis()->GetBinLabel(tempbin));
 
 
-				//cout<<data<<" "<<mc<<" "<<syst_corr[tempbin - 1]<<endl;
-
-
 				h_diff_minussyst->SetBinContent(tempbin, (data)/mc
-				                                    - syst_corr[tempbin - 1]/mc );  //hard-coded syst_corr now includes unfolding syst
+				                                    - syst_corr[tempbin - 1]/mc );  //now includes MC stats
 				h_diff_minussyst->SetBinError(tempbin, 0);
-				h_diff_plussyst ->SetBinContent(tempbin, 2 * syst_corr[tempbin - 1]/mc );  //hard-coded syst_corr now includes unfolding syst
+				h_diff_plussyst ->SetBinContent(tempbin, 2 * syst_corr[tempbin - 1]/mc );  //now includes MC stats
 				h_diff_plussyst ->SetBinError(tempbin, 0);
             }
 
