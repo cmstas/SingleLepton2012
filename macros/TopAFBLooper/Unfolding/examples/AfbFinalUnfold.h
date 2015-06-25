@@ -316,7 +316,7 @@ void GetCorrectedAfb(TH1D* histogram, TMatrixD &covarianceM, Float_t &afb, Float
 
 
 
-void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<double> &myafb, std::vector<double> &myerr, ofstream& second_output_file){
+void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<double> &myafb, std::vector<double> &myerr, TMatrixD &AFBcovarianceM, ofstream& second_output_file){
 
     //calculate AFB, using covariance matrix, m_correctE(j,i), for the uncertainty
 
@@ -334,12 +334,14 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
 
   double afb[numbinsy+1];
   double afberr[numbinsy+1];
+  //double afbcov[numbinsy][numbinsy];
 
   double afbdoublediff[nbins2][numbinsy];
   double afbdoubledifferr[nbins2][numbinsy];
 
   memset( afb, 0, sizeof(afb) );  //Initialize these arrays to zero
   memset( afberr, 0, sizeof(afberr) );
+  //memset( afbcov, 0, sizeof(afbcov) );
 
   memset( afbdoublediff, 0, sizeof(afbdoublediff) );  //Initialize these arrays to zero
   memset( afbdoubledifferr, 0, sizeof(afbdoubledifferr) );
@@ -409,6 +411,12 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
   }
 
 
+  for(int i=0;i<numbinsy;i++){
+    for(int j=0;j<numbinsy;j++){
+      AFBcovarianceM(i,j) = 0;
+    }
+  }
+
     //Error Calculation
   for(int i=0;i<numbinsxy;i++){
     for(int j=0;j<numbinsxy;j++){
@@ -420,6 +428,7 @@ void GetCorrectedAfb2d(TH2D* histogram, TMatrixD &covarianceM, std::vector<doubl
       afberr[0] += covarianceM(i,j) * dfdnInclusive[i_2di][i_2dj] * dfdnInclusive[j_2di][j_2dj];
       if(i_2dj==j_2dj) afberr[i_2dj+1] += covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj]; 
       //if(i_2dj==j_2dj) cout<<"bin: "<<i_2dj<<": "<<covarianceM(i,j) <<" "<< dfdn[i_2di][i_2dj] <<" "<< dfdn[j_2di][j_2dj]<<" "<<covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj]<<" "<<afberr[i_2dj+1]<<endl;
+      AFBcovarianceM(i_2dj,j_2dj) += covarianceM(i,j) * dfdn[i_2di][i_2dj] * dfdn[j_2di][j_2dj];
     }
   }
 
