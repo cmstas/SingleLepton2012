@@ -208,6 +208,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         TMatrixD m_smearingE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_correctE(nbinsunwrapped_gen, nbinsunwrapped_gen);
+        TMatrixD AFBcovarianceM(nbinsy2D, nbinsy2D);
+        TMatrixD AFBcovarianceM_smearing(nbinsy2D, nbinsy2D);
 
 		/////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////// 2. Fill our histograms from the baby ntuples //////////////////
@@ -655,7 +657,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 		TH2D *ematrix = unfold_TUnfold.GetEmatrix("ematrix", "error matrix", 0, 0);
 		TH2D *ematrix_smearing = (TH2D*)ematrix->Clone("ematrix_smearing");
-		unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, false );
+		unfold_TUnfold.GetEmatrixSysUncorr( ematrix_smearing, 0, true );
 
 		for (Int_t cmi = 0; cmi < nbinsunwrapped_gen; cmi++)
 		  {
@@ -666,12 +668,14 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			  }
 		  }
 
+		/*
         //include the MC stat uncertainty in the stat error bars
         for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
         {
             //cout <<"unwrappedbin"<< i <<": "<< hData_unfolded_unwrapped->GetBinError(i)/sqrt(m_correctE(i-1, i-1)) << " " << hData_unfolded_unwrapped->GetBinError(i)/sqrt(m_smearingE(i-1, i-1)) << endl;
             hData_unfolded_unwrapped->SetBinError(i,sqrt(m_smearingE(i-1, i-1)));
 		}
+		*/
 
 
 		//Re-wrap 1D histograms into 2D
@@ -770,6 +774,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         vector<double> afb_merr;
         vector<double> afb_m_denom;
         vector<double> afb_merr_denom;
+        vector<double> afb_m_mcstatonly;
+        vector<double> afb_merr_mcstatonly;
 
 		cout << "Automatic tau = " << tau << endl;
 		cout << "Minimum rhoAvg = " << bestrhoavg << endl;
@@ -791,10 +797,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator_bin"<<i<<": "<< afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << "\n";
 	    }
 
-		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
-        cout << " Unfolded without smearing errors: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
+		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m_mcstatonly, afb_merr_mcstatonly, AFBcovarianceM_smearing, second_output_file);
+        cout << " Unfolded with only smearing errors: " << afb_m_mcstatonly.at(0) << " +/- " << afb_merr_mcstatonly.at(0) << endl;
 
-		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m, afb_merr, second_output_file);
+		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, AFBcovarianceM, second_output_file);
         cout << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
 
@@ -803,6 +809,47 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  cout << Var2D << " bin" << i << ": " << afb_m.at(i) << " +/- " << afb_merr.at(i) << endl;
 		  second_output_file << acceptanceName << " " << observablename << " " << Var2D << "bin" << i << ": " << afb_m.at(i) << " +/- " << afb_merr.at(i) << endl;
 		}
+
+
+
+
+		cout << "Statistical covariance matrix:" << endl;
+
+		char mystring[15];
+
+		cout << "_____|";
+		for( int col=0; col<nbinsy2D; col++ ) cout << "_____" << col+1 << "_____|";
+		cout << endl;
+
+		for( int row=0; row<nbinsy2D; row++ ) {
+		  sprintf(mystring, "%4d | ", row+1);
+		  cout << mystring;
+		  for( int col=0; col<nbinsy2D; col++ ){
+			sprintf(mystring, "%1.6g  ", AFBcovarianceM(row, col) );
+			cout << mystring;
+		  }
+		  cout << endl;
+		}
+
+		cout << "Statistical covariance matrix for MC stats:" << endl;
+
+		cout << "_____|";
+		for( int col=0; col<nbinsy2D; col++ ) cout << "_____" << col+1 << "_____|";
+		cout << endl;
+
+		for( int row=0; row<nbinsy2D; row++ ) {
+		  sprintf(mystring, "%4d | ", row+1);
+		  cout << mystring;
+		  for( int col=0; col<nbinsy2D; col++ ){
+			sprintf(mystring, "%1.6g  ", AFBcovarianceM_smearing(row, col) );
+			cout << mystring;
+		  }
+		  cout << endl;
+		}
+
+
+
+
 
 		for( int j=0; j<nbinsy2D; j++ ) {
 			for( int i=0; i<nbinsx_gen/2; i++ ) {
@@ -833,7 +880,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         for (int nb = 0; nb < 3; nb++)
 		  {
             hAfbVsMtt->SetBinContent(nb + 1, afb_m[nb+1]);
-            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
             hAfbVsMtt_statonly->SetBinContent(nb + 1, afb_m[nb+1]);
             hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]);
 		  }
