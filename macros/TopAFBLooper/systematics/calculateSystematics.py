@@ -250,6 +250,7 @@ def GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n):
 
     # Calculate Afb
     for i in range(numbinsy+1):
+        if afberr[i]<0: print "index: %i err %1.6g %1.6g %1.6g %1.6g" % (i, afberr[0], afberr[1], afberr[2], afberr[3])
         afberr[i] = sqrt(afberr[i])
         afb[i] = sum_alpha_n[i] / sum_n[i]
 
@@ -502,9 +503,15 @@ def main():
                 sumsq_syst *= extrapfactor*extrapfactor
                 sumsq_syst_2D *= extrapfactor*extrapfactor
                 #instead of extrapolating for every bin, use same SF as for asymmetry (automatically ensures the covariance matrix is consistent with the uncertainty on the asymmetry, so no need to recalculate it)
-                if nbins2D==0: increasevariance_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth, extrapfactor)
-                else: increasevariance2D(covar_syst, nbins, nbins2D, bin_nominals_i, extrapfactor)
                 #covar_syst *= extrapfactor*extrapfactor
+                #(afberrtemp,afbcovtemp) = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)
+                #print "before increase factor %6.2f: %6.6g" % ( extrapfactor, afberrtemp[nbins2D] )
+                if extrapfactor > 1.:
+                    if nbins2D==0: increasevariance_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth, extrapfactor)
+                    else: increasevariance2D(covar_syst, nbins, nbins2D, bin_nominals_i, extrapfactor)
+                #(afberrtemp,afbcovtemp) = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)
+                #print "after increase factor %6.2f: %6.6g" % ( extrapfactor, afberrtemp[nbins2D] )
+
 
 #The code below extrapolates the uncertainty on each bin individually, calculates the resulting new covariance matrix, then recalculates the inclusive uncertainty. Currently only working for variables with uniform bin width.
 #Results are typically the same or less conservative than the simple method above, so use that instead.
@@ -566,12 +573,30 @@ def main():
                         maxstat_factor = 1000.00  #don't extrapolate more than a factor of 1000.00 to avoid producing highly (anti)correlated covariance matrix
                         print "limiting uncertainty scaling factor to 1000.00"
 
+                    #if nbins2D==0:
+                        #afberr = GetCorrectedAfb_integratewidth_V(covar_subtype, nbins, bin_nominals_i, binwidth)
+                        #print "%15s subtype: %2.6f" % (subtype, afberr)
+                    #else:
+                        #(afberr,afbcov) = GetCorrectedAfb2D(covar_subtype, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+                        #print "%15s subtype: %2.6f" % (subtype, afberr[nbins2D])
+
+
                     #Add to the running total of the variance and covariance
                     sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
                     sumsq_syst_2D += sumsq_subtype_2D*maxstat_factor*maxstat_factor
-                    if nbins2D==0: increasevariance_integratewidth_V(covar_subtype, nbins, bin_nominals_i, binwidth, maxstat_factor)
-                    else: increasevariance2D(covar_subtype, nbins, nbins2D, bin_nominals_i, maxstat_factor)
+                    if maxstat_factor > 1.:
+                        if nbins2D==0: increasevariance_integratewidth_V(covar_subtype, nbins, bin_nominals_i, binwidth, maxstat_factor)
+                        else: increasevariance2D(covar_subtype, nbins, nbins2D, bin_nominals_i, maxstat_factor)
                     covar_syst += covar_subtype
+
+
+                    #if nbins2D==0:
+                        #afberr = GetCorrectedAfb_integratewidth_V(covar_subtype, nbins, bin_nominals_i, binwidth)
+                        #print "%15s syubtype2: %2.6f" % (subtype, afberr)
+                    #else:
+                        #(afberr,afbcov) = GetCorrectedAfb2D(covar_subtype, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+                        #print "%15s syubtype2: %2.6f" % (subtype, afberr[nbins2D])
+
 
             #the slight differences between afberr and sqrt(sumsq_syst) and sqrt(sumsq_syst_2D), particularly for the 2D asymmetries, are because GetCorrectedAfb(2D) uses the nominal bins whereas sumsq_syst(_2D) effectively uses the average of the up and down variations, which are not necessarily centred at nominal
             if nbins2D==0:
