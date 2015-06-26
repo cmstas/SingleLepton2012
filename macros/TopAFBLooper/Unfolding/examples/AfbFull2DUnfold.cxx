@@ -668,6 +668,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			  }
 		  }
 
+		cout << acceptanceName <<" Chi2A= " << unfold_TUnfold.GetChi2A() << " , Chi2L=  " << unfold_TUnfold.GetChi2L() << "\n";
+		
 		/*
         //include the MC stat uncertainty in the stat error bars
         for (int i = 1; i < nbinsunwrapped_gen + 1; i++)

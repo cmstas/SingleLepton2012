@@ -689,6 +689,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //m_unfoldE.Print("f=%1.5g ");
         //m_unfoldcorr.Print("f=%1.5g ");
 
+		//printf("Chi2A=%1.5f, Chi2L=%1.5f\n", unfold_TUnfold.GetChi2A(), unfold_TUnfold.GetChi2L());
+		cout << acceptanceName <<" Chi2A= " << unfold_TUnfold.GetChi2A() << " , Chi2L=  " << unfold_TUnfold.GetChi2L() << "\n";
+
 
 		/*
         //include the MC stat uncertainty in the stat error bars
