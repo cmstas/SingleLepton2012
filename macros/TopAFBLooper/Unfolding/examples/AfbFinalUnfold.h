@@ -937,9 +937,9 @@ void Initialize2DBinning(int iVar){
       ymax=ybins2D[3];
       xmin=xbins2Dalt[0];
       xmax=xbins2Dalt[12];
-syst_corr[0] = 0.014689;
-syst_corr[1] = 0.025844;
-syst_corr[2] = 0.016427;
+syst_corr[0] = 0.013214;
+syst_corr[1] = 0.024206;
+syst_corr[2] = 0.013814;
       break;
     }
     //   Lepton Azimuthal Asymmetry 2
@@ -959,9 +959,9 @@ syst_corr[2] = 0.016427;
       ymax=ybins2D[3];
       xmin=xbins2Dalt[0];
       xmax=xbins2Dalt[12];
-syst_corr[0] = 0.012012;
-syst_corr[1] = 0.026251;
-syst_corr[2] = 0.031737;
+syst_corr[0] = 0.009138;
+syst_corr[1] = 0.014262;
+syst_corr[2] = 0.024671;
       break;
     }
     //   Top Polarization
@@ -978,9 +978,9 @@ syst_corr[2] = 0.031737;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.025170;
-syst_corr[1] = 0.050881;
-syst_corr[2] = 0.037950;
+syst_corr[0] = 0.022466;
+syst_corr[1] = 0.031345;
+syst_corr[2] = 0.037566;
       break;
     }
       //   Top Polarization using negatively charged leptons
@@ -997,9 +997,9 @@ syst_corr[2] = 0.037950;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.033386;
-syst_corr[1] = 0.048799;
-syst_corr[2] = 0.051179;
+syst_corr[0] = 0.029994;
+syst_corr[1] = 0.046919;
+syst_corr[2] = 0.032904;
       break;
     }
       //   Top Polarization combining positively and negatively charged leptons
@@ -1016,9 +1016,9 @@ syst_corr[2] = 0.051179;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.021454;
-syst_corr[1] = 0.040119;
-syst_corr[2] = 0.040016;
+syst_corr[0] = 0.022363;
+syst_corr[1] = 0.038842;
+syst_corr[2] = 0.033216;
       break;
     }
     //   Top Spin Correlation
@@ -1035,9 +1035,9 @@ syst_corr[2] = 0.040016;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.040269;
-syst_corr[1] = 0.044318;
-syst_corr[2] = 0.043595;
+syst_corr[0] = 0.028110;
+syst_corr[1] = 0.031483;
+syst_corr[2] = 0.039661;
       break;
     }
     //   Top Asy III
@@ -1055,9 +1055,9 @@ syst_corr[2] = 0.043595;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.028464;
-syst_corr[1] = 0.025316;
-syst_corr[2] = 0.010290;
+syst_corr[0] = 0.022308;
+syst_corr[1] = 0.021053;
+syst_corr[2] = 0.008190;
       break;
     }
     //   Top Charge Asymmetry
@@ -1074,9 +1074,9 @@ syst_corr[2] = 0.010290;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.031689;
-syst_corr[1] = 0.024934;
-syst_corr[2] = 0.022511;
+syst_corr[0] = 0.031180;
+syst_corr[1] = 0.016583;
+syst_corr[2] = 0.020111;
       break;
     }
     //   Lepton opening angle
@@ -1092,9 +1092,9 @@ syst_corr[2] = 0.022511;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.029869;
-syst_corr[1] = 0.027976;
-syst_corr[2] = 0.035895;
+syst_corr[0] = 0.020850;
+syst_corr[1] = 0.022346;
+syst_corr[2] = 0.031793;
       break;
     }
     //   Lepton Azimuthal Asymmetry
@@ -1111,9 +1111,9 @@ syst_corr[2] = 0.035895;
       ymax=ybins2D[3];
       xmin=xbins2Dalt[0];
       xmax=xbins2Dalt[12];
-syst_corr[0] = 0.013765;
-syst_corr[1] = 0.023139;
-syst_corr[2] = 0.015920;
+syst_corr[0] = 0.011692;
+syst_corr[1] = 0.020405;
+syst_corr[2] = 0.014942;
       break;
     }
     //   Top Asy I
@@ -1130,9 +1130,9 @@ syst_corr[2] = 0.015920;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.028347;
-syst_corr[1] = 0.019348;
-syst_corr[2] = 0.019593;
+syst_corr[0] = 0.019625;
+syst_corr[1] = 0.018581;
+syst_corr[2] = 0.016914;
       break;
     }
     //   Top Asy II
@@ -1149,9 +1149,9 @@ syst_corr[2] = 0.019593;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.029089;
-syst_corr[1] = 0.021252;
-syst_corr[2] = 0.009172;
+syst_corr[0] = 0.026656;
+syst_corr[1] = 0.022243;
+syst_corr[2] = 0.011280;
       break;
     }
     default:
@@ -1183,9 +1183,9 @@ void Initialize2DBinningttpt(int iVar){
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.008878;
-syst_corr[1] = 0.022698;
-syst_corr[2] = 0.010028;
+syst_corr[0] = 0.008513;
+syst_corr[1] = 0.016099;
+syst_corr[2] = 0.009374;
       break;
     }
     //   Lepton Azimuthal Asymmetry 2
@@ -1203,9 +1203,9 @@ syst_corr[2] = 0.010028;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.020455;
-syst_corr[1] = 0.022936;
-syst_corr[2] = 0.027004;
+syst_corr[0] = 0.014755;
+syst_corr[1] = 0.014183;
+syst_corr[2] = 0.017534;
       break;
     }
     //   Top Polarization
@@ -1222,9 +1222,9 @@ syst_corr[2] = 0.027004;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.027585;
-syst_corr[1] = 0.031125;
-syst_corr[2] = 0.037612;
+syst_corr[0] = 0.028864;
+syst_corr[1] = 0.029459;
+syst_corr[2] = 0.034268;
       break;
     }
       //   Top Polarization using negatively charged leptons
@@ -1241,9 +1241,9 @@ syst_corr[2] = 0.037612;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.025011;
-syst_corr[1] = 0.047274;
-syst_corr[2] = 0.057250;
+syst_corr[0] = 0.026633;
+syst_corr[1] = 0.041555;
+syst_corr[2] = 0.058129;
       break;
     }
       //   Top Polarization combining positively and negatively charged leptons
@@ -1260,9 +1260,9 @@ syst_corr[2] = 0.057250;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.025627;
-syst_corr[1] = 0.035524;
-syst_corr[2] = 0.040492;
+syst_corr[0] = 0.027057;
+syst_corr[1] = 0.032500;
+syst_corr[2] = 0.039668;
       break;
     }
     //   Top Spin Correlation
@@ -1279,9 +1279,9 @@ syst_corr[2] = 0.040492;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.014210;
-syst_corr[1] = 0.042919;
-syst_corr[2] = 0.078185;
+syst_corr[0] = 0.015324;
+syst_corr[1] = 0.034867;
+syst_corr[2] = 0.075581;
       break;
     }
     //   Top Asy III
@@ -1299,9 +1299,9 @@ syst_corr[2] = 0.078185;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.010473;
-syst_corr[1] = 0.044762;
-syst_corr[2] = 0.052700;
+syst_corr[0] = 0.010535;
+syst_corr[1] = 0.028918;
+syst_corr[2] = 0.043742;
       break;
     }
     //   Top Charge Asymmetry
@@ -1318,9 +1318,9 @@ syst_corr[2] = 0.052700;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.010947;
-syst_corr[1] = 0.037338;
-syst_corr[2] = 0.032788;
+syst_corr[0] = 0.011726;
+syst_corr[1] = 0.039831;
+syst_corr[2] = 0.029891;
       break;
     }
     //   Lepton opening angle
@@ -1336,9 +1336,9 @@ syst_corr[2] = 0.032788;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.024464;
-syst_corr[1] = 0.045434;
-syst_corr[2] = 0.057745;
+syst_corr[0] = 0.021577;
+syst_corr[1] = 0.052977;
+syst_corr[2] = 0.038825;
       break;
     }
     //   Lepton Azimuthal Asymmetry
@@ -1355,9 +1355,9 @@ syst_corr[2] = 0.057745;
       ymax=ybins2D[3];
       xmin=xbins2Dalt[0];
       xmax=xbins2Dalt[12];
-syst_corr[0] = 0.009266;
-syst_corr[1] = 0.017484;
-syst_corr[2] = 0.013236;
+syst_corr[0] = 0.007224;
+syst_corr[1] = 0.016631;
+syst_corr[2] = 0.010907;
       break;
     }
     //   Top Asy I
@@ -1374,9 +1374,9 @@ syst_corr[2] = 0.013236;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.011227;
-syst_corr[1] = 0.044624;
-syst_corr[2] = 0.068319;
+syst_corr[0] = 0.009105;
+syst_corr[1] = 0.022387;
+syst_corr[2] = 0.033408;
       break;
     }
     //   Top Asy II
@@ -1393,9 +1393,9 @@ syst_corr[2] = 0.068319;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.009777;
-syst_corr[1] = 0.041958;
-syst_corr[2] = 0.060863;
+syst_corr[0] = 0.008857;
+syst_corr[1] = 0.025205;
+syst_corr[2] = 0.048779;
       break;
     }
     default:
@@ -1427,9 +1427,9 @@ void Initialize2DBinningttrapidity2(int iVar){
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.008606;
-syst_corr[1] = 0.011157;
-syst_corr[2] = 0.006442;
+syst_corr[0] = 0.006804;
+syst_corr[1] = 0.009500;
+syst_corr[2] = 0.005959;
       break;
     }
     //   Lepton Azimuthal Asymmetry 2
@@ -1447,9 +1447,9 @@ syst_corr[2] = 0.006442;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.014537;
-syst_corr[1] = 0.017098;
-syst_corr[2] = 0.043139;
+syst_corr[0] = 0.010557;
+syst_corr[1] = 0.011978;
+syst_corr[2] = 0.016107;
       break;
     }
     //   Top Polarization
@@ -1466,9 +1466,9 @@ syst_corr[2] = 0.043139;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.042924;
-syst_corr[1] = 0.043077;
-syst_corr[2] = 0.041395;
+syst_corr[0] = 0.036935;
+syst_corr[1] = 0.025054;
+syst_corr[2] = 0.040610;
       break;
     }
       //   Top Polarization using negatively charged leptons
@@ -1485,9 +1485,9 @@ syst_corr[2] = 0.041395;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.040931;
-syst_corr[1] = 0.028611;
-syst_corr[2] = 0.037245;
+syst_corr[0] = 0.040557;
+syst_corr[1] = 0.026845;
+syst_corr[2] = 0.033840;
       break;
     }
       //   Top Polarization combining positively and negatively charged leptons
@@ -1504,9 +1504,9 @@ syst_corr[2] = 0.037245;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.036163;
-syst_corr[1] = 0.030932;
-syst_corr[2] = 0.034270;
+syst_corr[0] = 0.036169;
+syst_corr[1] = 0.025865;
+syst_corr[2] = 0.033269;
       break;
     }
     //   Top Spin Correlation
@@ -1523,9 +1523,9 @@ syst_corr[2] = 0.034270;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.032450;
-syst_corr[1] = 0.019696;
-syst_corr[2] = 0.026777;
+syst_corr[0] = 0.024454;
+syst_corr[1] = 0.019262;
+syst_corr[2] = 0.027774;
       break;
     }
     //   Top Asy III
@@ -1543,9 +1543,9 @@ syst_corr[2] = 0.026777;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.029942;
-syst_corr[1] = 0.033447;
-syst_corr[2] = 0.024408;
+syst_corr[0] = 0.026455;
+syst_corr[1] = 0.020100;
+syst_corr[2] = 0.021573;
       break;
     }
     //   Top Charge Asymmetry
@@ -1562,9 +1562,9 @@ syst_corr[2] = 0.024408;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.024734;
-syst_corr[1] = 0.026685;
-syst_corr[2] = 0.031599;
+syst_corr[0] = 0.019647;
+syst_corr[1] = 0.025486;
+syst_corr[2] = 0.022752;
       break;
     }
     //   Lepton opening angle
@@ -1580,9 +1580,9 @@ syst_corr[2] = 0.031599;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.052229;
-syst_corr[1] = 0.017937;
-syst_corr[2] = 0.032619;
+syst_corr[0] = 0.050116;
+syst_corr[1] = 0.015434;
+syst_corr[2] = 0.020645;
       break;
     }
     //   Lepton Azimuthal Asymmetry
@@ -1599,9 +1599,9 @@ syst_corr[2] = 0.032619;
       ymax=ybins2D[3];
       xmin=xbins2Dalt[0];
       xmax=xbins2Dalt[12];
-syst_corr[0] = 0.009162;
-syst_corr[1] = 0.017819;
-syst_corr[2] = 0.014052;
+syst_corr[0] = 0.005535;
+syst_corr[1] = 0.003738;
+syst_corr[2] = 0.006707;
       break;
     }
     //   Top Asy I
@@ -1618,9 +1618,9 @@ syst_corr[2] = 0.014052;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.043149;
-syst_corr[1] = 0.035192;
-syst_corr[2] = 0.019398;
+syst_corr[0] = 0.024531;
+syst_corr[1] = 0.019521;
+syst_corr[2] = 0.014407;
       break;
     }
     //   Top Asy II
@@ -1637,9 +1637,9 @@ syst_corr[2] = 0.019398;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.029935;
-syst_corr[1] = 0.023629;
-syst_corr[2] = 0.032474;
+syst_corr[0] = 0.024684;
+syst_corr[1] = 0.015457;
+syst_corr[2] = 0.027697;
       break;
     }
     default:
