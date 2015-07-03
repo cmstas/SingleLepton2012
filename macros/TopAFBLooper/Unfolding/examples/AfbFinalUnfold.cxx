@@ -26,6 +26,7 @@
 
 #include "AfbFinalUnfold.h"
 #include "tdrstyle.C"
+#include "CMS_lumi.C"
 
 using std::cout;
 using std::endl;
@@ -989,13 +990,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         TPad *p1, *p2;
         TLine *line;
         if(!drawDiffs) {
-            p1 = new TPad("p1", "dist", 0.0, 0.0, 1, 1.);
+            p1 = new TPad("p1", "dist", 0.0, 0.0, 1, 0.98);
             p1->Draw();
             p1->cd();
 
         }
         if(drawDiffs) {
-            p1 = new TPad("p1", "dist", 0.0, r - epsilon, 1, 1.);
+            p1 = new TPad("p1", "dist", 0.0, r - epsilon, 1, 0.98);
             p2 = new TPad("p2", "diff", 0.0, 0.0, 1, r*(1. - epsilon));
             p1->Draw();
             p2->Draw();
@@ -1051,14 +1052,24 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  if( observablename == "lep_cos_opening_angle" ) predict_uncorr->Draw("LSAME");
 		}
 
+		bool second_legend = false;
+		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" ||
+			acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") second_legend = true;
+
+		float left_margin = 0.45;
+		if( second_legend ) left_margin = 0.58;
+
+		float leg_textSize = 0.04;
+		if( second_legend ) leg_textSize = 0.032;
+
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
-        TLegend *leg1 = new TLegend(0.58, 0.75, 0.9, 0.93, NULL, "brNDC");
+        TLegend *leg1 = new TLegend(left_margin, 0.75, 0.9, 0.93, NULL, "brNDC");
         leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
         leg1->SetFillStyle(0);
-        leg1->SetTextSize(0.032);
+        leg1->SetTextSize(leg_textSize);
         leg1->AddEntry(hData_unfolded, "( Data - BG ) unfolded");
         leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
         leg1->AddEntry(hTrue,    "MC@NLO parton level", "L");
@@ -1067,7 +1078,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
 		  {
-            TLegend *leg2 = new TLegend(0.18, 0.745, 0.45, 0.88, NULL, "brNDC");
+            TLegend *leg2 = new TLegend(0.18, 0.75, 0.45, 0.93, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
@@ -1079,7 +1090,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->Draw();
 		  }
 		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
-		  TLegend *leg2 = new TLegend(0.18, 0.745, 0.45, 0.88, NULL, "brNDC");
+		  TLegend *leg2 = new TLegend(0.18, 0.75, 0.45, 0.93, NULL, "brNDC");
 		  leg2->SetEntrySeparation(0.5);
 		  leg2->SetFillColor(0);
 		  leg2->SetLineColor(0);
@@ -1091,21 +1102,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  leg2->Draw();
 		}
 
+		int cms_position = 11; //Upper left corner
+		if( second_legend ) cms_position = 0; //Left corner, outside the frame
 
+		// Canvas is c_test, pad is p1
+		// For the time period, "2" means 8TeV. "CMS" text position as explained above.
+		CMS_lumi( c_test, 2, cms_position );
 
-
-
-        TPaveText *pt1 = new TPaveText(0.175, 0.885, 0.41, 0.91, "brNDC");
-        pt1->SetName("pt1name");
-        pt1->SetBorderSize(0);
-        pt1->SetFillStyle(0);
-
-        TText *blah;
-        //blah = pt1->AddText("CMS Preliminary, 19.5 fb^{-1} at  #sqrt{s}=8 TeV");
-        blah = pt1->AddText("CMS, 19.5 fb^{-1} at  #sqrt{s}=8 TeV");
-        blah->SetTextSize(0.032);
-        blah->SetTextAlign(11);
-        pt1->Draw();
 
         if(drawDiffs) {
 

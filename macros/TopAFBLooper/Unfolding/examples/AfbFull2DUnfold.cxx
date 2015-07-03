@@ -21,6 +21,7 @@
 #include "TPaveText.h"
 
 #include "tdrstyle.C"
+#include "CMS_lumi.C"
 
 using std::cout;
 using std::endl;
@@ -913,28 +914,20 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
         hTop_AfbVsMtt->Draw("E same");
 
-        TLegend* leg1 = new TLegend(0.6, 0.72, 0.9, 0.938, NULL, "brNDC");
+        TLegend* leg1 = new TLegend(0.45, 0.72, 0.9, 0.938, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
-        leg1->SetTextSize(0.03);
+        leg1->SetTextSize(0.04);
         leg1->SetFillStyle(0);
         leg1->AddEntry(hAfbVsMtt, "data");
         leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
         leg1->Draw();
 
-        TPaveText *pt1 = new TPaveText(0.18, 0.88, 0.41, 0.91, "brNDC");
-        pt1->SetName("pt1name");
-        pt1->SetBorderSize(0);
-        pt1->SetFillStyle(0);
+		// 2 means 8TeV, 11 means left-corner
+		CMS_lumi( c_afb, 2, 11 );
 
-        TText *blah;
-        //blah = pt1->AddText("CMS Preliminary, 5.0 fb^{-1} at  #sqrt{s}=7 TeV");
-        blah = pt1->AddText("CMS, 19.5 fb^{-1} at  #sqrt{s}=8 TeV");
-        blah->SetTextSize(0.032);
-        blah->SetTextAlign(11);
-        pt1->Draw();
 
         c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
         // c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + ".root");
