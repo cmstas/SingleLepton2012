@@ -903,6 +903,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt->SetMinimum( minmin - 0.1 );
         hAfbVsMtt->SetMaximum( maxmax + 0.1 );
         hAfbVsMtt->SetLineWidth( 2.0 );
+		hAfbVsMtt->GetXaxis()->SetLabelSize(0.04);
+		// hAfbVsMtt->GetYaxis()->SetTitleOffset(1.9);
         hAfbVsMtt->Draw("E");
         hAfbVsMtt_statonly->Draw("E1 same");
         hTop_AfbVsMtt->SetLineColor(TColor::GetColorDark(kRed));
@@ -925,8 +927,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
         leg1->Draw();
 
-		// 2 means 8TeV, 11 means left-corner
-		CMS_lumi( c_afb, 2, 11 );
+		// 2 means 8TeV; 0 means upper left, out of the frame
+		CMS_lumi( c_afb, 2, 0 );
 
 
         c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");

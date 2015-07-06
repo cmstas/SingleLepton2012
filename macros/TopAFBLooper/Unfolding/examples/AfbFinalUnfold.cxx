@@ -1056,14 +1056,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" ||
 			acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") second_legend = true;
 
-		float left_margin = 0.45;
-		if( second_legend ) left_margin = 0.58;
+		float left_bound = 0.45;
+		if( second_legend ) left_bound = 0.58;
 
 		float leg_textSize = 0.04;
 		if( second_legend ) leg_textSize = 0.032;
 
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
-        TLegend *leg1 = new TLegend(left_margin, 0.75, 0.9, 0.93, NULL, "brNDC");
+        TLegend *leg1 = new TLegend(left_bound, 0.75, 0.9, 0.93, NULL, "brNDC");
         leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
@@ -1102,12 +1102,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  leg2->Draw();
 		}
 
-		int cms_position = 11; //Upper left corner
-		if( second_legend ) cms_position = 0; //Left corner, outside the frame
-
 		// Canvas is c_test, pad is p1
-		// For the time period, "2" means 8TeV. "CMS" text position as explained above.
-		CMS_lumi( c_test, 2, cms_position );
+		// For the time period, "2" means 8TeV. "CMS" text position 0 means upper left, outside of frame
+		CMS_lumi( c_test, 2, 0 );
 
 
         if(drawDiffs) {
