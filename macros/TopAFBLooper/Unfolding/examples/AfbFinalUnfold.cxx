@@ -1102,10 +1102,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  leg2->Draw();
 		}
 
-		// Canvas is c_test, pad is p1
-		// For the time period, "2" means 8TeV. "CMS" text position 0 means upper left, outside of frame
-		CMS_lumi( c_test, 2, 0 );
-
+		int cms_position = 11; //Upper left corner
+		if( second_legend ) cms_position = 0; //Left corner, outside the frame
 
         if(drawDiffs) {
 
@@ -1212,11 +1210,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             p1->cd();   
         }
 
+		// Canvas is c_test, pad is p1
+		// For the time period, "2" means 8TeV. "CMS" text position as explained above.
+		CMS_lumi( c_test, 2, cms_position );
 
-		//c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + ".eps");
 		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
-        //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".C");
-        //c_test->SaveAs("finalplot_unfolded_" + acceptanceName + ".root");
+		c_test->SaveAs("1D_finalplot_unfolded_" + acceptanceName + "_" + channel_name + ".C");
 
         if(maketauplots){
 	        TCanvas *c_AFBvsTau = new TCanvas("c_AFBvsTau", "c_AFBvsTau");

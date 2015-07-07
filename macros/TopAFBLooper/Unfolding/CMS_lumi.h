@@ -22,7 +22,8 @@ float lumiTextOffset   = 0.2;
 float cmsTextSize      = 0.75;
 float cmsTextOffset    = 0.1;  // only used in outOfFrame version
 
-float relPosX    = 0.045;
+//float relPosX    = 0.045;
+float relPosX; //now set in CMS_lumi.C
 float relPosY    = 0.035;
 float relExtraDY = 1.2;
 

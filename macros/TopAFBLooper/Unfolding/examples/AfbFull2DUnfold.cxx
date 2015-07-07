@@ -875,6 +875,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
 
+		gStyle->SetPadRightMargin(0.05);
+		gStyle->SetPadLeftMargin(0.18);
+		gStyle->SetPadBottomMargin(0.14);
+		gStyle->SetErrorX(0);
+		gStyle->SetEndErrorSize(4);
+
         TCanvas *c_afb = new TCanvas("c_afb", "c_afb", 500, 500);
         double ybinsForHisto[4] = {ybins2D[0], ybins2D[1], ybins2D[2], ybins2D[3]};
         if (Var2D == "mtt") ybinsForHisto[0] = 300.0;
@@ -895,28 +901,31 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             hTop_AfbVsMtt->SetBinError(nb + 1, 0);
 		  }
 
-        tdrStyle->SetErrorX(0.5);
+        //tdrStyle->SetErrorX(0.5);
 		double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
 		double maxmax = max( hAfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hAfbVsMtt->GetMaximumBin()), hTop_AfbVsMtt->GetMaximum() + hTop_AfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMaximumBin()));
 		double spread = maxmax - minmin;
 		if( spread > 0.25 ) maxmax += 0.25*spread;
         hAfbVsMtt->SetMinimum( minmin - 0.1 );
         hAfbVsMtt->SetMaximum( maxmax + 0.1 );
-        hAfbVsMtt->SetLineWidth( 2.0 );
-		hAfbVsMtt->GetXaxis()->SetLabelSize(0.04);
-		// hAfbVsMtt->GetYaxis()->SetTitleOffset(1.9);
+        hAfbVsMtt->SetLineWidth( 4.0 );
+        hAfbVsMtt->SetMarkerSize(1.5);
         hAfbVsMtt->Draw("E");
+        hAfbVsMtt_statonly->SetLineWidth( 4.0 );
+        hAfbVsMtt_statonly->SetMarkerSize(1.5);
         hAfbVsMtt_statonly->Draw("E1 same");
         hTop_AfbVsMtt->SetLineColor(TColor::GetColorDark(kRed));
         hTop_AfbVsMtt->SetMarkerColor(TColor::GetColorDark(kRed));
         hTop_AfbVsMtt->SetMarkerSize(0);
-        hTop_AfbVsMtt->SetLineWidth( 2.0 );
-        hAfbVsMtt->GetYaxis()->SetTitle(asymlabel);
-        hAfbVsMtt->GetYaxis()->SetTitleOffset(1.2);
+        hTop_AfbVsMtt->SetLineWidth( 4.0 );
+        hAfbVsMtt->GetYaxis()->SetTitle(asymlabel+"   ");
+        hAfbVsMtt->GetYaxis()->SetTitleOffset(1.4);
         hAfbVsMtt->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
+        hAfbVsMtt->GetXaxis()->SetTitleOffset(1.0);
+        if (Var2D == "mtt") hAfbVsMtt->GetXaxis()->SetNdivisions(405);
         hTop_AfbVsMtt->Draw("E same");
 
-        TLegend* leg1 = new TLegend(0.45, 0.72, 0.9, 0.938, NULL, "brNDC");
+        TLegend* leg1 = new TLegend(0.43, 0.72, 0.88, 0.938, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
@@ -927,13 +936,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
         leg1->Draw();
 
-		// 2 means 8TeV; 0 means upper left, out of the frame
-		CMS_lumi( c_afb, 2, 0 );
+		// 2 means 8TeV, 11 means left-corner
+		CMS_lumi( c_afb, 2, 11 );
 
 
         c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
-        // c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + ".root");
-        // c_afb->SaveAs("AfbVs" + Var2D + "_unfolded_" + acceptanceName + ".C");
+        c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + "_" + channel_name + ".C");
 
 		/*
 		  TCanvas *c_mttu = new TCanvas("c_mttu", "c_mttu", 500, 500);

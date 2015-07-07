@@ -17,6 +17,7 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
   if( iPosX/10==2 ) alignX_=2;
   if( iPosX/10==3 ) alignX_=3;
   if( iPosX == 0  ) relPosX = 0.12;
+  else relPosX    = 0.045;
   int align_ = 10*alignX_ + alignY_;
 
   float H = pad->GetWh();

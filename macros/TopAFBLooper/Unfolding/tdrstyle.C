@@ -43,7 +43,7 @@ void setTDRStyle() {
   tdrStyle->SetFrameLineColor(1);
   tdrStyle->SetFrameLineStyle(1);
   tdrStyle->SetFrameLineWidth(1);
-
+  
 // For the histo:
   // tdrStyle->SetHistFillColor(1);
   // tdrStyle->SetHistFillStyle(0);
@@ -54,11 +54,11 @@ void setTDRStyle() {
   // tdrStyle->SetNumberContours(Int_t number = 20);
 
   tdrStyle->SetEndErrorSize(2);
-//  tdrStyle->SetErrorMarker(20);
-//  tdrStyle->SetErrorX(0.);
+  // tdrStyle->SetErrorMarker(20);
+  //tdrStyle->SetErrorX(0.);
   
   tdrStyle->SetMarkerStyle(20);
-
+  
 //For the fit/function:
   tdrStyle->SetOptFit(1);
   tdrStyle->SetFitFormat("5.4g");
@@ -89,7 +89,7 @@ void setTDRStyle() {
 // Margins:
   tdrStyle->SetPadTopMargin(0.05);
   tdrStyle->SetPadBottomMargin(0.13);
-  tdrStyle->SetPadLeftMargin(0.19);
+  tdrStyle->SetPadLeftMargin(0.16);
   tdrStyle->SetPadRightMargin(0.02);
 
 // For the Global title:
@@ -115,7 +115,7 @@ void setTDRStyle() {
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
   tdrStyle->SetTitleXOffset(0.9);
-  tdrStyle->SetTitleYOffset(1.5);
+  tdrStyle->SetTitleYOffset(1.25);
   // tdrStyle->SetTitleOffset(1.1, "Y"); // Another way to set the Offset
 
 // For the axis labels:
@@ -152,6 +152,9 @@ void setTDRStyle() {
   // tdrStyle->SetPalette(Int_t ncolors = 0, Int_t* colors = 0);
   // tdrStyle->SetTimeOffset(Double_t toffset);
   // tdrStyle->SetHistMinimumZero(kTRUE);
+
+  //tdrStyle->SetHatchesLineWidth(5);
+  //tdrStyle->SetHatchesSpacing(0.05);
 
   tdrStyle->cd();
 
