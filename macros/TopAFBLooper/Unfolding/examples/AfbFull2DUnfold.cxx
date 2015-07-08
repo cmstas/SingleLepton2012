@@ -19,6 +19,7 @@
 #include "TMarker.h"
 #include "TUnfoldSys.h"
 #include "TPaveText.h"
+#include "TGaxis.h"
 
 #include "tdrstyle.C"
 #include "CMS_lumi.C"
@@ -546,6 +547,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			  double num_error = accNum[iChan]->GetBinError( xBin, yBin );
 			  double den_error = accDen[iChan]->GetBinError( xBin, yBin );
 			  double new_error = sqrt( den_error*den_error - num_error*num_error );
+			  /* //test
+			  if(den_error*den_error - num_error*num_error < 0)  {
+			  	cout<<"something went wrong with den_error or num_error: "<<den_error*den_error - num_error*num_error <<endl;
+			  	new_error = den_error;
+			  }
+			  */
 			  hTrue_vs_Meas->SetBinError(   0, genbin, new_error );
 			}
 		  }
@@ -642,6 +649,28 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
+
+        /* //protection against negative bins (makes no difference)
+        for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
+        {
+            if(hData_bkgSub->GetBinContent(i)<0) {
+            	cout <<"data unwrappedbin"<< i <<" had content < 0: "<< hData_bkgSub->GetBinContent(i) << endl;
+            	hData_bkgSub->SetBinContent(i,0);
+            }
+		}
+
+        for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
+        {
+        	for (int j = 1; j < nbinsunwrapped_gen + 1; j++)
+        	{
+            	if(hTrue_vs_Meas->GetBinContent(i, j)<0) {
+            		cout <<"hTrue_vs_Meas unwrappedbin"<< (i-1) + (j-1)*nbinsunwrapped_gen <<" had content < 0: "<< hTrue_vs_Meas->GetBinContent(i, j) << endl;
+            		hTrue_vs_Meas->SetBinContent(i, j,0);
+            	}
+            }
+		}
+		*/
+
 
 		// Now let's actually do the unfolding.
 		TUnfoldSys unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);  //need to set reg mode "None" here if regularizing by hand //Set kEConstraintNone instead of kEConstraintArea here to give bug-free covariance matrix (for us, None gives the same result as Area anyway)
@@ -768,6 +797,104 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         //TH2D *denomM_2d = (TH2D*) file->Get("denominator_" + acceptanceName + "_" + Var2D + "_" + ChannelName[iChan]);
 
 
+
+
+
+
+
+
+
+        TH1D *hData_unfolded_proj[nbinsy2D+1];
+        TH1D *hTrue_proj[nbinsy2D+1];
+
+        hData_unfolded_proj[0] = hData_unfolded->ProjectionX("proj_"+acceptanceName + "_" + channel_name, 1, nbinsy2D);
+        hData_unfolded_proj[0]->Scale(1. / hData_unfolded_proj[0]->Integral(), "width");
+
+        hTrue_proj[0] = hTrue->ProjectionX("Tproj_"+acceptanceName + "_" + channel_name, 1, nbinsy2D);
+        hTrue_proj[0]->Scale(1. / hTrue_proj[0]->Integral(), "width");
+
+
+        for (int i = 1; i < nbinsy2D+1; ++i)
+        {
+        	hData_unfolded_proj[i] = hData_unfolded->ProjectionX( Form("proj%i",i) ,i,i);
+        	hData_unfolded_proj[i]->Scale(1. / hData_unfolded_proj[i]->Integral(), "width");
+
+        	hTrue_proj[i] = hTrue->ProjectionX( Form("Tproj%i",i) ,i,i);
+        	hTrue_proj[i]->Scale(1. / hTrue_proj[i]->Integral(), "width");
+        }
+
+
+        TCanvas *c_test = new TCanvas("c_final", "c_final", 500, 500);
+
+        hData_unfolded_proj[0]->GetXaxis()->SetTitle(xaxislabel);
+        hData_unfolded_proj[0]->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
+        Float_t hsmin = hData_unfolded_proj[0]->GetMinimum() - ( 0.2 * hData_unfolded_proj[0]->GetMaximum() ) > 0.10 ? hData_unfolded_proj[0]->GetMinimum() - ( 0.2 * hData_unfolded_proj[0]->GetMaximum() ) : 0;
+        hData_unfolded_proj[0]->SetMinimum(hsmin);
+        hData_unfolded_proj[0]->SetMaximum( 1.35* hData_unfolded_proj[0]->GetMaximum());
+        hData_unfolded_proj[0]->Draw("E");
+
+        for (int i = 0; i < nbinsy2D+1; ++i)
+        {
+        	//hData_unfolded_proj[i]->SetMarkerStyle(23);
+	        hData_unfolded_proj[i]->SetMarkerSize(1);
+	        hData_unfolded_proj[i]->SetFillStyle(0);
+	        hData_unfolded_proj[i]->SetLineWidth(2.0);
+	        hData_unfolded_proj[i]->SetLineColor(i+1);
+	        hData_unfolded_proj[i]->SetMarkerColor(i+1);
+
+	        hTrue_proj[i]->SetLineWidth(2.0);
+	        hTrue_proj[i]->SetLineStyle(3);
+	        hTrue_proj[i]->SetLineColor(i+1);
+	        hTrue_proj[i]->SetFillStyle(0);
+	        hTrue_proj[i]->Draw("hist same");
+	        hData_unfolded_proj[i]->Draw("P same");
+        }
+
+
+
+
+		float left_bound = 0.2;
+		float leg_textSize = 0.03;
+
+        TLegend *leg_proj = new TLegend(left_bound, 0.78, 0.35, 0.93, NULL, "brNDC");
+        leg_proj->SetEntrySeparation(0.1);
+        leg_proj->SetFillColor(0);
+        leg_proj->SetLineColor(0);
+        leg_proj->SetBorderSize(0);
+        leg_proj->SetFillStyle(0);
+        leg_proj->SetTextSize(leg_textSize);
+        leg_proj->AddEntry(hData_unfolded_proj[0], "inclusive");
+        leg_proj->AddEntry(hData_unfolded_proj[1], yaxislabel + " bin1");
+        leg_proj->AddEntry(hData_unfolded_proj[2], yaxislabel + " bin2");
+        leg_proj->AddEntry(hData_unfolded_proj[3], yaxislabel + " bin3");
+
+        //leg_proj->AddEntry(hTrue_proj[0],    "MC@NLO parton level", "L");
+
+        leg_proj->Draw();
+
+		int cms_position = 0;
+
+		// Canvas is c_test, pad is p1
+		// For the time period, "2" means 8TeV. "CMS" text position as explained above.
+		CMS_lumi( c_test, 2, cms_position );
+
+		c_test->SaveAs("2D_1Dproj_finalplot_unfolded_" + acceptanceName + "_" + Var2D + "_" + channel_name + ".pdf");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         //==================================================================
         //============== Print the asymmetry ===============================
 		cout << "========= Variable: " << acceptanceName << "===================\n";
@@ -878,66 +1005,107 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		gStyle->SetPadRightMargin(0.05);
 		gStyle->SetPadLeftMargin(0.18);
 		gStyle->SetPadBottomMargin(0.14);
-		gStyle->SetErrorX(0);
-		gStyle->SetEndErrorSize(4);
+		//gStyle->SetErrorX(0);
+		//gStyle->SetEndErrorSize(0);
 
         TCanvas *c_afb = new TCanvas("c_afb", "c_afb", 500, 500);
         double ybinsForHisto[4] = {ybins2D[0], ybins2D[1], ybins2D[2], ybins2D[3]};
         if (Var2D == "mtt") ybinsForHisto[0] = 300.0;
         TH1D *hAfbVsMtt = new TH1D ("AfbVsMtt",  "AfbVsMtt",  3, ybinsForHisto);
         TH1D *hAfbVsMtt_statonly = new TH1D ("AfbVsMtt_statonly",  "AfbVsMtt_statonly",  3, ybinsForHisto);
+        TH1D *hAfbVsMtt_plussyst = new TH1D ("AfbVsMtt_plussyst",  "AfbVsMtt_plussyst",  3, ybinsForHisto);
+        TH1D *hAfbVsMtt_minussyst = new TH1D ("AfbVsMtt_minussyst",  "AfbVsMtt_minussyst",  3, ybinsForHisto);
+
+        double afboffset = 2.;
+
+
         for (int nb = 0; nb < 3; nb++)
 		  {
-            hAfbVsMtt->SetBinContent(nb + 1, afb_m[nb+1]);
+            hAfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
             hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
-            hAfbVsMtt_statonly->SetBinContent(nb + 1, afb_m[nb+1]);
+            hAfbVsMtt_statonly->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
             hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]);
+
+            hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  afb_m[nb+1] - sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+            hAfbVsMtt_minussyst->SetBinError(nb + 1, 0.);
+            hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+            hAfbVsMtt_plussyst->SetBinError(nb + 1, 0.);
 		  }
 
         TH1D *hTop_AfbVsMtt = new TH1D ("Top_AfbVsMtt",  "Top_AfbVsMtt",  3, ybinsForHisto);
         for (int nb = 0; nb < 3; nb++)
 		  {
-            hTop_AfbVsMtt->SetBinContent(nb + 1, afb_m_denom[nb]);
+            hTop_AfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m_denom[nb]);
             hTop_AfbVsMtt->SetBinError(nb + 1, 0);
 		  }
 
-        //tdrStyle->SetErrorX(0.5);
-		double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
-		double maxmax = max( hAfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hAfbVsMtt->GetMaximumBin()), hTop_AfbVsMtt->GetMaximum() + hTop_AfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMaximumBin()));
+
+
+        THStack *hs = new THStack("hs_systband", "Systematic band");
+        hAfbVsMtt_minussyst->SetLineColor(10);
+        hAfbVsMtt_minussyst->SetFillColor(10);
+        hAfbVsMtt_minussyst->SetFillStyle(0);
+        hs->Add(hAfbVsMtt_minussyst);
+        hAfbVsMtt_plussyst->SetFillStyle(3353);
+        hAfbVsMtt_plussyst->SetLineColor(kWhite);
+        hAfbVsMtt_plussyst->SetFillColor(15);
+        hs->Add(hAfbVsMtt_plussyst);
+
+        tdrStyle->SetErrorX(0.5);
+		//double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
+		double minmin = min( hAfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hAfbVsMtt->GetMinimumBin()), hTop_AfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMinimumBin()));
+		double maxmax = max( hAfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hAfbVsMtt->GetMaximumBin()), hTop_AfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMaximumBin()));
 		double spread = maxmax - minmin;
-		if( spread > 0.25 ) maxmax += 0.25*spread;
-        hAfbVsMtt->SetMinimum( minmin - 0.1 );
-        hAfbVsMtt->SetMaximum( maxmax + 0.1 );
-        hAfbVsMtt->SetLineWidth( 4.0 );
-        hAfbVsMtt->SetMarkerSize(1.5);
-        hAfbVsMtt->Draw("E");
+		//if( spread > 0.25 ) maxmax += 0.25*spread;
+		//minmin = minmin - spread/50.;
+		maxmax = maxmax + spread/2.8;
+        hs->SetMinimum( minmin );
+        hs->SetMaximum( maxmax/1.05 );  //THStack multiplies the max by 1.05
+        hs->Draw();
+        hs->GetXaxis()->SetTitle(xaxislabel);
+        hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
+        //hAfbVsMtt->SetMinimum( minmin - 0.1 );
+        //hAfbVsMtt->SetMaximum( maxmax + 0.1 );
+        //hAfbVsMtt->SetLineWidth( 4.0 );
+        //hAfbVsMtt->SetMarkerSize(1.5);
+        //hAfbVsMtt->Draw("E");
         hAfbVsMtt_statonly->SetLineWidth( 4.0 );
         hAfbVsMtt_statonly->SetMarkerSize(1.5);
-        hAfbVsMtt_statonly->Draw("E1 same");
+        hAfbVsMtt_statonly->Draw("E same");
+        hs->GetYaxis()->SetTitle(asymlabel+"   ");
+        hs->GetYaxis()->SetTitleOffset(1.4);
+        hs->GetYaxis()->SetLabelOffset(999);
+        hs->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
+        hs->GetXaxis()->SetTitleOffset(1.0);
+        if (Var2D == "mtt") hs->GetXaxis()->SetNdivisions(405);
+
         hTop_AfbVsMtt->SetLineColor(TColor::GetColorDark(kRed));
         hTop_AfbVsMtt->SetMarkerColor(TColor::GetColorDark(kRed));
         hTop_AfbVsMtt->SetMarkerSize(0);
         hTop_AfbVsMtt->SetLineWidth( 4.0 );
-        hAfbVsMtt->GetYaxis()->SetTitle(asymlabel+"   ");
-        hAfbVsMtt->GetYaxis()->SetTitleOffset(1.4);
-        hAfbVsMtt->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
-        hAfbVsMtt->GetXaxis()->SetTitleOffset(1.0);
-        if (Var2D == "mtt") hAfbVsMtt->GetXaxis()->SetNdivisions(405);
         hTop_AfbVsMtt->Draw("E same");
 
-        TLegend* leg1 = new TLegend(0.43, 0.72, 0.88, 0.938, NULL, "brNDC");
+        TLegend* leg1 = new TLegend(0.43, 0.73, 0.88, 0.938, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
         leg1->SetTextSize(0.04);
         leg1->SetFillStyle(0);
-        leg1->AddEntry(hAfbVsMtt, "data");
+        leg1->AddEntry(hAfbVsMtt, "Unfolded data");
+        leg1->AddEntry(hAfbVsMtt_plussyst,    "Syst. uncertainty", "F");
         leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
         leg1->Draw();
 
 		// 2 means 8TeV, 11 means left-corner
 		CMS_lumi( c_afb, 2, 11 );
+
+		TGaxis *axis = new TGaxis(gPad->GetUxmin(),gPad->GetUymin(),gPad->GetUxmin(),gPad->GetUymax(),minmin - 2., maxmax - 2.,510,"");
+		axis->Draw();
+		axis->SetLabelColor(1);
+		axis->SetLabelFont(42);
+		axis->SetLabelOffset(0.007);
+		axis->SetLabelSize(0.05);
 
 
         c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
