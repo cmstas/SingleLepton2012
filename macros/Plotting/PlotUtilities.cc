@@ -390,6 +390,7 @@ void plot2D(string title, float xval, float yval, double weight, std::map<string
   if(iter == allhistos.end()) //no histo for this yet, so make a new one
     {
       TH2F* currentHisto= new TH2F(title.c_str(), title.c_str(), numbinsx, xmin, xmax, numbinsy, ymin, ymax);
+      currentHisto->Sumw2();
       currentHisto->Fill(xval, yval, weight);
       allhistos.insert(std::pair<string, TH2F*> (title,currentHisto) );
     }
@@ -414,6 +415,7 @@ void plot2DUnderOverFlow(string title, double xval, double yval, double weight, 
   if(iter == allhistos.end()) //no histo for this yet, so make a new one
     {
       TH2D* currentHisto= new TH2D(title.c_str(), title.c_str(), numbinsx, xmin, xmax, numbinsy, ymin, ymax);
+      currentHisto->Sumw2();
       currentHisto->Fill(xval, yval, weight);
       allhistos.insert(std::pair<string, TH2D*> (title,currentHisto) );
     }
@@ -442,6 +444,7 @@ void plot2DUnderOverFlow(string title, double xval, double yval, double weight, 
   if(iter == allhistos.end()) //no histo for this yet, so make a new one
     {
       TH2D* currentHisto= new TH2D(title.c_str(), title.c_str(), numbinsx, xmin, xmax, numbinsy, ybins);
+      currentHisto->Sumw2();
       currentHisto->Fill(xval, yval, weight);
       allhistos.insert(std::pair<string, TH2D*> (title,currentHisto) );
     }
