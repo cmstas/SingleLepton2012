@@ -1035,9 +1035,9 @@ syst_corr[2] = 0.033216;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.028110;
-syst_corr[1] = 0.031483;
-syst_corr[2] = 0.039661;
+syst_corr[0] = 0.028123;
+syst_corr[1] = 0.031495;
+syst_corr[2] = 0.039671;
       break;
     }
     //   Top Asy III
@@ -1074,9 +1074,9 @@ syst_corr[2] = 0.008190;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.031180;
-syst_corr[1] = 0.016583;
-syst_corr[2] = 0.020111;
+syst_corr[0] = 0.031191;
+syst_corr[1] = 0.016606;
+syst_corr[2] = 0.020135;
       break;
     }
     //   Lepton opening angle
@@ -1092,9 +1092,9 @@ syst_corr[2] = 0.020111;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.020850;
-syst_corr[1] = 0.022346;
-syst_corr[2] = 0.031793;
+syst_corr[0] = 0.020869;
+syst_corr[1] = 0.022364;
+syst_corr[2] = 0.031806;
       break;
     }
     //   Lepton Azimuthal Asymmetry
@@ -1130,9 +1130,9 @@ syst_corr[2] = 0.014942;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.019625;
-syst_corr[1] = 0.018581;
-syst_corr[2] = 0.016914;
+syst_corr[0] = 0.019642;
+syst_corr[1] = 0.018600;
+syst_corr[2] = 0.016936;
       break;
     }
     //   Top Asy II
@@ -1149,9 +1149,9 @@ syst_corr[2] = 0.016914;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.026656;
-syst_corr[1] = 0.022243;
-syst_corr[2] = 0.011280;
+syst_corr[0] = 0.026669;
+syst_corr[1] = 0.022259;
+syst_corr[2] = 0.011321;
       break;
     }
     default:
@@ -1279,9 +1279,9 @@ syst_corr[2] = 0.039668;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.015324;
-syst_corr[1] = 0.034867;
-syst_corr[2] = 0.075581;
+syst_corr[0] = 0.015347;
+syst_corr[1] = 0.034877;
+syst_corr[2] = 0.075586;
       break;
     }
     //   Top Asy III
@@ -1318,9 +1318,9 @@ syst_corr[2] = 0.043742;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.011726;
-syst_corr[1] = 0.039831;
-syst_corr[2] = 0.029891;
+syst_corr[0] = 0.011759;
+syst_corr[1] = 0.039841;
+syst_corr[2] = 0.029903;
       break;
     }
     //   Lepton opening angle
@@ -1336,9 +1336,9 @@ syst_corr[2] = 0.029891;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.021577;
-syst_corr[1] = 0.052977;
-syst_corr[2] = 0.038825;
+syst_corr[0] = 0.021592;
+syst_corr[1] = 0.052984;
+syst_corr[2] = 0.038834;
       break;
     }
     //   Lepton Azimuthal Asymmetry
@@ -1374,9 +1374,9 @@ syst_corr[2] = 0.010907;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.009105;
-syst_corr[1] = 0.022387;
-syst_corr[2] = 0.033408;
+syst_corr[0] = 0.009142;
+syst_corr[1] = 0.022402;
+syst_corr[2] = 0.033419;
       break;
     }
     //   Top Asy II
@@ -1523,9 +1523,9 @@ syst_corr[2] = 0.033269;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.024454;
-syst_corr[1] = 0.019262;
-syst_corr[2] = 0.027774;
+syst_corr[0] = 0.024469;
+syst_corr[1] = 0.019281;
+syst_corr[2] = 0.027787;
       break;
     }
     //   Top Asy III
@@ -1562,9 +1562,9 @@ syst_corr[2] = 0.021573;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.019647;
-syst_corr[1] = 0.025486;
-syst_corr[2] = 0.022752;
+syst_corr[0] = 0.019665;
+syst_corr[1] = 0.025502;
+syst_corr[2] = 0.022769;
       break;
     }
     //   Lepton opening angle
@@ -1580,9 +1580,9 @@ syst_corr[2] = 0.022752;
       ymax=ybins2D[3];
       xmin=xbins2D[0];
       xmax=xbins2D[6];
-syst_corr[0] = 0.050116;
-syst_corr[1] = 0.015434;
-syst_corr[2] = 0.020645;
+syst_corr[0] = 0.050125;
+syst_corr[1] = 0.015460;
+syst_corr[2] = 0.020665;
       break;
     }
     //   Lepton Azimuthal Asymmetry
