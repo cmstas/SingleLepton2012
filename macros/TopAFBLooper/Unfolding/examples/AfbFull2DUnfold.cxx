@@ -824,17 +824,24 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         }
 
 
-        TCanvas *c_test = new TCanvas("c_final", "c_final", 500, 500);
+        TCanvas *c_test = new TCanvas("c_final", "c_final", 1000, 1000);
+        c_test->Divide(2,2);
 
-        hData_unfolded_proj[0]->GetXaxis()->SetTitle(xaxislabel);
-        hData_unfolded_proj[0]->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
         Float_t hsmin = hData_unfolded_proj[0]->GetMinimum() - ( 0.2 * hData_unfolded_proj[0]->GetMaximum() ) > 0.10 ? hData_unfolded_proj[0]->GetMinimum() - ( 0.2 * hData_unfolded_proj[0]->GetMaximum() ) : 0;
-        hData_unfolded_proj[0]->SetMinimum(hsmin);
-        hData_unfolded_proj[0]->SetMaximum( 1.35* hData_unfolded_proj[0]->GetMaximum());
-        hData_unfolded_proj[0]->Draw("E");
+        Float_t hsmax = hData_unfolded_proj[0]->GetMaximum()*1.35;
 
         for (int i = 0; i < nbinsy2D+1; ++i)
         {
+
+	        c_test->cd(i+1);
+
+	        hData_unfolded_proj[i]->GetXaxis()->SetTitle(xaxislabel);
+	        if(i>0) hData_unfolded_proj[i]->GetXaxis()->SetTitle(xaxislabel + " (" + yaxislabel + " bin " + Form("%i",i) + ")" );
+	        hData_unfolded_proj[i]->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
+	        hData_unfolded_proj[i]->SetMinimum(hsmin);
+	        hData_unfolded_proj[i]->SetMaximum(hsmax);
+	        hData_unfolded_proj[i]->Draw("E");
+
         	//hData_unfolded_proj[i]->SetMarkerStyle(23);
 	        hData_unfolded_proj[i]->SetMarkerSize(1);
 	        hData_unfolded_proj[i]->SetFillStyle(0);
@@ -848,11 +855,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        hTrue_proj[i]->SetFillStyle(0);
 	        hTrue_proj[i]->Draw("hist same");
 	        hData_unfolded_proj[i]->Draw("P same");
-        }
+	    }
 
 
-
-
+/*
 		float left_bound = 0.2;
 		float leg_textSize = 0.03;
 
@@ -877,6 +883,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		// Canvas is c_test, pad is p1
 		// For the time period, "2" means 8TeV. "CMS" text position as explained above.
 		CMS_lumi( c_test, 2, cms_position );
+*/
 
 		c_test->SaveAs("2D_1Dproj_finalplot_unfolded_" + acceptanceName + "_" + Var2D + "_" + channel_name + ".pdf");
 
