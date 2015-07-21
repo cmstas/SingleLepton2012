@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <iomanip>
 #include "AfbFinalUnfold.h"
 
 #include "TRandom3.h"
@@ -985,9 +986,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 
 
-
-
-
 		for( int j=0; j<nbinsy2D; j++ ) {
 			for( int i=0; i<nbinsx_gen/2; i++ ) {
 				cout << Var2D << " double differential bin (" << j + 1 << "," << i + 1 << "): " << afb_m.at(4 + j*nbinsx_gen/2 + i) << " +/- " << afb_merr.at(4 + j*nbinsx_gen/2 + i) << endl;
@@ -1004,6 +1002,17 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			second_output_file << acceptanceName << " " << observablename << " bin" << j << "x" << i << ": " << hData_unfolded->GetBinContent(i,j) << " +/- " << hData_unfolded->GetBinError(i,j) << endl;
 		  }
 		}
+
+
+		for( int row=0; row<nbinsunwrapped_gen; row++ ) {
+			for( int col=0; col<nbinsunwrapped_gen; col++ ) {
+				second_output_file << acceptanceName << " " << observablename << " cov" << setfill('0') << setw(2) << row << "v" << setfill('0') << setw(2) << col << ": " << m_smearingE(row, col) << " +/- " << 0 << endl;
+			}
+		}
+
+
+
+
 
 		// Pairs: print out asym +/- err for each bin pair
 

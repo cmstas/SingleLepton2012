@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 #include "TROOT.h"
 #include "TRandom3.h"
@@ -937,6 +938,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			cout << mystring;
 		  }
 		  cout << endl;
+		}
+
+		for( int row=0; row<nbinsx_gen; row++ ) {
+			for( int col=0; col<nbinsx_gen; col++ ) {
+				second_output_file << acceptanceName << " " << observablename << " cov" << setfill('0') << setw(2) << row << "v" << setfill('0') << setw(2) << col << ": " << m_smearingE(row, col) << " +/- " << 0 << endl;
+			}
 		}
 
 
