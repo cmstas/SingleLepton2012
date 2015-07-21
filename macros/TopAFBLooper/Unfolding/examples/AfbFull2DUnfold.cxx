@@ -994,7 +994,22 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		}
 
 		// Contents in each bin
+		double hDataIntegral = hData_unfolded->Integral();
 		hData_unfolded->Scale( 1. / hData_unfolded->Integral() );
+
+
+        //calculate covariance matrix for normalised distribution
+        for (int l = 0; l < nbinsunwrapped_gen; l++)
+		  {
+            for (int j = 0; j < nbinsunwrapped_gen; j++)
+			  {
+                m_correctE(l, j) /= (hDataIntegral*hDataIntegral);
+                m_smearingE(l, j) /= (hDataIntegral*hDataIntegral);
+			  }
+		  }
+
+
+
 
 		for( int j=1; j<=nbinsy2D; j++ ) {
 		  for( int i=1; i<=nbinsx_gen; i++ ) {
