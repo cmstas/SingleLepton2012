@@ -539,11 +539,17 @@ def main():
             print sorted(binwidthlist)
             sys.exit(1)
 
+        covnames = fnmatch.filter(typelist, 'cov*')
+        #print covnames
+        #print sorted(covnames)
+
 
 
         sumsq_total = 0
         sumsq_total_2D = zeros( [nbins2D] )
         covar_total = zeros( [nbins,nbins] )
+        covMCStat = zeros( [nbins,nbins] )
+        covDataStat = zeros( [nbins,nbins] )
         corr_total  = zeros( [nbins,nbins] )
         binsyst_total = zeros( [nbins] )
 
@@ -564,11 +570,25 @@ def main():
         for i in binwidthlist:
             binwidth[binindex] = systematics[plot]['Nominal']['default']['nominal'][i][0]
             binindex += 1
-        
+
+        binindex = 0
+        for i in sorted(covnames):
+            rowindex = binindex/nbins
+            colindex = binindex%nbins
+            covMCStat[rowindex,colindex] = systematics[plot]['Nominal']['default']['nominal'][i][0]
+            covDataStat[rowindex,colindex] = systematics[plot]['NominalDataStat']['default']['nominal'][i][0]
+            binindex += 1
+
+        (afb,afberr) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+        print "DataStat: %2.6f +/- %2.6f" % (afb, afberr)
+        (afb,afberr) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+        print "MCStat: %2.6f +/- %2.6f" % (afb, afberr)
+
 
         #Loop over the different systematics...
         for systematic in sorted(systematics[plot].keys()):
             if systematic == 'Nominal': continue
+            if systematic == 'NominalDataStat': continue
             if systematic == 'name': continue
 
             sumsq_syst = 0
