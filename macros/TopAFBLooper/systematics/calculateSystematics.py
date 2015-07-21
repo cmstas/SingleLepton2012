@@ -579,11 +579,16 @@ def main():
             covDataStat[rowindex,colindex] = systematics[plot]['NominalDataStat']['default']['nominal'][i][0]
             binindex += 1
 
-        (afb,afberr) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
-        print "DataStat: %2.6f +/- %2.6f" % (afb, afberr)
-        (afb,afberr) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
-        print "MCStat: %2.6f +/- %2.6f" % (afb, afberr)
-
+        if nbins2D==0:
+            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+            print "DataStat: %2.6f +/- %2.6f" % (afb, afberr)
+            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+            print "MCStat: %2.6f +/- %2.6f" % (afb, afberr)
+        else:
+            (afb,afberr,afbcov) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
+            print "DataStat: %2.6f +/- %2.6f" % (afb[nbins2D], afberr[nbins2D])
+            (afb,afberr,afbcov) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
+            print "MCStat: %2.6f +/- %2.6f" % (afb[nbins2D], afberr[nbins2D])
 
         #Loop over the different systematics...
         for systematic in sorted(systematics[plot].keys()):
