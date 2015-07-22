@@ -548,10 +548,11 @@ def main():
         sumsq_total = 0
         sumsq_total_2D = zeros( [nbins2D] )
         covar_total = zeros( [nbins,nbins] )
+        covar_total_incDataStat = zeros( [nbins,nbins] )
         covMCStat = zeros( [nbins,nbins] )
         covDataStat = zeros( [nbins,nbins] )
         corr_total  = zeros( [nbins,nbins] )
-        binsyst_total = zeros( [nbins] )
+        binsyst_preMCStat = zeros( [nbins] )
 
         bin_nominals_i = zeros( [nbins] )
         binwidth = zeros( [nbins] )
@@ -577,18 +578,18 @@ def main():
             colindex = binindex%nbins
             covMCStat[rowindex,colindex] = systematics[plot]['Nominal']['default']['nominal'][i][0]
             covDataStat[rowindex,colindex] = systematics[plot]['NominalDataStat']['default']['nominal'][i][0]
+            if(combine == 1):
+                covMCStat[rowindex,colindex] += systematics[combinevar]['Nominal']['default']['nominal'][i][0]
+                covDataStat[rowindex,colindex] += systematics[combinevar]['NominalDataStat']['default']['nominal'][i][0]
+            if(combine == -1):
+                covMCStat[nbins-rowindex-1,nbins-colindex-1] += systematics[combinevar]['Nominal']['default']['nominal'][i][0]
+                covDataStat[nbins-rowindex-1,nbins-colindex-1] += systematics[combinevar]['NominalDataStat']['default']['nominal'][i][0]
             binindex += 1
 
-        if nbins2D==0:
-            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
-            print "DataStat: %2.6f +/- %2.6f" % (afb, afberr)
-            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
-            print "MCStat: %2.6f +/- %2.6f" % (afb, afberr)
-        else:
-            (afb,afberr,afbcov) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
-            print "DataStat: %2.6f +/- %2.6f" % (afb[nbins2D], afberr[nbins2D])
-            (afb,afberr,afbcov) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
-            print "MCStat: %2.6f +/- %2.6f" % (afb[nbins2D], afberr[nbins2D])
+        if(combine != 0):
+                covMCStat /= 4.
+                covDataStat /= 4.
+
 
         #Loop over the different systematics...
         for systematic in sorted(systematics[plot].keys()):
@@ -783,67 +784,109 @@ def main():
             covar_total += covar_syst
 
         #end loop over systematics
-        #Now calculate correlation matrix
-        for row in range(nbins):
-            for col in range(nbins):
-                corr_total[row,col] = covar_total[row,col] / math.sqrt( covar_total[row,row] * covar_total[col,col] )
 
-        for row in range(nbins): binsyst_total[row] = sqrt(covar_total[row,row])
+        #check afberr from covariance matrix is consistent with sqrt(sumsq_total) and sqrt(sumsq_total_2D) - again, the slight differences are because we use the nominal bins with the covariance matrix        
+        if nbins2D==0:
+            (afb,afberr_preMCStat) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
+            if abs(afberr_preMCStat-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr_preMCStat-math.sqrt(sumsq_total) )
+            #print "%20s uncertainty: %2.6f" % ("Sum systs", afberr_preMCStat)
+            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+            print "%20s uncertainty: %2.6f" % ("MC stat", afberr)
+            #(afb,afberr) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+            #print "%20s uncertainty: %2.6f" % ("Data stat", afberr)
+        else:
+            (afb,afberr_preMCStat,afbcov) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)
+            if abs(afberr_preMCStat[nbins2D]-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr_preMCStat[nbins2D]-math.sqrt(sumsq_total) )
+            #print "%20s uncertainty: %2.6f" % ("Sum systs", afberr_preMCStat[nbins2D])
+            #for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("Sum systs", sorted(binlist2D)[binindex], afberr_preMCStat[binindex])
+            (afb,afberr,afbcov) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
+            print "%20s uncertainty: %2.6f" % ("MC stat", afberr[nbins2D])
+            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("MC stat", sorted(binlist2D)[binindex], afberr[binindex])
+            #(afb,afberr,afbcov) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
+            #print "%20s uncertainty: %2.6f" % ("Data stat", afberr[nbins2D])
+            #for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("Data stat", sorted(binlist2D)[binindex], afberr[binindex])
+
+
+        #save bin systs for unfolded plots (unfolding macro automatically adds MC stat uncertainty so don't add it here)
+        for row in range(nbins): binsyst_preMCStat[row] = sqrt(covar_total[row,row])
+        #add stat uncertainties from TUnfold
+        covar_total+=covMCStat
+        covar_total_incDataStat = covar_total + covDataStat
+
 
         if nbins2D==0:
-            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
-            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, afb, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], afberr)
+            (afb,afberrdatastat) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+            (afb,afberrtotal) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+            (afb,afberrsyst) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
+            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb, afberrdatastat, afberrsyst, afberrtotal)
         else:
-            (afb,afberr,afbcov) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
-            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, afb[nbins2D], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], afberr[nbins2D])
+            (afb,afberrdatastat,afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
+            (afb,afberrtotal,afbcovtotalincDataStat) = GetCorrectedAfb2D(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
+            (afb,afberrsyst,afbcov) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb[nbins2D], afberrdatastat[nbins2D], afberrsyst[nbins2D], afberrtotal[nbins2D])
 
         #print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][0], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], math.sqrt(sumsq_total))
 
         binindex = 0
         for i in sorted(binlist2D):
             #print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, i, systematics[plot]['Nominal']['default']['nominal'][i][0], systematics[plot]['Nominal']['default']['nominal'][i][1], math.sqrt(sumsq_total_2D[binindex]))
-            print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, i, afb[binindex], systematics[plot]['Nominal']['default']['nominal'][i][1], afberr[binindex])
+            print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, i, afb[binindex], afberrdatastat[binindex], afberrsyst[binindex], afberrtotal[binindex])
             binindex += 1
         print ""
 
-        #check afberr from covariance matrix is consistent with sqrt(sumsq_total) and sqrt(sumsq_total_2D) - again, the slight differences are because we use the nominal bins with the covariance matrix        
-        if nbins2D==0 and abs(afberr-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr-math.sqrt(sumsq_total) )
-        if nbins2D>0 and abs(afberr[nbins2D]-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr[nbins2D]-math.sqrt(sumsq_total) )
 
+
+
+        #Now calculate correlation matrix
+        for row in range(nbins):
+            for col in range(nbins):
+                corr_total[row,col] = covar_total[row,col] / math.sqrt( covar_total[row,row] * covar_total[col,col] )
 
         afbcor = zeros( [nbins2D,nbins2D] )
+        afbcordatastat = zeros( [nbins2D,nbins2D] )
+        afbcortotalincDataStat = zeros( [nbins2D,nbins2D] )
 
         for row in range(nbins2D):
             for col in range(nbins2D):
                 afbcor[row,col] = afbcov[row,col] / math.sqrt( afbcov[row,row] * afbcov[col,col] )
+                afbcordatastat[row,col] = afbcovdatastat[row,col] / math.sqrt( afbcovdatastat[row,row] * afbcovdatastat[col,col] )
+                afbcortotalincDataStat[row,col] = afbcovtotalincDataStat[row,col] / math.sqrt( afbcovtotalincDataStat[row,row] * afbcovtotalincDataStat[col,col] )
 
         if nomatrix == False:
-            print "%s covariance matrix:" % plot
+            print "%s syst covariance matrix:" % plot
             print binlist
             print covar_total
             print ""
-            print "%s correlation matrix:" % plot
+            print "%s stat covariance matrix:" % plot
             print binlist
-            print corr_total
+            print covDataStat
             print ""
             #print "%s bin systematics:" % plot
             #print binlist
-            #print binsyst_total
+            #print binsyst_preMCStat
             #print ""
             if nbins2D>0:
-                print "%s covariance matrix:" % plot
+                print "%s total covariance matrix:" % plot
                 print binlist2D
-                print afbcov
+                print afbcovtotalincDataStat
                 print ""
-                print "%s correlation matrix:" % plot
+                print "%s total correlation matrix:" % plot
                 print binlist2D
-                print afbcor
+                print afbcortotalincDataStat
                 print ""
+                #print "%s stat correlation matrix:" % plot
+                #print binlist2D
+                #print afbcordatastat
+                #print ""
+                #print "%s syst correlation matrix:" % plot
+                #print binlist2D
+                #print afbcor
+                #print ""
         print "code fragment to paste in AfbFinalUnfold.h:"
         if nbins2D==0: 
-            for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_total[row])
+            for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_preMCStat[row])
         else:
-            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr[binindex] )
+            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr_preMCStat[binindex] )
         print ""
     #end loop over asymmetries
     
