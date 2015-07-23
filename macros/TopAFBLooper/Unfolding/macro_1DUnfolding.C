@@ -1,4 +1,4 @@
 {
-gROOT->ProcessLine(".L examples/AfbFinalUnfold.cxx");
+gROOT->ProcessLine(".L examples/AfbFinalUnfold.cxx+");
 AfbUnfoldExample();
 }
