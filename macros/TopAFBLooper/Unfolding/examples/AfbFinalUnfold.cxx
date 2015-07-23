@@ -757,14 +757,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         TProfile *theoryProfileUnCorr = new TProfile("thprofileuncorrelated", "uncorrelated data from theory file", nbinsx_gen, genbins);
         delete[] genbins;
 
-		TF1 *predict_corr = new TF1("prediction", "pol1", -1, 1);
-		TF1 *predict_uncorr = new TF1("flat_line", "pol0", -1, 1);
-		predict_corr->SetParameter( 0, 0.5 );
-		predict_uncorr->SetParameter( 0, 0.5 );
-
-		if( acceptanceName == "lepCosTheta" ) predict_corr->SetParameter( 1, 0.0015 );
-		else if( observablename == "lep_cos_opening_angle" ) predict_corr->SetParameter( 1, 0.1085 );
-
         if (observablename == "lep_azimuthal_asymmetry2")
 		  {
 
@@ -819,6 +811,25 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 theoryProfileUnCorr->Fill(c1c2, v1);
                 nlines++;
 			  }
+
+		  }
+
+
+		double correlated_slope_NLOW = 0.;
+		double uncorrelated_slope_NLOW = 0.;
+
+		if( acceptanceName == "lepCosTheta" ) correlated_slope_NLOW = 0.0015;
+		if( observablename == "lep_cos_opening_angle" ) correlated_slope_NLOW = 0.114;
+
+
+        if (acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
+		  {
+
+        	for (int i = 1; i <= nbinsx_gen; ++i)
+        	{
+        		theoryProfileCorr->Fill( theoryProfileCorr->GetBinCenter(i) , 0.5 + theoryProfileCorr->GetBinCenter(i)*correlated_slope_NLOW  );
+        		theoryProfileUnCorr->Fill( theoryProfileCorr->GetBinCenter(i) , 0.5 + theoryProfileCorr->GetBinCenter(i)*uncorrelated_slope_NLOW );
+        	}
 
 		  }
 
@@ -1019,14 +1030,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         theoryProfileUnCorr->SetLineStyle(2);
         theoryProfileUnCorr->SetMarkerStyle(1);
 
-		predict_corr->SetLineColor(kBlue);
-		predict_corr->SetLineWidth(lineWidthDiffs);
-		predict_corr->SetLineStyle(1);
-
-		predict_uncorr->SetLineColor(kBlue);
-		predict_uncorr->SetLineWidth(lineWidthDiffs);
-		predict_uncorr->SetLineStyle(2);
-
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
@@ -1049,15 +1052,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         if (!draw_truth_before_pT_reweighting) hTrue->Draw("hist same");
         else denominatorM_nopTreweighting->Draw("hist same");
         hData_unfolded->Draw("EP same");
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
 		  {
-            theoryProfileUnCorr->Draw("hist same");
+            if(acceptanceName != "lepCosTheta") theoryProfileUnCorr->Draw("hist same");
             theoryProfileCorr->Draw("hist same");
 		  }
-		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
-		  predict_corr->Draw("LSAME");
-		  if( observablename == "lep_cos_opening_angle" ) predict_uncorr->Draw("LSAME");
-		}
 
 		bool second_legend = false;
 		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" ||
@@ -1083,7 +1082,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         leg1->Draw();
 
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
 		  {
             TLegend *leg2 = new TLegend(0.18, 0.75, 0.45, 0.93, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
@@ -1093,21 +1092,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetFillStyle(0);
             leg2->SetTextSize(0.032);
             leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV SM, #mu=^{}m_{t})}", "L");
-            leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
+            if(acceptanceName != "lepCosTheta") leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
             leg2->Draw();
 		  }
-		else if(acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") {
-		  TLegend *leg2 = new TLegend(0.18, 0.75, 0.45, 0.93, NULL, "brNDC");
-		  leg2->SetEntrySeparation(0.5);
-		  leg2->SetFillColor(0);
-		  leg2->SetLineColor(0);
-		  leg2->SetBorderSize(0);
-		  leg2->SetFillStyle(0);
-		  leg2->SetTextSize(0.032);
-		  leg2->AddEntry(predict_corr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV SM, #mu=^{}m_{t})}", "L");
-		  if( observablename == "lep_cos_opening_angle" ) leg2->AddEntry(predict_uncorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
-		  leg2->Draw();
-		}
 
 		int cms_position = 11; //Upper left corner
 		if( second_legend ) cms_position = 0; //Left corner, outside the frame
