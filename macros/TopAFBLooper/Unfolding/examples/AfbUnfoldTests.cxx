@@ -686,7 +686,7 @@ void AfbUnfoldTests(Int_t iVar = 0, TString TestType = "Linearity", Int_t slopeO
                 //acceptNumcorrected->Print("all");
               }
         
-              TH1D* acceptMcorrected = (TH1D*)(acceptNumcorrected->Clone("acceptMcorrected"));
+              acceptMcorrected = (TH1D*)(acceptNumcorrected->Clone("acceptMcorrected"));
               acceptMcorrected->Divide( acceptDencorrected );
         
               // to be fully correct, we should really reweight the events by correction[aChannel] when we fill hTrue and hTrue_vs_Meas too
