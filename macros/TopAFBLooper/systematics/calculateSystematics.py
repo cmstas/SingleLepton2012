@@ -524,6 +524,11 @@ def main():
         if opts.unfoldingtype: binlist2D = [str(opts.unfoldingtype)+"bin1",str(opts.unfoldingtype)+"bin2",str(opts.unfoldingtype)+"bin3"]
         nbins2D = len(binlist2D)
 
+        binlisttrue = []
+        if opts.unfoldingtype: binlisttrue = ["True_Top_from_acceptance_denominator_bin0","True_Top_from_acceptance_denominator_bin1","True_Top_from_acceptance_denominator_bin2","True_Top_from_acceptance_denominator"]
+        else: binlisttrue = ["True_Top_from_acceptance_denominator"]
+        nbinstrue = len(binlisttrue)
+
 
         #Now read bin widths we're dealing with
         binwidthnames = fnmatch.filter(typelist, 'bwidth*')
@@ -547,6 +552,8 @@ def main():
 
         sumsq_total = 0
         sumsq_total_2D = zeros( [nbins2D] )
+        denominator = zeros( [nbinstrue] )
+        denominator_err = zeros( [nbinstrue] )
         covar_total = zeros( [nbins,nbins] )
         covar_total_incDataStat = zeros( [nbins,nbins] )
         covMCStat = zeros( [nbins,nbins] )
@@ -556,6 +563,23 @@ def main():
 
         bin_nominals_i = zeros( [nbins] )
         binwidth = zeros( [nbins] )
+
+        #get the MC truth values
+        binindex = 0
+        for i in binlisttrue:
+            denominator[binindex] = systematics[plot]['Nominal']['default']['nominal'][i][0]
+            denominator_err[binindex] = systematics[plot]['Nominal']['default']['nominal'][i][1]
+            if(combine == 1):
+                denominator[binindex] += systematics[combinevar]['Nominal']['default']['nominal'][i][0]
+                denominator[binindex] /= 2.
+                denominator_err[binindex] = sqrt(denominator_err[binindex]*denominator_err[binindex] + systematics[combinevar]['Nominal']['default']['nominal'][i][1]*systematics[combinevar]['Nominal']['default']['nominal'][i][1])
+                denominator_err[binindex] /= 2.
+            if(combine == -1):
+                denominator[binindex] -= systematics[combinevar]['Nominal']['default']['nominal'][i][0]
+                denominator[binindex] /= 2.
+                denominator_err[binindex] = sqrt(denominator_err[binindex]*denominator_err[binindex] + systematics[combinevar]['Nominal']['default']['nominal'][i][1]*systematics[combinevar]['Nominal']['default']['nominal'][i][1])
+                denominator_err[binindex] /= 2.
+            binindex += 1
 
 
         #Get the nominal values for each bin, and overall
@@ -595,6 +619,7 @@ def main():
         for systematic in sorted(systematics[plot].keys()):
             if systematic == 'Nominal': continue
             if systematic == 'NominalDataStat': continue
+            if systematic == 'RegularisationFullKIT': continue
             if systematic == 'name': continue
 
             sumsq_syst = 0
@@ -779,9 +804,10 @@ def main():
                 print "%15s systematic: %2.6f" % (systematic, afberr[nbins2D])
             for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], afberr[binindex])
             #end loop over subtypes
-            sumsq_total += sumsq_syst
-            sumsq_total_2D += sumsq_syst_2D
-            covar_total += covar_syst
+            if systematic != 'RegularisationFullKIT':
+                sumsq_total += sumsq_syst
+                sumsq_total_2D += sumsq_syst_2D
+                covar_total += covar_syst
 
         #end loop over systematics
 
@@ -834,6 +860,9 @@ def main():
             binindex += 1
         print ""
 
+        for i in range (nbinstrue):
+            print "%s %s = %2.6f +/- %2.6f (stat)" % (plot, binlisttrue[i], denominator[i], denominator_err[i])
+        print ""
 
 
 
