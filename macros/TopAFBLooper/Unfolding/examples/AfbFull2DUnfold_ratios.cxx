@@ -215,6 +215,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TMatrixD m_smearingE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_unfoldE(nbinsunwrapped_gen, nbinsunwrapped_gen);
         TMatrixD m_correctE(nbinsunwrapped_gen, nbinsunwrapped_gen);
+        TMatrixD AFBcovarianceM(nbinsy2D, nbinsy2D);
 
 		/////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////// 2. Fill our histograms from the baby ntuples //////////////////
@@ -839,10 +840,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        second_output_file << acceptanceName << " " << observablename << " True_Top_from_acceptance_denominator_bin"<<i<<": "<< afb_m_denom.at(i) << " +/-  " << afb_merr_denom.at(i) << "\n";
 	    }
 
-		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m, afb_merr, second_output_file);
+		GetCorrectedAfb2d(hData_unfolded, m_smearingE, afb_m, afb_merr, AFBcovarianceM, second_output_file);
         cout << " Unfolded with smearing errors: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
 
-		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, second_output_file);
+		GetCorrectedAfb2d(hData_unfolded, m_correctE, afb_m, afb_merr, AFBcovarianceM, second_output_file);
         cout << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
         second_output_file << acceptanceName << " " << observablename << " Unfolded: " << afb_m.at(0) << " +/- " << afb_merr.at(0) << endl;
 
