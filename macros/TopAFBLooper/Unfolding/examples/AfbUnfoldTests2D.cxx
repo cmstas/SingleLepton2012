@@ -57,10 +57,10 @@ Double_t myfunction(Double_t * x, Double_t * par)
 
 //TestType: "Pull" or "Linearity"
 //slopeOption: 0 = continuous reweighting, 1 = 6-binned reweighting
-void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t slopeOption = 0,*/ Int_t Nfunction = 0, TString Var2D = "mtt")
+void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", Int_t Nfunction = 0, TString Var2D = "mtt", Int_t slopeOption = 0)
 {
     TH1::SetDefaultSumw2();
-    if(TestType == "Linearity") nPseudos = 1;
+    //if(TestType == "Linearity") nPseudos = 1;
 
 
     //    TF1 *fsin = new TF1("fsin","sin(TMath::Pi()*x)",-1,1);
@@ -423,20 +423,6 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
 			obs2D = fabs(obs2D);
 			obs2D_gen = fabs(obs2D_gen);
 
-            /*if (slopeOption == 1)
-            {
-			  //fix the observable values to the bin centres so the acceptance function is unaffected by any reweighting
-			  observable =  hEmpty->GetXaxis()->GetBinCenter( hEmpty->FindBin( observable, obs2D ) );
-			  observable_gen =  hEmpty_gen->GetXaxis()->GetBinCenter( hEmpty_gen->FindBin( observable_gen, obs2D_gen ) );
-			  obs2D =  hEmpty->GetYaxis()->GetBinCenter( hEmpty->FindBin( observable, obs2D ) );
-			  obs2D_gen =  hEmpty_gen->GetYaxis()->GetBinCenter( hEmpty_gen->FindBin( observable_gen, obs2D_gen ) );
-			  if ( combineLepMinus )
-                {
-				  observableMinus =  hEmpty->GetXaxis()->GetBinCenter( hEmpty->FindBin( observableMinus, obs2D ) );
-				  observableMinus_gen =  hEmpty_gen->GetXaxis()->GetBinCenter( hEmpty_gen->FindBin( observableMinus_gen, obs2D_gen ) );
-                }
-			}*/
-
 			//if( channel>0 ) channel-=1;
 			offset = double(channel) * recohist_width;
 			if( observable > histmax )        observable = hiBinCenter;
@@ -447,6 +433,13 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
 			else if( observable_gen < histmin )   observable_gen = loBinCenter;
 			if( observableMinus_gen > histmax )        observableMinus_gen = hiBinCenter;
 			else if( observableMinus_gen < histmin )   observableMinus_gen = loBinCenter;
+
+            if (slopeOption == 1)
+            {
+              //fix the gen observable values to the bin centres so the acceptance function is unaffected by any reweighting
+              observable_gen =  hTrue_before->GetXaxis()->GetBinCenter( hTrue_before->GetXaxis()->FindBin( observable_gen ) );
+              observableMinus_gen =  hTrue_before->GetXaxis()->GetBinCenter( hTrue_before->GetXaxis()->FindBin( observableMinus_gen ) );
+			}
 
             double xval = (observable_gen - asym_centre) / fabs(xmax - asym_centre);
             double xsign = sign(xval);
@@ -718,6 +711,7 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
 		  }
 		}
 
+
         Float_t Afb, AfbErr;
 
         GetAfb(hTrue_after, Afb, AfbErr);
@@ -798,7 +792,7 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
 
 			  for( int aChannel=0; aChannel<nSig; aChannel++ ) {
 				correction[aChannel] = (reco_integrals[aChannel] / reco_integrals[nSig]) / (gen_integrals[aChannel] / gen_integrals[nSig]);
-				cout<<"Acceptance channel contribution factor for channel "<<ChannelName[aChannel]<<": "<<correction[aChannel]<<endl;
+				cout<<"Acceptance channel contribution factor after fluctuation for channel "<<ChannelName[aChannel]<<": "<<correction[aChannel]<<endl;
 				acceptNumcorrected->Add(accNum[aChannel], correction[aChannel]);
 				acceptDencorrected->Add(accDen[aChannel], correction[aChannel]);
 				//acceptNumcorrected->Print("all");
@@ -825,12 +819,14 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
 
 			  unwrap2dhisto(hSmeared, hSmeared_unwrapped);
 			  unwrap2dhisto(hTrue_before, hTrue_before_unwrapped);
+			  unwrap2dhisto(hTrue_after, hTrue_after_unwrapped);
 
 			  // Unfold! /////////////////////////////
 			  TUnfold unfold_TUnfold (hTrue_vs_Meas, TUnfold::kHistMapOutputVert, TUnfold::kRegModeNone, TUnfold::kEConstraintArea);
 			  scaleBias =  hSmeared->Integral() / hMeas_before->Integral() ;
 			  cout << "bias scale for TUnfold: " << scaleBias << endl;
-			  //unfold_TUnfold.SetBias(hTrue_before_unwrapped);  //doesn't make any difference, because if not set the bias distribution is automatically determined from hTrue_vs_Meas, which gives exactly hTrue
+			  //unfold_TUnfold.SetBias(hTrue_before_unwrapped); //now that hTrue_vs_Meas has an acceptance correction, the automatic bias scale corresponds to the denominator, so setting it to the numerator (hTrue) here is wrong.
+              //unfold_TUnfold.SetBias(hTrue_after_unwrapped); //confirmed that setting the bias distribution to hTrue_after gives perfect linearity for all bins when slopeOption = 1. note hTrue_after has been corrected for acceptance, so this corresponds to the denominator after reweighting.
 			  unfold_TUnfold.SetInput(hSmeared_unwrapped);
 			  unfold_TUnfold.RegularizeBins2D(1,1,nbinsx_gen,nbinsx_gen,nbinsy2D,TUnfold::kRegModeCurvature);
 			  unfold_TUnfold.DoUnfold(tau, hSmeared_unwrapped, scaleBias);
@@ -1380,8 +1376,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_TrueUnfbin1->SetMarkerStyle(23);
             Asym2D_TrueUnfbin1->SetMarkerColor(kBlue);
             Asym2D_TrueUnfbin1->SetMarkerSize(0.6);
-            Asym2D_TrueUnfbin1->GetXaxis()->SetTitle(yaxislabel + " bin 1 (true)");
-            Asym2D_TrueUnfbin1->GetYaxis()->SetTitle(yaxislabel + " bin 1 (unfolded)");
+            Asym2D_TrueUnfbin1->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 (true)");
+            Asym2D_TrueUnfbin1->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 (unfolded)");
             Asym2D_TrueUnfbin1->Draw("AP same");
             //Asym2D_TrueUnfbin1->Fit("pol1");
             TFitResultPtr rbin1 = Asym2D_TrueUnfbin1->Fit("pol1", "S");
@@ -1396,8 +1392,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_TrueUnfbin2->SetMarkerStyle(23);
             Asym2D_TrueUnfbin2->SetMarkerColor(kBlue);
             Asym2D_TrueUnfbin2->SetMarkerSize(0.6);
-            Asym2D_TrueUnfbin2->GetXaxis()->SetTitle(yaxislabel + " bin 2 (true)");
-            Asym2D_TrueUnfbin2->GetYaxis()->SetTitle(yaxislabel + " bin 2 (unfolded)");
+            Asym2D_TrueUnfbin2->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 (true)");
+            Asym2D_TrueUnfbin2->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 (unfolded)");
             Asym2D_TrueUnfbin2->Draw("AP same");
             //Asym2D_TrueUnfbin2->Fit("pol1");
             TFitResultPtr rbin2 = Asym2D_TrueUnfbin2->Fit("pol1", "S");
@@ -1412,8 +1408,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_TrueUnfbin3->SetMarkerStyle(23);
             Asym2D_TrueUnfbin3->SetMarkerColor(kBlue);
             Asym2D_TrueUnfbin3->SetMarkerSize(0.6);
-            Asym2D_TrueUnfbin3->GetXaxis()->SetTitle(yaxislabel + " bin 3 (true)");
-            Asym2D_TrueUnfbin3->GetYaxis()->SetTitle(yaxislabel + " bin 3 (unfolded)");
+            Asym2D_TrueUnfbin3->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 (true)");
+            Asym2D_TrueUnfbin3->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 (unfolded)");
             Asym2D_TrueUnfbin3->Draw("AP same");
             //Asym2D_TrueUnfbin3->Fit("pol1");
             TFitResultPtr rbin3 = Asym2D_TrueUnfbin3->Fit("pol1", "S");
@@ -1770,8 +1766,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_Pullbin1->SetMarkerStyle(23);
             Asym2D_Pullbin1->SetMarkerColor(kBlue);
             Asym2D_Pullbin1->SetMarkerSize(0.6);
-            Asym2D_Pullbin1->GetXaxis()->SetTitle(yaxislabel + " bin 1 (true)");
-            Asym2D_Pullbin1->GetYaxis()->SetTitle(yaxislabel + " bin 1 pull");
+            Asym2D_Pullbin1->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 (true)");
+            Asym2D_Pullbin1->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 pull");
             Asym2D_Pullbin1->Draw("AP same");
             //Asym2D_Pullbin1->Fit("pol1");
             TFitResultPtr rpbin1 = Asym2D_Pullbin1->Fit("pol1", "S");
@@ -1786,8 +1782,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_Pullbin2->SetMarkerStyle(23);
             Asym2D_Pullbin2->SetMarkerColor(kBlue);
             Asym2D_Pullbin2->SetMarkerSize(0.6);
-            Asym2D_Pullbin2->GetXaxis()->SetTitle(yaxislabel + " bin 2 (true)");
-            Asym2D_Pullbin2->GetYaxis()->SetTitle(yaxislabel + " bin 2 pull");
+            Asym2D_Pullbin2->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 (true)");
+            Asym2D_Pullbin2->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 pull");
             Asym2D_Pullbin2->Draw("AP same");
             //Asym2D_Pullbin2->Fit("pol1");
             TFitResultPtr rpbin2 = Asym2D_Pullbin2->Fit("pol1", "S");
@@ -1802,8 +1798,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_Pullbin3->SetMarkerStyle(23);
             Asym2D_Pullbin3->SetMarkerColor(kBlue);
             Asym2D_Pullbin3->SetMarkerSize(0.6);
-            Asym2D_Pullbin3->GetXaxis()->SetTitle(yaxislabel + " bin 3 (true)");
-            Asym2D_Pullbin3->GetYaxis()->SetTitle(yaxislabel + " bin 3 pull");
+            Asym2D_Pullbin3->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 (true)");
+            Asym2D_Pullbin3->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 pull");
             Asym2D_Pullbin3->Draw("AP same");
             //Asym2D_Pullbin3->Fit("pol1");
             TFitResultPtr rpbin3 = Asym2D_Pullbin3->Fit("pol1", "S");
@@ -1827,8 +1823,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
         Asym2D_PullWidth->SetMarkerStyle(23);
         Asym2D_PullWidth->SetMarkerColor(kBlack);
         Asym2D_PullWidth->SetMarkerSize(0.6);
-        Asym2D_PullWidth->GetXaxis()->SetTitle(Var2D + " inclusive (true)");
-        Asym2D_PullWidth->GetYaxis()->SetTitle(Var2D + " inclusive pull width");
+        Asym2D_PullWidth->GetXaxis()->SetTitle(asymlabel + " inclusive (true)");
+        Asym2D_PullWidth->GetYaxis()->SetTitle(asymlabel + " inclusive pull width");
         Asym2D_PullWidth->Draw("AP same");
         //Asym2D_PullWidth->Fit("pol1");
         TFitResultPtr rpw = Asym2D_PullWidth->Fit("pol1", "S");
@@ -1845,8 +1841,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_PullWidthbin1->SetMarkerStyle(23);
             Asym2D_PullWidthbin1->SetMarkerColor(kBlue);
             Asym2D_PullWidthbin1->SetMarkerSize(0.6);
-            Asym2D_PullWidthbin1->GetXaxis()->SetTitle(yaxislabel + " bin 1 (true)");
-            Asym2D_PullWidthbin1->GetYaxis()->SetTitle(yaxislabel + " bin 1 pull width");
+            Asym2D_PullWidthbin1->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 (true)");
+            Asym2D_PullWidthbin1->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 pull width");
             Asym2D_PullWidthbin1->Draw("AP same");
             //Asym2D_PullWidthbin1->Fit("pol1");
             TFitResultPtr rpwbin1 = Asym2D_PullWidthbin1->Fit("pol1", "S");
@@ -1861,8 +1857,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_PullWidthbin2->SetMarkerStyle(23);
             Asym2D_PullWidthbin2->SetMarkerColor(kBlue);
             Asym2D_PullWidthbin2->SetMarkerSize(0.6);
-            Asym2D_PullWidthbin2->GetXaxis()->SetTitle(yaxislabel + " bin 2 (true)");
-            Asym2D_PullWidthbin2->GetYaxis()->SetTitle(yaxislabel + " bin 2 pull width");
+            Asym2D_PullWidthbin2->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 (true)");
+            Asym2D_PullWidthbin2->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 pull width");
             Asym2D_PullWidthbin2->Draw("AP same");
             //Asym2D_PullWidthbin2->Fit("pol1");
             TFitResultPtr rpwbin2 = Asym2D_PullWidthbin2->Fit("pol1", "S");
@@ -1877,8 +1873,8 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             Asym2D_PullWidthbin3->SetMarkerStyle(23);
             Asym2D_PullWidthbin3->SetMarkerColor(kBlue);
             Asym2D_PullWidthbin3->SetMarkerSize(0.6);
-            Asym2D_PullWidthbin3->GetXaxis()->SetTitle(yaxislabel + " bin 3 (true)");
-            Asym2D_PullWidthbin3->GetYaxis()->SetTitle(yaxislabel + " bin 3 pull width");
+            Asym2D_PullWidthbin3->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 (true)");
+            Asym2D_PullWidthbin3->GetYaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 pull width");
             Asym2D_PullWidthbin3->Draw("AP same");
             //Asym2D_PullWidthbin3->Fit("pol1");
             TFitResultPtr rpwbin3 = Asym2D_PullWidthbin3->Fit("pol1", "S");
@@ -2029,7 +2025,7 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             AfbPull[1]->SetMarkerStyle(23);
             AfbPull[1]->SetMarkerColor(kBlue);
             AfbPull[1]->SetMarkerSize(0.6);
-            AfbPull[1]->GetXaxis()->SetTitle(yaxislabel + " bin 1 pull");
+            AfbPull[1]->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 1 pull");
             AfbPull[1]->GetYaxis()->SetTitle("Number of PEs / 0.2");
             AfbPull[1]->Fit("gaus");
             AfbPull[1]->Draw();
@@ -2038,7 +2034,7 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             AfbPull[2]->SetMarkerStyle(23);
             AfbPull[2]->SetMarkerColor(kBlue);
             AfbPull[2]->SetMarkerSize(0.6);
-            AfbPull[2]->GetXaxis()->SetTitle(yaxislabel + " bin 2 pull");
+            AfbPull[2]->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 2 pull");
             AfbPull[2]->GetYaxis()->SetTitle("Number of PEs / 0.2");
             AfbPull[2]->Fit("gaus");
             AfbPull[2]->Draw();
@@ -2047,7 +2043,7 @@ void AfbUnfoldTests2D(Int_t iVar = 0, TString TestType = "Linearity", /*Int_t sl
             AfbPull[3]->SetMarkerStyle(23);
             AfbPull[3]->SetMarkerColor(kBlue);
             AfbPull[3]->SetMarkerSize(0.6);
-            AfbPull[3]->GetXaxis()->SetTitle(yaxislabel + " bin 3 pull");
+            AfbPull[3]->GetXaxis()->SetTitle(asymlabel + " " + yaxislabel + " bin 3 pull");
             AfbPull[3]->GetYaxis()->SetTitle("Number of PEs / 0.2");
             AfbPull[3]->Fit("gaus");
             AfbPull[3]->Draw();
