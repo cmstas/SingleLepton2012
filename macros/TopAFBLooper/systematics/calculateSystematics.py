@@ -387,6 +387,44 @@ def GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n):
 
 
 
+
+def Get1DProjection(covarianceM, nbins, nbins2D, n):
+
+    # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
+
+    numbinsx = nbins/nbins2D
+    numbinsy = nbins2D
+
+    # Components of the error calculation
+    sum_n = zeros( [numbinsy+1,numbinsx] )
+    sum_n_err = zeros( [numbinsy+1,numbinsx] )
+    sum_n_cov = zeros( [numbinsy+1,numbinsx,numbinsx] )
+    for i in range(nbins):
+        i_2di = i % numbinsx
+        i_2dj = i / numbinsx
+        sum_n[i_2dj][i_2di] += n[i]
+        sum_n[numbinsy][i_2di] += n[i]
+
+    # Error Calculation
+    for i in range(nbins):
+        for j in range(nbins):
+            i_2di = i % numbinsx
+            i_2dj = i / numbinsx
+            j_2di = j % numbinsx
+            j_2dj = j / numbinsx
+            if(i_2di==j_2di): sum_n_err[numbinsy][i_2di] += covarianceM[i,j] 
+            if(i_2di==j_2di and i_2dj==j_2dj): sum_n_err[i_2dj][i_2di] += covarianceM[i,j] 
+            sum_n_cov[numbinsy][i_2di][j_2di] += covarianceM[i,j] 
+            if(i_2dj==j_2dj): sum_n_cov[i_2dj][i_2di][j_2di] += covarianceM[i,j] 
+
+    # Calculate Afb to check covariance matrix calculation
+    #for i in range(numbinsy+1):
+    #    afberr = GetCorrectedAfb(sum_n_cov[i], numbinsx, sum_n[i])
+    #    print afberr
+
+    return (sum_n,sum_n_err,sum_n_cov)
+
+
 def increasevariance_integratewidth_V(covarianceM, nbins, n, binwidth, factor):
 
     #create new array for covarianceM0. covarianceM0 = covarianceM doesn't work because it binds the new name to the same object.
@@ -848,8 +886,11 @@ def main():
         else:
             (afb,afberrdatastat,afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
             (afb,afberrtotal,afbcovtotalincDataStat) = GetCorrectedAfb2D(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
-            (afb,afberrsyst,afbcov) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+            (afb,afberrsyst,afbcovsyst) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
             print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb[nbins2D], afberrdatastat[nbins2D], afberrsyst[nbins2D], afberrtotal[nbins2D])
+            (sum_n,sum_n_errdatastat,sum_n_covdatastat) = Get1DProjection(covDataStat, nbins, nbins2D, bin_nominals_i)
+            (sum_n,sum_n_errtotal,sum_n_covtotalincDataStat) = Get1DProjection(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
+            (sum_n,sum_n_errsyst,sum_n_covsyst) = Get1DProjection(covar_total, nbins, nbins2D, bin_nominals_i)
 
         #print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][0], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], math.sqrt(sumsq_total))
 
@@ -871,13 +912,13 @@ def main():
             for col in range(nbins):
                 corr_total[row,col] = covar_total[row,col] / math.sqrt( covar_total[row,row] * covar_total[col,col] )
 
-        afbcor = zeros( [nbins2D,nbins2D] )
+        afbcorsyst = zeros( [nbins2D,nbins2D] )
         afbcordatastat = zeros( [nbins2D,nbins2D] )
         afbcortotalincDataStat = zeros( [nbins2D,nbins2D] )
 
         for row in range(nbins2D):
             for col in range(nbins2D):
-                afbcor[row,col] = afbcov[row,col] / math.sqrt( afbcov[row,row] * afbcov[col,col] )
+                afbcorsyst[row,col] = afbcovsyst[row,col] / math.sqrt( afbcovsyst[row,row] * afbcovsyst[col,col] )
                 afbcordatastat[row,col] = afbcovdatastat[row,col] / math.sqrt( afbcovdatastat[row,row] * afbcovdatastat[col,col] )
                 afbcortotalincDataStat[row,col] = afbcovtotalincDataStat[row,col] / math.sqrt( afbcovtotalincDataStat[row,row] * afbcovtotalincDataStat[col,col] )
 
@@ -909,7 +950,7 @@ def main():
                 #print ""
                 #print "%s syst correlation matrix:" % plot
                 #print binlist2D
-                #print afbcor
+                #print afbcorsyst
                 #print ""
         print "code fragment to paste in AfbFinalUnfold.h:"
         if nbins2D==0: 
