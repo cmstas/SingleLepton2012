@@ -48,6 +48,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include "CMS_lumi.C"
 
 using namespace std;
 
@@ -423,6 +424,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //  const int mccolor[]={7,2,6,4,kOrange,8,9,kAzure-9, 5, kViolet,kGreen+1, 15,12,13,27};
     //const int mccolor[] = {7, 2, kRed-2, 6, 4, kOrange, 8, kViolet + 1, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
     const int mccolor[] = {7, 2, 6, 4, kOrange, 8, kViolet + 1, kViolet - 7, kAzure - 9, kGreen - 2, kViolet, kGreen + 1, 15, 12, 13, 27};
+    //alternative colors to use when combinebackgroundsinplot=true
+    int ttdlcolor = kCyan-3;
+    int bkgcolor = kMagenta-5;
     //  const int mccolor[]={7,2,6,4,kOrange,8,5,kAzure-9, 9,5,kViolet,kGreen+1, 15,12,13,27};
 
     //-------------------------------
@@ -439,7 +443,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     bool scalettdiltodata = true;
     bool scalebkgtoCRs = true;
     bool scaletoyieldsafterttbarsol = false;
-    bool printnumbersonplots = true;
+    bool printnumbersonplots = false;
+    bool combinebackgroundsinplot = true;
+
+    //control plot dimensions
+    float r = 0.31;
+    float epsilon = 0.02;
 
     double lumi = 19.5;
 
@@ -986,6 +995,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
     vector<TH1F *> unsorted_mc1d_comb[N1DHISTS];
     TH1F *h_mc1d_tot_comb[N1DHISTS];
+    TH1F *h_mc1d_bkg_comb[N1DHISTS];
     bool hasplot[nCh][N1DHISTS] = {{0}};
     bool hasplotall[N1DHISTS] = {0};
 
@@ -1088,11 +1098,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     logScale.push_back(42+8);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {4, 4, 4, 4, 4, 4, 4, 4, 1, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     const char *xtitle1d[N1DHISTS] =
     {
-        "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
+        "|#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}|",
         "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
         "#Delta|#eta_{l}|",
         "#Delta|y_{t}|",
@@ -1321,9 +1331,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         TH1F *h_dt1d[N1DHISTS];
         TH1F *h_mc1d[N1DHISTS][MCID];
         vector<TH1F *> sorted_mc1d[N1DHISTS];
+        vector<TH1F *> unsorted_mc1d[N1DHISTS];
 
         // Book histograms
         TH1F *h_mc1d_tot[N1DHISTS];
+        TH1F *h_mc1d_bkg[N1DHISTS];
 
         cout << "#### LEPTON TAG " << leptag[leptype] << endl;
 
@@ -1387,9 +1399,14 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 if (!doinit)
                 {
                     h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_bkg[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mcbkg_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_bkg[i]->Reset();
                     doinit = true;
                 }
-                else h_mc1d_tot[i]->Add(h_mc1d[i][j]);
+                else {
+                    h_mc1d_tot[i]->Add(h_mc1d[i][j]);
+                    h_mc1d_bkg[i]->Add(h_mc1d[i][j]);
+                }
 
             }
         }
@@ -1453,16 +1470,25 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 {
                     h_mc1d_tot_comb[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_comb_%s%s", histtag[histtag_number], file1dname[i]));
                     h_mc1d_tot_comb[i]->SetName(Form("mctot_comb_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_bkg_comb[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mcbkg_comb_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_bkg_comb[i]->Reset();
                 }
-                else
+                else {
                     h_mc1d_tot_comb[i]->Add(h_mc1d[i][j]);
+                    if( j!=TTDL ) h_mc1d_bkg_comb[i]->Add(h_mc1d[i][j]);
+                }
 
                 if (!doinit)
                 {
                     h_mc1d_tot[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mctot_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_bkg[i] = (TH1F *)h_mc1d[i][j]->Clone(Form("mcbkg_%s%s", histtag[histtag_number], file1dname[i]));
+                    h_mc1d_bkg[i]->Reset();
                     doinit = true;
                 }
-                else h_mc1d_tot[i]->Add(h_mc1d[i][j]);
+                else {
+                    h_mc1d_tot[i]->Add(h_mc1d[i][j]);
+                    h_mc1d_bkg[i]->Add(h_mc1d[i][j]);
+                }
 
             }
         }
@@ -1555,6 +1581,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                                     }
                 */
                 sorted_mc1d[i].push_back( h_mc1d[i][j] );
+                unsorted_mc1d[i].push_back( h_mc1d[i][j] );
                 if (leptype == nCh - 1) sorted_mc1d_comb[i].push_back( h_mc1d_comb[i][j] );
                 if (leptype == nCh - 1) unsorted_mc1d_comb[i].push_back( h_mc1d_comb[i][j] );
 
@@ -1586,6 +1613,14 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
                 //      h_mc1d[i][j]->SetFillColor(j!=TTDL?mccolor[j]:10);
                 h_mc1d[i][j]->SetFillStyle(1001);
             }
+            if(combinebackgroundsinplot) {
+                h_mc1d[i][TTDL]->SetLineColor(kBlack);
+                h_mc1d[i][TTDL]->SetMarkerColor(ttdlcolor);
+                h_mc1d_bkg[i]->SetLineColor(kBlack);
+                h_mc1d_bkg[i]->SetMarkerColor(bkgcolor);
+                h_mc1d_bkg[i]->SetFillColor(bkgcolor);
+                h_mc1d_bkg[i]->SetFillStyle(1001);
+            }
 
         }
         // End of style up histograms /////////////////////////////////////////////
@@ -1599,8 +1634,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
             h_dt1d[i]->GetXaxis()->SetTitle(Form("%s",
                                                  xtitle1d[i]));
-            h_dt1d[i]->GetXaxis()->SetTitleOffset(1.);
-            h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / %3.1f %s",
+            //h_dt1d[i]->GetXaxis()->SetTitleOffset(1.);
+            h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / %3.2f %s",
                                                  h_dt1d[i]->GetBinWidth(1),
                                                  ytitle1d[i]));
 
@@ -1618,8 +1653,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
                 h_mc1d[i][j]->GetXaxis()->SetTitle(Form("%s",
                                                         xtitle1d[i]));
-                h_mc1d[i][j]->GetXaxis()->SetTitleOffset(1.);
-                h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / %3.1f %s",
+                //h_mc1d[i][j]->GetXaxis()->SetTitleOffset(1.);
+                h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / %3.2f %s",
                                                         h_dt1d[i]->GetBinWidth(1),
                                                         ytitle1d[i]));
 
@@ -1658,11 +1693,16 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             s_mc1d[i] = new THStack(file1dname[i], file1dname[i]);
             s_mc1d[i]->SetName(Form("stack_%s%s", histtag[histtag_number], file1dname[i]));
 
-            for (int j = 0; j < MCID; ++j)
-            {
-                s_mc1d[i]->Add(sorted_mc1d[i].at(j));
-                //    for (int j=MCID-1;j>=0;--j) {
-                //      s_mc1d[i]->Add(h_mc1d[i][j]);
+            if(!combinebackgroundsinplot)
+                for (int j = 0; j < MCID; ++j)
+                {
+                    s_mc1d[i]->Add(sorted_mc1d[i].at(j));
+                    //    for (int j=MCID-1;j>=0;--j) {
+                    //      s_mc1d[i]->Add(h_mc1d[i][j]);
+                }
+            else {
+                s_mc1d[i]->Add(h_mc1d_bkg[i]);
+                s_mc1d[i]->Add(unsorted_mc1d[i].at(TTDL));
             }
             //cout << endl << "MC " << h_mc1d_tot[i]->Integral(1, h_mc1d_tot[i]->GetNbinsX())
             //     << endl;
@@ -1691,6 +1731,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             if (!hasplot[leptype][i]) continue;
 
             leg1d[i] = new TLegend(0.57, 0.60, 0.93, 0.931);//0.56,0.64,0.92,0.915);
+            if(combinebackgroundsinplot) leg1d[i] = new TLegend(0.71, 0.71, 0.93, 0.92);
             //  leg1d[i] = new TLegend(0.712, 0.541, 0.928, 0.931);//0.56,0.64,0.92,0.915);
             //    leg1d[i] = new TLegend(0.731544, 0.55507, 0.947987, 0.946241);//0.56,0.64,0.92,0.915);
             leg1d[i]->SetName(Form("leg_%s", h_dt1d[i]->GetName()));
@@ -1699,13 +1740,16 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             leg1d[i]->
             AddEntry(h_dt1d[i],
                      "data ", "lp");
-
-            for (int j = 0; j < MCID; ++j)
-            {
-                //if (j == TWSL) continue;
-                //if (j >= TWDL && j < VVV) continue;
-                leg1d[i]->AddEntry(h_mc1d[i][j],
-                                   legend[j], "f");
+          
+            if(!combinebackgroundsinplot) {
+                for (int j = 0; j < MCID; ++j)
+                {
+                    leg1d[i]->AddEntry(h_mc1d[i][j], legend[j], "f");
+                }
+            }
+            else {
+                leg1d[i]->AddEntry(h_mc1d[i][TTDL], legend[TTDL], "f");
+                leg1d[i]->AddEntry(h_mc1d_bkg[i], "background", "f");
             }
         }
 
@@ -1719,8 +1763,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             canv1d[i] = new TCanvas(Form("c_%s_%s", file1dname[i], leptag[leptype]),
                                     Form("c_%s_%s", file1dname[i], leptag[leptype]),
                                     700, 700);
-            canv1d[i]->SetLeftMargin(0.18);
-            canv1d[i]->SetRightMargin(0.05);
+            //canv1d[i]->SetLeftMargin(0.18);
+            //canv1d[i]->SetRightMargin(0.05);
 
             TPad *fullpad = new TPad();
             TPad *plotpad = new TPad();
@@ -1730,7 +1774,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             fullpad->Draw();
             fullpad->cd();
 
-            plotpad = new TPad("plotpad", "plotpad", 0, 0, 1, 0.8);
+            plotpad = new TPad("plotpad", "plotpad", 0, r - epsilon, 1, 1 - epsilon);
             plotpad->Draw();
             plotpad->cd();
 
@@ -1748,13 +1792,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             {
                 if (i == 5)
                 {
-                    h_dt1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.);
-                    s_mc1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.);
+                    h_dt1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 1.6);
+                    s_mc1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 1.6);
                 }
                 else
                 {
-                    h_dt1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.);
-                    s_mc1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 2.);
+                    h_dt1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 1.6);
+                    s_mc1d[i]->SetMaximum(h_dt1d[i]->GetMaximum() * 1.6);
                 }
 
                 s_mc1d[i]->SetMinimum(0.);
@@ -1774,6 +1818,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             // g_data->SetMarkerSize(0.9);
             // g_data->SetLineWidth(2);
             g_data->Draw("e1,p,z,same");
+            //h_mc1d_bkg[i]->Draw("same");
             // h_dt1d[i]->SetMarkerStyle(20);
             // h_dt1d[i]->SetMarkerSize(0.9);
             // h_dt1d[i]->Draw("p,same");
@@ -1816,8 +1861,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             text->SetNDC();
             text->SetTextSize(0.04);
             float xtex = 0.2;//0.16;//used to be 0.2
-            text->DrawLatex(xtex, 0.88, "CMS Preliminary");
-            text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
+            //text->DrawLatex(xtex, 0.88, "CMS Preliminary");
+            //text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
             if(!printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("%s", leplabel[leptype]));
             else if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("%s, #chi^{2} prob: %.2f, KS: %.2f",leplabel[leptype], chi2prob, KSprob));
             else text->DrawLatex(xtex, 0.78, Form("%s, KS: %.2f",leplabel[leptype], KSprob));
@@ -1846,7 +1891,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
             fullpad->cd();
 
-            respad = new TPad("respad", "respad", 0, 0.8, 1, 1);
+            respad = new TPad("respad", "respad", 0, 0, 1, r*(1. - epsilon));
+            plotpad->SetBottomMargin(epsilon);
+            respad->SetTopMargin(0.0);
+            respad->SetBottomMargin(0.29);
+            respad->SetFillColor(0);
+            respad->SetFillStyle(0);
             respad->Draw();
             respad->cd();
 
@@ -1855,21 +1905,24 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             TH1F *ratio = (TH1F *) h_dt1d[i]->Clone(Form("%s_ratio", h_dt1d[i]->GetName()));
             ratio->Divide(h_mc1d_tot[i]);
 
-            ratio->GetYaxis()->SetTitleOffset(0.3);
-            ratio->GetYaxis()->SetTitleSize(0.2);
-            ratio->GetYaxis()->SetNdivisions(5);
-            ratio->GetYaxis()->SetLabelSize(0.2);
+            ratio->GetYaxis()->SetTitleOffset(0.5);
+            ratio->GetYaxis()->SetTitleSize(0.120);
+            ratio->GetYaxis()->SetNdivisions(805);
+            ratio->GetYaxis()->SetLabelSize(h_basic->GetYaxis()->GetLabelSize()*(1.-r)/r);
             //    if (dozoom) ratio->GetYaxis()->SetRangeUser(0.8,1.2);
             //    if (dozoom) ratio->GetYaxis()->SetRangeUser(0.7,1.3);
             //    else
             //    ratio->GetYaxis()->SetRangeUser(0.7,1.3);
-            ratio->GetYaxis()->SetRangeUser(0., 2.);
+            ratio->GetYaxis()->SetRangeUser(0.81, 1.19);
             //if (i == 3) ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
             //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
-            ratio->GetYaxis()->SetTitle("data/SM  ");
-            ratio->GetXaxis()->SetLabelSize(0);
-            ratio->GetXaxis()->SetTitleSize(0);
+            ratio->GetYaxis()->SetTitle("Data/Simulation ");
+            ratio->GetXaxis()->SetLabelSize(h_basic->GetXaxis()->GetLabelSize()*(1.-r)/r);
+            ratio->GetXaxis()->SetTitleSize(h_basic->GetXaxis()->GetTitleSize()*(1.-r)/r);
+            ratio->GetXaxis()->SetTitle(h_basic->GetXaxis()->GetTitle());
             //  ratio->SetMarkerSize(1);
+            h_basic->GetXaxis()->SetLabelSize(0.);
+            h_basic->GetXaxis()->SetTitleSize(0.);
             ratio->Draw();
 
             // float xmin = ratio->GetXaxis()->GetBinLowEdge(1);
@@ -1884,6 +1937,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             TLine line;
             line.SetLineWidth(1);
             line.DrawLine(h_dt1d[i]->GetXaxis()->GetXmin(), 1, h_dt1d[i]->GetXaxis()->GetXmax(), 1);
+
+            CMS_lumi( canv1d[i], 2, 11 );
 
             gErrorIgnoreLevel = 2000; //suppress Info in <TCanvas::Print> messages
             canv1d[i]->Print(Form("%splots/%s%s%s%s.pdf", region,
@@ -1943,6 +1998,14 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             //      h_mc1d_comb[i][j]->SetFillColor(j!=TTDL?mccolor[j]:10);
             h_mc1d_comb[i][j]->SetFillStyle(1001);
         }
+        if(combinebackgroundsinplot) {
+            h_mc1d_comb[i][TTDL]->SetLineColor(kBlack);
+            h_mc1d_comb[i][TTDL]->SetMarkerColor(ttdlcolor);
+            h_mc1d_bkg_comb[i]->SetLineColor(kBlack);
+            h_mc1d_bkg_comb[i]->SetMarkerColor(bkgcolor);
+            h_mc1d_bkg_comb[i]->SetFillColor(bkgcolor);
+            h_mc1d_bkg_comb[i]->SetFillStyle(1001);
+        }
     }
     // End of style up histograms /////////////////////////////////////////////
 
@@ -1955,7 +2018,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         h_dt1d_comb[i]->GetXaxis()->SetTitle(Form("%s",
                                              xtitle1d[i]));
-        h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / %3.0f %s",
+        h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / %3.2f %s",
                                              h_dt1d_comb[i]->GetBinWidth(1),
                                              ytitle1d[i]));
 
@@ -1974,11 +2037,15 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         s_mc1d_comb[i]->SetName(Form("stack_%s%s", histtag[histtag_number], file1dname[i]));
 
 
-        for (int j = 0; j < MCID; ++j)
-        {
-            s_mc1d_comb[i]->Add(sorted_mc1d_comb[i].at(j));
+        if(!combinebackgroundsinplot)
+            for (int j = 0; j < MCID; ++j)
+            {
+                s_mc1d_comb[i]->Add(sorted_mc1d_comb[i].at(j));
+            }
+        else {
+            s_mc1d_comb[i]->Add(h_mc1d_bkg_comb[i]);
+            s_mc1d_comb[i]->Add(unsorted_mc1d_comb[i].at(TTDL));
         }
-
 
         //s_mc1d_comb[i]->Add(sorted_mc1d_comb[i].at(VVV));
         //s_mc1d_comb[i]->Add(sorted_mc1d_comb[i].at(WJETS));
@@ -2017,6 +2084,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         if (!hasplotall[i]) continue;
 
         leg1d_comb[i] = new TLegend(0.57, 0.60, 0.93, 0.931);
+        if(combinebackgroundsinplot) leg1d_comb[i] = new TLegend(0.71, 0.71, 0.93, 0.92);
         leg1d_comb[i]->SetName(Form("leg_%s", h_dt1d_comb[i]->GetName()));
         leg1d_comb[i]->SetFillColor(0);
         leg1d_comb[i]->AddEntry(h_dt1d_comb[i], "data ", "lp");
@@ -2024,9 +2092,15 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTDL], legend[TTDL], "f");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][WJETS], legend[WJETS], "f");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][VVV], legend[VVV], "f");
-        for (int j = 0; j < MCID; ++j)
-        {
-            leg1d_comb[i]->AddEntry(h_mc1d_comb[i][j], legend[j], "f");
+        if(!combinebackgroundsinplot) {
+            for (int j = 0; j < MCID; ++j)
+            {
+                leg1d_comb[i]->AddEntry(h_mc1d_comb[i][j], legend[j], "f");
+            }
+        }
+        else {
+            leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTDL], legend[TTDL], "f");
+            leg1d_comb[i]->AddEntry(h_mc1d_bkg_comb[i], "background", "f");
         }
 
     }
@@ -2041,8 +2115,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         canv1d_comb[i] = new TCanvas(Form("c_%s", file1dname[i]),
                                      Form("c_%s", file1dname[i]),
                                      700, 700);
-        canv1d_comb[i]->SetLeftMargin(0.18);
-        canv1d_comb[i]->SetRightMargin(0.05);
+        //canv1d_comb[i]->SetLeftMargin(0.18);
+        //canv1d_comb[i]->SetRightMargin(0.05);
 
         TPad *fullpad = new TPad();
         TPad *plotpad = new TPad();
@@ -2052,7 +2126,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         fullpad->Draw();
         fullpad->cd();
 
-        plotpad = new TPad("plotpad", "plotpad", 0, 0, 1, 0.8);
+        plotpad = new TPad("plotpad", "plotpad", 0, r - epsilon, 1, 1 - epsilon);
         plotpad->Draw();
         plotpad->cd();
 
@@ -2068,13 +2142,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         {
             if (i == 5)
             {
-                h_dt1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 2.);
-                s_mc1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 2.);
+                h_dt1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 1.6);
+                s_mc1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 1.6);
             }
             else
             {
-                h_dt1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 2.);
-                s_mc1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 2.);
+                h_dt1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 1.6);
+                s_mc1d_comb[i]->SetMaximum(h_dt1d_comb[i]->GetMaximum() * 1.6);
             }
             s_mc1d_comb[i]->SetMinimum(0.);
             h_dt1d_comb[i]->SetMinimum(0.);
@@ -2093,6 +2167,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         TGraphAsymmErrors *g_data = GetPoissonizedGraph(h_dt1d_comb[i]);
         g_data->Draw("e1,p,z,same");
+        //h_mc1d_bkg_comb[i]->Draw("same");
         h_dt1d_comb[i]->Draw("axis,same");
         leg1d_comb[i]->Draw("same");
 
@@ -2110,15 +2185,20 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         text->SetNDC();
         text->SetTextSize(0.04);
         float xtex = 0.2;//0.16;//used to be 0.2
-        text->DrawLatex(xtex, 0.88, "CMS Preliminary");
-        text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
+        //text->DrawLatex(xtex, 0.88, "CMS Preliminary");
+        //text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
         if(scalettdiltodata && printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("#chi^{2} prob: %.2f, KS: %.2f", chi2prob, KSprob));
         else if(printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("KS: %.2f", KSprob));
         if(i<8 && printnumbersonplots) text->DrawLatex(xtex, 0.73, Form("A_{data}=%.2f, A_{MC}=%.2f", asymdata, asymMC));
 
         fullpad->cd();
 
-        respad = new TPad("respad", "respad", 0, 0.8, 1, 1);
+        respad = new TPad("respad", "respad", 0, 0, 1, r*(1. - epsilon));
+        plotpad->SetBottomMargin(epsilon);
+        respad->SetTopMargin(0.0);
+        respad->SetBottomMargin(0.29);
+        respad->SetFillColor(0);
+        respad->SetFillStyle(0);
         respad->Draw();
         respad->cd();
 
@@ -2127,20 +2207,25 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         TH1F *ratio = (TH1F *) h_dt1d_comb[i]->Clone(Form("%s_ratio", h_dt1d_comb[i]->GetName()));
         ratio->Divide(h_mc1d_tot_comb[i]);
 
-        ratio->GetYaxis()->SetTitleOffset(0.3);
-        ratio->GetYaxis()->SetTitleSize(0.2);
-        ratio->GetYaxis()->SetNdivisions(5);
-        ratio->GetYaxis()->SetLabelSize(0.2);
-        ratio->GetYaxis()->SetRangeUser(0., 2.);
-        ratio->GetYaxis()->SetTitle("data/SM  ");
-        ratio->GetXaxis()->SetLabelSize(0);
-        ratio->GetXaxis()->SetTitleSize(0);
+        ratio->GetYaxis()->SetTitleOffset(0.5);
+        ratio->GetYaxis()->SetTitleSize(0.120);
+        ratio->GetYaxis()->SetNdivisions(805);
+        ratio->GetYaxis()->SetLabelSize(h_basic->GetYaxis()->GetLabelSize()*(1.-r)/r);
+        ratio->GetYaxis()->SetRangeUser(0.81, 1.19);
+        ratio->GetYaxis()->SetTitle("Data/Simulation ");
+        ratio->GetXaxis()->SetLabelSize(h_basic->GetXaxis()->GetLabelSize()*(1.-r)/r);
+        ratio->GetXaxis()->SetTitleSize(h_basic->GetXaxis()->GetTitleSize()*(1.-r)/r);
+        ratio->GetXaxis()->SetTitle(h_basic->GetXaxis()->GetTitle());
         //      ratio->SetMarkerSize(1);
+        h_basic->GetXaxis()->SetLabelSize(0.);
+        h_basic->GetXaxis()->SetTitleSize(0.);
         ratio->Draw();
 
         TLine line;
         line.SetLineWidth(1);
         line.DrawLine(h_dt1d_comb[i]->GetXaxis()->GetXmin(), 1, h_dt1d_comb[i]->GetXaxis()->GetXmax(), 1);
+
+        CMS_lumi( canv1d_comb[i], 2, 11 );
 
         gErrorIgnoreLevel = 2000; //suppress Info in <TCanvas::Print> messages
         canv1d_comb[i]->Print(Form("%splots/%s%s%s_combined.pdf", region,
