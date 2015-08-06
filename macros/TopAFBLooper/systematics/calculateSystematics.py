@@ -512,6 +512,14 @@ def main():
     #results = {}
     print ""
 
+    afberrs = {}
+    afberrs2D = {}
+
+#    for plot in sorted(systematics.keys()):
+#        for systematic in sorted(systematics[plot].keys()):
+#            afberrs[plot,systematic] = 0
+#            afberrs2D[plot,systematic] = zeros( [3+1] )
+
     #Loop over the different asymmetry variables...
     for plot in sorted(systematics.keys()):
 
@@ -835,12 +843,12 @@ def main():
 
             #the slight differences between afberr and sqrt(sumsq_syst) and sqrt(sumsq_syst_2D), particularly for the 2D asymmetries, are because GetCorrectedAfb(2D) uses the nominal bins whereas sumsq_syst(_2D) effectively uses the average of the up and down variations, which are not necessarily centred at nominal
             if nbins2D==0:
-                (afb,afberr) = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
-                print "%15s systematic: %2.6f" % (systematic, afberr)
+                (afb,afberrs[plot,systematic]) = GetCorrectedAfb_integratewidth_V(covar_syst, nbins, bin_nominals_i, binwidth)
+                print "%15s systematic: %2.6f" % (systematic, afberrs[plot,systematic])
             else:
-                (afb,afberr,afbcov) = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
-                print "%15s systematic: %2.6f" % (systematic, afberr[nbins2D])
-            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], afberr[binindex])
+                (afb,afberrs2D[plot,systematic],afbcov) = GetCorrectedAfb2D(covar_syst, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+                print "%15s systematic: %2.6f" % (systematic, afberrs2D[plot,systematic][nbins2D])
+            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % (systematic, sorted(binlist2D)[binindex], afberrs2D[plot,systematic][binindex])
             #end loop over subtypes
             if systematic != 'RegularisationFullKIT':
                 sumsq_total += sumsq_syst
@@ -959,6 +967,21 @@ def main():
             for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr_preMCStat[binindex] )
         print ""
     #end loop over asymmetries
+
+    #print table of systematics
+    for systematic in sorted(systematics['lepAzimAsym2'].keys()):
+        if systematic == 'Nominal': continue
+        if systematic == 'NominalDataStat': continue
+        if systematic == 'RegularisationFullKIT': continue
+        if systematic == 'name': continue
+        print systematic,
+        #for plot in sorted(systematics.keys()):
+        print "%2.3f" % afberrs['lepAzimAsym2',systematic],
+        print "%2.3f" % afberrs['lepCosTheta',systematic],
+        print "%2.3f" % afberrs['lepPlusCosTheta',systematic],
+        print "%2.3f" % afberrs['topSpinCorr',systematic],
+        print "%2.3f" % afberrs['lepCosOpeningAngle',systematic],
+        print " "
     
 
 if __name__ == '__main__':
