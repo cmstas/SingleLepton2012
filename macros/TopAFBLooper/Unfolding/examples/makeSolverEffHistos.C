@@ -292,6 +292,10 @@ void makeSolverEffHistos()
 		h1Dataratio->SetLineColor(kBlack);
 
 
+		Float_t Afb, AfbErr;
+		GetAfb(h1ttbarratio, Afb, AfbErr);
+		cout<<observablename<<" "<<Afb<<" +/- "<<AfbErr<<endl;
+
 
 		//c1->cd(1);
 		h1ttbarratio->Draw("hist");

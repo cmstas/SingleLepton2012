@@ -57,6 +57,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
   gStyle->SetOptFit();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
+  gStyle->SetPadTopMargin(0.055);
   cout.precision(3);
 
   TString ChannelName[4] = {"diel", "dimu", "mueg", "all"};
@@ -540,7 +541,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         hData->Draw("E same");
 
-        TLegend *leg0 = new TLegend(0.58, 0.75, 0.9, 0.93, NULL, "brNDC");
+        TLegend *leg0 = new TLegend(0.58, 0.74, 0.9, 0.92, NULL, "brNDC");
         leg0->SetEntrySeparation(100);
         leg0->SetFillColor(0);
         leg0->SetLineColor(0);
@@ -990,12 +991,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hs->Add(hData_unfolded_plussyst);
         //hs->SetMinimum( 0 );
         Float_t hsmin = hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) : 0;
+        //if (acceptanceName == "lepChargeAsym") hsmin=0.;
         hs->SetMinimum( hsmin );
         //printf("min = %8f \n", hsmin);
         if( int(200.*hsmin) - 10*int(20.*hsmin) > 8 ) hs->SetMinimum( hsmin + 0.01 ); //avoid axis label very close to bottom
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hs->SetMaximum(1.36 * hData_unfolded->GetMaximum());
         else if (acceptanceName == "lepCosTheta") hs->SetMaximum(1.18 * hData_unfolded->GetMaximum());
+        else if (acceptanceName == "rapiditydiffMarco") hs->SetMaximum(1.3333 * hData_unfolded->GetMaximum());
         else hs->SetMaximum(1.3 * hData_unfolded->GetMaximum());
 
 
@@ -1035,6 +1038,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
         if (observablename == "lep_azimuthal_asymmetry2") hs->GetXaxis()->SetNdivisions(-406);
+        else hs->GetXaxis()->SetNdivisions(504,0);
         hs->GetYaxis()->SetNdivisions(507);
         hData_unfolded->GetXaxis()->SetTitle(xaxislabel);
         //hData_unfolded->GetYaxis()->SetTitle("1/#sigma d#sigma/d("+xaxislabel+")");
@@ -1065,15 +1069,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" ||
 			acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") second_legend = true;
 
-		float left_bound = 0.45;
+		float left_bound = 0.41;
 		if( second_legend ) left_bound = 0.59;
 
 		float leg_textSize = 0.055;
 		if( second_legend ) leg_textSize *= 0.8;
-		else leg_textSize *= 0.8;
+		else leg_textSize *= 0.9;
 
+		TLegend *leg1;
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
-        TLegend *leg1 = new TLegend(left_bound, 0.75, 0.9, 0.93, NULL, "brNDC");
+        if( second_legend ) leg1 = new TLegend(left_bound, 0.74, 0.9, 0.92, NULL, "brNDC");
+        else leg1 = new TLegend(left_bound, 0.72, 0.9, 0.92, NULL, "brNDC");
         leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
@@ -1081,8 +1087,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg1->SetFillStyle(0);
         leg1->SetTextSize(leg_textSize);
         leg1->SetTextFont(62);
-        leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
-        leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
+        if(second_legend) leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
+        else leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.25]{ }-#kern[-0.2]{ }#kern[-0.1]{b}ackground#kern[-0.2]{ }) unfolded");
+        if(second_legend) leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
+        else leg1->AddEntry(hData_unfolded_plussyst,    "Systematic uncertainty", "F");
         leg1->AddEntry(hTrue,    "MC@NLO parton level", "L");
 
         leg1->Draw();
@@ -1090,8 +1098,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
 		  {
             TLegend *leg2;
-            leg2 = new TLegend(0.19, 0.72, 0.45, 0.92, NULL, "brNDC");
-            if ( acceptanceName == "lepCosTheta" ) leg2 = new TLegend(0.19, 0.81, 0.45, 0.92, NULL, "brNDC");
+            leg2 = new TLegend(0.19, 0.71, 0.45, 0.91, NULL, "brNDC");
+            if ( acceptanceName == "lepCosTheta" ) leg2 = new TLegend(0.19, 0.80, 0.45, 0.91, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
@@ -1189,8 +1197,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             //hsd->GetXaxis()->SetLabelOffset(-0.88);
 
             hsd->GetYaxis()->SetTitle("Data/Simulation ");
-            hsd->GetYaxis()->SetNdivisions(805);
+            hsd->GetYaxis()->SetNdivisions(505);
             if (observablename == "lep_azimuthal_asymmetry2") hsd->GetXaxis()->SetNdivisions(-406);
+            else hsd->GetXaxis()->SetNdivisions(504,0);
             if (observablename == "lep_azimuthal_asymmetry2") {
             	TString binlabels[] = {"0","#pi/6","#pi/3","#pi/2","2#pi/3","5#pi/6","#pi"};
 	            TLatex label;

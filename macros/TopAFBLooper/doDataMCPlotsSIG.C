@@ -1106,13 +1106,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     const char *xtitle1d[N1DHISTS] =
     {
         "|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}|",
-        "#Delta#phi_{l#lower[-0.4]{+}l#lower[-0.48]{-}}",
+        "#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}",
         "#Delta|#eta_{#font[12]{l}}|",
         "#Delta|y_{t}|",
-        "cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.38]{*})",
-        "cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.0]{*})",
-        "cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.38]{*}) cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.0]{*})",
-        "cos(#phi)",
+        "cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)}",
+        "cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})",
+        "cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)} cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})",
+        "cos(#varphi)",
         "M_{t}",
         "M_{t#bar{t}}",
         "p_{T}^{t#bar{t}}",
@@ -1734,7 +1734,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             if (!hasplot[leptype][i]) continue;
 
             leg1d[i] = new TLegend(0.57, 0.60, 0.93, 0.931);//0.56,0.64,0.92,0.915);
-            if(combinebackgroundsinplot) leg1d[i] = new TLegend(0.65, 0.69, 0.93, 0.92);
+            if(combinebackgroundsinplot) leg1d[i] = new TLegend(0.65, 0.69, 0.92, 0.92);
             //  leg1d[i] = new TLegend(0.712, 0.541, 0.928, 0.931);//0.56,0.64,0.92,0.915);
             //    leg1d[i] = new TLegend(0.731544, 0.55507, 0.947987, 0.946241);//0.56,0.64,0.92,0.915);
             leg1d[i]->SetName(Form("leg_%s", h_dt1d[i]->GetName()));
@@ -2090,7 +2090,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         if (!hasplotall[i]) continue;
 
         leg1d_comb[i] = new TLegend(0.57, 0.60, 0.93, 0.931);
-        if(combinebackgroundsinplot) leg1d_comb[i] = new TLegend(0.65, 0.69, 0.93, 0.92);
+        if(combinebackgroundsinplot) leg1d_comb[i] = new TLegend(0.65, 0.69, 0.92, 0.92);
         leg1d_comb[i]->SetName(Form("leg_%s", h_dt1d_comb[i]->GetName()));
         leg1d_comb[i]->SetFillColor(0);
         leg1d_comb[i]->AddEntry(h_dt1d_comb[i], "data ", "lp");
