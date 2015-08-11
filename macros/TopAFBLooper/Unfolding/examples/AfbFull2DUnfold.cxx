@@ -1036,6 +1036,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		gStyle->SetPadRightMargin(0.05);
 		gStyle->SetPadLeftMargin(0.18);
 		gStyle->SetPadBottomMargin(0.14);
+		gStyle->SetPadTopMargin(0.0667);
 		//gStyle->SetErrorX(0);
 		//gStyle->SetEndErrorSize(0);
 
@@ -1103,6 +1104,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt_statonly->SetLineWidth( 4.0 );
         hAfbVsMtt_statonly->SetMarkerSize(1.5);
         hAfbVsMtt_statonly->Draw("E same");
+        hs->GetYaxis()->SetNdivisions(507);
         hs->GetYaxis()->SetTitle(asymlabel+"   ");
         hs->GetYaxis()->SetTitleOffset(1.4);
         hs->GetYaxis()->SetLabelOffset(999);
@@ -1116,12 +1118,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hTop_AfbVsMtt->SetLineWidth( 4.0 );
         hTop_AfbVsMtt->Draw("E same");
 
-        TLegend* leg1 = new TLegend(0.43, 0.73, 0.88, 0.938, NULL, "brNDC");
+        TLegend* leg1 = new TLegend(0.4, 0.72, 0.88, 0.92, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
-        leg1->SetTextSize(0.04);
+        leg1->SetTextSize(0.044);
         leg1->SetFillStyle(0);
         leg1->AddEntry(hAfbVsMtt, "Unfolded data");
         leg1->AddEntry(hAfbVsMtt_plussyst,    "Syst. uncertainty", "F");
@@ -1132,6 +1134,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		CMS_lumi( c_afb, 2, 11 );
 
 		TGaxis *axis = new TGaxis(gPad->GetUxmin(),gPad->GetUymin(),gPad->GetUxmin(),gPad->GetUymax(),minmin - 2., maxmax - 2.,510,"");
+		axis->SetNdivisions(507);
 		axis->Draw();
 		axis->SetLabelColor(1);
 		axis->SetLabelFont(42);

@@ -307,7 +307,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			    if( observableMinus > histmax )        observableMinus = hiBinCenter;
 			    else if( observableMinus < histmin )   observableMinus = loBinCenter;
 
-                if ( iVar<2 || iVar==9 || tmass > 0 )
+                if ( iVar<2 || iVar==9 || tmass>0 )
 				  {
 					// leptonic asymmetries don't need valid top mass solution
                     fillUnderOverFlow(hBkg, observable, weight, Nsolns);
@@ -989,17 +989,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_plussyst->SetFillColor(15);
         hs->Add(hData_unfolded_plussyst);
         //hs->SetMinimum( 0 );
-        Float_t hsmin = hData_unfolded->GetMinimum() - ( 0.2 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.2 * hData_unfolded->GetMaximum() ) : 0;
+        Float_t hsmin = hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) : 0;
         hs->SetMinimum( hsmin );
         //printf("min = %8f \n", hsmin);
         if( int(200.*hsmin) - 10*int(20.*hsmin) > 8 ) hs->SetMinimum( hsmin + 0.01 ); //avoid axis label very close to bottom
 
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hs->SetMaximum(1.35 * hData_unfolded->GetMaximum());
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hs->SetMaximum(1.36 * hData_unfolded->GetMaximum());
+        else if (acceptanceName == "lepCosTheta") hs->SetMaximum(1.18 * hData_unfolded->GetMaximum());
         else hs->SetMaximum(1.3 * hData_unfolded->GetMaximum());
 
 
         TCanvas *c_test;
-        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 650);
+        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 500);
         else c_test = new TCanvas("c_final", "c_final", 500, 500);
 
         float r = 0.31;
@@ -1033,6 +1034,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
+        if (observablename == "lep_azimuthal_asymmetry2") hs->GetXaxis()->SetNdivisions(-406);
+        hs->GetYaxis()->SetNdivisions(507);
         hData_unfolded->GetXaxis()->SetTitle(xaxislabel);
         //hData_unfolded->GetYaxis()->SetTitle("1/#sigma d#sigma/d("+xaxislabel+")");
         //hData_unfolded->SetMinimum(0.0);
@@ -1063,10 +1066,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") second_legend = true;
 
 		float left_bound = 0.45;
-		if( second_legend ) left_bound = 0.58;
+		if( second_legend ) left_bound = 0.59;
 
-		float leg_textSize = 0.04;
-		if( second_legend ) leg_textSize = 0.032;
+		float leg_textSize = 0.055;
+		if( second_legend ) leg_textSize *= 0.8;
+		else leg_textSize *= 0.8;
 
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
         TLegend *leg1 = new TLegend(left_bound, 0.75, 0.9, 0.93, NULL, "brNDC");
@@ -1076,7 +1080,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg1->SetBorderSize(0);
         leg1->SetFillStyle(0);
         leg1->SetTextSize(leg_textSize);
-        leg1->AddEntry(hData_unfolded, "( Data - BG ) unfolded");
+        leg1->SetTextFont(62);
+        leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
         leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
         leg1->AddEntry(hTrue,    "MC@NLO parton level", "L");
 
@@ -1084,15 +1089,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
 		  {
-            TLegend *leg2 = new TLegend(0.18, 0.75, 0.45, 0.93, NULL, "brNDC");
+            TLegend *leg2;
+            leg2 = new TLegend(0.19, 0.72, 0.45, 0.92, NULL, "brNDC");
+            if ( acceptanceName == "lepCosTheta" ) leg2 = new TLegend(0.19, 0.81, 0.45, 0.92, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
             leg2->SetBorderSize(0);
             leg2->SetFillStyle(0);
-            leg2->SetTextSize(0.032);
-            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV SM, #mu=^{}m_{t})}", "L");
-            if(acceptanceName != "lepCosTheta") leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.Bernreuther & Z.G.Si}{(8 TeV uncorrelated, #mu=^{}m_{t})}", "L");
+            leg2->SetTextSize(leg_textSize);
+            leg2->SetTextFont(62);
+            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther & Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
+            if(acceptanceName != "lepCosTheta") leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther & Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             leg2->Draw();
 		  }
 
@@ -1182,8 +1190,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
             hsd->GetYaxis()->SetTitle("Data/Simulation ");
             hsd->GetYaxis()->SetNdivisions(805);
+            if (observablename == "lep_azimuthal_asymmetry2") hsd->GetXaxis()->SetNdivisions(-406);
+            if (observablename == "lep_azimuthal_asymmetry2") {
+            	TString binlabels[] = {"0","#pi/6","#pi/3","#pi/2","2#pi/3","5#pi/6","#pi"};
+	            TLatex label;
+	            label.SetTextSize(hs->GetXaxis()->GetLabelSize()*(1.-r)/r);
+	            hsd->GetXaxis()->SetLabelSize(0);
+	            label.SetTextFont(42);
+	            label.SetTextAlign(22);
+	            for (Int_t k=0;k<=nbinsx_gen;k++) {
+	            	Double_t xnew = hs->GetXaxis()->GetBinLowEdge(k+1);
+	            	//if(k%2==0) label.DrawLatex(xnew,hsd->GetMinimum(),Form("%i#pi/6",k/2));
+	            	if(k%2==0) label.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/12.,binlabels[k/2]);
+	            }
+	        }
             //hsd->GetYaxis()->SetTitleFont(hData_unfolded->GetYaxis()->GetTitleFont());
-            hsd->GetYaxis()->SetTitleOffset(0.7);
+            hsd->GetYaxis()->SetTitleOffset(0.6);
             hsd->GetYaxis()->SetTitleSize(0.120);
             hsd->GetYaxis()->SetLabelSize( hs->GetYaxis()->GetLabelSize()*(1.-r)/r);
             //hsd->GetYaxis()->SetLabelFont(hData_unfolded->GetYaxis()->GetLabelFont());
