@@ -1048,6 +1048,22 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         TH1D *hAfbVsMtt_plussyst = new TH1D ("AfbVsMtt_plussyst",  "AfbVsMtt_plussyst",  3, ybinsForHisto);
         TH1D *hAfbVsMtt_minussyst = new TH1D ("AfbVsMtt_minussyst",  "AfbVsMtt_minussyst",  3, ybinsForHisto);
 
+        TH1D *hAfbVsMtt_theory_default = new TH1D ("AfbVsMtt_theory_default",  "AfbVsMtt_theory_default",  3, ybinsForHisto);
+        //TH1D *hAfbVsMtt_theory_scaledown = new TH1D ("AfbVsMtt_theory_scaledown",  "AfbVsMtt_theory_scaledown",  3, ybinsForHisto);
+        //TH1D *hAfbVsMtt_theory_scaleup = new TH1D ("AfbVsMtt_theory_scaleup",  "AfbVsMtt_theory_scaleup",  3, ybinsForHisto);
+        TH1D *hAfbVsMtt_uncorr_default = new TH1D ("AfbVsMtt_uncorr_default",  "AfbVsMtt_uncorr_default",  3, ybinsForHisto);
+        //TH1D *hAfbVsMtt_uncorr_scaledown = new TH1D ("AfbVsMtt_uncorr_scaledown",  "AfbVsMtt_uncorr_scaledown",  3, ybinsForHisto);
+        //TH1D *hAfbVsMtt_uncorr_scaleup = new TH1D ("AfbVsMtt_uncorr_scaleup",  "AfbVsMtt_uncorr_scaleup",  3, ybinsForHisto);
+
+		TH1D *hAfbVsMtt_theory_syst = new TH1D ("AfbVsMtt_theory_syst",  "AfbVsMtt_theory_syst",  3, ybinsForHisto);
+		TH1D *hAfbVsMtt_uncorr_syst = new TH1D ("AfbVsMtt_uncorr_syst",  "AfbVsMtt_uncorr_syst",  3, ybinsForHisto);
+
+		//TH1D *hAfbVsMtt_theory_systdown = new TH1D ("AfbVsMtt_theory_systdown",  "AfbVsMtt_theory_systdown",  3, ybinsForHisto);
+		//TH1D *hAfbVsMtt_theory_systup = new TH1D ("AfbVsMtt_theory_systup",  "AfbVsMtt_theory_systup",  3, ybinsForHisto);
+		//TH1D *hAfbVsMtt_uncorr_systdown = new TH1D ("AfbVsMtt_uncorr_systdown",  "AfbVsMtt_uncorr_systdown",  3, ybinsForHisto);
+		//TH1D *hAfbVsMtt_uncorr_systup = new TH1D ("AfbVsMtt_uncorr_systup",  "AfbVsMtt_uncorr_systup",  3, ybinsForHisto);
+
+
         double afboffset = 2.;
 
 
@@ -1062,6 +1078,42 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             hAfbVsMtt_minussyst->SetBinError(nb + 1, 0.);
             hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
             hAfbVsMtt_plussyst->SetBinError(nb + 1, 0.);
+
+            hAfbVsMtt_theory_default->SetBinContent(nb + 1, afboffset + theory_default[nb]);
+            //hAfbVsMtt_theory_scaledown->SetBinContent(nb + 1, afboffset + theory_scaledown[nb]);
+            //hAfbVsMtt_theory_scaleup->SetBinContent(nb + 1, afboffset + theory_scaleup[nb]);
+
+            hAfbVsMtt_uncorr_default->SetBinContent(nb + 1, afboffset + 0.);
+            //hAfbVsMtt_uncorr_scaledown->SetBinContent(nb + 1, afboffset + 0.);
+            //hAfbVsMtt_uncorr_scaleup->SetBinContent(nb + 1, afboffset + 0.);
+
+//
+            //hAfbVsMtt_theory_systdown->SetBinContent(nb + 1, afboffset + min(theory_scaledown[nb],theory_scaleup[nb]) );
+            //hAfbVsMtt_theory_systup->SetBinContent(nb + 1,  fabs(theory_scaledown[nb] - theory_scaleup[nb]) );
+
+            hAfbVsMtt_theory_syst->SetBinContent(nb + 1, afboffset + (theory_scaledown[nb]+theory_scaleup[nb])/2. );
+            hAfbVsMtt_theory_syst->SetBinError(nb + 1, fabs(theory_scaledown[nb]-theory_scaleup[nb])/2. );
+
+            //hAfbVsMtt_uncorr_systdown->SetBinContent(nb + 1, afboffset + 0.);
+            //hAfbVsMtt_uncorr_systup->SetBinContent(nb + 1, 0.);
+
+            hAfbVsMtt_uncorr_syst->SetBinContent(nb + 1, afboffset + 0. );
+            hAfbVsMtt_uncorr_syst->SetBinError(nb + 1, 0. );
+
+
+
+            if(observablename == "lep_azimuthal_asymmetry2") {
+	            hAfbVsMtt_uncorr_default->SetBinContent(nb + 1, afboffset + uncorr_default[nb]);
+	            //hAfbVsMtt_uncorr_scaledown->SetBinContent(nb + 1, afboffset + uncorr_scaledown[nb]);
+	            //hAfbVsMtt_uncorr_scaleup->SetBinContent(nb + 1, afboffset + uncorr_scaleup[nb]);
+
+	            //hAfbVsMtt_uncorr_systdown->SetBinContent(nb + 1, afboffset + min(uncorr_scaledown[nb],uncorr_scaleup[nb]) );
+	            //hAfbVsMtt_uncorr_systup->SetBinContent(nb + 1,  fabs(uncorr_scaledown[nb] - uncorr_scaleup[nb]) );
+
+            	hAfbVsMtt_uncorr_syst->SetBinContent(nb + 1, afboffset + (uncorr_scaledown[nb]+uncorr_scaleup[nb])/2. );
+            	hAfbVsMtt_uncorr_syst->SetBinError(nb + 1, fabs(uncorr_scaledown[nb]-uncorr_scaleup[nb])/2. );
+
+	        }
 		  }
 
         TH1D *hTop_AfbVsMtt = new TH1D ("Top_AfbVsMtt",  "Top_AfbVsMtt",  3, ybinsForHisto);
@@ -1096,6 +1148,40 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
+
+
+/*
+        THStack *ht = new THStack("ht_systband", "Systematic band for theory");
+        hAfbVsMtt_theory_systdown->SetLineColor(kWhite);
+        hAfbVsMtt_theory_systdown->SetFillColor(kWhite);
+        //hAfbVsMtt_theory_systdown->SetFillColorAlpha(kWhite, 1.0)
+        hAfbVsMtt_theory_systdown->SetFillStyle(3350);
+        ht->Add(hAfbVsMtt_theory_systdown);
+        hAfbVsMtt_theory_systup->SetFillStyle(3335);
+        hAfbVsMtt_theory_systup->SetLineColor(kWhite);
+        hAfbVsMtt_theory_systup->SetFillColor(kBlue);
+        ht->Add(hAfbVsMtt_theory_systup);
+*/
+        if( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) ) {
+        	//ht->Draw("same"); //can't have two hstacks because the one on top is always opaque and obscures the one below
+
+	        hAfbVsMtt_theory_default->SetLineColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_default->SetMarkerColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_default->SetMarkerSize(0);
+	        hAfbVsMtt_theory_default->SetLineWidth( 1.0 );
+	        hAfbVsMtt_theory_default->Draw("E same");
+
+	        hAfbVsMtt_theory_syst->SetFillColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_syst->SetLineColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_syst->SetMarkerColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_syst->SetMarkerSize(0);
+	        hAfbVsMtt_theory_syst->SetFillStyle(3018);
+	        hAfbVsMtt_theory_syst->Draw("E2 same");
+
+        }
+
+
+
         //hAfbVsMtt->SetMinimum( minmin - 0.1 );
         //hAfbVsMtt->SetMaximum( maxmax + 0.1 );
         //hAfbVsMtt->SetLineWidth( 4.0 );
@@ -1117,6 +1203,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hTop_AfbVsMtt->SetMarkerSize(0);
         hTop_AfbVsMtt->SetLineWidth( 4.0 );
         hTop_AfbVsMtt->Draw("E same");
+
 
         TLegend* leg1 = new TLegend(0.4, 0.72, 0.88, 0.92, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
