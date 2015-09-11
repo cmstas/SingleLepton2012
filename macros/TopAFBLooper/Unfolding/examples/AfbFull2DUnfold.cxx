@@ -1036,7 +1036,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		gStyle->SetPadRightMargin(0.05);
 		gStyle->SetPadLeftMargin(0.18);
 		gStyle->SetPadBottomMargin(0.14);
-		gStyle->SetPadTopMargin(0.0667);
+		gStyle->SetPadTopMargin(0.06);
 		//gStyle->SetErrorX(0);
 		//gStyle->SetEndErrorSize(0);
 
@@ -1098,7 +1098,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             //hAfbVsMtt_uncorr_systup->SetBinContent(nb + 1, 0.);
 
             hAfbVsMtt_uncorr_syst->SetBinContent(nb + 1, afboffset + 0. );
-            hAfbVsMtt_uncorr_syst->SetBinError(nb + 1, 0. );
+            hAfbVsMtt_uncorr_syst->SetBinError(nb + 1, 0.0001 );
 
 
 
@@ -1130,21 +1130,39 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt_minussyst->SetFillColor(10);
         hAfbVsMtt_minussyst->SetFillStyle(0);
         hs->Add(hAfbVsMtt_minussyst);
-        hAfbVsMtt_plussyst->SetFillStyle(3353);
+        hAfbVsMtt_plussyst->SetFillStyle(3354);
         hAfbVsMtt_plussyst->SetLineColor(kWhite);
-        hAfbVsMtt_plussyst->SetFillColor(15);
+        hAfbVsMtt_plussyst->SetFillColor(kGray+1);
         hs->Add(hAfbVsMtt_plussyst);
 
         tdrStyle->SetErrorX(0.5);
+
+
+        bool drawTheory = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) );
+        //bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" ) );
+        bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle") );
 		//double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
 		double minmin = min( hAfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hAfbVsMtt->GetMinimumBin()), hTop_AfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMinimumBin()));
 		double maxmax = max( hAfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hAfbVsMtt->GetMaximumBin()), hTop_AfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMaximumBin()));
+		if(drawTheory) minmin = min(minmin, hAfbVsMtt_theory_syst->GetMinimum() - hAfbVsMtt_theory_syst->GetBinError(hAfbVsMtt_theory_syst->GetMinimumBin()));
+		if(drawTheoryUncorrelated) minmin = min(minmin, hAfbVsMtt_uncorr_syst->GetMinimum() - hAfbVsMtt_uncorr_syst->GetBinError(hAfbVsMtt_uncorr_syst->GetMinimumBin()));
+		if(drawTheory) maxmax = max(maxmax, hAfbVsMtt_theory_syst->GetMaximum() + hAfbVsMtt_theory_syst->GetBinError(hAfbVsMtt_theory_syst->GetMaximumBin()));
+		if(drawTheoryUncorrelated) maxmax = max(maxmax, hAfbVsMtt_uncorr_syst->GetMaximum() + hAfbVsMtt_uncorr_syst->GetBinError(hAfbVsMtt_uncorr_syst->GetMaximumBin()));
+
 		double spread = maxmax - minmin;
 		//if( spread > 0.25 ) maxmax += 0.25*spread;
 		//minmin = minmin - spread/50.;
-		maxmax = maxmax + spread/2.8;
+		maxmax = maxmax + spread/2.1;
+		minmin = minmin - spread/10.;
+
+		if( ( observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) && minmin > afboffset ) minmin = afboffset;
+		if( ( observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) && maxmax < afboffset ) maxmax = afboffset;
+
+		if(observablename == "lep_cos_opening_angle" && Var2D == "ttrapidity2") maxmax = maxmax+0.01;  //hack for one special case where the maximum bin has much smaller errors than the second bin
+
         hs->SetMinimum( minmin );
-        hs->SetMaximum( maxmax/1.05 );  //THStack multiplies the max by 1.05
+        hs->SetMaximum( maxmax/(1+gStyle->GetHistTopMargin()) );  //THStack multiplies the max by (1+gStyle->GetHistTopMargin())
+        //else hs->SetMaximum( maxmax );
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
@@ -1162,21 +1180,43 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt_theory_systup->SetFillColor(kBlue);
         ht->Add(hAfbVsMtt_theory_systup);
 */
-        if( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) ) {
+        if(drawTheory) {
+        //if( ( Var2D != "" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) ) {
         	//ht->Draw("same"); //can't have two hstacks because the one on top is always opaque and obscures the one below
+
+	        hAfbVsMtt_theory_syst->SetFillColor(kBlue-9);
+	        hAfbVsMtt_theory_syst->SetLineColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_syst->SetMarkerColor(TColor::GetColorDark(kBlue));
+	        hAfbVsMtt_theory_syst->SetMarkerSize(0);
+	        hAfbVsMtt_theory_syst->SetFillStyle(3345);
+	        hAfbVsMtt_theory_syst->SetLineWidth( 3.0 );
+	        hAfbVsMtt_theory_syst->Draw("E2 same");
 
 	        hAfbVsMtt_theory_default->SetLineColor(TColor::GetColorDark(kBlue));
 	        hAfbVsMtt_theory_default->SetMarkerColor(TColor::GetColorDark(kBlue));
 	        hAfbVsMtt_theory_default->SetMarkerSize(0);
-	        hAfbVsMtt_theory_default->SetLineWidth( 1.0 );
+	        hAfbVsMtt_theory_default->SetLineWidth( 3.0 );
 	        hAfbVsMtt_theory_default->Draw("E same");
 
-	        hAfbVsMtt_theory_syst->SetFillColor(TColor::GetColorDark(kBlue));
-	        hAfbVsMtt_theory_syst->SetLineColor(TColor::GetColorDark(kBlue));
-	        hAfbVsMtt_theory_syst->SetMarkerColor(TColor::GetColorDark(kBlue));
-	        hAfbVsMtt_theory_syst->SetMarkerSize(0);
-	        hAfbVsMtt_theory_syst->SetFillStyle(3018);
-	        hAfbVsMtt_theory_syst->Draw("E2 same");
+	        if(drawTheoryUncorrelated) {
+
+		        hAfbVsMtt_uncorr_syst->SetFillColor(kBlue-9);
+		        hAfbVsMtt_uncorr_syst->SetLineColor(TColor::GetColorDark(kBlue));
+		        hAfbVsMtt_uncorr_syst->SetMarkerColor(TColor::GetColorDark(kBlue));
+		        hAfbVsMtt_uncorr_syst->SetMarkerSize(0);
+		        hAfbVsMtt_uncorr_syst->SetFillStyle(3345);
+		        hAfbVsMtt_uncorr_syst->SetLineWidth( 3.0 );
+		        hAfbVsMtt_uncorr_syst->SetLineStyle(2);
+		        if(observablename == "lep_azimuthal_asymmetry2") hAfbVsMtt_uncorr_syst->Draw("E2 same"); //the other variables have no scale uncertainties
+
+		        hAfbVsMtt_uncorr_default->SetLineColor(TColor::GetColorDark(kBlue));
+		        hAfbVsMtt_uncorr_default->SetMarkerColor(TColor::GetColorDark(kBlue));
+		        hAfbVsMtt_uncorr_default->SetMarkerSize(0);
+		        hAfbVsMtt_uncorr_default->SetLineWidth( 3.0 );
+		        hAfbVsMtt_uncorr_default->SetLineStyle(2);
+		        hAfbVsMtt_uncorr_default->Draw("E same");
+
+	        }
 
         }
 
@@ -1205,20 +1245,39 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hTop_AfbVsMtt->Draw("E same");
 
 
-        TLegend* leg1 = new TLegend(0.4, 0.72, 0.88, 0.92, NULL, "brNDC");
+        TLegend* leg1 = new TLegend(0.63, 0.73, 0.88, 0.93, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
-        leg1->SetTextSize(0.044);
+        leg1->SetTextSize(0.035);
+        leg1->SetTextFont(62);
         leg1->SetFillStyle(0);
         leg1->AddEntry(hAfbVsMtt, "Unfolded data");
         leg1->AddEntry(hAfbVsMtt_plussyst,    "Syst. uncertainty", "F");
-        leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
+        //leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
+        leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO");
         leg1->Draw();
 
+        TLegend *leg2;
+        if(drawTheory) {
+	        leg2 = new TLegend(0.19, 0.72, 0.45, 0.92, NULL, "brNDC");
+	        if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.19, 0.81, 0.45, 0.92, NULL, "brNDC");
+	        leg2->SetEntrySeparation(0.5);
+	        leg2->SetFillColor(0);
+	        leg2->SetLineColor(0);
+	        leg2->SetBorderSize(0);
+	        leg2->SetFillStyle(0);
+	        leg2->SetTextSize(0.035);
+	        leg2->SetTextFont(62);
+	        leg2->AddEntry(hAfbVsMtt_theory_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "LF");
+	        if(drawTheoryUncorrelated) leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "LF");
+	        leg2->Draw();
+	    }
+
+
 		// 2 means 8TeV, 11 means left-corner
-		CMS_lumi( c_afb, 2, 11 );
+		CMS_lumi( c_afb, 2, 0 );
 
 		TGaxis *axis = new TGaxis(gPad->GetUxmin(),gPad->GetUymin(),gPad->GetUxmin(),gPad->GetUymax(),minmin - 2., maxmax - 2.,510,"");
 		axis->SetNdivisions(507);

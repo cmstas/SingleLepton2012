@@ -46,6 +46,7 @@ int lineWidthDiffs=drawDiffs?lineWidth*2/3:lineWidth;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
 bool draw_truth_before_pT_reweighting = true; //turn this on when making the final plots for the paper (want to compare the data against the unweighted MC)
 //bool drawTheory = true; //turn this on to show Bernreuther's predictions for AdeltaPhi and Ac1c2
+bool drawTheoryScaleBand = false;
 bool maketauplots = false;
 
 
@@ -57,7 +58,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
   gStyle->SetOptFit();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  gStyle->SetPadTopMargin(0.055);
+  gStyle->SetPadTopMargin(0.057);
   cout.precision(3);
 
   TString ChannelName[4] = {"diel", "dimu", "mueg", "all"};
@@ -755,7 +756,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
         TProfile *theoryProfileCorr = new TProfile("thprofilecorrelated", "correlated data from theory file", nbinsx_gen, genbins);
+        TProfile *theoryProfileCorr_scaleup = new TProfile("thprofilecorrelated_scaleup", "correlated data scaleup from theory file", nbinsx_gen, genbins);
+        TProfile *theoryProfileCorr_scaledown = new TProfile("thprofilecorrelated_scaledown", "correlated data scaledown from theory file", nbinsx_gen, genbins);
+        TH1D *theoryProfileCorr_scale = new TH1D("thprofilecorrelated_scale", "correlated data scale band", nbinsx_gen, genbins);
+
         TProfile *theoryProfileUnCorr = new TProfile("thprofileuncorrelated", "uncorrelated data from theory file", nbinsx_gen, genbins);
+        TProfile *theoryProfileUnCorr_scaleup = new TProfile("thprofileuncorrelated_scaleup", "uncorrelated data scaleup from theory file", nbinsx_gen, genbins);
+        TProfile *theoryProfileUnCorr_scaledown = new TProfile("thprofileuncorrelated_scaledown", "uncorrelated data scaledown from theory file", nbinsx_gen, genbins);
+        TH1D *theoryProfileUnCorr_scale = new TH1D("thprofileuncorrelated_scale", "uncorrelated data scale band", nbinsx_gen, genbins);
         delete[] genbins;
 
         if (observablename == "lep_azimuthal_asymmetry2")
@@ -771,6 +779,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 if (ncols < 0) break;
                 if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v1);
                 theoryProfileCorr->Fill(dphi, v1);
+                theoryProfileCorr_scaledown->Fill(dphi, v2);
+                theoryProfileCorr_scaleup->Fill(dphi, v3);
                 nlines++;
 			  }
 
@@ -782,6 +792,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 if (ncols < 0) break;
                 if (nlines < 5) printf("dphi=%8f, v=%8f\n", dphi, v1);
                 theoryProfileUnCorr->Fill(dphi, v1);
+                theoryProfileUnCorr_scaledown->Fill(dphi, v2);
+                theoryProfileUnCorr_scaleup->Fill(dphi, v3);
                 nlines++;
 			  }
 		  }
@@ -799,17 +811,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
                 theoryProfileCorr->Fill(c1c2, v1);
+                theoryProfileCorr_scaledown->Fill(c1c2, v2);
+                theoryProfileCorr_scaleup->Fill(c1c2, v3);
                 nlines++;
 			  }
 
             nlines = 0;
-            fp = fopen("theory/lhc7_uncorr_mu1m_cos1cos2.dat", "r");
+            fp = fopen("theory/lhc7_uncorr_mu1m_cos1cos2.dat", "r");   //replace with analytical result
             while (1)
 			  {
                 ncols = fscanf(fp, "%f %f", &c1c2, &v1);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
                 theoryProfileUnCorr->Fill(c1c2, v1);
+                theoryProfileUnCorr_scaledown->Fill(c1c2, v1); //C==0 so no scale variations
+                theoryProfileUnCorr_scaleup->Fill(c1c2, v1); //C==0 so no scale variations
                 nlines++;
 			  }
 
@@ -817,10 +833,16 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
 		double correlated_slope_NLOW = 0.;
+		double correlated_slope_NLOW_scaleup = 0.;
+		double correlated_slope_NLOW_scaledown = 0.;
 		double uncorrelated_slope_NLOW = 0.;
 
-		if( acceptanceName == "lepCosTheta" ) correlated_slope_NLOW = 0.0015;
+		if( acceptanceName == "lepCosTheta" ) correlated_slope_NLOW = 3.0305308354155003E-003/2.;
+		if( acceptanceName == "lepCosTheta" ) correlated_slope_NLOW_scaledown = 2.1925205988903981E-003/2.;
+		if( acceptanceName == "lepCosTheta" ) correlated_slope_NLOW_scaleup = 4.2073916647620956E-003/2.;
 		if( observablename == "lep_cos_opening_angle" ) correlated_slope_NLOW = 0.114;
+		if( observablename == "lep_cos_opening_angle" ) correlated_slope_NLOW_scaledown = 0.114-0.0025;
+		if( observablename == "lep_cos_opening_angle" ) correlated_slope_NLOW_scaleup = 0.114+0.0025;
 
 
         if (acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
@@ -829,12 +851,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         	for (int i = 1; i <= nbinsx_gen; ++i)
         	{
         		theoryProfileCorr->Fill( theoryProfileCorr->GetBinCenter(i) , 0.5 + theoryProfileCorr->GetBinCenter(i)*correlated_slope_NLOW  );
-        		theoryProfileUnCorr->Fill( theoryProfileCorr->GetBinCenter(i) , 0.5 + theoryProfileCorr->GetBinCenter(i)*uncorrelated_slope_NLOW );
+        		theoryProfileCorr_scaledown->Fill( theoryProfileCorr_scaledown->GetBinCenter(i) , 0.5 + theoryProfileCorr_scaledown->GetBinCenter(i)*correlated_slope_NLOW_scaledown  );
+        		theoryProfileCorr_scaleup->Fill( theoryProfileCorr_scaleup->GetBinCenter(i) , 0.5 + theoryProfileCorr_scaleup->GetBinCenter(i)*correlated_slope_NLOW_scaleup  );
+        		theoryProfileUnCorr->Fill( theoryProfileUnCorr->GetBinCenter(i) , 0.5 + theoryProfileUnCorr->GetBinCenter(i)*uncorrelated_slope_NLOW );
+        		theoryProfileUnCorr_scaledown->Fill( theoryProfileUnCorr_scaledown->GetBinCenter(i) , 0.5 + theoryProfileUnCorr_scaledown->GetBinCenter(i)*uncorrelated_slope_NLOW );
+        		theoryProfileUnCorr_scaleup->Fill( theoryProfileUnCorr_scaleup->GetBinCenter(i) , 0.5 + theoryProfileUnCorr_scaleup->GetBinCenter(i)*uncorrelated_slope_NLOW );
         	}
 
 		  }
 
-
+    	for (int i = 1; i <= nbinsx_gen; ++i)
+    	{
+    		theoryProfileCorr_scale->SetBinContent( i ,  (theoryProfileCorr_scaledown->GetBinContent(i)+theoryProfileCorr_scaleup->GetBinContent(i))/2. );
+    		theoryProfileCorr_scale->SetBinError( i ,  fabs(theoryProfileCorr_scaledown->GetBinContent(i)-theoryProfileCorr_scaleup->GetBinContent(i))/2. );
+    		theoryProfileUnCorr_scale->SetBinContent( i ,  (theoryProfileUnCorr_scaledown->GetBinContent(i)+theoryProfileUnCorr_scaleup->GetBinContent(i))/2. );
+    		theoryProfileUnCorr_scale->SetBinError( i ,  max(0.0001,fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr_scaleup->GetBinContent(i))/2.) );
+    	}
 
         //==================================================================
         //============== Print the asymetry ================================
@@ -985,9 +1017,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_minussyst->SetFillColor(10);
         hData_unfolded_minussyst->SetFillStyle(0);
         hs->Add(hData_unfolded_minussyst);
-        hData_unfolded_plussyst->SetFillStyle(3353);
+        hData_unfolded_plussyst->SetFillStyle(3354);
         hData_unfolded_plussyst->SetLineColor(kWhite);
-        hData_unfolded_plussyst->SetFillColor(15);
+        hData_unfolded_plussyst->SetFillColor(kGray+1);
         hs->Add(hData_unfolded_plussyst);
         //hs->SetMinimum( 0 );
         Float_t hsmin = hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) : 0;
@@ -1003,7 +1035,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
         TCanvas *c_test;
-        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 500);
+        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 590);
         else c_test = new TCanvas("c_final", "c_final", 500, 500);
 
         float r = 0.31;
@@ -1025,14 +1057,28 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             p1->cd();
         }
 
-        theoryProfileCorr->SetLineColor(kBlue);
+        theoryProfileCorr->SetLineColor(TColor::GetColorDark(kBlue));
         theoryProfileCorr->SetLineWidth(lineWidthDiffs);
         theoryProfileCorr->SetMarkerStyle(1);
+        theoryProfileCorr->SetFillStyle(0);
+        theoryProfileCorr_scale->SetLineColor(TColor::GetColorDark(kBlue));
+        theoryProfileCorr_scale->SetLineWidth(lineWidthDiffs);
+        theoryProfileCorr_scale->SetMarkerSize(0);
+        theoryProfileCorr_scale->SetFillColor(kBlue-9);
+        theoryProfileCorr_scale->SetFillStyle(3345);
 
-        theoryProfileUnCorr->SetLineColor(kBlue);
+
+        theoryProfileUnCorr->SetLineColor(TColor::GetColorDark(kBlue));
         theoryProfileUnCorr->SetLineWidth(lineWidthDiffs);
         theoryProfileUnCorr->SetLineStyle(2);
         theoryProfileUnCorr->SetMarkerStyle(1);
+        theoryProfileUnCorr->SetFillStyle(0);
+        theoryProfileUnCorr_scale->SetLineColor(TColor::GetColorDark(kBlue));
+        theoryProfileUnCorr_scale->SetLineWidth(lineWidthDiffs);
+        theoryProfileUnCorr_scale->SetLineStyle(2);
+        theoryProfileUnCorr_scale->SetMarkerSize(0);
+        theoryProfileUnCorr_scale->SetFillColor(kBlue-9);
+        theoryProfileUnCorr_scale->SetFillStyle(3345);
 
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
@@ -1061,7 +1107,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded->Draw("EP same");
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
 		  {
-            if(acceptanceName != "lepCosTheta") theoryProfileUnCorr->Draw("hist same");
+            if(acceptanceName != "lepCosTheta") {
+            	if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2")  theoryProfileUnCorr_scale->Draw("E2 same");  //no scale uncertainty for uncorrelated predictions except for lep_azimuthal_asymmetry2
+            	theoryProfileUnCorr->Draw("hist same");
+            }
+            if(drawTheoryScaleBand) theoryProfileCorr_scale->Draw("E2 same");
             theoryProfileCorr->Draw("hist same");
 		  }
 
@@ -1070,9 +1120,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle") second_legend = true;
 
 		float left_bound = 0.41;
-		if( second_legend ) left_bound = 0.59;
+		if( second_legend ) left_bound = 0.58;
 
-		float leg_textSize = 0.055;
+		float leg_textSize = 0.05;
 		if( second_legend ) leg_textSize *= 0.8;
 		else leg_textSize *= 0.9;
 
@@ -1098,8 +1148,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || observablename == "lep_cos_opening_angle")
 		  {
             TLegend *leg2;
-            leg2 = new TLegend(0.19, 0.71, 0.45, 0.91, NULL, "brNDC");
-            if ( acceptanceName == "lepCosTheta" ) leg2 = new TLegend(0.19, 0.80, 0.45, 0.91, NULL, "brNDC");
+            leg2 = new TLegend(0.175, 0.71, 0.45, 0.91, NULL, "brNDC");
+            if ( acceptanceName == "lepCosTheta" ) leg2 = new TLegend(0.175, 0.80, 0.45, 0.91, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
@@ -1107,8 +1157,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetFillStyle(0);
             leg2->SetTextSize(leg_textSize);
             leg2->SetTextFont(62);
-            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther & Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
-            if(acceptanceName != "lepCosTheta") leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther & Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
+            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
+            if(acceptanceName != "lepCosTheta") leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             leg2->Draw();
 		  }
 
@@ -1170,7 +1220,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             h_diff_minussyst->SetFillColor(kWhite);
             h_diff_minussyst->SetFillStyle(0);
             hsd->Add(h_diff_minussyst);
-            h_diff_plussyst->SetFillStyle(3353);
+            h_diff_plussyst->SetFillStyle(3354);
             h_diff_plussyst->SetLineColor(kWhite);
             h_diff_plussyst->SetFillColor(15);
             hsd->Add(h_diff_plussyst);
