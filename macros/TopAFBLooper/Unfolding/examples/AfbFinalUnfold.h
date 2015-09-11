@@ -1254,6 +1254,15 @@ void Initialize2DBinningttpt(int iVar){
 syst_corr[0] = 0.008513;
 syst_corr[1] = 0.016099;
 syst_corr[2] = 0.009374;
+theory_default[0] =  7.1593856807750456E-003;
+theory_default[1] = -2.8365229918471788E-003;
+theory_default[2] = -2.4853842372138179E-004;
+theory_scaledown[0] =  7.4219358633036405E-003;
+theory_scaledown[1] = -2.6480402174896131E-003;
+theory_scaledown[2] = -1.8538677370730610E-004;
+theory_scaleup[0] =  6.9446338508168184E-003;
+theory_scaleup[1] = -3.0510257170354711E-003;
+theory_scaleup[2] = -3.4258795512555877E-004;
       break;
     }
     //   Lepton Azimuthal Asymmetry 2
@@ -1277,6 +1286,21 @@ syst_corr[2] = 0.017534;
 theory_default[0] = 0.12572265215619549;
 theory_default[1] = 0.17730999154723914;
 theory_default[2] = 0.10262414675791232;
+theory_scaledown[0] = 0.11750437273931535     ;
+theory_scaledown[1] = 0.18068890055195069     ;
+theory_scaledown[2] = 0.10458438626234656     ;
+theory_scaleup[0] = 0.13202651204583515     ;
+theory_scaleup[1] = 0.17451905187496153     ;
+theory_scaleup[2] =  0.10097884989366024     ;
+uncorr_default[0] = 0.22220976181669910     ;
+uncorr_default[1] = 0.26857894246502284     ;
+uncorr_default[2] = 0.16656665689188777     ;
+uncorr_scaledown[0] = 0.21643512364946638     ;
+uncorr_scaledown[1] = 0.27174929871286002     ;
+uncorr_scaledown[2] = 0.16833912907072063     ;
+uncorr_scaleup[0] = 0.22631675529417361     ;
+uncorr_scaleup[1] = 0.26588952844158220     ;
+uncorr_scaleup[2] = 0.16516067482158125     ;
       break;
     }
     //   Top Polarization
@@ -1334,6 +1358,15 @@ syst_corr[2] = 0.058129;
 syst_corr[0] = 0.027057;
 syst_corr[1] = 0.032500;
 syst_corr[2] = 0.039668;
+theory_default[0] =  4.0906016806477302E-003/2.;
+theory_default[1] = -2.5301124136594020E-003/2.;
+theory_default[2] = -1.5738490152040310E-003/2.;
+theory_scaledown[0] =  3.1011380834262948E-003/2.;
+theory_scaledown[1] = -1.8882542671156361E-003/2.;
+theory_scaledown[2] = -1.2015870115943490E-003/2.;
+theory_scaleup[0] =  5.4119065998264569E-003/2.;
+theory_scaleup[1] = -3.2501230390085197E-003/2.;
+theory_scaleup[2] = -1.9913120462740344E-003/2.;
       break;
     }
     //   Top Spin Correlation
@@ -1353,6 +1386,15 @@ syst_corr[2] = 0.039668;
 syst_corr[0] = 0.015347;
 syst_corr[1] = 0.034877;
 syst_corr[2] = 0.075586;
+theory_default[0] = 0.32575069797174833     /-4.;
+theory_default[1] = 0.30172042152922113     /-4.;
+theory_default[2] = 0.16011095908856965     /-4.;
+theory_scaledown[0] = 0.33275360908640378     /-4.;
+theory_scaledown[1] = 0.30486960295536952     /-4.;
+theory_scaledown[2] = 0.16173782686029431     /-4.;
+theory_scaleup[0] = 0.32107426318799120     /-4.;
+theory_scaleup[1] = 0.29798436513324439     /-4.;
+theory_scaleup[2] = 0.15791658414606186     /-4.;
       break;
     }
     //   Top Asy III
@@ -1373,6 +1415,15 @@ syst_corr[2] = 0.075586;
 syst_corr[0] = 0.010535;
 syst_corr[1] = 0.028918;
 syst_corr[2] = 0.043742;
+theory_default[0] = 1.2727/100.;
+theory_default[1] = -0.4664/100.;
+theory_default[2] = -0.1398/100.;
+theory_scaledown[0] = 1.3310/100.;
+theory_scaledown[1] = -0.4397/100.;
+theory_scaledown[2] = -0.1378/100.;
+theory_scaleup[0] = 1.2126/100.;
+theory_scaleup[1] = -0.4905/100.;
+theory_scaleup[2] = -0.1579/100.;
       break;
     }
     //   Top Charge Asymmetry
@@ -1410,6 +1461,15 @@ syst_corr[2] = 0.029903;
 syst_corr[0] = 0.021592;
 syst_corr[1] = 0.052984;
 syst_corr[2] = 0.038834;
+theory_default[0] = -0.23035649296477598     /-2.;
+theory_default[1] = -0.21600252525269378     /-2.;
+theory_default[2] = -0.15394842051237889     /-2.;
+theory_scaledown[0] = -0.23572256019027907     /-2.;
+theory_scaledown[1] = -0.21753199627949082     /-2.;
+theory_scaledown[2] = -0.15506885779939464     /-2.;
+theory_scaleup[0] = -0.22657554420214174     /-2.;
+theory_scaleup[1] = -0.21402905918130047     /-2.;
+theory_scaleup[2] = -0.15254738928307032     /-2.;
       break;
     }
     //   Lepton Azimuthal Asymmetry
