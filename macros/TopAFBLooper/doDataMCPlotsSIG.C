@@ -429,8 +429,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     int ttdlcolor = kCyan-3;
     int bkgcolor = kMagenta-5;
     //  const int mccolor[]={7,2,6,4,kOrange,8,5,kAzure-9, 9,5,kViolet,kGreen+1, 15,12,13,27};
-    gStyle->SetPadTopMargin(0.06);
+    gStyle->SetPadTopMargin(0.065);
     gStyle->SetPadRightMargin(0.035);
+    gStyle->SetPadLeftMargin(0.165);
 
     //-------------------------------
     // SINGLE LEPTON - MT SCALING
@@ -1109,10 +1110,10 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}",
         "#Delta|#eta_{#font[12]{l}}|",
         "#Delta|y_{t}|",
-        "cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)}",
-        "cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})",
-        "cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)} cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})",
-        "cos(#varphi)",
+        "cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}",
+        "cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}",
+        "cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}",
+        "cos#kern[+0.3]{#varphi}",
         "M_{t}",
         "M_{t#bar{t}}",
         "p_{T}^{t#bar{t}}",
@@ -1742,7 +1743,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             leg1d[i]->SetFillColor(0);
             leg1d[i]->
             AddEntry(h_dt1d[i],
-                     "data ", "lp");
+                     "data ", "lep");
           
             if(!combinebackgroundsinplot) {
                 for (int j = 0; j < MCID; ++j)
@@ -1900,7 +1901,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             respad = new TPad("respad", "respad", 0, 0, 1, r*(1. - epsilon));
             plotpad->SetBottomMargin(epsilon);
             respad->SetTopMargin(0.0);
-            respad->SetBottomMargin(0.29);
+            respad->SetBottomMargin(0.335);
             respad->SetFillColor(0);
             respad->SetFillStyle(0);
             respad->Draw();
@@ -2093,7 +2094,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         if(combinebackgroundsinplot) leg1d_comb[i] = new TLegend(0.65, 0.69, 0.92, 0.92);
         leg1d_comb[i]->SetName(Form("leg_%s", h_dt1d_comb[i]->GetName()));
         leg1d_comb[i]->SetFillColor(0);
-        leg1d_comb[i]->AddEntry(h_dt1d_comb[i], "data ", "lp");
+        leg1d_comb[i]->AddEntry(h_dt1d_comb[i], "data ", "lep");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTSL], legend[TTSL], "f");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTDL], legend[TTDL], "f");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][WJETS], legend[WJETS], "f");
@@ -2205,7 +2206,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         respad = new TPad("respad", "respad", 0, 0, 1, r*(1. - epsilon));
         plotpad->SetBottomMargin(epsilon);
         respad->SetTopMargin(0.0);
-        respad->SetBottomMargin(0.29);
+        respad->SetBottomMargin(0.335);
         respad->SetFillColor(0);
         respad->SetFillStyle(0);
         respad->Draw();
