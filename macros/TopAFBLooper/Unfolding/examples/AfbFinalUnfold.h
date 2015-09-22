@@ -718,7 +718,7 @@ syst_corr[11] = 0.006558;
     case 2:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}";
       acceptanceName="lepPlusCosTheta";
       asymlabel="A_{P+}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
@@ -737,7 +737,7 @@ syst_corr[5] = 0.026255;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
@@ -756,7 +756,7 @@ syst_corr[5] = 0.025815;
     case 4:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l}}#kern[-0.60]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l}}#kern[-0.7]{*}";
       acceptanceName="lepCosTheta";
       asymlabel="A_{P}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
@@ -775,7 +775,7 @@ syst_corr[5] = 0.024818;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)} cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.5; xbins1D[2]=-0.2; xbins1D[3]=0.0; xbins1D[4]=0.2; xbins1D[5]=0.5; xbins1D[6]=1.0;
@@ -833,9 +833,9 @@ syst_corr[5] = 0.016227;
     case 8:
     {
       observablename="lep_cos_opening_angle";
-      xaxislabel="cos(#varphi)";
+      xaxislabel="cos#kern[+0.3]{#varphi}";
       acceptanceName="lepCosOpeningAngle";
-      asymlabel="A_{cos(#varphi)}";
+      asymlabel="A_{cos#kern[+0.3]{#varphi}}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
       std::copy(bins_lepCosOpeningAngle, bins_lepCosOpeningAngle + nbins1D + 1, xbins1D);
 syst_corr[0] = 0.009324;
@@ -1000,7 +1000,7 @@ uncorr_scaleup[2] = 0.36488777812911555     ;
     case 2:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepPlusCosTheta";
       asymlabel="A_{P+}";
@@ -1019,7 +1019,7 @@ syst_corr[2] = 0.037566;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
@@ -1038,7 +1038,7 @@ syst_corr[2] = 0.032904;
     case 4:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l}}#kern[-0.60]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l}}#kern[-0.7]{*}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepCosTheta";
       asymlabel="A_{P}";
@@ -1066,7 +1066,7 @@ theory_scaleup[2] = 7.9729622808530475E-003/2.;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)} cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
@@ -1142,10 +1142,10 @@ syst_corr[2] = 0.020135;
     case 8:
     {
       observablename="lep_cos_opening_angle";
-      xaxislabel="cos(#varphi)";
+      xaxislabel="cos#kern[+0.3]{#varphi}";
 	  yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepCosOpeningAngle";
-      asymlabel="A_{cos(#varphi)}";
+      asymlabel="A_{cos#kern[+0.3]{#varphi}}";
       std::copy( bins_lepCosOpeningAngle, bins_lepCosOpeningAngle+nbinsx2D+1, xbins2D );
       ymin=ybins2D[0];
       ymax=ybins2D[3];
@@ -1242,7 +1242,7 @@ void Initialize2DBinningttpt(int iVar){
     {
       observablename="lep_charge_asymmetry";
       xaxislabel="#Delta|#eta_{#font[12]{l}}|";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepChargeAsym";
       asymlabel="A_{C}^{lep}";
       xbins2D[0]=-2.0; xbins2D[1]=-0.8; xbins2D[2]=-0.4; xbins2D[3]=0.0; xbins2D[4]=0.4; xbins2D[5]=0.8; xbins2D[6]=2.0;
@@ -1270,7 +1270,7 @@ theory_scaleup[2] = -3.4258795512555877E-004;
     {
       observablename="lep_azimuthal_asymmetry2";
       xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}|";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
       //Double_t pi = 3.141592653589793;
@@ -1307,8 +1307,8 @@ uncorr_scaleup[2] = 0.16516067482158125     ;
     case 2:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)}";
-      yaxislabel="p_{T,t#bar{t}}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepPlusCosTheta";
       asymlabel="A_{P+}";
       //xbins2D[0]=-1.0; xbins2D[1]=-0.6; xbins2D[2]=-0.3; xbins2D[3]=0.0; xbins2D[4]=0.3; xbins2D[5]=0.6; xbins2D[6]=1.0;
@@ -1326,8 +1326,8 @@ syst_corr[2] = 0.034268;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
-      yaxislabel="p_{T,t#bar{t}}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
       //xbins2D[0]=-1.0; xbins2D[1]=-0.6; xbins2D[2]=-0.3; xbins2D[3]=0.0; xbins2D[4]=0.3; xbins2D[5]=0.6; xbins2D[6]=1.0;
@@ -1345,8 +1345,8 @@ syst_corr[2] = 0.058129;
     case 4:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l}}#kern[-0.60]{*})";
-      yaxislabel="p_{T,t#bar{t}}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l}}#kern[-0.7]{*}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepCosTheta";
       asymlabel="A_{P}";
       //xbins2D[0]=-1.0; xbins2D[1]=-0.6; xbins2D[2]=-0.3; xbins2D[3]=0.0; xbins2D[4]=0.3; xbins2D[5]=0.6; xbins2D[6]=1.0;
@@ -1373,8 +1373,8 @@ theory_scaleup[2] = -1.9913120462740344E-003/2.;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)} cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
-      yaxislabel="p_{T,t#bar{t}}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
       //xbins2D[0]=-1.0; xbins2D[1]=-0.5; xbins2D[2]=-0.2; xbins2D[3]=0.0; xbins2D[4]=0.2; xbins2D[5]=0.5; xbins2D[6]=1.0;
@@ -1403,7 +1403,7 @@ theory_scaleup[2] = 0.15791658414606186     /-4.;
       observablename="top_rapiditydiff_Marco";
       //xaxislabel="|y_{top}|-|y_{tbar}|";
       xaxislabel="#Delta|y_{t}|";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="rapiditydiffMarco";
       asymlabel="A_{C}";
       //xbins2D[0]=-2.0; xbins2D[1]=-0.7; xbins2D[2]=-0.3; xbins2D[3]=0.0; xbins2D[4]=0.3; xbins2D[5]=0.7; xbins2D[6]=2.0;
@@ -1431,7 +1431,7 @@ theory_scaleup[2] = -0.1579/100.;
     {
       observablename="top_costheta_cms";
       xaxislabel="cos(#theta_{top})";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="topCosTheta";
       asymlabel="A_{FB}";
       //xbins2D[0]=-1.0; xbins2D[1]=-0.7; xbins2D[2]=-0.4; xbins2D[3]=0.0; xbins2D[4]=0.4; xbins2D[5]=0.7; xbins2D[6]=1.0;
@@ -1449,10 +1449,10 @@ syst_corr[2] = 0.029903;
     case 8:
     {
       observablename="lep_cos_opening_angle";
-      xaxislabel="cos(#varphi)";
-	  yaxislabel="p_{T,t#bar{t}}";
+      xaxislabel="cos#kern[+0.3]{#varphi}";
+	  yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepCosOpeningAngle";
-      asymlabel="A_{cos(#varphi)}";
+      asymlabel="A_{cos#kern[+0.3]{#varphi}}";
       std::copy( bins_lepCosOpeningAngle, bins_lepCosOpeningAngle+nbinsx2D+1, xbins2D );
       ymin=ybins2D[0];
       ymax=ybins2D[3];
@@ -1477,7 +1477,7 @@ theory_scaleup[2] = -0.15254738928307032     /-2.;
     {
       observablename="lep_azimuthal_asymmetry";
       xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepAzimAsym";
       asymlabel="A_{#Delta#phi}";
       xbins2D[0]=-pi; xbins2D[1]=-0.67*pi; xbins2D[2]=-0.33*pi; xbins2D[3]=0.0; xbins2D[4]=0.33*pi; xbins2D[5]=0.67*pi; xbins2D[6]=pi;
@@ -1496,7 +1496,7 @@ syst_corr[2] = 0.010907;
     {
       observablename="top_pseudorapiditydiff_cms";
       xaxislabel="|#eta_{t}|-|#eta_{#bar{t}}|";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="pseudorapiditydiff";
       asymlabel="A_{C}";
       //xbins2D[0]=-2.0; xbins2D[1]=-1.0; xbins2D[2]=-0.5; xbins2D[3]=0.0; xbins2D[4]=0.5; xbins2D[5]=1.0; xbins2D[6]=2.0;
@@ -1515,7 +1515,7 @@ syst_corr[2] = 0.033419;
     {
       observablename="top_rapiditydiff_cms";
       xaxislabel="(y_{top}-y_{#bar{t}})(y_{top}+y_{#bar{t}})";
-      yaxislabel="p_{T,t#bar{t}}";
+      yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="rapiditydiff";
       asymlabel="A_{C}";
       //xbins2D[0]=-2.0; xbins2D[1]=-0.8; xbins2D[2]=-0.3; xbins2D[3]=0.0; xbins2D[4]=0.3; xbins2D[5]=0.8; xbins2D[6]=2.0;
@@ -1614,7 +1614,7 @@ uncorr_scaleup[2] = 0.19804471163300374     ;
     case 2:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepPlusCosTheta";
       asymlabel="A_{P+}";
@@ -1633,7 +1633,7 @@ syst_corr[2] = 0.040610;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
@@ -1652,7 +1652,7 @@ syst_corr[2] = 0.033840;
     case 4:
     {
       observablename="lepPlus_costheta_cms";
-      xaxislabel="cos(^{}#theta_{#font[12]{l}}#kern[-0.60]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l}}#kern[-0.7]{*}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepCosTheta";
       asymlabel="A_{P}";
@@ -1680,7 +1680,7 @@ theory_scaleup[2] = 3.0961161700422133E-003/2.;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos(^{}#theta_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*}#kern[+0.40]{)} cos(^{}#theta_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*})";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
@@ -1756,10 +1756,10 @@ syst_corr[2] = 0.022769;
     case 8:
     {
       observablename="lep_cos_opening_angle";
-      xaxislabel="cos(#varphi)";
+      xaxislabel="cos#kern[+0.3]{#varphi}";
 	  yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepCosOpeningAngle";
-      asymlabel="A_{cos(#varphi)}";
+      asymlabel="A_{cos#kern[+0.3]{#varphi}}";
       std::copy( bins_lepCosOpeningAngle, bins_lepCosOpeningAngle+nbinsx2D+1, xbins2D );
       ymin=ybins2D[0];
       ymax=ybins2D[3];

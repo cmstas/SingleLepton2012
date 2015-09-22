@@ -58,7 +58,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
   gStyle->SetOptFit();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  gStyle->SetPadTopMargin(0.057);
+  gStyle->SetPadTopMargin(0.06);
   cout.precision(3);
 
   TString ChannelName[4] = {"diel", "dimu", "mueg", "all"};
@@ -1035,7 +1035,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
         TCanvas *c_test;
-        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 590);
+        if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 560);
         else c_test = new TCanvas("c_final", "c_final", 500, 500);
 
         float r = 0.31;
@@ -1137,8 +1137,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg1->SetFillStyle(0);
         leg1->SetTextSize(leg_textSize);
         leg1->SetTextFont(62);
-        if(second_legend) leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
-        else leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.25]{ }-#kern[-0.2]{ }#kern[-0.1]{b}ackground#kern[-0.2]{ }) unfolded");
+        //if(second_legend) leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
+        //else leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.25]{ }-#kern[-0.2]{ }#kern[-0.1]{b}ackground#kern[-0.2]{ }) unfolded");
+        if(second_legend) leg1->AddEntry(hData_unfolded, "Data (stat. unc.)","LEP");
+        else leg1->AddEntry(hData_unfolded, "Data (stat. unc.)","LEP");
         if(second_legend) leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
         else leg1->AddEntry(hData_unfolded_plussyst,    "Systematic uncertainty", "F");
         leg1->AddEntry(hTrue,    "MC@NLO parton level", "L");
@@ -1170,7 +1172,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             //p1->SetTopMargin(0.02);
             p1->SetBottomMargin(epsilon);
             p2->SetTopMargin(0.0);
-            p2->SetBottomMargin(0.29);
+            p2->SetBottomMargin(0.295);
             p2->SetFillColor(0);
             p2->SetFillStyle(0);
 

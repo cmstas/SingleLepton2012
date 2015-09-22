@@ -1033,10 +1033,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
 
-		gStyle->SetPadRightMargin(0.05);
+		gStyle->SetPadRightMargin(0.053);
 		gStyle->SetPadLeftMargin(0.18);
-		gStyle->SetPadBottomMargin(0.14);
-		gStyle->SetPadTopMargin(0.06);
+		gStyle->SetPadBottomMargin(0.15);
+		gStyle->SetPadTopMargin(0.065);
 		//gStyle->SetErrorX(0);
 		//gStyle->SetEndErrorSize(0);
 
@@ -1224,7 +1224,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         //hAfbVsMtt->SetMinimum( minmin - 0.1 );
         //hAfbVsMtt->SetMaximum( maxmax + 0.1 );
-        //hAfbVsMtt->SetLineWidth( 4.0 );
+        hAfbVsMtt->SetLineWidth( 2.0 );
         //hAfbVsMtt->SetMarkerSize(1.5);
         //hAfbVsMtt->Draw("E");
         hAfbVsMtt_statonly->SetLineWidth( 4.0 );
@@ -1253,7 +1253,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         leg1->SetTextSize(0.035);
         leg1->SetTextFont(62);
         leg1->SetFillStyle(0);
-        leg1->AddEntry(hAfbVsMtt, "Unfolded data");
+        leg1->AddEntry(hAfbVsMtt, "Data (stat. unc.)", "LEP");
         leg1->AddEntry(hAfbVsMtt_plussyst,    "Syst. uncertainty", "F");
         //leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
         leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO");
@@ -1285,7 +1285,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		axis->SetLabelColor(1);
 		axis->SetLabelFont(42);
 		axis->SetLabelOffset(0.007);
-		axis->SetLabelSize(0.05);
+		axis->SetLabelSize(0.055);
 
 
         c_afb->SaveAs("2D_AfbVs" + Var2D + "_unfolded_" + acceptanceName + "_" + channel_name + ".pdf");
