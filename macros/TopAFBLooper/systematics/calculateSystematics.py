@@ -512,8 +512,13 @@ def main():
     #results = {}
     print ""
 
+    systorderlist = ['JESMET','JER','LES','Btag','LepSelEff','PUshape','Background','Mass','Scale','PDF','hadronization','Regularisation','pt_reweight']
+
     afberrs = {}
     afberrs2D = {}
+    afberr_MCstat = {}
+    afberr_MCstat2D = {}
+
 
 #    for plot in sorted(systematics.keys()):
 #        for systematic in sorted(systematics[plot].keys()):
@@ -862,8 +867,8 @@ def main():
             (afb,afberr_preMCStat) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
             if abs(afberr_preMCStat-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr_preMCStat-math.sqrt(sumsq_total) )
             #print "%20s uncertainty: %2.6f" % ("Sum systs", afberr_preMCStat)
-            (afb,afberr) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
-            print "%20s uncertainty: %2.6f" % ("MC stat", afberr)
+            (afb,afberr_MCstat[plot]) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+            print "%20s uncertainty: %2.6f" % ("MC stat", afberr_MCstat[plot])
             #(afb,afberr) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
             #print "%20s uncertainty: %2.6f" % ("Data stat", afberr)
         else:
@@ -871,9 +876,9 @@ def main():
             if abs(afberr_preMCStat[nbins2D]-math.sqrt(sumsq_total))>0.000002: print "WARNING: inconsistent covariance matrix. DeltaAfberr = %2.4g" % ( afberr_preMCStat[nbins2D]-math.sqrt(sumsq_total) )
             #print "%20s uncertainty: %2.6f" % ("Sum systs", afberr_preMCStat[nbins2D])
             #for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("Sum systs", sorted(binlist2D)[binindex], afberr_preMCStat[binindex])
-            (afb,afberr,afbcov) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
-            print "%20s uncertainty: %2.6f" % ("MC stat", afberr[nbins2D])
-            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("MC stat", sorted(binlist2D)[binindex], afberr[binindex])
+            (afb,afberr_MCstat2D[plot],afbcov) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
+            print "%20s uncertainty: %2.6f" % ("MC stat", afberr_MCstat2D[plot][nbins2D])
+            for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("MC stat", sorted(binlist2D)[binindex], afberr_MCstat2D[plot][binindex])
             #(afb,afberr,afbcov) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
             #print "%20s uncertainty: %2.6f" % ("Data stat", afberr[nbins2D])
             #for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("Data stat", sorted(binlist2D)[binindex], afberr[binindex])
@@ -969,20 +974,70 @@ def main():
     #end loop over asymmetries
 
     #print table of systematics
-    for systematic in sorted(systematics['lepAzimAsym2'].keys()):
-        if systematic == 'Nominal': continue
-        if systematic == 'NominalDataStat': continue
-        if systematic == 'RegularisationFullKIT': continue
-        if systematic == 'name': continue
-        print systematic,
-        #for plot in sorted(systematics.keys()):
-        print "%2.3f" % afberrs['lepAzimAsym2',systematic],
-        print "%2.3f" % afberrs['lepCosTheta',systematic],
-        print "%2.3f" % afberrs['lepPlusCosTheta',systematic],
-        print "%2.3f" % afberrs['topSpinCorr',systematic],
-        print "%2.3f" % afberrs['lepCosOpeningAngle',systematic],
-        print " "
-    
+    #print "\\begin{table}[!h]"
+    #print "\\begin{center}"
+    #print "\\begin{tabular}{c||r|r|r|r|r}"
+    print sorted(systematics['lepAzimAsym2'].keys())
+
+    if nbins2D==0:
+        #for systematic in sorted(systematics['lepAzimAsym2'].keys()):
+        for systematic in systorderlist:
+            if systematic == 'Nominal': continue
+            if systematic == 'NominalDataStat': continue
+            if systematic == 'RegularisationFullKIT': continue
+            if systematic == 'name': continue
+            print systematic,
+            #print " & ",
+            #for plot in sorted(systematics.keys()):
+            print " & $%2.3f$ " % afberrs['lepAzimAsym2',systematic],
+            print " & $%2.3f$ " % afberrs['lepCosTheta',systematic],
+            print " & $%2.3f$ " % afberrs['lepPlusCosTheta',systematic],
+            print " & $%2.3f$ " % afberrs['topSpinCorr',systematic],
+            print " & $%2.3f$ " % afberrs['lepCosOpeningAngle',systematic],
+            print " & $%2.3f$ " % afberrs['rapiditydiffMarco',systematic],
+            print " & $%2.3f$ " % afberrs['lepChargeAsym',systematic],
+            print " \\\\ "
+        print "MCstat",
+        print " & $%2.3f$ " % afberr_MCstat['lepAzimAsym2'],
+        print " & $%2.3f$ " % afberr_MCstat['lepCosTheta'],
+        print " & $%2.3f$ " % afberr_MCstat['lepPlusCosTheta'],
+        print " & $%2.3f$ " % afberr_MCstat['topSpinCorr'],
+        print " & $%2.3f$ " % afberr_MCstat['lepCosOpeningAngle'],
+        print " & $%2.3f$ " % afberr_MCstat['rapiditydiffMarco'],
+        print " & $%2.3f$ " % afberr_MCstat['lepChargeAsym'],
+        print " \\\\ "
+    else:
+        for binindex in range(nbins2D+1):
+            if binindex<3: print binlist2D[binindex]
+            else: print "inclusive"
+            #for systematic in sorted(systematics['lepAzimAsym2'].keys()):
+            for systematic in systorderlist:
+                if systematic == 'Nominal': continue
+                if systematic == 'NominalDataStat': continue
+                if systematic == 'RegularisationFullKIT': continue
+                if systematic == 'name': continue
+                print systematic,
+                #print " & ",
+                #for plot in sorted(systematics.keys()):
+                print " & $%2.3f$ " % afberrs2D['lepAzimAsym2',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepCosTheta',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepPlusCosTheta',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['topSpinCorr',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepCosOpeningAngle',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['rapiditydiffMarco',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepChargeAsym',systematic][binindex],
+                print " \\\\ "
+            print "MCstat",
+            print " & $%2.3f$ " % afberr_MCstat2D['lepAzimAsym2'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepCosTheta'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepPlusCosTheta'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['topSpinCorr'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepCosOpeningAngle'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['rapiditydiffMarco'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepChargeAsym'][binindex],
+            print " \\\\ "
+            print " "
+
 
 if __name__ == '__main__':
     main()
