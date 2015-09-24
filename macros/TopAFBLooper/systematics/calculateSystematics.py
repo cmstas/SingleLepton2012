@@ -92,27 +92,50 @@ def calculateVariation_combine(systematics, plotname, systematicname, subtypenam
         useupvariation = False
         upvarinclusive   = systematic['up']['Unfolded'][0]   - nominalinclusive[0]
         downvarinclusive = systematic['down']['Unfolded'][0] - nominalinclusive[0]
+        halfdiffinclusive = (systematic['up']['Unfolded'][0] - systematic['down']['Unfolded'][0])/2.0
         if(combine != 0):
             upvarinclusive   += combine*(systematiccombine['up']['Unfolded'][0]   - nominalinclusivecombine[0])
             downvarinclusive += combine*(systematiccombine['down']['Unfolded'][0] - nominalinclusivecombine[0])
+            halfdiffinclusive += combine*(systematiccombine['up']['Unfolded'][0] - systematiccombine['down']['Unfolded'][0])/2.0
         if abs(upvarinclusive) >= abs(downvarinclusive): useupvariation = True
-        upvar   = systematic['up'][binname][0]   - nominal[binname][0]
-        downvar = systematic['down'][binname][0] - nominal[binname][0]
-        if(combine != 0):
-            if 'bin' in binname:
-                upvar   += systematiccombine['up'][binnamecombine][0]   - nominalcombine[binnamecombine][0]
-                downvar += systematiccombine['down'][binnamecombine][0] - nominalcombine[binnamecombine][0]
-            else:
-                upvar   += combine*(systematiccombine['up'][binnamecombine][0]   - nominalcombine[binnamecombine][0])
-                downvar += combine*(systematiccombine['down'][binnamecombine][0] - nominalcombine[binnamecombine][0])
-        if useupvariation: maxvar  = upvar
-        else: maxvar = -downvar
+        halfdiffSF = 1.0
+        usehalfdiffwithSF = False
+
+        #use both up and down variations where possible [except when both move in same direction] to get a more accurate measure of the individual bin variations
+        #and abs(upvarinclusive/downvarinclusive )<100 and abs(downvarinclusive/upvarinclusive )<100 
+        if( upvarinclusive!=0 and downvarinclusive!=0 and upvarinclusive/downvarinclusive < 0): 
+            if useupvariation: halfdiffSF = abs(upvarinclusive/halfdiffinclusive)
+            else: halfdiffSF = abs(downvarinclusive/halfdiffinclusive)
+            usehalfdiffwithSF = True
+            #print halfdiffSF
+
+        if usehalfdiffwithSF:
+            maxvar = ( systematic['up'][binname][0] - systematic['down'][binname][0] ) /2
+            if(combine != 0):
+                if 'bin' in binname and 'tt' not in binname:
+                    maxvar  += ( systematiccombine['up'][binnamecombine][0] - systematiccombine['down'][binnamecombine][0] ) /2
+                else:
+                    maxvar  += combine*(systematiccombine['up'][binnamecombine][0] - systematiccombine['down'][binnamecombine][0] )/2
+            maxvar *= halfdiffSF
+
+        else:
+            upvar   = systematic['up'][binname][0]   - nominal[binname][0]
+            downvar = systematic['down'][binname][0] - nominal[binname][0]
+            if(combine != 0):
+                if 'bin' in binname and 'tt' not in binname:
+                    upvar   += systematiccombine['up'][binnamecombine][0]   - nominalcombine[binnamecombine][0]
+                    downvar += systematiccombine['down'][binnamecombine][0] - nominalcombine[binnamecombine][0]
+                else:
+                    upvar   += combine*(systematiccombine['up'][binnamecombine][0]   - nominalcombine[binnamecombine][0])
+                    downvar += combine*(systematiccombine['down'][binnamecombine][0] - nominalcombine[binnamecombine][0])
+            if useupvariation: maxvar  = upvar
+            else: maxvar = -downvar
 
     # Half the difference between the 'up' and the 'down' variation
     elif vartype == 'half':
         maxvar = ( systematic['up'][binname][0] - systematic['down'][binname][0] ) /2
         if(combine != 0):
-            if 'bin' in binname:
+            if 'bin' in binname and 'tt' not in binname:
                 maxvar  += ( systematiccombine['up'][binnamecombine][0] - systematiccombine['down'][binnamecombine][0] ) /2
             else:
                 maxvar  += combine*(systematiccombine['up'][binnamecombine][0] - systematiccombine['down'][binnamecombine][0] )/2
@@ -122,7 +145,7 @@ def calculateVariation_combine(systematics, plotname, systematicname, subtypenam
     elif vartype == 'diffnom':
         maxvar = systematic['diffnom'][binname][0] - nominal[binname][0]
         if(combine != 0):
-            if 'bin' in binname:
+            if 'bin' in binname and 'tt' not in binname:
                 maxvar  += systematiccombine['diffnom'][binnamecombine][0]   - nominalcombine[binnamecombine][0]
             else:
                 maxvar  += combine*(systematiccombine['diffnom'][binnamecombine][0]   - nominalcombine[binnamecombine][0])
@@ -438,7 +461,7 @@ def increasevariance_integratewidth_V(covarianceM, nbins, n, binwidth, factor):
     while afberr < afberr0*factor:
         nit += 1
         for i in range(nbins):
-            covarianceM[i,i] = covarianceM0[i] + 0.0000001*nit*n[i]*n[i]
+            covarianceM[i,i] = covarianceM0[i] + 0.00000001*nit*n[i]*n[i]
             #covarianceM[i,i] = covarianceM0[i]*pow(1.0001,nit)
             #covarianceM[i,i] *= 1.0001
         (afb,afberr) = GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth)
@@ -457,7 +480,7 @@ def increasevariance2D(covarianceM, nbins, nbins2D, n, factor):
     while afberr[nbins2D] < afberr0[nbins2D]*factor:
         nit += 1
         for i in range(nbins):
-            covarianceM[i,i] = covarianceM0[i] + 0.000001*nit*n[i]*n[i]
+            covarianceM[i,i] = covarianceM0[i] + 0.0000001*nit*n[i]*n[i]
             #covarianceM[i,i] = covarianceM0[i]*pow(1.001,nit)
             #covarianceM[i,i] *= 1.0001
         (afb,afberr,afbcov) = GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n)
@@ -518,7 +541,10 @@ def main():
     afberrs2D = {}
     afberr_MCstat = {}
     afberr_MCstat2D = {}
-
+    afberrdatastat = {}
+    afberrsyst = {}
+    afberrtotal = {}
+    afbs = {}
 
 #    for plot in sorted(systematics.keys()):
 #        for systematic in sorted(systematics[plot].keys()):
@@ -892,15 +918,15 @@ def main():
 
 
         if nbins2D==0:
-            (afb,afberrdatastat) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
-            (afb,afberrtotal) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
-            (afb,afberrsyst) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
-            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb, afberrdatastat, afberrsyst, afberrtotal)
+            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+            (afb,afberrtotal[plot]) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+            (afbs[plot],afberrsyst[plot]) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
+            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb, afberrdatastat[plot], afberrsyst[plot], afberrtotal[plot])
         else:
-            (afb,afberrdatastat,afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
-            (afb,afberrtotal,afbcovtotalincDataStat) = GetCorrectedAfb2D(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
-            (afb,afberrsyst,afbcovsyst) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
-            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb[nbins2D], afberrdatastat[nbins2D], afberrsyst[nbins2D], afberrtotal[nbins2D])
+            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
+            (afb,afberrtotal[plot],afbcovtotalincDataStat) = GetCorrectedAfb2D(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
+            (afbs[plot],afberrsyst[plot],afbcovsyst) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)   #the 2D bin values represent normalised number of events and don't need to be multiplied by the bin widths
+            print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D], afberrsyst[plot][nbins2D], afberrtotal[plot][nbins2D])
             (sum_n,sum_n_errdatastat,sum_n_covdatastat) = Get1DProjection(covDataStat, nbins, nbins2D, bin_nominals_i)
             (sum_n,sum_n_errtotal,sum_n_covtotalincDataStat) = Get1DProjection(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
             (sum_n,sum_n_errsyst,sum_n_covsyst) = Get1DProjection(covar_total, nbins, nbins2D, bin_nominals_i)
@@ -910,7 +936,7 @@ def main():
         binindex = 0
         for i in sorted(binlist2D):
             #print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, i, systematics[plot]['Nominal']['default']['nominal'][i][0], systematics[plot]['Nominal']['default']['nominal'][i][1], math.sqrt(sumsq_total_2D[binindex]))
-            print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, i, afb[binindex], afberrdatastat[binindex], afberrsyst[binindex], afberrtotal[binindex])
+            print "%s %s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, i, afb[binindex], afberrdatastat[plot][binindex], afberrsyst[plot][binindex], afberrtotal[plot][binindex])
             binindex += 1
         print ""
 
@@ -971,6 +997,20 @@ def main():
         else:
             for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr_preMCStat[binindex] )
         print ""
+
+        if combine!=0 and plot == "lepPlusCosTheta":
+            print " special hard-coded values for A_P^CPV: "
+            if nbins2D==0: 
+                for row in range(nbins): print "hardcodeddata[%i] = %2.6f;" % (row, bin_nominals_i[row])
+                for row in range(nbins): print "stat_corr[%i] = %2.6f;" % (row, sqrt(covDataStat[row,row]))
+                for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, sqrt(covar_total[row,row]))
+            else:
+                for binindex in range(nbins2D): print "hardcodeddata[%i] = %2.6f;" % (binindex, afbs[plot][binindex] )
+                for binindex in range(nbins2D): print "stat_corr[%i] = %2.6f;" % (binindex, afberrdatastat[plot][binindex] )
+                for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberrsyst[plot][binindex] )
+            print ""
+
+
     #end loop over asymmetries
 
     #print table of systematics
@@ -1008,7 +1048,7 @@ def main():
         print " \\\\ "
     else:
         for binindex in range(nbins2D+1):
-            if binindex<3: print binlist2D[binindex]
+            if binindex<nbins2D: print binlist2D[binindex]
             else: print "inclusive"
             #for systematic in sorted(systematics['lepAzimAsym2'].keys()):
             for systematic in systorderlist:
@@ -1037,6 +1077,30 @@ def main():
             print " & $%2.3f$ " % afberr_MCstat2D['lepChargeAsym'][binindex],
             print " \\\\ "
             print " "
+
+    if nbins2D==0:
+        print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'], afberrdatastat['lepAzimAsym2'], afberrsyst['lepAzimAsym2'])
+        print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'], afberrdatastat['lepCosTheta'], afberrsyst['lepCosTheta'])
+        print "$A_{P}^{\\rm{CPV}} & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'], afberrdatastat['lepPlusCosTheta'], afberrsyst['lepPlusCosTheta'])
+        print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'], afberrdatastat['topSpinCorr'], afberrsyst['topSpinCorr'])
+        print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'], afberrdatastat['lepCosOpeningAngle'], afberrsyst['lepCosOpeningAngle'])
+        print "$A_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'], afberrdatastat['rapiditydiffMarco'], afberrsyst['rapiditydiffMarco'])
+        print "$A^{lep}_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'], afberrdatastat['lepChargeAsym'], afberrsyst['lepChargeAsym'])
+    else:
+        for binindex in range(nbins2D+1):
+            if binindex<nbins2D: print binlist2D[binindex]
+            else: print "inclusive"
+            print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'][binindex], afberrdatastat['lepAzimAsym2'][binindex], afberrsyst['lepAzimAsym2'][binindex])
+            print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex])
+            print "$A_{P}^{\\rm{CPV}} & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex])
+            print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex])
+            print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'][binindex], afberrdatastat['lepCosOpeningAngle'][binindex], afberrsyst['lepCosOpeningAngle'][binindex])
+            print "$A_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'][binindex], afberrdatastat['rapiditydiffMarco'][binindex], afberrsyst['rapiditydiffMarco'][binindex])
+            print "$A^{lep}_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'][binindex], afberrdatastat['lepChargeAsym'][binindex], afberrsyst['lepChargeAsym'][binindex])
+
+    #afberrdatastat = {}
+    #afberrsyst = {}
+    #afberrtotal = {}
 
 
 if __name__ == '__main__':
