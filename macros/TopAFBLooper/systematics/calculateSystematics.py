@@ -1029,23 +1029,24 @@ def main():
             print systematic,
             #print " & ",
             #for plot in sorted(systematics.keys()):
-            print " & $%2.3f$ " % afberrs['lepAzimAsym2',systematic],
-            print " & $%2.3f$ " % afberrs['lepCosTheta',systematic],
-            print " & $%2.3f$ " % afberrs['lepPlusCosTheta',systematic],
-            print " & $%2.3f$ " % afberrs['topSpinCorr',systematic],
-            print " & $%2.3f$ " % afberrs['lepCosOpeningAngle',systematic],
             print " & $%2.3f$ " % afberrs['rapiditydiffMarco',systematic],
             print " & $%2.3f$ " % afberrs['lepChargeAsym',systematic],
+            print " & $%2.3f$ " % afberrs['lepAzimAsym2',systematic],
+            print " & $%2.3f$ " % afberrs['lepCosOpeningAngle',systematic],
+            print " & $%2.3f$ " % afberrs['topSpinCorr',systematic],
+            print " & $%2.3f$ " % afberrs['lepCosTheta',systematic],
+            print " & $%2.3f$ " % afberrs['lepPlusCosTheta',systematic],
             print " \\\\ "
         print "MCstat",
-        print " & $%2.3f$ " % afberr_MCstat['lepAzimAsym2'],
-        print " & $%2.3f$ " % afberr_MCstat['lepCosTheta'],
-        print " & $%2.3f$ " % afberr_MCstat['lepPlusCosTheta'],
-        print " & $%2.3f$ " % afberr_MCstat['topSpinCorr'],
-        print " & $%2.3f$ " % afberr_MCstat['lepCosOpeningAngle'],
         print " & $%2.3f$ " % afberr_MCstat['rapiditydiffMarco'],
         print " & $%2.3f$ " % afberr_MCstat['lepChargeAsym'],
+        print " & $%2.3f$ " % afberr_MCstat['lepAzimAsym2'],
+        print " & $%2.3f$ " % afberr_MCstat['lepCosOpeningAngle'],
+        print " & $%2.3f$ " % afberr_MCstat['topSpinCorr'],
+        print " & $%2.3f$ " % afberr_MCstat['lepCosTheta'],
+        print " & $%2.3f$ " % afberr_MCstat['lepPlusCosTheta'],
         print " \\\\ "
+        print " "
     else:
         for binindex in range(nbins2D+1):
             if binindex<nbins2D: print binlist2D[binindex]
@@ -1059,44 +1060,70 @@ def main():
                 print systematic,
                 #print " & ",
                 #for plot in sorted(systematics.keys()):
-                print " & $%2.3f$ " % afberrs2D['lepAzimAsym2',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepCosTheta',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepPlusCosTheta',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['topSpinCorr',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepCosOpeningAngle',systematic][binindex],
                 print " & $%2.3f$ " % afberrs2D['rapiditydiffMarco',systematic][binindex],
                 print " & $%2.3f$ " % afberrs2D['lepChargeAsym',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepAzimAsym2',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepCosOpeningAngle',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['topSpinCorr',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepCosTheta',systematic][binindex],
+                print " & $%2.3f$ " % afberrs2D['lepPlusCosTheta',systematic][binindex],
                 print " \\\\ "
             print "MCstat",
-            print " & $%2.3f$ " % afberr_MCstat2D['lepAzimAsym2'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepCosTheta'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepPlusCosTheta'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['topSpinCorr'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepCosOpeningAngle'][binindex],
             print " & $%2.3f$ " % afberr_MCstat2D['rapiditydiffMarco'][binindex],
             print " & $%2.3f$ " % afberr_MCstat2D['lepChargeAsym'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepAzimAsym2'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepCosOpeningAngle'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['topSpinCorr'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepCosTheta'][binindex],
+            print " & $%2.3f$ " % afberr_MCstat2D['lepPlusCosTheta'][binindex],
             print " \\\\ "
             print " "
 
     if nbins2D==0:
-        print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'], afberrdatastat['lepAzimAsym2'], afberrsyst['lepAzimAsym2'])
-        print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'], afberrdatastat['lepCosTheta'], afberrsyst['lepCosTheta'])
-        print "$A_{P}^{\\rm{CPV}} & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'], afberrdatastat['lepPlusCosTheta'], afberrsyst['lepPlusCosTheta'])
-        print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'], afberrdatastat['topSpinCorr'], afberrsyst['topSpinCorr'])
-        print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'], afberrdatastat['lepCosOpeningAngle'], afberrsyst['lepCosOpeningAngle'])
         print "$A_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'], afberrdatastat['rapiditydiffMarco'], afberrsyst['rapiditydiffMarco'])
         print "$A^{lep}_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'], afberrdatastat['lepChargeAsym'], afberrsyst['lepChargeAsym'])
+        print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'], afberrdatastat['lepAzimAsym2'], afberrsyst['lepAzimAsym2'])
+        print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'], afberrdatastat['lepCosOpeningAngle'], afberrsyst['lepCosOpeningAngle'])
+        print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'], afberrdatastat['topSpinCorr'], afberrsyst['topSpinCorr'])
+        print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'], afberrdatastat['lepCosTheta'], afberrsyst['lepCosTheta'])
+        print "$A_{P}^{\\rm{CPV}}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'], afberrdatastat['lepPlusCosTheta'], afberrsyst['lepPlusCosTheta'])
     else:
         for binindex in range(nbins2D+1):
             if binindex<nbins2D: print binlist2D[binindex]
             else: print "inclusive"
-            print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'][binindex], afberrdatastat['lepAzimAsym2'][binindex], afberrsyst['lepAzimAsym2'][binindex])
-            print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex])
-            print "$A_{P}^{\\rm{CPV}} & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex])
-            print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex])
-            print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'][binindex], afberrdatastat['lepCosOpeningAngle'][binindex], afberrsyst['lepCosOpeningAngle'][binindex])
             print "$A_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'][binindex], afberrdatastat['rapiditydiffMarco'][binindex], afberrsyst['rapiditydiffMarco'][binindex])
             print "$A^{lep}_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'][binindex], afberrdatastat['lepChargeAsym'][binindex], afberrsyst['lepChargeAsym'][binindex])
+            print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'][binindex], afberrdatastat['lepAzimAsym2'][binindex], afberrsyst['lepAzimAsym2'][binindex])
+            print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'][binindex], afberrdatastat['lepCosOpeningAngle'][binindex], afberrsyst['lepCosOpeningAngle'][binindex])
+            print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex])
+            print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex])
+            print "$A_{P}^{\\rm{CPV}}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex])
+
+
+        print " "
+        print " All bins: "
+        print "$A_{C}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'][binindex], afberrdatastat['rapiditydiffMarco'][binindex], afberrsyst['rapiditydiffMarco'][binindex]),
+        print "\\\\"
+        print "$A^{lep}_{C}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'][binindex], afberrdatastat['lepChargeAsym'][binindex], afberrsyst['lepChargeAsym'][binindex]),
+        print "\\\\"
+        print "$A_{\\Delta\\phi}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'][binindex], afberrdatastat['lepAzimAsym2'][binindex], afberrsyst['lepAzimAsym2'][binindex]),
+        print "\\\\"
+        print "$A_{\\cos\\varphi}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'][binindex], afberrdatastat['lepCosOpeningAngle'][binindex], afberrsyst['lepCosOpeningAngle'][binindex]),
+        print "\\\\"
+        print "$A_{c1c2}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex]),
+        print "\\\\"
+        print "$A_{P}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex]),
+        print "\\\\"
+        print "$A_{P}^{\\rm{CPV}}$",
+        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex]),
+        print "\\\\"
+
 
     #afberrdatastat = {}
     #afberrsyst = {}
