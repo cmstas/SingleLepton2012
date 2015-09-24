@@ -38,7 +38,7 @@ using std::endl;
 
 Int_t kterm = 3;  //note we used 4 here for ICHEP
 Double_t tau = 3E-2;
-Int_t nVars = 12;
+Int_t nVars = 13;
 
 
 void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1.)
@@ -123,6 +123,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         else if (Var2D == "ttrapidity2") Initialize2DBinningttrapidity2(iVar);
         else if (Var2D == "ttpt") Initialize2DBinningttpt(iVar);
         bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
+        bool combineLepMinusCPV = acceptanceName == "lepCosThetaCPV" ? true : false;
 		
 		//Do all our bin splitting
 		int nbinsx_gen = -99;
@@ -408,6 +409,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  hData_bkgSub_split = (TH2D *) hData_split->Clone("Data_BkgSub_split");
 		  hData_bkgSub_split->Add(hBkg_split, -1.0);
 
+		  if(combineLepMinusCPV) acceptanceName = "lepCosTheta";
+
 
 		// Do the acceptance correction, by filling the migration matrix with events that have a gen-level value but no reco-level value
         TFile *file = new TFile("../denominator/acceptance/mcnlo/accept_" + acceptanceName + ".root");
@@ -429,6 +432,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		accDen[1] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_dimu"));
 		accDen[2] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_mueg"));
 		accDen[3] = (TH2D*)(file->Get("denominator_" + acceptanceName + "_" + Var2D +"_all"));
+
+		if(combineLepMinusCPV) acceptanceName = "lepCosThetaCPV";
 
 		//hack to add back the overflow bin missing from the ttrapidity2 acceptance
 		if (Var2D == "ttrapidity2") {
@@ -1034,7 +1039,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
 		gStyle->SetPadRightMargin(0.053);
-		gStyle->SetPadLeftMargin(0.18);
+		gStyle->SetPadLeftMargin(0.185);
 		gStyle->SetPadBottomMargin(0.15);
 		gStyle->SetPadTopMargin(0.065);
 		//gStyle->SetErrorX(0);
@@ -1069,15 +1074,28 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         for (int nb = 0; nb < 3; nb++)
 		  {
-            hAfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
-            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
-            hAfbVsMtt_statonly->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
-            hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]);
+		  	if(!combineLepMinusCPV) {
+	            hAfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
+	            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_statonly->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
+	            hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]);
 
-            hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  afb_m[nb+1] - sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
-            hAfbVsMtt_minussyst->SetBinError(nb + 1, 0.);
-            hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
-            hAfbVsMtt_plussyst->SetBinError(nb + 1, 0.);
+	            hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  afb_m[nb+1] - sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_minussyst->SetBinError(nb + 1, 0.);
+	            hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_plussyst->SetBinError(nb + 1, 0.);
+	        }
+	        if(combineLepMinusCPV) {
+	            hAfbVsMtt->SetBinContent(nb + 1, afboffset + hardcodeddata[nb]);
+	            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(stat_corr[nb], 2) + pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_statonly->SetBinContent(nb + 1, afboffset + hardcodeddata[nb]);
+	            hAfbVsMtt_statonly->SetBinError(nb + 1, stat_corr[nb]);
+
+	            hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  hardcodeddata[nb] - sqrt( pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_minussyst->SetBinError(nb + 1, 0.);
+	            hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_plussyst->SetBinError(nb + 1, 0.);
+	        }
 
             hAfbVsMtt_theory_default->SetBinContent(nb + 1, afboffset + theory_default[nb]);
             //hAfbVsMtt_theory_scaledown->SetBinContent(nb + 1, afboffset + theory_scaledown[nb]);
@@ -1121,6 +1139,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		  {
             hTop_AfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m_denom[nb]);
             hTop_AfbVsMtt->SetBinError(nb + 1, 0);
+            if(combineLepMinusCPV) hTop_AfbVsMtt->SetBinContent(nb + 1, afboffset + 0.);
 		  }
 
 
@@ -1138,7 +1157,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         tdrStyle->SetErrorX(0.5);
 
 
-        bool drawTheory = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) );
+        bool drawTheory = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) );
         //bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" ) );
         bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle") );
 		//double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
@@ -1155,8 +1174,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		maxmax = maxmax + spread/2.1;
 		minmin = minmin - spread/10.;
 
-		if( ( observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) && minmin > afboffset ) minmin = afboffset;
-		if( ( observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) && maxmax < afboffset ) maxmax = afboffset;
+		if( ( observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) && minmin > afboffset ) minmin = afboffset;
+		if( ( observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) && maxmax < afboffset ) maxmax = afboffset;
 
 		if(observablename == "lep_cos_opening_angle" && Var2D == "ttrapidity2") maxmax = maxmax+0.01;  //hack for one special case where the maximum bin has much smaller errors than the second bin
 
@@ -1181,7 +1200,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         ht->Add(hAfbVsMtt_theory_systup);
 */
         if(drawTheory) {
-        //if( ( Var2D != "" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) ) {
+        //if( ( Var2D != "" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) ) {
         	//ht->Draw("same"); //can't have two hstacks because the one on top is always opaque and obscures the one below
 
 	        hAfbVsMtt_theory_syst->SetFillColor(kBlue-9);
