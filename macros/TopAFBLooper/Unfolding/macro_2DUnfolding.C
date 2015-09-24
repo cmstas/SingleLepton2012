@@ -1,4 +1,4 @@
 {
-gROOT->ProcessLine(".L examples/AfbFinal2DUnfold_combined.cxx");
+gROOT->ProcessLine(".L examples/AfbFull2DUnfold.cxx+");
 AfbUnfoldExample("mtt");
 }
