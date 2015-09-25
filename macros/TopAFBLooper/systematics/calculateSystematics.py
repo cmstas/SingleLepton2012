@@ -1046,6 +1046,25 @@ def main():
         print " & $%2.3f$ " % afberr_MCstat['lepCosTheta'],
         print " & $%2.3f$ " % afberr_MCstat['lepPlusCosTheta'],
         print " \\\\ "
+        print "totalsyst",
+        print " & $%2.3f$ " % afberrsyst['rapiditydiffMarco'],
+        print " & $%2.3f$ " % afberrsyst['lepChargeAsym'],
+        print " & $%2.3f$ " % afberrsyst['lepAzimAsym2'],
+        print " & $%2.3f$ " % afberrsyst['lepCosOpeningAngle'],
+        print " & $%2.3f$ " % afberrsyst['topSpinCorr'],
+        print " & $%2.3f$ " % afberrsyst['lepCosTheta'],
+        print " & $%2.3f$ " % afberrsyst['lepPlusCosTheta'],
+        print " \\\\ "
+        print " "
+        print "(total uncertainty)",
+        print " & $%2.4f$ " % afberrtotal['rapiditydiffMarco'],
+        print " & $%2.4f$ " % afberrtotal['lepChargeAsym'],
+        print " & $%2.4f$ " % afberrtotal['lepAzimAsym2'],
+        print " & $%2.4f$ " % afberrtotal['lepCosOpeningAngle'],
+        print " & $%2.4f$ " % afberrtotal['topSpinCorr'],
+        print " & $%2.4f$ " % afberrtotal['lepCosTheta'],
+        print " & $%2.4f$ " % afberrtotal['lepPlusCosTheta'],
+        print " \\\\ "
         print " "
     else:
         for binindex in range(nbins2D+1):
@@ -1077,6 +1096,25 @@ def main():
             print " & $%2.3f$ " % afberr_MCstat2D['lepCosTheta'][binindex],
             print " & $%2.3f$ " % afberr_MCstat2D['lepPlusCosTheta'][binindex],
             print " \\\\ "
+            print "totalsyst",
+            print " & $%2.3f$ " % afberrsyst['rapiditydiffMarco'][binindex],
+            print " & $%2.3f$ " % afberrsyst['lepChargeAsym'][binindex],
+            print " & $%2.3f$ " % afberrsyst['lepAzimAsym2'][binindex],
+            print " & $%2.3f$ " % afberrsyst['lepCosOpeningAngle'][binindex],
+            print " & $%2.3f$ " % afberrsyst['topSpinCorr'][binindex],
+            print " & $%2.3f$ " % afberrsyst['lepCosTheta'][binindex],
+            print " & $%2.3f$ " % afberrsyst['lepPlusCosTheta'][binindex],
+            print " \\\\ "
+            print " "
+            print "(total uncertainty)",
+            print " & $%2.4f$ " % afberrtotal['rapiditydiffMarco'][binindex],
+            print " & $%2.4f$ " % afberrtotal['lepChargeAsym'][binindex],
+            print " & $%2.4f$ " % afberrtotal['lepAzimAsym2'][binindex],
+            print " & $%2.4f$ " % afberrtotal['lepCosOpeningAngle'][binindex],
+            print " & $%2.4f$ " % afberrtotal['topSpinCorr'][binindex],
+            print " & $%2.4f$ " % afberrtotal['lepCosTheta'][binindex],
+            print " & $%2.4f$ " % afberrtotal['lepPlusCosTheta'][binindex],
+            print " \\\\ "
             print " "
 
     if nbins2D==0:
@@ -1098,7 +1136,6 @@ def main():
             print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex])
             print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex])
             print "$A_{P}^{\\rm{CPV}}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex])
-
 
         print " "
         print " All bins: "
@@ -1123,11 +1160,6 @@ def main():
         print "$A_{P}^{\\rm{CPV}}$",
         for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex]),
         print "\\\\"
-
-
-    #afberrdatastat = {}
-    #afberrsyst = {}
-    #afberrtotal = {}
 
 
 if __name__ == '__main__':
