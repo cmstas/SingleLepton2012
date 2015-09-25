@@ -766,6 +766,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         TProfile *theoryProfileCorr_scaleup = new TProfile("thprofilecorrelated_scaleup", "correlated data scaleup from theory file", nbinsx_gen, genbins);
         TProfile *theoryProfileCorr_scaledown = new TProfile("thprofilecorrelated_scaledown", "correlated data scaledown from theory file", nbinsx_gen, genbins);
         TH1D *theoryProfileCorr_scale = new TH1D("thprofilecorrelated_scale", "correlated data scale band", nbinsx_gen, genbins);
+        TH1D *theoryProfileCorr_histo = new TH1D("thprofilecorrelated_scale", "correlated data scale band", nbinsx_gen, genbins);
 
         TProfile *theoryProfileUnCorr = new TProfile("thprofileuncorrelated", "uncorrelated data from theory file", nbinsx_gen, genbins);
         TProfile *theoryProfileUnCorr_scaleup = new TProfile("thprofileuncorrelated_scaleup", "uncorrelated data scaleup from theory file", nbinsx_gen, genbins);
@@ -837,6 +838,48 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			  }
 
 		  }
+
+
+        if (acceptanceName == "rapiditydiffMarco")
+		  {
+
+            Float_t c1c2, v1, v2, v3;
+            Int_t ncols, nlines;
+            nlines = 0;
+            FILE *fp = fopen("theory/Dy-summary.dat", "r");
+            while (1)
+			  {
+                ncols = fscanf(fp, "%f %f %f %f", &c1c2, &v1, &v2, &v3);
+                if (ncols < 0) break;
+                if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
+                theoryProfileCorr->Fill(c1c2, v1);
+                theoryProfileCorr_scaledown->Fill(c1c2, v2);
+                theoryProfileCorr_scaleup->Fill(c1c2, v3);
+                nlines++;
+			  }
+		  }
+
+        if (acceptanceName == "lepChargeAsym")
+		  {
+
+            Float_t c1c2, v1, v2, v3;
+            Int_t ncols, nlines;
+            nlines = 0;
+            FILE *fp = fopen("theory/lhc8-full-lldist.dat", "r");
+            while (1)
+			  {
+                ncols = fscanf(fp, "%f %f %f %f", &c1c2, &v1, &v2, &v3);
+                if (ncols < 0) break;
+                if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
+                theoryProfileCorr->Fill(c1c2, v1);
+                theoryProfileCorr_scaledown->Fill(c1c2, v2);
+                theoryProfileCorr_scaleup->Fill(c1c2, v3);
+                nlines++;
+			  }
+		  }
+
+
+
 
 
 		double correlated_slope_NLOW = 0.;
@@ -911,12 +954,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //cout<<" Unfolded (ignoring correlation): "<< Afb <<" +/-  "<< AfbErr<<"\n";
 
 
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation")
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
 		  {
             GetAfb_integratewidth( (TH1D *) theoryProfileCorr, Afb, AfbErr);
-            cout << " Bernreuther correlated: " << Afb << " +/-  " << AfbErr << "\n";
-            GetAfb_integratewidth( (TH1D *) theoryProfileUnCorr, Afb, AfbErr);
-            cout << " Bernreuther uncorrelated: " << Afb << " +/-  " << AfbErr << "\n";
+            cout << " Bernreuther SM: " << Afb << " +/-  " << AfbErr << "\n";
+            if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" ) {
+	            GetAfb_integratewidth( (TH1D *) theoryProfileUnCorr, Afb, AfbErr);
+	            cout << " Bernreuther uncorrelated: " << Afb << " +/-  " << AfbErr << "\n";
+	        }
 		  }
 
         vector<double> afb_bins;
@@ -932,6 +977,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         hData_unfolded->Scale(1. / hData_unfolded->Integral(), "width");
         hTrue->Scale(1. / hTrue->Integral(), "width");
+        if(acceptanceName == "rapiditydiffMarco"){
+	        for (int j = 1; j < nbinsx_gen+1; j++) {
+	        	theoryProfileCorr_histo->SetBinContent(j,  theoryProfileCorr->GetBinContent(j) );
+	        }
+	        theoryProfileCorr_histo->Scale(1. / theoryProfileCorr_histo->Integral(), "width");
+            GetAfb_integratewidth( theoryProfileCorr_histo, Afb, AfbErr);
+            cout << " Bernreuther SM: " << Afb << " +/-  " << AfbErr << "\n";
+	    }
 
         //calculate covariance matrix for normalised distribution
         for (int l = 0; l < nbinsx_gen; l++)
@@ -1083,6 +1136,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         theoryProfileCorr_scale->SetFillColor(kBlue-9);
         theoryProfileCorr_scale->SetFillStyle(3345);
 
+        theoryProfileCorr_histo->SetLineColor(TColor::GetColorDark(kBlue));
+        theoryProfileCorr_histo->SetLineWidth(lineWidthDiffs);
+        theoryProfileCorr_histo->SetMarkerStyle(1);
+        theoryProfileCorr_histo->SetFillStyle(0);
+
 
         theoryProfileUnCorr->SetLineColor(TColor::GetColorDark(kBlue));
         theoryProfileUnCorr->SetLineWidth(lineWidthDiffs);
@@ -1121,19 +1179,19 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         if (!draw_truth_before_pT_reweighting) hTrue->Draw("hist same");
         else denominatorM_nopTreweighting->Draw("hist same");
         hData_unfolded->Draw("EP same");
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || observablename == "lep_cos_opening_angle")
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
 		  {
-            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV") ) {
+            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) {
             	if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2")  theoryProfileUnCorr_scale->Draw("E2 same");  //no scale uncertainty for uncorrelated predictions except for lep_azimuthal_asymmetry2
             	theoryProfileUnCorr->Draw("hist same");
             }
             if(drawTheoryScaleBand) theoryProfileCorr_scale->Draw("E2 same");
-            theoryProfileCorr->Draw("hist same");
+            if(acceptanceName != "rapiditydiffMarco") theoryProfileCorr->Draw("hist same");
+            else theoryProfileCorr_histo->Draw("hist same");
 		  }
 
 		bool second_legend = false;
-		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" ||
-			acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || observablename == "lep_cos_opening_angle") second_legend = true;
+		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") second_legend = true;
 
 		float left_bound = 0.41;
 		if( second_legend ) left_bound = 0.58;
@@ -1163,11 +1221,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         leg1->Draw();
 
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || observablename == "lep_cos_opening_angle")
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
 		  {
             TLegend *leg2;
             leg2 = new TLegend(0.175, 0.71, 0.45, 0.91, NULL, "brNDC");
-            if ( acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" ) leg2 = new TLegend(0.175, 0.80, 0.45, 0.91, NULL, "brNDC");
+            if ( acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) leg2 = new TLegend(0.175, 0.80, 0.45, 0.91, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
@@ -1176,7 +1234,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetTextSize(leg_textSize);
             leg2->SetTextFont(62);
             leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
-            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
+            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             leg2->Draw();
 		  }
 
