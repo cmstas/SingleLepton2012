@@ -974,6 +974,20 @@ def main():
         else:
             (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
             print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+        print "repeat and confirm there is no change this time:"
+        if nbins2D==0:
+            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+        else:
+            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(newcov, nbins, bin_nominals_i, binwidth)
+        if nbins2D==0:
+            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+        else:
+            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
         print ""
         #print covMCStat
         print errMCStat
