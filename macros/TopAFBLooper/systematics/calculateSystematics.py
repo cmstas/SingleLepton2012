@@ -354,13 +354,12 @@ def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
 
 
 
-def GetNormalisedStatCov_integratewidth_V(covarianceM, nbins, n, binwidth):
-
-    # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
+def GetNormalisedStatCov(covarianceM, nbins, n, binwidth):
 
     # Components of the error calculation
     sum_n = 0.
     for i in range(nbins):
+        if binwidth[i]==0: binwidth[i]=1 #set dummy bin widths for the 2D distributions where the bin widths are not initialised because the bin contents are absolute numbers of events
         sum_n += n[i] * binwidth[i]
 
     print sum_n
@@ -734,6 +733,8 @@ def main():
         if(combine != 0):
                 covMCStat /= 4.
                 covDataStat /= 4.
+                errMCStat /= 2.
+                errDataStat /= 2.
 
 
         #Loop over the different systematics...
@@ -958,7 +959,7 @@ def main():
         print errMCStat
         (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
         print "MCstaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        (newbinerr,newcov) = GetNormalisedStatCov_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+        (newbinerr,newcov) = GetNormalisedStatCov(covMCStat, nbins, bin_nominals_i, binwidth)
         (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
         print "MCstaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
         print ""
@@ -966,7 +967,7 @@ def main():
         print errDataStat
         (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
         print "Datastaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        (newbinerr,newcov) = GetNormalisedStatCov_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+        (newbinerr,newcov) = GetNormalisedStatCov(covDataStat, nbins, bin_nominals_i, binwidth)
         (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
         print "Datastaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
 
