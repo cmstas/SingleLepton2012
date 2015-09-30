@@ -354,6 +354,45 @@ def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
 
 
 
+def GetNormalisedStatCov_integratewidth_V(covarianceM, nbins, n, binwidth):
+
+    # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
+
+    # Components of the error calculation
+    sum_n = 0.
+    for i in range(nbins):
+        sum_n += n[i] * binwidth[i]
+
+    print sum_n
+
+    newbinerr = zeros( [nbins] )
+    newcov = zeros( [nbins,nbins] )
+    #sum_n_minus_n = zeros( [nbins] )
+
+    dfdn = zeros( [nbins,nbins] )
+    for k in range(nbins):
+        #sum_n_minus_n[k] = sum_n - n[k]
+        for j in range(nbins):
+            if k==j: dfdn[k,j] = (sum_n-n[k]*binwidth[k]) / pow(sum_n,2)
+            else: dfdn[k,j] = (-n[k]*binwidth[k]) / pow(sum_n,2)
+
+    # Error Calculation
+    for k in range(nbins):
+        for i in range(nbins):
+            for j in range(nbins):
+                newbinerr[k] += covarianceM[i,j] * dfdn[k,i] * dfdn[k,j] #* binwidth[i] * binwidth[j]
+                for l in range(nbins):
+                    newcov[k][l] += covarianceM[i,j] * dfdn[k,i] * dfdn[l,j] #* binwidth[i] * binwidth[j]
+        newbinerr[k] = sqrt(newbinerr[k])
+
+    print newbinerr
+    #print newcov
+
+    return (newbinerr,newcov)
+
+
+
+
 def GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n):
 
     # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
@@ -635,6 +674,8 @@ def main():
         covar_total_incDataStat = zeros( [nbins,nbins] )
         covMCStat = zeros( [nbins,nbins] )
         covDataStat = zeros( [nbins,nbins] )
+        errMCStat = zeros( [nbins] )
+        errDataStat = zeros( [nbins] )
         corr_total  = zeros( [nbins,nbins] )
         binsyst_preMCStat = zeros( [nbins] )
 
@@ -685,6 +726,9 @@ def main():
             if(combine == -1):
                 covMCStat[nbins-rowindex-1,nbins-colindex-1] += systematics[combinevar]['Nominal']['default']['nominal'][i][0]
                 covDataStat[nbins-rowindex-1,nbins-colindex-1] += systematics[combinevar]['NominalDataStat']['default']['nominal'][i][0]
+            if rowindex==colindex:
+                errMCStat[rowindex] = sqrt(covMCStat[rowindex,rowindex])
+                errDataStat[rowindex] = sqrt(covDataStat[rowindex,rowindex])
             binindex += 1
 
         if(combine != 0):
@@ -908,6 +952,23 @@ def main():
             #(afb,afberr,afbcov) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
             #print "%20s uncertainty: %2.6f" % ("Data stat", afberr[nbins2D])
             #for binindex in range(nbins2D): print "%25s %5s: %2.6f" % ("Data stat", sorted(binlist2D)[binindex], afberr[binindex])
+
+        print ""
+        #print covMCStat
+        print errMCStat
+        (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+        print "MCstaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+        (newbinerr,newcov) = GetNormalisedStatCov_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+        (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+        print "MCstaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+        print ""
+        #print covDataStat
+        print errDataStat
+        (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+        print "Datastaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+        (newbinerr,newcov) = GetNormalisedStatCov_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+        (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+        print "Datastaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
 
 
         #save bin systs for unfolded plots (unfolding macro automatically adds MC stat uncertainty so don't add it here)
