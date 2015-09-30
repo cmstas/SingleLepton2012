@@ -58,7 +58,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
   gStyle->SetOptFit();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  gStyle->SetPadTopMargin(0.06);
+  gStyle->SetPadTopMargin(0.065);
+  gStyle->SetEndErrorSize(6);
   cout.precision(3);
 
   TString ChannelName[4] = {"diel", "dimu", "mueg", "all"};
@@ -1065,6 +1066,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_minussyst = (TH1D *) hData_unfolded->Clone("Data_unfolded_minussyst");
         hData_unfolded_plussyst = (TH1D *) hData_unfolded->Clone("Data_unfolded_plussyst");
 
+        TH1D *hData_unfolded_totalunc = (TH1D *) hData_unfolded->Clone("Data_unfolded_totalunc");
+
         for (Int_t i = 1; i <= nbinsx_gen; i++)
 		  {
 		  	if(combineLepMinusCPV) hTrue->SetBinContent(i,0.5);
@@ -1079,6 +1082,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             hData_unfolded_minussyst->SetBinError(i, 0);
             hData_unfolded_plussyst ->SetBinContent(i, 2 * syst_corr[i - 1]);  //hard-coded systs
             hData_unfolded_plussyst ->SetBinError(i, 0);
+
+            hData_unfolded_totalunc->SetBinContent(i, hData_unfolded->GetBinContent(i));
+            hData_unfolded_totalunc->SetBinError(i, sqrt(hData_unfolded->GetBinError(i)*hData_unfolded->GetBinError(i) + syst_corr[i - 1]*syst_corr[i - 1]) );
 		  }
 
         THStack *hs = new THStack("hs_systband", "Systematic band");
@@ -1094,13 +1100,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         Float_t hsmin = hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) > 0.10 ? hData_unfolded->GetMinimum() - ( 0.15 * hData_unfolded->GetMaximum() ) : 0;
         //if (acceptanceName == "lepChargeAsym") hsmin=0.;
         hs->SetMinimum( hsmin );
+        hData_unfolded_totalunc->SetMinimum( hsmin );
         //printf("min = %8f \n", hsmin);
         if( int(200.*hsmin) - 10*int(20.*hsmin) > 8 ) hs->SetMinimum( hsmin + 0.01 ); //avoid axis label very close to bottom
+        if( int(200.*hsmin) - 10*int(20.*hsmin) > 8 ) hData_unfolded_totalunc->SetMinimum( hsmin + 0.01 ); //avoid axis label very close to bottom
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hs->SetMaximum(1.36 * hData_unfolded->GetMaximum());
         else if (acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV") hs->SetMaximum(1.18 * hData_unfolded->GetMaximum());
         else if (acceptanceName == "rapiditydiffMarco") hs->SetMaximum(1.3333 * hData_unfolded->GetMaximum());
         else hs->SetMaximum(1.3 * hData_unfolded->GetMaximum());
+
+        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation") hData_unfolded_totalunc->SetMaximum(1.36 * hData_unfolded->GetMaximum());
+        else if (acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV") hData_unfolded_totalunc->SetMaximum(1.18 * hData_unfolded->GetMaximum());
+        else if (acceptanceName == "rapiditydiffMarco") hData_unfolded_totalunc->SetMaximum(1.3333 * hData_unfolded->GetMaximum());
+        else hData_unfolded_totalunc->SetMaximum(1.3 * hData_unfolded->GetMaximum());
+
 
 
         TCanvas *c_test;
@@ -1153,21 +1167,34 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         theoryProfileUnCorr_scale->SetMarkerSize(0);
         theoryProfileUnCorr_scale->SetFillColor(kBlue-9);
         theoryProfileUnCorr_scale->SetFillStyle(3345);
-
+/*
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
         hs->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
         if (observablename == "lep_azimuthal_asymmetry2") hs->GetXaxis()->SetNdivisions(-406);
         else hs->GetXaxis()->SetNdivisions(504,0);
         hs->GetYaxis()->SetNdivisions(507);
+*/
+
+        //hData_unfolded_totalunc->SetMarkerStyle(23);
+        hData_unfolded_totalunc->SetMarkerSize(1);
+        hData_unfolded_totalunc->SetFillStyle(0);
+        hData_unfolded_totalunc->SetLineWidth(lineWidthDiffs);
+        hData_unfolded_totalunc->Draw("E1X0");
+        hData_unfolded_totalunc->GetXaxis()->SetTitle(xaxislabel);
+        hData_unfolded_totalunc->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
+        if (observablename == "lep_azimuthal_asymmetry2") hData_unfolded_totalunc->GetXaxis()->SetNdivisions(-406);
+        else hData_unfolded_totalunc->GetXaxis()->SetNdivisions(504,0);
+        hData_unfolded_totalunc->GetYaxis()->SetNdivisions(507);
+
         hData_unfolded->GetXaxis()->SetTitle(xaxislabel);
         //hData_unfolded->GetYaxis()->SetTitle("1/#sigma d#sigma/d("+xaxislabel+")");
         //hData_unfolded->SetMinimum(0.0);
         //hData_unfolded->SetMaximum( 2.0* hData_unfolded->GetMaximum());
-        hData_unfolded->SetMarkerStyle(23);
+        //hData_unfolded->SetMarkerStyle(23);
         hData_unfolded->SetMarkerSize(1);
         hData_unfolded->SetFillStyle(0);
-        hData_unfolded->Draw("E same");
+        hData_unfolded->Draw("E1X0 same");
         hData_unfolded->SetLineWidth(lineWidthDiffs);
         denominatorM_nopTreweighting->SetLineWidth(lineWidthDiffs);
         denominatorM_nopTreweighting->SetLineColor(TColor::GetColorDark(kRed));
@@ -1178,7 +1205,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hTrue->SetFillStyle(0);
         if (!draw_truth_before_pT_reweighting) hTrue->Draw("hist same");
         else denominatorM_nopTreweighting->Draw("hist same");
-        hData_unfolded->Draw("EP same");
+        hData_unfolded->Draw("E1X0 same");
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
 		  {
             if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) {
@@ -1193,17 +1220,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		bool second_legend = false;
 		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") second_legend = true;
 
-		float left_bound = 0.41;
-		if( second_legend ) left_bound = 0.58;
+		float left_bound = 0.65;
+		if( second_legend ) left_bound = 0.71;
 
-		float leg_textSize = 0.05;
+		float leg_textSize = 0.065;
 		if( second_legend ) leg_textSize *= 0.8;
 		else leg_textSize *= 0.9;
 
 		TLegend *leg1;
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
-        if( second_legend ) leg1 = new TLegend(left_bound, 0.74, 0.9, 0.92, NULL, "brNDC");
-        else leg1 = new TLegend(left_bound, 0.72, 0.9, 0.92, NULL, "brNDC");
+        if( second_legend ) leg1 = new TLegend(left_bound, 0.78, 0.9, 0.92, NULL, "brNDC");
+        else leg1 = new TLegend(left_bound, 0.76, 0.9, 0.92, NULL, "brNDC");
         leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
@@ -1213,19 +1240,19 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg1->SetTextFont(62);
         //if(second_legend) leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
         //else leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.25]{ }-#kern[-0.2]{ }#kern[-0.1]{b}ackground#kern[-0.2]{ }) unfolded");
-        if(second_legend) leg1->AddEntry(hData_unfolded, "Data (stat. unc.)","LEP");
-        else leg1->AddEntry(hData_unfolded, "Data (stat. unc.)","LEP");
-        if(second_legend) leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
-        else leg1->AddEntry(hData_unfolded_plussyst,    "Systematic uncertainty", "F");
-        leg1->AddEntry(hTrue,    "MC@NLO parton level", "L");
+        if(second_legend) leg1->AddEntry(hData_unfolded, "Data","EP");
+        else leg1->AddEntry(hData_unfolded, "Data","EP");
+        //if(second_legend) leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
+        //else leg1->AddEntry(hData_unfolded_plussyst,    "Systematic uncertainty", "F");
+        leg1->AddEntry(hTrue,    "MC@NLO", "L");
 
         leg1->Draw();
 
         if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
 		  {
             TLegend *leg2;
-            leg2 = new TLegend(0.175, 0.71, 0.45, 0.91, NULL, "brNDC");
-            if ( acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) leg2 = new TLegend(0.175, 0.80, 0.45, 0.91, NULL, "brNDC");
+            leg2 = new TLegend(0.38, 0.78, 0.70, 0.92, NULL, "brNDC");
+            if ( acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
             leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
@@ -1233,13 +1260,15 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetFillStyle(0);
             leg2->SetTextSize(leg_textSize);
             leg2->SetTextFont(62);
-            leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
-            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
+            leg2->AddEntry(theoryProfileCorr,  "B&S, SM", "L");
+            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "B&S, uncorr.", "L");
+            //leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
+            //if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             leg2->Draw();
 		  }
 
 		int cms_position = 11; //Upper left corner
-		if( second_legend ) cms_position = 0; //Left corner, outside the frame
+		//if( second_legend ) cms_position = 0; //Left corner, outside the frame
 
         if(drawDiffs) {
 
@@ -1255,6 +1284,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 			int tempnbins = hData_unfolded->GetNbinsX();
 			TString s_hname = "diff_";
 			TH1D *h_diff = (TH1D *) hData_unfolded->Clone(s_hname +  acceptanceName);
+			s_hname = "difftotalunc_";
+			TH1D *h_diff_totalunc = (TH1D *) hData_unfolded->Clone(s_hname +  acceptanceName);
 
 			TH1D *h_diff_minussyst;
 			TH1D *h_diff_plussyst;
@@ -1263,9 +1294,11 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
 
 			h_diff->Reset();
+			h_diff_totalunc->Reset();
 			line = new TLine(hData_unfolded->GetXaxis()->GetBinLowEdge(1), 1.0, 
 			hData_unfolded->GetXaxis()->GetBinUpEdge(tempnbins), 1.0);
 			h_diff->TH1D::Sumw2();  
+			h_diff_totalunc->TH1D::Sumw2();  
 
             for(int tempbin = 1; tempbin < hData_unfolded->GetNbinsX()+1; tempbin++) {
 				double mc, mcerr;
@@ -1277,11 +1310,15 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				double data = hData_unfolded->GetBinContent(tempbin);
 				double dataerr = hData_unfolded->GetBinError(tempbin);
 				double err2 = pow(mcerr*data/mc/mc,2) + pow(dataerr/mc,2);
+				double errtot = err2+pow(syst_corr[tempbin - 1]/mc,2);
 				if(mc < 1e-10) 
 				continue;
 				h_diff->SetBinContent(tempbin, (data)/mc);
 				h_diff->SetBinError(tempbin, sqrt(err2));         
 				//h_diff->GetXaxis()->SetBinLabel(tempbin, hData_unfolded->GetXaxis()->GetBinLabel(tempbin));
+
+				h_diff_totalunc->SetBinContent(tempbin, (data)/mc);
+				h_diff_totalunc->SetBinError(tempbin, sqrt(errtot));     
 
 
 				h_diff_minussyst->SetBinContent(tempbin, (data)/mc
@@ -1300,59 +1337,113 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             h_diff_plussyst->SetLineColor(kWhite);
             h_diff_plussyst->SetFillColor(15);
             hsd->Add(h_diff_plussyst);
-
+/*
             hsd->Draw();
 
             hsd->SetMinimum(0.921);
-            hsd->SetMaximum(1.079/1.05); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
+            hsd->SetMaximum(1.079/(1+gStyle->GetHistTopMargin())); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
 
             if(h_diff->GetBinContent(h_diff->GetMaximumBin()) > 1.079) {
-            	hsd->SetMaximum(h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01/1.05);
+            	hsd->SetMaximum(h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01/(1+gStyle->GetHistTopMargin()));
             	hsd->SetMinimum(2. - h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01);
             }
 
             if(h_diff->GetBinContent(h_diff->GetMinimumBin()) < 0.921  &&  (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99) > (h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01)  ) {
-            	hsd->SetMaximum( (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99)/1.05);
+            	hsd->SetMaximum( (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99)/(1+gStyle->GetHistTopMargin()));
             	hsd->SetMinimum(h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99);
             }
 
-            //hsd->GetXaxis()->SetTitle( hs->GetXaxis()->GetTitle() );
+            //hsd->GetXaxis()->SetTitle( hData_unfolded_totalunc->GetXaxis()->GetTitle() );
             hsd->GetXaxis()->SetTitle(xaxislabel);
-            hsd->GetXaxis()->SetTitleSize( hs->GetXaxis()->GetTitleSize()*(1.-r)/r);
-            hsd->GetXaxis()->SetLabelSize( hs->GetXaxis()->GetLabelSize()*(1.-r)/r);
+            hsd->GetXaxis()->SetTitleSize( hData_unfolded_totalunc->GetXaxis()->GetTitleSize()*(1.-r)/r);
+            hsd->GetXaxis()->SetLabelSize( hData_unfolded_totalunc->GetXaxis()->GetLabelSize()*(1.-r)/r);
             //hsd->GetXaxis()->SetLabelOffset(-0.88);
 
             hsd->GetYaxis()->SetTitle("Data/Simulation ");
             hsd->GetYaxis()->SetNdivisions(505);
             if (observablename == "lep_azimuthal_asymmetry2") hsd->GetXaxis()->SetNdivisions(-406);
             else hsd->GetXaxis()->SetNdivisions(504,0);
+*/
+
+
+            h_diff_totalunc->Draw("E1X0");
+
+            h_diff_totalunc->SetMinimum(0.921);
+            h_diff_totalunc->SetMaximum(1.079); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
+
+            if(h_diff->GetBinContent(h_diff->GetMaximumBin()) > 1.079) {
+            	h_diff_totalunc->SetMaximum(h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01);
+            	h_diff_totalunc->SetMinimum(2. - h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01);
+            }
+
+            if(h_diff->GetBinContent(h_diff->GetMinimumBin()) < 0.921  &&  (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99) > (h_diff->GetBinContent(h_diff->GetMaximumBin())*1.01)  ) {
+            	h_diff_totalunc->SetMaximum( (2. - h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99));
+            	h_diff_totalunc->SetMinimum(h_diff->GetBinContent(h_diff->GetMinimumBin())*0.99);
+            }
+
+            //h_diff_totalunc->GetXaxis()->SetTitle( hData_unfolded_totalunc->GetXaxis()->GetTitle() );
+            h_diff_totalunc->GetXaxis()->SetTitle(xaxislabel);
+            h_diff_totalunc->GetXaxis()->SetTitleSize( hData_unfolded_totalunc->GetXaxis()->GetTitleSize()*(1.-r)/r);
+            h_diff_totalunc->GetXaxis()->SetLabelSize( hData_unfolded_totalunc->GetXaxis()->GetLabelSize()*(1.-r)/r);
+            //h_diff_totalunc->GetXaxis()->SetLabelOffset(-0.88);
+
+            h_diff_totalunc->GetYaxis()->SetTitle("Data/Simulation ");
+            h_diff_totalunc->GetYaxis()->SetNdivisions(505);
+            if (observablename == "lep_azimuthal_asymmetry2") h_diff_totalunc->GetXaxis()->SetNdivisions(-406);
+            else h_diff_totalunc->GetXaxis()->SetNdivisions(504,0);
+
+
+
+
+
+
+
             if (observablename == "lep_azimuthal_asymmetry2") {
             	TString binlabels[] = {"0","#pi/6","#pi/3","#pi/2","2#pi/3","5#pi/6","#pi"};
 	            TLatex label;
-	            label.SetTextSize(hs->GetXaxis()->GetLabelSize()*(1.-r)/r);
-	            hsd->GetXaxis()->SetLabelSize(0);
+	            label.SetTextSize(hData_unfolded_totalunc->GetXaxis()->GetLabelSize()*(1.-r)/r);
+	            //hsd->GetXaxis()->SetLabelSize(0);
+	            h_diff_totalunc->GetXaxis()->SetLabelSize(0);
 	            label.SetTextFont(42);
 	            label.SetTextAlign(22);
 	            for (Int_t k=0;k<=nbinsx_gen;k++) {
-	            	Double_t xnew = hs->GetXaxis()->GetBinLowEdge(k+1);
+	            	Double_t xnew = hData_unfolded_totalunc->GetXaxis()->GetBinLowEdge(k+1);
 	            	//if(k%2==0) label.DrawLatex(xnew,hsd->GetMinimum(),Form("%i#pi/6",k/2));
 	            	if(k%2==0) label.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/12.,binlabels[k/2]);
 	            }
 	        }
+/*
             //hsd->GetYaxis()->SetTitleFont(hData_unfolded->GetYaxis()->GetTitleFont());
             hsd->GetYaxis()->SetTitleOffset(0.6);
             hsd->GetYaxis()->SetTitleSize(0.120);
-            hsd->GetYaxis()->SetLabelSize( hs->GetYaxis()->GetLabelSize()*(1.-r)/r);
+            hsd->GetYaxis()->SetLabelSize( hData_unfolded_totalunc->GetYaxis()->GetLabelSize()*(1.-r)/r);
             //hsd->GetYaxis()->SetLabelFont(hData_unfolded->GetYaxis()->GetLabelFont());
 
             //hsd->SetMarkerSize(0.8);
 
             //hsd->Draw("same");
 
+
         	hs->GetXaxis()->SetLabelSize(0.);
         	hs->GetXaxis()->SetTitleSize(0.);
+*/      	
 
-            h_diff->Draw("Pesames");
+            //h_diff_totalunc->GetYaxis()->SetTitleFont(hData_unfolded->GetYaxis()->GetTitleFont());
+            h_diff_totalunc->GetYaxis()->SetTitleOffset(0.6);
+            h_diff_totalunc->GetYaxis()->SetTitleSize(0.120);
+            h_diff_totalunc->GetYaxis()->SetLabelSize( hData_unfolded_totalunc->GetYaxis()->GetLabelSize()*(1.-r)/r);
+            //h_diff_totalunc->GetYaxis()->SetLabelFont(hData_unfolded->GetYaxis()->GetLabelFont());
+
+            //h_diff_totalunc->SetMarkerSize(0.8);
+
+            //h_diff_totalunc->Draw("same");
+
+
+        	hData_unfolded_totalunc->GetXaxis()->SetLabelSize(0.);
+        	hData_unfolded_totalunc->GetXaxis()->SetTitleSize(0.);
+
+
+            h_diff->Draw("E1X0 same");
             line->Draw();
             c_test->Modified();
             c_test->Update();
