@@ -432,6 +432,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     gStyle->SetPadTopMargin(0.065);
     gStyle->SetPadRightMargin(0.035);
     gStyle->SetPadLeftMargin(0.165);
+    //gStyle->SetErrorX(0);
 
     //-------------------------------
     // SINGLE LEPTON - MT SCALING
@@ -1920,7 +1921,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             //    if (dozoom) ratio->GetYaxis()->SetRangeUser(0.7,1.3);
             //    else
             //    ratio->GetYaxis()->SetRangeUser(0.7,1.3);
-            ratio->GetYaxis()->SetRangeUser(0.81, 1.19);
+            ratio->GetYaxis()->SetRangeUser(0.71, 1.29);
             //if (i == 3) ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
             //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
             ratio->GetYaxis()->SetTitle("Data/Simulation ");
@@ -2221,7 +2222,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         ratio->GetYaxis()->SetTitleSize(0.120);
         ratio->GetYaxis()->SetNdivisions(805);
         ratio->GetYaxis()->SetLabelSize(h_basic->GetYaxis()->GetLabelSize()*(1.-r)/r);
-        ratio->GetYaxis()->SetRangeUser(0.81, 1.19);
+        ratio->GetYaxis()->SetRangeUser(0.71, 1.29);
         ratio->GetYaxis()->SetTitle("Data/Simulation ");
         ratio->GetXaxis()->SetLabelSize(h_basic->GetXaxis()->GetLabelSize()*(1.-r)/r);
         ratio->GetXaxis()->SetTitleSize(h_basic->GetXaxis()->GetTitleSize()*(1.-r)/r);
