@@ -362,7 +362,9 @@ def GetNormalisedCovarianceMatrix(covarianceM, nbins, n, binwidth):
         if binwidth[i]==0: binwidth[i]=1 #set dummy bin widths for the 2D distributions where the bin widths are not initialised because the bin contents are absolute numbers of events
         sum_n += n[i] * binwidth[i]
 
-    print sum_n
+    #print sum_n
+    if abs(sum_n-1.)>2e-6: print "WARNING: input distribution not normalised to unit area: %2.6g" % (sum_n-1.)
+    sum_n = 1. #since sum_n should always = 1, set it exactly to minimise rounding errors
 
     newbinerr = zeros( [nbins] )
     newcov = zeros( [nbins,nbins] )
@@ -384,10 +386,10 @@ def GetNormalisedCovarianceMatrix(covarianceM, nbins, n, binwidth):
                     newcov[k][l] += covarianceM[i,j] * dfdn[k,i] * dfdn[l,j] #* binwidth[i] * binwidth[j]
         newbinerr[k] = sqrt(newbinerr[k])
 
-    print newbinerr
+    #print newbinerr
     #print newcov
 
-    return (newbinerr,newcov)
+    return newcov
 
 
 
@@ -676,7 +678,7 @@ def main():
         errMCStat = zeros( [nbins] )
         errDataStat = zeros( [nbins] )
         corr_total  = zeros( [nbins,nbins] )
-        binsyst_preMCStat = zeros( [nbins] )
+        #binsyst_preMCStat = zeros( [nbins] )
 
         bin_nominals_i = zeros( [nbins] )
         binwidth = zeros( [nbins] )
@@ -956,77 +958,87 @@ def main():
 
 
         #save bin systs for unfolded plots (unfolding macro automatically adds MC stat uncertainty so don't add it here)
-        for row in range(nbins): binsyst_preMCStat[row] = sqrt(covar_total[row,row])
+        #for row in range(nbins): binsyst_preMCStat[row] = sqrt(covar_total[row,row])
 
-        print ""
-        #print covar_total
-        print binsyst_preMCStat
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
-            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)
-            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(covar_total, nbins, bin_nominals_i, binwidth)
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
-            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
-            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        print "repeat and confirm there is no change this time:"
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
-            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
-            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(newcov, nbins, bin_nominals_i, binwidth)
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
-            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
-            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        print ""
-        #print covMCStat
-        print errMCStat
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
-            print "MCstaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
-            print "MCstaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(covMCStat, nbins, bin_nominals_i, binwidth)
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
-            print "MCstaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
-            print "MCstaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        print ""
-        #print covDataStat
-        print errDataStat
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
-            print "Datastaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
-            print "Datastaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
-        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(covDataStat, nbins, bin_nominals_i, binwidth)
-        if nbins2D==0:
-            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
-            print "Datastaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
-        else:
-            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
-            print "Datastaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        print ""
+#        #print covar_total
+#        print binsyst_preMCStat
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
+#            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covar_total, nbins, nbins2D, bin_nominals_i)
+#            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(covar_total, nbins, bin_nominals_i, binwidth)
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+#            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+#            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        print "repeat and confirm there is no change this time:"
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+#            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+#            print "systerrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(newcov, nbins, bin_nominals_i, binwidth)
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+#            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+#            print "systerrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        print ""
+#        #print covMCStat
+#        print errMCStat
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covMCStat, nbins, bin_nominals_i, binwidth)
+#            print "MCstaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covMCStat, nbins, nbins2D, bin_nominals_i)
+#            print "MCstaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(covMCStat, nbins, bin_nominals_i, binwidth)
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+#            print "MCstaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+#            print "MCstaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        print ""
+#        #print covDataStat
+#        print errDataStat
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
+#            print "Datastaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
+#            print "Datastaterrbefore: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
+#        (newbinerr,newcov) = GetNormalisedCovarianceMatrix(covDataStat, nbins, bin_nominals_i, binwidth)
+#        if nbins2D==0:
+#            (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(newcov, nbins, bin_nominals_i, binwidth)
+#            print "Datastaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb, afberrdatastat[plot])
+#        else:
+#            (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(newcov, nbins, nbins2D, bin_nominals_i)
+#            print "Datastaterrafter: %s = %2.6f +/- %2.6f " % (plot, afb[nbins2D], afberrdatastat[plot][nbins2D])
 
 
 
         #add stat uncertainties from TUnfold
         covar_total+=covMCStat
+
+        #correct covariance matrices so they correspond to normalised differential cross section (i.e. error on sum of bins = 0)
+        covar_total = GetNormalisedCovarianceMatrix(covar_total, nbins, bin_nominals_i, binwidth)
+        covDataStat = GetNormalisedCovarianceMatrix(covDataStat, nbins, bin_nominals_i, binwidth)
+
         covar_total_incDataStat = covar_total + covDataStat
 
+        #check GetNormalisedCovarianceMatrix has no effect on total matrix
+        covar_total_incDataStat_test = GetNormalisedCovarianceMatrix(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+        for i in range (nbins):
+            for j in range (nbins):
+                if abs(covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j])>1e-6: print "WARNING: if this is not a rounding error, total covariance matrix must give non-zero uncertainty on total yield: %2.6g" % ((covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j]))
 
         if nbins2D==0:
             (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
@@ -1103,23 +1115,26 @@ def main():
                 #print afbcorsyst
                 #print ""
         print "code fragment to paste in AfbFinalUnfold.h:"
-        if nbins2D==0: 
-            for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_preMCStat[row])
-        else:
-            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr_preMCStat[binindex] )
-        print ""
+        #if nbins2D==0: 
+        #    for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, binsyst_preMCStat[row])
+        #else:
+        #    for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberr_preMCStat[binindex] )
+        #print ""
 
-        if combine!=0 and plot == "lepPlusCosTheta":
-            print " special hard-coded values for A_P^CPV: "
-            if nbins2D==0: 
+        
+        if nbins2D==0: 
+            if combine!=0 and plot == "lepPlusCosTheta":
+                print " special hard-coded bin values for A_P^CPV: "
                 for row in range(nbins): print "hardcodeddata[%i] = %2.6f;" % (row, bin_nominals_i[row])
-                for row in range(nbins): print "stat_corr[%i] = %2.6f;" % (row, sqrt(covDataStat[row,row]))
-                for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, sqrt(covar_total[row,row]))
-            else:
+            for row in range(nbins): print "stat_corr[%i] = %2.6f;" % (row, sqrt(covDataStat[row,row]))
+            for row in range(nbins): print "syst_corr[%i] = %2.6f;" % (row, sqrt(covar_total[row,row]))
+        else:
+            if combine!=0 and plot == "lepPlusCosTheta":
+                print " special hard-coded bin values for A_P^CPV: "
                 for binindex in range(nbins2D): print "hardcodeddata[%i] = %2.6f;" % (binindex, afbs[plot][binindex] )
-                for binindex in range(nbins2D): print "stat_corr[%i] = %2.6f;" % (binindex, afberrdatastat[plot][binindex] )
-                for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberrsyst[plot][binindex] )
-            print ""
+            for binindex in range(nbins2D): print "stat_corr[%i] = %2.6f;" % (binindex, afberrdatastat[plot][binindex] )
+            for binindex in range(nbins2D): print "syst_corr[%i] = %2.6f;" % (binindex, afberrsyst[plot][binindex] )
+        print ""
 
 
     #end loop over asymmetries
