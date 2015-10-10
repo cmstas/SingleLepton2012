@@ -675,8 +675,8 @@ def main():
         covar_total_incDataStat = zeros( [nbins,nbins] )
         covMCStat = zeros( [nbins,nbins] )
         covDataStat = zeros( [nbins,nbins] )
-        errMCStat = zeros( [nbins] )
-        errDataStat = zeros( [nbins] )
+        #errMCStat = zeros( [nbins] )
+        #errDataStat = zeros( [nbins] )
         corr_total  = zeros( [nbins,nbins] )
         #binsyst_preMCStat = zeros( [nbins] )
 
@@ -727,16 +727,16 @@ def main():
             if(combine == -1):
                 covMCStat[nbins-rowindex-1,nbins-colindex-1] += systematics[combinevar]['Nominal']['default']['nominal'][i][0]
                 covDataStat[nbins-rowindex-1,nbins-colindex-1] += systematics[combinevar]['NominalDataStat']['default']['nominal'][i][0]
-            if rowindex==colindex:
-                errMCStat[rowindex] = sqrt(covMCStat[rowindex,rowindex])
-                errDataStat[rowindex] = sqrt(covDataStat[rowindex,rowindex])
+            #if rowindex==colindex:
+                #errMCStat[rowindex] = sqrt(covMCStat[rowindex,rowindex])
+                #errDataStat[rowindex] = sqrt(covDataStat[rowindex,rowindex])
             binindex += 1
 
         if(combine != 0):
                 covMCStat /= 4.
                 covDataStat /= 4.
-                errMCStat /= 2.
-                errDataStat /= 2.
+                #errMCStat /= 2.
+                #errDataStat /= 2.
 
 
         #Loop over the different systematics...
