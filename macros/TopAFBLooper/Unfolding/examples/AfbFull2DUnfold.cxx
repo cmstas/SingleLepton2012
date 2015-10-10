@@ -1076,14 +1076,20 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         for (int nb = 0; nb < 3; nb++)
 		  {
 		  	if(!combineLepMinusCPV) {
-	            hAfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
-	            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
-	            hAfbVsMtt_statonly->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
-	            hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]);
+		  		if( iChan==nSig && fabs(1.-afb_merr[nb+1]/stat_corr[nb]) >2e-3 ) cout<<"hard-coded stat uncertainty check: "<<1.-afb_merr[nb+1]/stat_corr[nb]<<" "<<stat_corr[nb]<<" "<<afb_merr[nb+1]<<endl;
 
-	            hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  afb_m[nb+1] - sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
+	            //hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(afb_merr[nb+1], 2) + pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) ); //commented out because the MC stat unc is now also included in the hard-coded systematics
+	            hAfbVsMtt->SetBinError(nb + 1,  sqrt( pow(stat_corr[nb], 2) + pow(syst_corr[nb], 2) ) );
+	            hAfbVsMtt_statonly->SetBinContent(nb + 1, afboffset + afb_m[nb+1]);
+	            //hAfbVsMtt_statonly->SetBinError(nb + 1, afb_merr[nb+1]); //stat uncertainties now also hard-coded (re-evaluated after normalising to unit-area)
+	            hAfbVsMtt_statonly->SetBinError(nb + 1, stat_corr[nb]);
+
+	            //hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  afb_m[nb+1] - sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) ); //commented out because the MC stat unc is now also included in the hard-coded systematics
+	            hAfbVsMtt_minussyst->SetBinContent(nb + 1, afboffset +  afb_m[nb+1] - sqrt( pow(syst_corr[nb], 2) ) );
 	            hAfbVsMtt_minussyst->SetBinError(nb + 1, 0.);
-	            hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) );
+	            //hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(afb_merr_mcstatonly[nb+1], 2) + pow(syst_corr[nb], 2) ) ); //commented out because the MC stat unc is now also included in the hard-coded systematics
+	            hAfbVsMtt_plussyst->SetBinContent(nb + 1, 2. * sqrt( pow(syst_corr[nb], 2) ) );
 	            hAfbVsMtt_plussyst->SetBinError(nb + 1, 0.);
 	        }
 	        if(combineLepMinusCPV) {
@@ -1230,7 +1236,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		        hAfbVsMtt_uncorr_syst->SetLineColor(TColor::GetColorDark(kBlue));
 		        hAfbVsMtt_uncorr_syst->SetMarkerColor(TColor::GetColorDark(kBlue));
 		        hAfbVsMtt_uncorr_syst->SetMarkerSize(0);
-		        hAfbVsMtt_uncorr_syst->SetFillStyle(3345);
+		        hAfbVsMtt_uncorr_syst->SetFillStyle(3354);
 		        hAfbVsMtt_uncorr_syst->SetLineWidth( 3.0 );
 		        hAfbVsMtt_uncorr_syst->SetLineStyle(2);
 		        if(observablename == "lep_azimuthal_asymmetry2") hAfbVsMtt_uncorr_syst->Draw("E2 same"); //the other variables have no scale uncertainties

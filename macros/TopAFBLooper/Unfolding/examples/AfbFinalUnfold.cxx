@@ -767,7 +767,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         TProfile *theoryProfileCorr_scaleup = new TProfile("thprofilecorrelated_scaleup", "correlated data scaleup from theory file", nbinsx_gen, genbins);
         TProfile *theoryProfileCorr_scaledown = new TProfile("thprofilecorrelated_scaledown", "correlated data scaledown from theory file", nbinsx_gen, genbins);
         TH1D *theoryProfileCorr_scale = new TH1D("thprofilecorrelated_scale", "correlated data scale band", nbinsx_gen, genbins);
-        TH1D *theoryProfileCorr_histo = new TH1D("thprofilecorrelated_scale", "correlated data scale band", nbinsx_gen, genbins);
 
         TProfile *theoryProfileUnCorr = new TProfile("thprofileuncorrelated", "uncorrelated data from theory file", nbinsx_gen, genbins);
         TProfile *theoryProfileUnCorr_scaleup = new TProfile("thprofileuncorrelated_scaleup", "uncorrelated data scaleup from theory file", nbinsx_gen, genbins);
@@ -781,7 +780,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             Float_t dphi, v1, v2, v3;
             Int_t ncols, nlines;
             nlines = 0;
-            FILE *fp = fopen("theory/lhc8-dphill-corr.dat", "r");
+            FILE *fp = fopen("theory/lhc8-dphill-corrDec14.d", "r");
             while (1)
 			  {
                 ncols = fscanf(fp, "%f %f %f %f", &dphi, &v1, &v2, &v3);
@@ -847,15 +846,15 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             Float_t c1c2, v1, v2, v3;
             Int_t ncols, nlines;
             nlines = 0;
-            FILE *fp = fopen("theory/Dy-summary.dat", "r");
+            FILE *fp = fopen("theory/lhc8-dy.dat", "r");
             while (1)
 			  {
                 ncols = fscanf(fp, "%f %f %f %f", &c1c2, &v1, &v2, &v3);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
                 theoryProfileCorr->Fill(c1c2, v1);
-                theoryProfileCorr_scaledown->Fill(c1c2, v2);
-                theoryProfileCorr_scaleup->Fill(c1c2, v3);
+                theoryProfileCorr_scaledown->Fill(c1c2, v3);
+                theoryProfileCorr_scaleup->Fill(c1c2, v2);
                 nlines++;
 			  }
 		  }
@@ -873,8 +872,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
                 theoryProfileCorr->Fill(c1c2, v1);
-                theoryProfileCorr_scaledown->Fill(c1c2, v2);
-                theoryProfileCorr_scaleup->Fill(c1c2, v3);
+                theoryProfileCorr_scaledown->Fill(c1c2, v3);
+                theoryProfileCorr_scaleup->Fill(c1c2, v2);
                 nlines++;
 			  }
 		  }
@@ -917,10 +916,26 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
     	for (int i = 1; i <= nbinsx_gen; ++i)
     	{
     		theoryProfileCorr_scale->SetBinContent( i ,  (theoryProfileCorr_scaledown->GetBinContent(i)+theoryProfileCorr_scaleup->GetBinContent(i))/2. );
+    		//theoryProfileCorr_scale->SetBinContent( i , theoryProfileCorr->GetBinContent(i) );
     		theoryProfileCorr_scale->SetBinError( i ,  fabs(theoryProfileCorr_scaledown->GetBinContent(i)-theoryProfileCorr_scaleup->GetBinContent(i))/2. );
+    		//theoryProfileCorr_scale->SetBinError( i ,  ( fabs(theoryProfileCorr_scaledown->GetBinContent(i)-theoryProfileCorr->GetBinContent(i)) + fabs(theoryProfileCorr_scaleup->GetBinContent(i)-theoryProfileCorr->GetBinContent(i)) )/2. ); //take average of up and down to smooth out statistical fluctuations
     		theoryProfileUnCorr_scale->SetBinContent( i ,  (theoryProfileUnCorr_scaledown->GetBinContent(i)+theoryProfileUnCorr_scaleup->GetBinContent(i))/2. );
+    		//theoryProfileUnCorr_scale->SetBinContent( i , theoryProfileUnCorr->GetBinContent(i) );
     		theoryProfileUnCorr_scale->SetBinError( i ,  max(0.0001,fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr_scaleup->GetBinContent(i))/2.) );
+    		//theoryProfileUnCorr_scale->SetBinError( i ,  ( fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) )/2. ); //take average of up and down to smooth out statistical fluctuations
     	}
+
+    	//make sure they are normalised to unit area
+    	//cout<<theoryProfileCorr->Integral("width")<<" "<<theoryProfileCorr_scaleup->Integral("width")<<" "<<theoryProfileCorr_scaledown->Integral("width")<<" "<<theoryProfileCorr_scale->Integral("width")<<" "<<theoryProfileUnCorr->Integral("width")<<" "<<theoryProfileUnCorr_scaleup->Integral("width")<<" "<<theoryProfileUnCorr_scaledown->Integral("width")<<" "<<theoryProfileUnCorr_scale->Integral("width")<<" "<<endl;
+
+        theoryProfileCorr->Scale(1./theoryProfileCorr->Integral("width"));
+        theoryProfileCorr_scaleup->Scale(1./theoryProfileCorr_scaleup->Integral("width"));
+        theoryProfileCorr_scaledown->Scale(1./theoryProfileCorr_scaledown->Integral("width"));
+        theoryProfileCorr_scale->Scale(1./theoryProfileCorr_scale->Integral("width"));
+        theoryProfileUnCorr->Scale(1./theoryProfileUnCorr->Integral("width"));
+        theoryProfileUnCorr_scaleup->Scale(1./theoryProfileUnCorr_scaleup->Integral("width"));
+        theoryProfileUnCorr_scaledown->Scale(1./theoryProfileUnCorr_scaledown->Integral("width"));
+        theoryProfileUnCorr_scale->Scale(1./theoryProfileUnCorr_scale->Integral("width"));
 
         //==================================================================
         //============== Print the asymetry ================================
@@ -978,14 +993,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 
         hData_unfolded->Scale(1. / hData_unfolded->Integral(), "width");
         hTrue->Scale(1. / hTrue->Integral(), "width");
-        if(acceptanceName == "rapiditydiffMarco"){
-	        for (int j = 1; j < nbinsx_gen+1; j++) {
-	        	theoryProfileCorr_histo->SetBinContent(j,  theoryProfileCorr->GetBinContent(j) );
-	        }
-	        theoryProfileCorr_histo->Scale(1. / theoryProfileCorr_histo->Integral(), "width");
-            GetAfb_integratewidth( theoryProfileCorr_histo, Afb, AfbErr);
-            cout << " Bernreuther SM: " << Afb << " +/-  " << AfbErr << "\n";
-	    }
 
         //calculate covariance matrix for normalised distribution
         for (int l = 0; l < nbinsx_gen; l++)
@@ -1075,8 +1082,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  	if(combineLepMinusCPV) denominatorM_nopTreweighting->SetBinContent(i,0.5);
 		  	if(combineLepMinusCPV) denominatorM_nopTreweighting->SetBinError(i,0.);
 		  	if(combineLepMinusCPV) hData_unfolded->SetBinContent(i,hardcodeddata[i-1]);
-		  	if(combineLepMinusCPV) hData_unfolded->SetBinError(i,stat_corr[i-1]);
-		  	if(!combineLepMinusCPV) syst_corr[i - 1] = sqrt(syst_corr[i - 1]*syst_corr[i - 1] + m_smearingE(i-1, i-1)); //include MC stat uncertainty in systematics
+		  	//if(combineLepMinusCPV) hData_unfolded->SetBinError(i,stat_corr[i-1]);
+		  	hData_unfolded->SetBinError(i,stat_corr[i-1]); //stat uncertainties now also hard-coded (re-evaluated after normalising to unit-area)
+		  	//if(!combineLepMinusCPV) syst_corr[i - 1] = sqrt(syst_corr[i - 1]*syst_corr[i - 1] + m_smearingE(i-1, i-1)); //include MC stat uncertainty in systematics //commented out because the MC stat unc is now also included in the hard-coded systematics
 
             hData_unfolded_minussyst->SetBinContent(i, hData_unfolded->GetBinContent(i) - syst_corr[i - 1] );  //hard-coded systs
             hData_unfolded_minussyst->SetBinError(i, 0);
@@ -1150,12 +1158,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         theoryProfileCorr_scale->SetFillColor(kBlue-9);
         theoryProfileCorr_scale->SetFillStyle(3345);
 
-        theoryProfileCorr_histo->SetLineColor(TColor::GetColorDark(kBlue));
-        theoryProfileCorr_histo->SetLineWidth(lineWidthDiffs);
-        theoryProfileCorr_histo->SetMarkerStyle(1);
-        theoryProfileCorr_histo->SetFillStyle(0);
-
-
         theoryProfileUnCorr->SetLineColor(TColor::GetColorDark(kBlue));
         theoryProfileUnCorr->SetLineWidth(lineWidthDiffs);
         theoryProfileUnCorr->SetLineStyle(2);
@@ -1166,7 +1168,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         theoryProfileUnCorr_scale->SetLineStyle(2);
         theoryProfileUnCorr_scale->SetMarkerSize(0);
         theoryProfileUnCorr_scale->SetFillColor(kBlue-9);
-        theoryProfileUnCorr_scale->SetFillStyle(3345);
+        theoryProfileUnCorr_scale->SetFillStyle(3354);
 /*
         hs->Draw();
         hs->GetXaxis()->SetTitle(xaxislabel);
@@ -1213,8 +1215,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             	theoryProfileUnCorr->Draw("hist same");
             }
             if(drawTheoryScaleBand) theoryProfileCorr_scale->Draw("E2 same");
-            if(acceptanceName != "rapiditydiffMarco") theoryProfileCorr->Draw("hist same");
-            else theoryProfileCorr_histo->Draw("hist same");
+            theoryProfileCorr->Draw("hist same");
 		  }
 
 		bool second_legend = false;
@@ -1260,10 +1261,16 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetFillStyle(0);
             leg2->SetTextSize(leg_textSize);
             leg2->SetTextFont(62);
-            leg2->AddEntry(theoryProfileCorr,  "B&S, SM", "L");
-            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "B&S, uncorr.", "L");
-            //leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
-            //if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
+            if(!drawTheoryScaleBand) {
+            	leg2->AddEntry(theoryProfileCorr,  "B&S, SM", "L");
+            	if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "B&S, uncorr.", "L");
+            	//leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
+            	//if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
+            }
+            if(drawTheoryScaleBand) {
+            	leg2->AddEntry(theoryProfileCorr_scale,  "B&S, SM", "LF");
+            	if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr_scale,  "B&S, uncorr.", "LF");
+            }
             leg2->Draw();
 		  }
 
