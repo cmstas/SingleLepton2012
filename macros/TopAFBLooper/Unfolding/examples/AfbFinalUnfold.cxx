@@ -46,7 +46,7 @@ int lineWidthDiffs=drawDiffs?lineWidth*2/3:lineWidth;
 bool checkErrors = false; //turn this on when making the final plots for the paper, to check the hard-coded systematics have been correctly entered
 bool draw_truth_before_pT_reweighting = true; //turn this on when making the final plots for the paper (want to compare the data against the unweighted MC)
 //bool drawTheory = true; //turn this on to show Bernreuther's predictions for AdeltaPhi and Ac1c2
-bool drawTheoryScaleBand = false;
+bool drawTheoryScaleBand = true;
 bool maketauplots = false;
 
 
@@ -59,7 +59,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   gStyle->SetPadTopMargin(0.065);
-  gStyle->SetEndErrorSize(6);
+  gStyle->SetEndErrorSize(4);
   cout.precision(3);
 
   TString ChannelName[4] = {"diel", "dimu", "mueg", "all"};
@@ -919,9 +919,12 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
     		//theoryProfileCorr_scale->SetBinContent( i , theoryProfileCorr->GetBinContent(i) );
     		theoryProfileCorr_scale->SetBinError( i ,  fabs(theoryProfileCorr_scaledown->GetBinContent(i)-theoryProfileCorr_scaleup->GetBinContent(i))/2. );
     		//theoryProfileCorr_scale->SetBinError( i ,  ( fabs(theoryProfileCorr_scaledown->GetBinContent(i)-theoryProfileCorr->GetBinContent(i)) + fabs(theoryProfileCorr_scaleup->GetBinContent(i)-theoryProfileCorr->GetBinContent(i)) )/2. ); //take average of up and down to smooth out statistical fluctuations
-    		theoryProfileUnCorr_scale->SetBinContent( i ,  (theoryProfileUnCorr_scaledown->GetBinContent(i)+theoryProfileUnCorr_scaleup->GetBinContent(i))/2. );
-    		//theoryProfileUnCorr_scale->SetBinContent( i , theoryProfileUnCorr->GetBinContent(i) );
-    		theoryProfileUnCorr_scale->SetBinError( i ,  max(0.0001,fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr_scaleup->GetBinContent(i))/2.) );
+    		//theoryProfileUnCorr_scale->SetBinContent( i ,  (theoryProfileUnCorr_scaledown->GetBinContent(i)+theoryProfileUnCorr_scaleup->GetBinContent(i))/2. );
+    		theoryProfileUnCorr_scale->SetBinContent( i , theoryProfileUnCorr->GetBinContent(i) );
+    		//theoryProfileUnCorr_scale->SetBinError( i ,  max(0.0001,fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr_scaleup->GetBinContent(i))/2.) );
+    		if(i==1) theoryProfileUnCorr_scale->SetBinError( i ,  ( fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaledown->GetBinContent(i+1)-theoryProfileUnCorr->GetBinContent(i+1)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i+1)-theoryProfileUnCorr->GetBinContent(i+1))  )/4. ); //take average of up and down over several bins to smooth out statistical fluctuations
+    		else if(i==nbinsx_gen) theoryProfileUnCorr_scale->SetBinError( i ,  ( fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaledown->GetBinContent(i-1)-theoryProfileUnCorr->GetBinContent(i-1)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i-1)-theoryProfileUnCorr->GetBinContent(i-1))  )/4. ); //take average of up and down over several bins to smooth out statistical fluctuations
+    		else theoryProfileUnCorr_scale->SetBinError( i ,  ( fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaledown->GetBinContent(i+1)-theoryProfileUnCorr->GetBinContent(i+1)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i+1)-theoryProfileUnCorr->GetBinContent(i+1)) + fabs(theoryProfileUnCorr_scaledown->GetBinContent(i-1)-theoryProfileUnCorr->GetBinContent(i-1)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i-1)-theoryProfileUnCorr->GetBinContent(i-1)) )/6. ); //take average of up and down over several bins to smooth out statistical fluctuations
     		//theoryProfileUnCorr_scale->SetBinError( i ,  ( fabs(theoryProfileUnCorr_scaledown->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) + fabs(theoryProfileUnCorr_scaleup->GetBinContent(i)-theoryProfileUnCorr->GetBinContent(i)) )/2. ); //take average of up and down to smooth out statistical fluctuations
     	}
 
@@ -1182,7 +1185,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_totalunc->SetMarkerSize(1);
         hData_unfolded_totalunc->SetFillStyle(0);
         hData_unfolded_totalunc->SetLineWidth(lineWidthDiffs);
-        hData_unfolded_totalunc->Draw("E1X0");
+        hData_unfolded_totalunc->Draw("E0X0");
         hData_unfolded_totalunc->GetXaxis()->SetTitle(xaxislabel);
         hData_unfolded_totalunc->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")");
         if (observablename == "lep_azimuthal_asymmetry2") hData_unfolded_totalunc->GetXaxis()->SetNdivisions(-406);
@@ -1214,7 +1217,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             	if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2")  theoryProfileUnCorr_scale->Draw("E2 same");  //no scale uncertainty for uncorrelated predictions except for lep_azimuthal_asymmetry2
             	theoryProfileUnCorr->Draw("hist same");
             }
-            if(drawTheoryScaleBand) theoryProfileCorr_scale->Draw("E2 same");
+            if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") theoryProfileCorr_scale->Draw("E2 same");
             theoryProfileCorr->Draw("hist same");
 		  }
 
@@ -1261,16 +1264,18 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetFillStyle(0);
             leg2->SetTextSize(leg_textSize);
             leg2->SetTextFont(62);
-            if(!drawTheoryScaleBand) {
-            	leg2->AddEntry(theoryProfileCorr,  "B&S, SM", "L");
-            	if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "B&S, uncorr.", "L");
+
             	//leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
             	//if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
-            }
-            if(drawTheoryScaleBand) {
-            	leg2->AddEntry(theoryProfileCorr_scale,  "B&S, SM", "LF");
-            	if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr_scale,  "B&S, uncorr.", "LF");
-            }
+            	
+            	if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") leg2->AddEntry(theoryProfileCorr_scale,  "B&S, SM", "LF");
+            	else leg2->AddEntry(theoryProfileCorr,  "B&S, SM", "L");
+
+            	if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) {
+            		if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(theoryProfileUnCorr_scale,  "B&S, uncorr.", "LF");
+            		else leg2->AddEntry(theoryProfileUnCorr,  "B&S, uncorr.", "L");
+            	}
+
             leg2->Draw();
 		  }
 
@@ -1373,7 +1378,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 */
 
 
-            h_diff_totalunc->Draw("E1X0");
+            h_diff_totalunc->Draw("E0X0");
 
             h_diff_totalunc->SetMinimum(0.921);
             h_diff_totalunc->SetMaximum(1.079); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
@@ -1399,10 +1404,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             if (observablename == "lep_azimuthal_asymmetry2") h_diff_totalunc->GetXaxis()->SetNdivisions(-406);
             else h_diff_totalunc->GetXaxis()->SetNdivisions(504,0);
 
-
-
-
-
+            c_test->Update();
 
 
             if (observablename == "lep_azimuthal_asymmetry2") {

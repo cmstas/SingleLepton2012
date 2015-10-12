@@ -1191,7 +1191,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         hAfbVsMtt->SetMinimum( minmin );
         hAfbVsMtt->SetMaximum( maxmax );
-        hAfbVsMtt->Draw("E1X0");
+        hAfbVsMtt->Draw("E0X0");
 
 /*
         THStack *ht = new THStack("ht_systband", "Systematic band for theory");
@@ -1222,7 +1222,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        hAfbVsMtt_theory_syst->SetMarkerSize(0);
 	        hAfbVsMtt_theory_syst->SetFillStyle(3345);
 	        hAfbVsMtt_theory_syst->SetLineWidth( 3.0 );
-	        hAfbVsMtt_theory_syst->Draw("E2 same");
+	        if(acceptanceName != "lepCosThetaCPV") hAfbVsMtt_theory_syst->Draw("E2 same");
 
 	        hAfbVsMtt_theory_default->SetLineColor(TColor::GetColorDark(kBlue));
 	        hAfbVsMtt_theory_default->SetMarkerColor(TColor::GetColorDark(kBlue));
@@ -1278,7 +1278,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         if (Var2D == "mtt") hs->GetXaxis()->SetNdivisions(405);
 */
 
-        hAfbVsMtt->Draw("E1X0 same");
+        hAfbVsMtt->Draw("E0X0 same");
 
 
         TLegend* leg1 = new TLegend(0.71, 0.78, 0.88, 0.92, NULL, "brNDC");
@@ -1308,8 +1308,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        leg2->SetTextFont(62);
 	        //leg2->AddEntry(hAfbVsMtt_theory_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "LF");
 	        //if(drawTheoryUncorrelated) leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "LF");
-	        leg2->AddEntry(hAfbVsMtt_theory_syst,  "B&S, SM", "LF");
-	        if(drawTheoryUncorrelated) leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "B&S, uncorr.", "LF");
+	        if(acceptanceName != "lepCosThetaCPV") leg2->AddEntry(hAfbVsMtt_theory_syst,  "B&S, SM", "LF");
+	        else leg2->AddEntry(hAfbVsMtt_theory_syst,  "B&S, SM", "L");
+	        if(drawTheoryUncorrelated) {
+	        	if(observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "B&S, uncorr.", "LF");
+	        	else leg2->AddEntry(hAfbVsMtt_uncorr_default,  "B&S, uncorr.", "L");
+	        }
 	        leg2->Draw();
 	    }
 
