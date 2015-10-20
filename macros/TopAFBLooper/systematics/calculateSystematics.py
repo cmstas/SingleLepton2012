@@ -505,6 +505,7 @@ def increasevariance_integratewidth_V(covarianceM, nbins, n, binwidth, factor):
             #covarianceM[i,i] = covarianceM0[i]*pow(1.0001,nit)
             #covarianceM[i,i] *= 1.0001
         (afb,afberr) = GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth)
+    #if nit>0: print " %i iterations, %2.2f%% uncertainty added to covariance matrix" % (nit,100.*sqrt(0.00000001*nit))
 
 
 def increasevariance2D(covarianceM, nbins, nbins2D, n, factor):
@@ -524,6 +525,7 @@ def increasevariance2D(covarianceM, nbins, nbins2D, n, factor):
             #covarianceM[i,i] = covarianceM0[i]*pow(1.001,nit)
             #covarianceM[i,i] *= 1.0001
         (afb,afberr,afbcov) = GetCorrectedAfb2D(covarianceM, nbins, nbins2D, n)
+    #if nit>0: print " %i iterations, %2.2f%% uncertainty added to covariance matrix" % (nit,100.*sqrt(0.0000001*nit))
 
 
 
