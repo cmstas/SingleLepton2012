@@ -381,15 +381,42 @@ def GetNormalisedCovarianceMatrix(covarianceM, nbins, n, binwidth):
     for k in range(nbins):
         for i in range(nbins):
             for j in range(nbins):
-                newbinerr[k] += covarianceM[i,j] * dfdn[k,i] * dfdn[k,j] #* binwidth[i] * binwidth[j]
+                newbinerr[k] += covarianceM[i,j] * dfdn[k,i] * dfdn[k,j] * binwidth[i] * binwidth[j]
                 for l in range(nbins):
-                    newcov[k][l] += covarianceM[i,j] * dfdn[k,i] * dfdn[l,j] #* binwidth[i] * binwidth[j]
-        newbinerr[k] = sqrt(newbinerr[k])
+                    newcov[k][l] += covarianceM[i,j] * dfdn[k,i] * dfdn[l,j] * binwidth[i] * binwidth[j]
+        newbinerr[k] = sqrt(newbinerr[k]/binwidth[k]/binwidth[k])
+
+    for k in range(nbins):
+        for l in range(nbins):
+            newcov[k][l] /= (binwidth[k] * binwidth[l])
 
     #print newbinerr
     #print newcov
+    binsumerr = GetBinSumUncertainty(newcov, nbins, n, binwidth)
+    if (abs(binsumerr))>1e-15: print "WARNING: output of GetNormalisedCovarianceMatrix doesn't give zero uncertainty on the sum of all bins %2.3g" % (binsumerr)
 
     return newcov
+
+
+
+def GetBinSumUncertainty(covarianceM, nbins, n, binwidth):
+
+    #check output of GetNormalisedCovarianceMatrix really does give zero uncertainty on the sum of all bins
+    for i in range(nbins):
+        if binwidth[i]==0: binwidth[i]=1 #set dummy bin widths for the 2D distributions where the bin widths are not initialised because the bin contents are absolute numbers of events
+
+    dfdn = zeros( [nbins] )
+    for k in range(nbins): dfdn[k] = 1
+
+    binsumerr = 0.
+
+    # Error Calculation
+    for i in range(nbins):
+        for j in range(nbins):
+            binsumerr += covarianceM[i,j] * dfdn[i] * dfdn[j] * binwidth[i] * binwidth[j]
+    #print sqrt(abs(binsumerr))
+
+    return binsumerr
 
 
 
@@ -1036,11 +1063,14 @@ def main():
 
         covar_total_incDataStat = covar_total + covDataStat
 
-        #check GetNormalisedCovarianceMatrix has no effect on total matrix
+        binsumerr = GetBinSumUncertainty(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+        if (abs(binsumerr))>1e-15: print "WARNING: sum of all bins doesn't have zero uncertainty %2.3g" % (binsumerr)
+
+        #double-check GetNormalisedCovarianceMatrix has no effect on total matrix
         covar_total_incDataStat_test = GetNormalisedCovarianceMatrix(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
         for i in range (nbins):
             for j in range (nbins):
-                if abs(covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j])>1e-6: print "WARNING: if this is not a rounding error, total covariance matrix must give non-zero uncertainty on total yield: %2.6g" % ((covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j]))
+                if abs(covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j])>1e-7: print "WARNING: if this is not a rounding error, something went wrong with GetNormalisedCovarianceMatrix: %2.3g" % ((covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j]))
 
         if nbins2D==0:
             (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
