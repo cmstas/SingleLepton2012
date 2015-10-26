@@ -507,12 +507,28 @@ def Get1DProjection(covarianceM, nbins, nbins2D, n):
             sum_n_cov[numbinsy][i_2di][j_2di] += covarianceM[i,j] 
             if(i_2dj==j_2dj): sum_n_cov[i_2dj][i_2di][j_2di] += covarianceM[i,j] 
 
+    sum_n_err = sqrt(sum_n_err)
     # Calculate Afb to check covariance matrix calculation
     #for i in range(numbinsy+1):
     #    afberr = GetCorrectedAfb(sum_n_cov[i], numbinsx, sum_n[i])
     #    print afberr
 
     return (sum_n,sum_n_err,sum_n_cov)
+
+
+def printCplusplusarray(covarianceM):
+    numrows = len(covarianceM)
+    numcols = len(covarianceM[0])
+    print "float covmatrix[] = {"
+    for row in range(numrows):
+        for col in range(numcols):
+            if col==0: print "{ ",
+            if col!=numcols-1: print " %2.8g , " % (covarianceM[row,col]),
+            else: print " %2.8g " % (covarianceM[row,col]),
+            if col==numcols-1:
+                if row!=numrows-1: print "},"
+                else: print "}"
+    print "};"
 
 
 def increasevariance_integratewidth_V(covarianceM, nbins, n, binwidth, factor):
@@ -1077,6 +1093,16 @@ def main():
             (afb,afberrtotal[plot]) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
             (afbs[plot],afberrsyst[plot]) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
             print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb, afberrdatastat[plot], afberrsyst[plot], afberrtotal[plot])
+            if plot=='lepAzimAsym2':
+                print "1D lepAzimAsym2 numbers for Jeremy:"
+                print bin_nominals_i
+                for row in range(nbins): print " %2.6f " % (sqrt(covDataStat[row,row])),
+                print "(stat)"
+                for row in range(nbins): print " %2.6f " % (sqrt(covar_total[row,row])),
+                print "(syst)"
+                for row in range(nbins): print " %2.6f " % (sqrt(covar_total_incDataStat[row,row])),
+                print "(total)"
+                printCplusplusarray(covar_total_incDataStat)
         else:
             (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
             (afb,afberrtotal[plot],afbcovtotalincDataStat) = GetCorrectedAfb2D(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
@@ -1085,6 +1111,24 @@ def main():
             (sum_n,sum_n_errdatastat,sum_n_covdatastat) = Get1DProjection(covDataStat, nbins, nbins2D, bin_nominals_i)
             (sum_n,sum_n_errtotal,sum_n_covtotalincDataStat) = Get1DProjection(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
             (sum_n,sum_n_errsyst,sum_n_covsyst) = Get1DProjection(covar_total, nbins, nbins2D, bin_nominals_i)
+
+            if plot=='lepAzimAsym2':
+                print "2D lepAzimAsym2 numbers for Jeremy:"
+                tempbinwidthcorrection = 12./math.pi  #divide deltaPhi projection by bin width (like we do for the pure 1D distribution) to produce numbers for Jeremy
+                #print tempbinwidthcorrection
+                sum_n*=tempbinwidthcorrection
+                sum_n_errdatastat*=tempbinwidthcorrection
+                sum_n_covdatastat*=tempbinwidthcorrection*tempbinwidthcorrection
+                sum_n_errtotal*=tempbinwidthcorrection
+                sum_n_covtotalincDataStat*=tempbinwidthcorrection*tempbinwidthcorrection
+                sum_n_errsyst*=tempbinwidthcorrection
+                sum_n_covsyst*=tempbinwidthcorrection*tempbinwidthcorrection
+
+                print sum_n[nbins2D]
+                print sum_n_errdatastat[nbins2D]
+                print sum_n_errsyst[nbins2D]
+                print sum_n_errtotal[nbins2D]
+                printCplusplusarray(sum_n_covtotalincDataStat[nbins2D])
 
         #print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][0], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], math.sqrt(sumsq_total))
 
