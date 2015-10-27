@@ -1093,8 +1093,8 @@ def main():
             (afb,afberrtotal[plot]) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
             (afbs[plot],afberrsyst[plot]) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
             print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)  (%2.6f total)" % (plot, afb, afberrdatastat[plot], afberrsyst[plot], afberrtotal[plot])
-            if plot=='lepAzimAsym2':
-                print "1D lepAzimAsym2 numbers for Jeremy:"
+            if plot=='lepAzimAsym2' or plot=='lepCosOpeningAngle':
+                print "1D %s numbers for Jeremy:" % plot
                 print bin_nominals_i
                 for row in range(nbins): print " %2.6f " % (sqrt(covDataStat[row,row])),
                 print "(stat)"
@@ -1103,6 +1103,14 @@ def main():
                 for row in range(nbins): print " %2.6f " % (sqrt(covar_total_incDataStat[row,row])),
                 print "(total)"
                 printCplusplusarray(covar_total_incDataStat)
+                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+                binsumunc_temp = GetBinSumUncertainty(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+                print (afb_temp,afberr_temp,binsumunc_temp)
+                normcov_temp = GetNormalisedCovarianceMatrix(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(normcov_temp, nbins, bin_nominals_i, binwidth)
+                binsumunc_temp = GetBinSumUncertainty(normcov_temp, nbins, bin_nominals_i, binwidth)
+                print (afb_temp,afberr_temp,binsumunc_temp)
+
         else:
             (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
             (afb,afberrtotal[plot],afbcovtotalincDataStat) = GetCorrectedAfb2D(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
@@ -1112,9 +1120,12 @@ def main():
             (sum_n,sum_n_errtotal,sum_n_covtotalincDataStat) = Get1DProjection(covar_total_incDataStat, nbins, nbins2D, bin_nominals_i)
             (sum_n,sum_n_errsyst,sum_n_covsyst) = Get1DProjection(covar_total, nbins, nbins2D, bin_nominals_i)
 
-            if plot=='lepAzimAsym2':
-                print "2D lepAzimAsym2 numbers for Jeremy:"
-                tempbinwidthcorrection = 12./math.pi  #divide deltaPhi projection by bin width (like we do for the pure 1D distribution) to produce numbers for Jeremy
+            if plot=='lepAzimAsym2' or plot=='lepCosOpeningAngle':
+                print "2D %s numbers for Jeremy:" % plot
+                nbins_temp = nbins/nbins2D
+                tempbinwidthcorrection = 1.
+                if plot=='lepAzimAsym2': tempbinwidthcorrection = nbins_temp/math.pi  #divide deltaPhi projection by bin width (like we do for the pure 1D distribution) to produce numbers for Jeremy
+                if plot=='lepCosOpeningAngle': tempbinwidthcorrection = nbins_temp/2.  #divide opening angle projection by bin width (like we do for the pure 1D distribution) to produce numbers for Jeremy
                 #print tempbinwidthcorrection
                 sum_n*=tempbinwidthcorrection
                 sum_n_errdatastat*=tempbinwidthcorrection
@@ -1129,6 +1140,16 @@ def main():
                 print sum_n_errsyst[nbins2D]
                 print sum_n_errtotal[nbins2D]
                 printCplusplusarray(sum_n_covtotalincDataStat[nbins2D])
+
+                binwidth_temp = zeros( [nbins_temp] )
+                for row in range(nbins_temp): binwidth_temp[row] = 1./tempbinwidthcorrection
+                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
+                binsumunc_temp = GetBinSumUncertainty(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
+                print (afb_temp,afberr_temp,binsumunc_temp)
+                normcov_temp = GetNormalisedCovarianceMatrix(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
+                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(normcov_temp, nbins_temp, sum_n[nbins2D], binwidth_temp)
+                binsumunc_temp = GetBinSumUncertainty(normcov_temp, nbins_temp, sum_n[nbins2D], binwidth_temp)
+                print (afb_temp,afberr_temp,binsumunc_temp)
 
         #print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][0], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], math.sqrt(sumsq_total))
 
