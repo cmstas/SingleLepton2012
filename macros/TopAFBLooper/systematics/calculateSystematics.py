@@ -1103,13 +1103,15 @@ def main():
                 for row in range(nbins): print " %2.6f " % (sqrt(covar_total_incDataStat[row,row])),
                 print "(total)"
                 printCplusplusarray(covar_total_incDataStat)
-                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
-                binsumunc_temp = GetBinSumUncertainty(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
-                print (afb_temp,afberr_temp,binsumunc_temp)
-                normcov_temp = GetNormalisedCovarianceMatrix(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
-                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(normcov_temp, nbins, bin_nominals_i, binwidth)
-                binsumunc_temp = GetBinSumUncertainty(normcov_temp, nbins, bin_nominals_i, binwidth)
-                print (afb_temp,afberr_temp,binsumunc_temp)
+
+                #double-check printed covariance matrix
+                #(afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+                #binsumunc_temp = GetBinSumUncertainty(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+                #print (afb_temp,afberr_temp,binsumunc_temp)
+                #normcov_temp = GetNormalisedCovarianceMatrix(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+                #(afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(normcov_temp, nbins, bin_nominals_i, binwidth)
+                #binsumunc_temp = GetBinSumUncertainty(normcov_temp, nbins, bin_nominals_i, binwidth)
+                #print (afb_temp,afberr_temp,binsumunc_temp)
 
         else:
             (afb,afberrdatastat[plot],afbcovdatastat) = GetCorrectedAfb2D(covDataStat, nbins, nbins2D, bin_nominals_i)
@@ -1141,15 +1143,16 @@ def main():
                 print sum_n_errtotal[nbins2D]
                 printCplusplusarray(sum_n_covtotalincDataStat[nbins2D])
 
-                binwidth_temp = zeros( [nbins_temp] )
-                for row in range(nbins_temp): binwidth_temp[row] = 1./tempbinwidthcorrection
-                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
-                binsumunc_temp = GetBinSumUncertainty(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
-                print (afb_temp,afberr_temp,binsumunc_temp)
-                normcov_temp = GetNormalisedCovarianceMatrix(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
-                (afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(normcov_temp, nbins_temp, sum_n[nbins2D], binwidth_temp)
-                binsumunc_temp = GetBinSumUncertainty(normcov_temp, nbins_temp, sum_n[nbins2D], binwidth_temp)
-                print (afb_temp,afberr_temp,binsumunc_temp)
+                #double-check printed covariance matrix
+                #binwidth_temp = zeros( [nbins_temp] )
+                #for row in range(nbins_temp): binwidth_temp[row] = 1./tempbinwidthcorrection
+                #(afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
+                #binsumunc_temp = GetBinSumUncertainty(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
+                #print (afb_temp,afberr_temp,binsumunc_temp)
+                #normcov_temp = GetNormalisedCovarianceMatrix(sum_n_covtotalincDataStat[nbins2D], nbins_temp, sum_n[nbins2D], binwidth_temp)
+                #(afb_temp,afberr_temp) = GetCorrectedAfb_integratewidth_V(normcov_temp, nbins_temp, sum_n[nbins2D], binwidth_temp)
+                #binsumunc_temp = GetBinSumUncertainty(normcov_temp, nbins_temp, sum_n[nbins2D], binwidth_temp)
+                #print (afb_temp,afberr_temp,binsumunc_temp)
 
         #print "%s = %2.6f +/- %2.6f (stat) +/- %2.6f (syst)" % (plot, systematics[plot]['Nominal']['default']['nominal']['Unfolded'][0], systematics[plot]['Nominal']['default']['nominal']['Unfolded'][1], math.sqrt(sumsq_total))
 
