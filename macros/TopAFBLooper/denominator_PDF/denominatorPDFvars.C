@@ -77,47 +77,10 @@ void GetAfb(TH1D* h, Double_t &afb, Double_t  &afberr){
 
 void denominatorPDFvars(TString histname = "lepAzimAsym2", bool drawnorm = false, TString FName2 = "results/hist_noCuts.root"){
 
-  TString observablename = "";
-
-  if(histname=="lepChargeAsym") observablename="lep_charge_asymmetry";
-  if(histname=="lepAzimAsym2") observablename="lep_azimuthal_asymmetry2";
-  if(histname=="lepAzimAsym") observablename="lep_azimuthal_asymmetry";
-  if(histname=="lepPlusCosTheta") observablename="lepPlus_costheta_cms";
-  if(histname=="lepMinusCosTheta") observablename="lepMinus_costheta_cms";
-  if(histname=="lepCosTheta") observablename="lep_costheta_cms";
-  if(histname=="topSpinCorr") observablename="top_spin_correlation";
-  if(histname=="rapiditydiffMarco") observablename="top_rapiditydiff_Marco";
-  if(histname=="topCosTheta") observablename="top_costheta_cms";
-  if(histname=="lepCosOpeningAngle") observablename="lep_cos_opening_angle";
-  if(histname=="pseudorapiditydiff") observablename="top_pseudorapiditydiff_cms";
-  if(histname=="rapiditydiff") observablename="top_rapiditydiff_cms";
-
-/*
-  bins now loaded from acceptanceplots.h
-  // These get copied into the array called "bins"
-
-  // These get copied into the array called "binsfor2D" (for old 2 bin 2D unfolding)
-  Double_t bins_lepChargeAsym_for2D[] =  { -2., 0., 2.};
-  Double_t bins_lepAzimAsym2_for2D[] = {0., pi/2., pi};
-  Double_t bins_lepAzimAsym_for2D[] = {-pi, 0., pi};
-  Double_t bins_topCosTheta_for2D[] = {-1., 0., 1.};
-  Double_t bins_pseudorapiditydiff_for2D[] =  { -2., 0., 2.};
-  Double_t bins_rapiditydiff_for2D[] =  { -2., 0., 2.};
-  Double_t bins_rapiditydiffMarco_for2D[] =  { -2., 0., 2.};
-  Double_t bins_lepCosTheta_for2D[] = {-1., 0., 1.};
-  Double_t bins_topSpinCorr_for2D[] = {-1., 0., 1.};
-  Double_t bins_lepCosOpeningAngle_for2D[] = {-1., 0., 1.};
-*/
- 
-  Double_t binsmtt[] = {0., 430., 530., 1200.}; 
-  //Double_t binsmtt[] = {0., 410., 510., 800.}; 
-  Double_t binsttpt[] = {0., 41., 92., 300.}; 
-  Double_t binsttrapidity2[] = {0., 0.34, 0.75, 1.5}; 
-  //Double_t binsfor2D[3];
-
   int nbinsx = -999;
   if(histname == "lepChargeAsym" || histname == "lepAzimAsym2" || histname == "lepAzimAsym") nbinsx = 12;
   else nbinsx = 6;
+  if(histname == "ttMass" || histname == "ttpT" || histname == "ttrap") nbinsx = 3;
 
   Double_t bins[nbinsx+1];
 
@@ -134,6 +97,11 @@ void denominatorPDFvars(TString histname = "lepAzimAsym2", bool drawnorm = false
   if(histname == "lepCosTheta" || histname == "lepPlusCosTheta" || histname == "lepMinusCosTheta") memcpy(bins,bins_lepCosTheta,7*8);
   if(histname == "topSpinCorr") memcpy(bins,bins_topSpinCorr,7*8);
   if(histname == "lepCosOpeningAngle") memcpy(bins,bins_lepCosOpeningAngle,7*8);
+
+  //if(histname == "ttMass") memcpy(bins,ybinsmtt,4*8);
+  //if(histname == "ttpT") memcpy(bins,ybinsttpt,4*8);
+  //if(histname == "ttrap") memcpy(bins,ybinsttrapidity2,4*8);
+ 
 
 /*
   if(histname == "lepChargeAsym") memcpy(binsfor2D,bins_lepChargeAsym_for2D,3*8);
@@ -169,11 +137,13 @@ void denominatorPDFvars(TString histname = "lepAzimAsym2", bool drawnorm = false
   for (int PDFset = 0; PDFset < 41; ++PDFset)
   {
 
-  hdenominator_finebins[PDFset] = (TH1D*)f_2->Get(Form("ttdil_h%sGen_PDFset%i_%s", histname.Data(), PDFset, suffixdenominator[ic]));
+  if(histname != "ttrap") hdenominator_finebins[PDFset] = (TH1D*)f_2->Get(Form("ttdil_h%sGen_PDFset%i_%s", histname.Data(), PDFset, suffixdenominator[ic]));
+  else hdenominator_finebins[PDFset] = (TH1D*) ((TH2D*)f_2->Get(Form("ttdil_hlepAzimAsym2ttRapidity2Gen2d_PDFset%i_%s", PDFset, suffixdenominator[ic])))->ProjectionY();
 
   std::cout << "Opened " << Form("ttdil_h%sGen_PDFset%i_%s", histname.Data(), PDFset, suffixdenominator[ic]) <<"\n";
 
-  hdenominator_finebins[PDFset] = (TH1D*) hdenominator_finebins[PDFset]->Rebin(nbinsx,Form("denominator_%s_%s", histname.Data(), suffixnumerator[ic]),bins);
+  if(histname == "ttMass" || histname == "ttpT" || histname == "ttrap")  hdenominator_finebins[PDFset] = (TH1D*) hdenominator_finebins[PDFset]->Rebin(6,Form("denominator_%s_%s", histname.Data(), suffixnumerator[ic]));
+  else hdenominator_finebins[PDFset] = (TH1D*) hdenominator_finebins[PDFset]->Rebin(nbinsx,Form("denominator_%s_%s", histname.Data(), suffixnumerator[ic]),bins);
   hdenominator_finebins[PDFset]->Scale(1./hdenominator_finebins[PDFset]->Integral(),"width");
 
   hdiff_finebins[PDFset] = (TH1D*) hdenominator_finebins[PDFset]->Clone(Form("diff_%s_%s", histname.Data(), suffixnumerator[ic]));
@@ -230,6 +200,9 @@ void denominatorPDFvars(TString histname = "lepAzimAsym2", bool drawnorm = false
             p2->Draw();
             p1->cd();
 
+            p1->SetBottomMargin(0.15);
+            //p2->SetTopMargin(0.1);
+            p2->SetBottomMargin(0.31);
 
 
   hdenominator_finebins[0]->SetMaximum(1.25*hdenominator_finebins[0]->GetMaximum());
@@ -358,9 +331,6 @@ void denominatorPDFvars(TString histname = "lepAzimAsym2", bool drawnorm = false
      p2->cd();
 
      line = new TLine(hdenominator_finebins[0]->GetXaxis()->GetBinLowEdge(1), 1.0,  hdenominator_finebins[0]->GetXaxis()->GetBinUpEdge(hdenominator_finebins[0]->GetNbinsX()), 1.0);
-
-            //p2->SetTopMargin(0.1);
-            p2->SetBottomMargin(0.28);
 
             hdiff_finebins[0]->SetMinimum(0.921);
             hdiff_finebins[0]->SetMaximum(1.079);

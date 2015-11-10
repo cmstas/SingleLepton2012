@@ -1,5 +1,8 @@
 void macro_denominatorPDFvars(){
 gROOT->ProcessLine(".L denominatorPDFvars.C+");
+denominatorPDFvars("ttMass");
+denominatorPDFvars("ttpT");
+denominatorPDFvars("ttrap");
 denominatorPDFvars("lepAzimAsym2");
 denominatorPDFvars("lepAzimAsym");
 denominatorPDFvars("lepChargeAsym");
