@@ -335,6 +335,14 @@ void denominatorPDFvars(TString histname = "lepAzimAsym2", bool drawnorm = false
             hdiff_finebins[0]->SetMinimum(0.921);
             hdiff_finebins[0]->SetMaximum(1.079);
 
+            if( histname == "ttrap" ) {
+              hdiff_finebins[0]->SetMinimum(0.751);
+              hdiff_finebins[0]->SetMaximum(1.249);
+            }
+            if( histname == "ttMass" ) {
+              hdiff_finebins[0]->SetMinimum(0.851);
+              hdiff_finebins[0]->SetMaximum(1.149);
+            }
 
 
             hdiff_finebins[0]->GetXaxis()->SetTitle( hdenominator_finebins[0]->GetXaxis()->GetTitle() );
