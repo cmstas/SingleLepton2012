@@ -947,6 +947,17 @@ def main():
                         #print "%15s subtype: %2.6f" % (subtype, afberr[nbins2D])
 
 
+                    #double-check GetNormalisedCovarianceMatrix has no effect on total matrix
+                    #print " "
+                    #print GetBinSumUncertainty(covar_subtype, nbins, bin_nominals_i, binwidth)
+                    #covar_subtype_test = GetNormalisedCovarianceMatrix(covar_subtype, nbins, bin_nominals_i, binwidth)
+                    #print GetBinSumUncertainty(covar_subtype_test, nbins, bin_nominals_i, binwidth)
+                    #for i in range (nbins):
+                    #    for j in range (nbins):
+                    #        if abs(covar_subtype_test[i,j] - covar_subtype[i,j])/sqrt(covar_subtype[i,i]*covar_subtype[j,j])>1e-1: print "%15s systematic, %15s subtype , %15s vartype, WARNING: if this is not a rounding error, something went wrong with GetNormalisedCovarianceMatrix: %2.3g  %2.3g" % (systematic,subtype,systematics[plot][systematic][subtype]['vartype'],covar_subtype_test[i,j] , covar_subtype[i,j])
+
+
+
                     #Add to the running total of the variance and covariance
                     sumsq_syst += sumsq_subtype*maxstat_factor*maxstat_factor
                     sumsq_syst_2D += sumsq_subtype_2D*maxstat_factor*maxstat_factor
