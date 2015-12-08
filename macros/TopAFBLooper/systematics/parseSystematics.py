@@ -38,7 +38,7 @@ def parseSystFiles(systfiles):
                     print "I can't understand what kind of variation this is:"
                     print syst, subtype, subtype.keys()
                     sys.exit(1)
-            elif directionlist == ['diffnom']: vartype = 'diffnom'
+            elif 'diffnom' in directionlist: vartype = 'diffnom'
             elif directionlist == ['nominal']: vartype = 'nominal'
             else:
                 print ""

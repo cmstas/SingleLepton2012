@@ -639,6 +639,8 @@ def main():
     #Loop over the different asymmetry variables...
     for plot in sorted(systematics.keys()):
 
+        if plot == 'lepCosThetaCPV': continue
+
         #if plot not in results.keys(): results[plot] = {}
 
         print 'Variable:', plot
