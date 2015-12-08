@@ -38,7 +38,7 @@ void topAFB_looper::bookHistos(const char *prefix, int nchannel, int nhists) {
 
   double maxmtt = 1200.0;
   double maxttpt = 300.0;
-  double maxttrapidity2 = 3.0;
+  double maxttrapidity2 = 1.5;
 
 
   double pi = TMath::Pi();
