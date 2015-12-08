@@ -48,6 +48,7 @@ bool draw_truth_before_pT_reweighting = true; //turn this on when making the fin
 //bool drawTheory = true; //turn this on to show Bernreuther's predictions for AdeltaPhi and Ac1c2
 bool drawTheoryScaleBand = true;
 bool maketauplots = false;
+bool symmetriseAS = false;
 
 
 void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1. )
@@ -120,6 +121,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 	  {
 
         Initialize1DBinning(iVar);
+        bool isChargeAsym = (acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" || acceptanceName == "topCosTheta" || acceptanceName == "pseudorapiditydiff" || acceptanceName == "rapiditydiff" );
 
         TString xaxisunit;
         TString xaxisinvunit;
@@ -377,7 +379,35 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 				  }
 			  }
 
+			  //fill again with obervable sign flipped
+			  if(symmetriseAS && isChargeAsym) {
+
+	            if ( iVar<2 || iVar==9 || tmass>0 )
+				  {
+	                fillUnderOverFlow(hMeas, -observable, weight, Nsolns);
+	                fillUnderOverFlow(hTrue, -observable_gen, weight, Nsolns);
+	                fillUnderOverFlow(hTrue_split, -observable_gen+offset, weight, Nsolns);
+	                fillUnderOverFlow(hTrue_vs_Meas, -observable, -observable_gen, weight, Nsolns);
+	                if ( combineLepMinus )
+					  {
+	                    fillUnderOverFlow(hMeas, -observableMinus, weight, Nsolns);
+	                    fillUnderOverFlow(hTrue, -observableMinus_gen, weight, Nsolns);
+	                    fillUnderOverFlow(hTrue_split, -observableMinus_gen+offset, weight, Nsolns);
+	                    fillUnderOverFlow(hTrue_vs_Meas, -observableMinus, -observableMinus_gen, weight, Nsolns);
+					  }
+				  }
+
+			  }
+
 			// if(i % 10000 == 0) cout<<i<<" "<<ch_top->GetEntries()<<endl;
+		  }
+
+		  //scale by 0.5 to retain correct normalisation
+		  if(symmetriseAS && isChargeAsym) {
+            hMeas->Scale(0.5);
+            hTrue->Scale(0.5);
+            hTrue_split->Scale(0.5);
+            hTrue_vs_Meas->Scale(0.5);
 		  }
 
 		delete[] recobins;
@@ -410,6 +440,22 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		accDen[1] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_dimu"));
 		accDen[2] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_mueg"));
 		accDen[3] = (TH1D*)(file->Get("denominator_" + acceptanceName + "_all"));
+
+		
+		//symmetrise acceptance matrix
+		if(symmetriseAS && isChargeAsym) {
+			for (int iChannel = 0; iChannel < 4; ++iChannel)
+			{
+				for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
+					accNum[iChannel]->SetBinContent(acceptbin, (accNum[iChannel]->GetBinContent(acceptbin) + accNum[iChannel]->GetBinContent(nbinsx_gen+1-acceptbin))/2.);
+					accNum[iChannel]->SetBinError(acceptbin, sqrt(accNum[iChannel]->GetBinError(acceptbin)*accNum[iChannel]->GetBinError(acceptbin) + accNum[iChannel]->GetBinError(nbinsx_gen+1-acceptbin)*accNum[iChannel]->GetBinError(nbinsx_gen+1-acceptbin))/2.);
+					accDen[iChannel]->SetBinContent(acceptbin, (accDen[iChannel]->GetBinContent(acceptbin) + accDen[iChannel]->GetBinContent(nbinsx_gen+1-acceptbin))/2.);
+					accDen[iChannel]->SetBinError(acceptbin, sqrt(accDen[iChannel]->GetBinError(acceptbin)*accDen[iChannel]->GetBinError(acceptbin) + accDen[iChannel]->GetBinError(nbinsx_gen+1-acceptbin)*accDen[iChannel]->GetBinError(nbinsx_gen+1-acceptbin))/2.);
+				}
+				acceptM[iChannel]->Reset(); 
+				acceptM[iChannel]->Divide(accNum[iChannel],accDen[iChannel],1., 1.);
+			}
+		}
 
 		if(combineLepMinusCPV) acceptanceName = "lepCosThetaCPV";
 
