@@ -39,6 +39,7 @@ using std::endl;
 Int_t kterm = 3;  //note we used 4 here for ICHEP
 Double_t tau = 3E-2;
 Int_t nVars = 13;
+bool symmetriseAS = false;
 
 
 void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scalefake = 2.18495, double scalewjets = 1., double scaleDYeemm = 1.35973, double scaleDYtautau = 1.17793, double scaletw = 1., double scaleVV = 1.)
@@ -126,6 +127,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         else if (Var2D == "ttpt") Initialize2DBinningttpt(iVar);
         bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
         bool combineLepMinusCPV = acceptanceName == "lepCosThetaCPV" ? true : false;
+        bool isChargeAsym = (acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" || acceptanceName == "topCosTheta" || acceptanceName == "pseudorapiditydiff" || acceptanceName == "rapiditydiff" );
 
         if (acceptanceName == "lepAzimAsym2") xaxisunit = " (radians)";
         else xaxisunit = "";
@@ -409,6 +411,41 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 					fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
 				  }
 			  }
+
+
+            //fill again with obervable sign flipped
+			  if ( symmetriseAS && isChargeAsym && tmass > 0 )
+			  {
+				genbin  = getUnwrappedBin(hTrue, -observable_gen, obs2D_gen);
+				measbin = getUnwrappedBin(hData, -observable, obs2D);
+
+				// cout << "Channel: " << channel << ". Offset: " << offset << endl;
+
+				fillUnderOverFlow(hMeas, -observable, obs2D, weight, Nsolns);
+				fillUnderOverFlow(hTrue, -observable_gen, obs2D_gen, weight, Nsolns);
+				fillUnderOverFlow(hTrue_split, -observable_gen+offset, obs2D_gen, weight, Nsolns);
+				fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
+				if ( combineLepMinus )
+				  {
+					genbin  = getUnwrappedBin(hTrue, -observableMinus_gen, obs2D_gen);
+					measbin = getUnwrappedBin(hData, -observableMinus, obs2D);
+
+					fillUnderOverFlow(hMeas, -observableMinus, obs2D, weight, Nsolns);
+					fillUnderOverFlow(hTrue, -observableMinus_gen, obs2D_gen, weight, Nsolns);
+					fillUnderOverFlow(hTrue_split, -observableMinus_gen+offset, obs2D_gen, weight, Nsolns);
+					fillUnderOverFlow(hTrue_vs_Meas, measbin, genbin, weight, Nsolns);
+				  }
+			  }
+
+
+		  }
+
+		  //scale by 0.5 to retain correct normalisation
+		  if(symmetriseAS && isChargeAsym) {
+            hMeas->Scale(0.5);
+            hTrue->Scale(0.5);
+            hTrue_split->Scale(0.5);
+            hTrue_vs_Meas->Scale(0.5);
 		  }
 
 		  hData_bkgSub_split = (TH2D *) hData_split->Clone("Data_BkgSub_split");
@@ -461,6 +498,26 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 			}
 
 		}
+
+
+		//symmetrise acceptance matrix
+		if(symmetriseAS && isChargeAsym) {
+			for (int iChannel = 0; iChannel < 4; ++iChannel)
+			{
+				for (int iSecondary = 1; iSecondary <= nbinsy2D; ++iSecondary)
+				{
+					for( int acceptbin=1; acceptbin<=nbinsx_gen; acceptbin++ ) {
+						accNum[iChannel]->SetBinContent(acceptbin, iSecondary, (accNum[iChannel]->GetBinContent(acceptbin, iSecondary) + accNum[iChannel]->GetBinContent(nbinsx_gen+1-acceptbin, iSecondary))/2.);
+						accNum[iChannel]->SetBinError(acceptbin, iSecondary, sqrt(accNum[iChannel]->GetBinError(acceptbin, iSecondary)*accNum[iChannel]->GetBinError(acceptbin, iSecondary) + accNum[iChannel]->GetBinError(nbinsx_gen+1-acceptbin, iSecondary)*accNum[iChannel]->GetBinError(nbinsx_gen+1-acceptbin, iSecondary))/2.);
+						accDen[iChannel]->SetBinContent(acceptbin, iSecondary, (accDen[iChannel]->GetBinContent(acceptbin, iSecondary) + accDen[iChannel]->GetBinContent(nbinsx_gen+1-acceptbin, iSecondary))/2.);
+						accDen[iChannel]->SetBinError(acceptbin, iSecondary, sqrt(accDen[iChannel]->GetBinError(acceptbin, iSecondary)*accDen[iChannel]->GetBinError(acceptbin, iSecondary) + accDen[iChannel]->GetBinError(nbinsx_gen+1-acceptbin, iSecondary)*accDen[iChannel]->GetBinError(nbinsx_gen+1-acceptbin, iSecondary))/2.);
+					}
+				}
+				acceptM[iChannel]->Reset(); 
+				acceptM[iChannel]->Divide(accNum[iChannel],accDen[iChannel],1., 1.);
+			}
+		}
+
 
 		//Tricks to make "channel 0" hold the combined same-flavor histograms
 		//accNum[0]->Add( accNum[1] );
@@ -661,15 +718,16 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
 
-        /* //protection against negative bins (makes no difference)
+        //protection against negative bins (makes no difference except prevents occasional bug giving result with huge fluctuation)
         for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
         {
-            if(hData_bkgSub->GetBinContent(i)<0) {
-            	cout <<"data unwrappedbin"<< i <<" had content < 0: "<< hData_bkgSub->GetBinContent(i) << endl;
+            if(hData_bkgSub->GetBinContent(i)<=0) {
+            	cout <<"data unwrappedbin"<< i <<" had content <= 0: "<< hData_bkgSub->GetBinContent(i) << endl;
             	hData_bkgSub->SetBinContent(i,0);
+            	hData_bkgSub->SetBinError(i,1);
             }
 		}
-
+		/*
         for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
         {
         	for (int j = 1; j < nbinsunwrapped_gen + 1; j++)
@@ -1169,7 +1227,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         bool drawTheory = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) );
         //bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" ) );
         bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle") );
-        bool isChargeAsym = (acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" );
 		//double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
 		double minmin = min( hAfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hAfbVsMtt->GetMinimumBin()), hTop_AfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMinimumBin()));
 		double maxmax = max( hAfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hAfbVsMtt->GetMaximumBin()), hTop_AfbVsMtt->GetMaximum() + hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMaximumBin()));
