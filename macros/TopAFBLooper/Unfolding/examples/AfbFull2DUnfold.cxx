@@ -718,6 +718,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hData_bkgSub = (TH1D *) hData_unwrapped->Clone("data_bkgsub");
         hData_bkgSub->Add(hBkg_unwrapped, -1.0);
 
+        /*
         //protection against negative bins (makes no difference except prevents occasional bug giving result with huge fluctuation)
         for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
         {
@@ -727,6 +728,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
             	hData_bkgSub->SetBinError(i,1);
             }
 		}
+		*/
 		/*
         for (int i = 1; i < nbinsunwrapped_gen + 1; i++)
         {
@@ -1347,7 +1349,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt->Draw("E0X0 same");
 
 
-        TLegend* leg1 = new TLegend(0.71, 0.78, 0.88, 0.92, NULL, "brNDC");
+        TLegend *leg1;
+        if(drawTheory) leg1 = new TLegend(0.71, 0.78, 0.88, 0.92, NULL, "brNDC");
+        else leg1 = new TLegend(0.69, 0.76, 0.86, 0.92, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);

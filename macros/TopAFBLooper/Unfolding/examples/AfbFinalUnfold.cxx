@@ -882,9 +882,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
                 ncols = fscanf(fp, "%f %f", &c1c2, &v1);
                 if (ncols < 0) break;
                 if (nlines < 5) printf("c1c2=%8f, v=%8f\n", c1c2, v1);
-                theoryProfileUnCorr->Fill(c1c2, v1);
-                theoryProfileUnCorr_scaledown->Fill(c1c2, v1); //C==0 so no scale variations
-                theoryProfileUnCorr_scaleup->Fill(c1c2, v1); //C==0 so no scale variations
+                //symmetrise uncorrelated shape
+                theoryProfileUnCorr->Fill(c1c2, v1/2.);
+                theoryProfileUnCorr_scaledown->Fill(c1c2, v1/2.); //C==0 so no scale variations
+                theoryProfileUnCorr_scaleup->Fill(c1c2, v1/2.); //C==0 so no scale variations
+                theoryProfileUnCorr->Fill(-c1c2, v1/2.);
+                theoryProfileUnCorr_scaledown->Fill(-c1c2, v1/2.); //C==0 so no scale variations
+                theoryProfileUnCorr_scaleup->Fill(-c1c2, v1/2.); //C==0 so no scale variations
                 nlines++;
 			  }
 
@@ -1239,6 +1243,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_totalunc->Draw("E0X0");
         hData_unfolded_totalunc->GetXaxis()->SetTitle(xaxislabel+xaxisunit);
         hData_unfolded_totalunc->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")" + xaxisinvunit);
+        if (observablename == "lep_azimuthal_asymmetry2") hData_unfolded_totalunc->GetYaxis()->SetTitle("1/#sigma d#sigma/d" + xaxislabel + xaxisinvunit);
+        //if(xaxislabel.Contains("|"))
         if (observablename == "lep_azimuthal_asymmetry2") hData_unfolded_totalunc->GetXaxis()->SetNdivisions(-406);
         else hData_unfolded_totalunc->GetXaxis()->SetNdivisions(504,0);
         hData_unfolded_totalunc->GetYaxis()->SetNdivisions(507);

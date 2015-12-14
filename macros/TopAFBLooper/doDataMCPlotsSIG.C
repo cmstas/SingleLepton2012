@@ -431,7 +431,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //  const int mccolor[]={7,2,6,4,kOrange,8,5,kAzure-9, 9,5,kViolet,kGreen+1, 15,12,13,27};
     gStyle->SetPadTopMargin(0.065);
     gStyle->SetPadRightMargin(0.035);
-    gStyle->SetPadLeftMargin(0.165);
+    gStyle->SetPadLeftMargin(0.18);
     //gStyle->SetErrorX(0);
 
     //-------------------------------
@@ -453,7 +453,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     //control plot dimensions
     float r = 0.31;
-    float epsilon = 0.02;
+    float epsilon = 0.025;
 
     double lumi = 19.5;
 
@@ -1184,8 +1184,8 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
     const char *ytitle1d[N1DHISTS] =
     {
-        "",
-        "",
+        "radians",
+        "radians",
         "",
         "",
         "",
@@ -1637,12 +1637,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         {
             if (!hasplot[leptype][i]) continue;
 
-            h_dt1d[i]->GetXaxis()->SetTitle(Form("%s",
-                                                 xtitle1d[i]));
+            if(strncmp(ytitle1d[i],"",1000) == 0) h_dt1d[i]->GetXaxis()->SetTitle(Form("%s",                                     xtitle1d[i]));
+            else h_dt1d[i]->GetXaxis()->SetTitle(Form("%s (%s)",                                             xtitle1d[i], ytitle1d[i]));
             //h_dt1d[i]->GetXaxis()->SetTitleOffset(1.);
-            h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / %1.2g %s",
-                                                 h_dt1d[i]->GetBinWidth(1),
-                                                 ytitle1d[i]));
+            if(strncmp(ytitle1d[i],"",1000) == 0) h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / %1.2g ", h_dt1d[i]->GetBinWidth(1)));
+            else h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / (%1.2g %s) ", h_dt1d[i]->GetBinWidth(1), ytitle1d[i]));
+            if ( strncmp(file1dname[i],"lep_azimuthal_asymmetry2", 1000 ) == 0 ) h_dt1d[i]->GetYaxis()->SetTitle(Form("Entries / (#pi/%i %s) ", h_dt1d[i]->GetNbinsX(), ytitle1d[i]));
 
             if (find(logScale.begin(), logScale.end(), i) != logScale.end())
             {
@@ -1656,12 +1656,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             for (int j = 0; j < MCID; ++j)
             {
 
-                h_mc1d[i][j]->GetXaxis()->SetTitle(Form("%s",
-                                                        xtitle1d[i]));
+                if(strncmp(ytitle1d[i],"",1000) == 0) h_mc1d[i][j]->GetXaxis()->SetTitle(Form("%s",                                        xtitle1d[i]));
+                else h_mc1d[i][j]->GetXaxis()->SetTitle(Form("%s (%s)",                                             xtitle1d[i], ytitle1d[i]));
                 //h_mc1d[i][j]->GetXaxis()->SetTitleOffset(1.);
-                h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / %1.2g %s",
-                                                        h_dt1d[i]->GetBinWidth(1),
-                                                        ytitle1d[i]));
+                if(strncmp(ytitle1d[i],"",1000) == 0) h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / %1.2g ", h_dt1d[i]->GetBinWidth(1)));
+                else h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / (%1.2g %s) ", h_dt1d[i]->GetBinWidth(1), ytitle1d[i]));
+                if ( strncmp(file1dname[i],"lep_azimuthal_asymmetry2", 1000 ) == 0 ) h_mc1d[i][j]->GetYaxis()->SetTitle(Form("Entries / (#pi/%i %s) ", h_dt1d[i]->GetNbinsX(), ytitle1d[i]));
 
                 if (find(logScale.begin(), logScale.end(), i) != logScale.end())
                 {
@@ -1736,15 +1736,18 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             if (!hasplot[leptype][i]) continue;
 
             leg1d[i] = new TLegend(0.57, 0.60, 0.93, 0.931);//0.56,0.64,0.92,0.915);
-            if(combinebackgroundsinplot) leg1d[i] = new TLegend(0.65, 0.69, 0.92, 0.92);
+            if(combinebackgroundsinplot) leg1d[i] = new TLegend(0.62, 0.68, 0.92, 0.92);
             //  leg1d[i] = new TLegend(0.712, 0.541, 0.928, 0.931);//0.56,0.64,0.92,0.915);
             //    leg1d[i] = new TLegend(0.731544, 0.55507, 0.947987, 0.946241);//0.56,0.64,0.92,0.915);
             leg1d[i]->SetName(Form("leg_%s", h_dt1d[i]->GetName()));
             //    leg1d[i]->SetTextSize(0.03);
             leg1d[i]->SetFillColor(0);
+            leg1d[i]->SetLineColor(0);
+            leg1d[i]->SetBorderSize(0);
+            leg1d[i]->SetFillStyle(0);
             leg1d[i]->
             AddEntry(h_dt1d[i],
-                     "data ", "lep");
+                     "Data ", "lep");
           
             if(!combinebackgroundsinplot) {
                 for (int j = 0; j < MCID; ++j)
@@ -1754,7 +1757,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             }
             else {
                 leg1d[i]->AddEntry(h_mc1d[i][TTDL], legend[TTDL], "f");
-                leg1d[i]->AddEntry(h_mc1d_bkg[i], "background", "f");
+                leg1d[i]->AddEntry(h_mc1d_bkg[i], "Background", "f");
             }
         }
 
@@ -1816,8 +1819,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             h_basic->SetMarkerSize(0.000001);
             h_basic->SetMarkerStyle(1);
             h_basic->Draw("e3");
-
-            //if (file1dname[i] == "lep_azimuthal_asymmetry2") h_basic->GetXaxis()->SetNdivisions(-408);
+            h_basic->GetXaxis()->SetNdivisions(504);
 
             s_mc1d[i]->Draw("hist,same");
 
@@ -1830,7 +1832,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             // h_dt1d[i]->SetMarkerStyle(20);
             // h_dt1d[i]->SetMarkerSize(0.9);
             // h_dt1d[i]->Draw("p,same");
-            h_dt1d[i]->Draw("axis,same");
+            h_dt1d[i]->Draw("same");
 
             leg1d[i]->Draw("same");
             /*
@@ -1871,7 +1873,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             float xtex = 0.2;//0.16;//used to be 0.2
             //text->DrawLatex(xtex, 0.88, "CMS Preliminary");
             //text->DrawLatex(xtex, 0.83, Form("#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = %.1f fb^{-1}", lumi));
-            if(!printnumbersonplots) text->DrawLatex(xtex, 0.78, Form("%s", leplabel[leptype]));
+            if(!printnumbersonplots) text->DrawLatex(0.22, 0.78, Form("%s channel", leplabel[leptype]));
             else if(scalettdiltodata) text->DrawLatex(xtex, 0.78, Form("%s, #chi^{2} prob: %.2f, KS: %.2f",leplabel[leptype], chi2prob, KSprob));
             else text->DrawLatex(xtex, 0.78, Form("%s, KS: %.2f",leplabel[leptype], KSprob));
             if(i<8 && printnumbersonplots) text->DrawLatex(xtex, 0.73, Form("A_{data}=%.2f, A_{MC}=%.2f", asymdata, asymMC));
@@ -1902,7 +1904,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             respad = new TPad("respad", "respad", 0, 0, 1, r*(1. - epsilon));
             plotpad->SetBottomMargin(epsilon);
             respad->SetTopMargin(0.0);
-            respad->SetBottomMargin(0.335);
+            respad->SetBottomMargin(0.37);
             respad->SetFillColor(0);
             respad->SetFillStyle(0);
             respad->Draw();
@@ -1915,13 +1917,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
             ratio->GetYaxis()->SetTitleOffset(0.6);
             ratio->GetYaxis()->SetTitleSize(0.120);
-            ratio->GetYaxis()->SetNdivisions(805);
+            ratio->GetYaxis()->SetNdivisions(305);
             ratio->GetYaxis()->SetLabelSize(h_basic->GetYaxis()->GetLabelSize()*(1.-r)/r);
             //    if (dozoom) ratio->GetYaxis()->SetRangeUser(0.8,1.2);
             //    if (dozoom) ratio->GetYaxis()->SetRangeUser(0.7,1.3);
             //    else
             //    ratio->GetYaxis()->SetRangeUser(0.7,1.3);
-            ratio->GetYaxis()->SetRangeUser(0.71, 1.29);
+            ratio->GetYaxis()->SetRangeUser(0.68, 1.32);
             //if (i == 3) ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
             //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
             ratio->GetYaxis()->SetTitle("Data/Simulation ");
@@ -1929,6 +1931,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             ratio->GetXaxis()->SetTitleSize(h_basic->GetXaxis()->GetTitleSize()*(1.-r)/r);
             ratio->GetXaxis()->SetTitle(h_basic->GetXaxis()->GetTitle());
             //  ratio->SetMarkerSize(1);
+            ratio->GetXaxis()->SetNdivisions(504);
             h_basic->GetXaxis()->SetLabelSize(0.);
             h_basic->GetXaxis()->SetTitleSize(0.);
             ratio->Draw();
@@ -1945,6 +1948,28 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             TLine line;
             line.SetLineWidth(1);
             line.DrawLine(h_dt1d[i]->GetXaxis()->GetXmin(), 1, h_dt1d[i]->GetXaxis()->GetXmax(), 1);
+
+            canv1d[i]->Update();
+            respad->cd();
+
+            if ( strncmp(file1dname[i],"lep_azimuthal_asymmetry2", 1000 ) == 0 ) {
+
+                ratio->GetXaxis()->SetNdivisions(-405);
+                h_basic->GetXaxis()->SetNdivisions(-405);
+                TString binlabels[] = {"0","#pi/5","2#pi/5","3#pi/5","4#pi/5","#pi"};
+                TLatex pilabel;
+                pilabel.SetTextSize(ratio->GetXaxis()->GetLabelSize());
+                //pilabel.SetTextSize(0.04);
+                ratio->GetXaxis()->SetLabelSize(0);
+                pilabel.SetTextFont(42);
+                pilabel.SetTextAlign(22);
+                for (Int_t k=0;k<=5;k++) {
+                    Double_t xnew = double(k)*TMath::Pi()/5.;
+                    pilabel.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/9.,binlabels[k]);
+                    //pilabel.DrawLatex(xnew,.5,binlabels[k]);
+                }
+            }
+
 
             CMS_lumi( canv1d[i], 2, 11 );
 
@@ -2024,11 +2049,11 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     {
         if (!hasplotall[i]) continue;
 
-        h_dt1d_comb[i]->GetXaxis()->SetTitle(Form("%s",
-                                             xtitle1d[i]));
-        h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / %1.2g %s",
-                                             h_dt1d_comb[i]->GetBinWidth(1),
-                                             ytitle1d[i]));
+        if(strncmp(ytitle1d[i],"",1000) == 0) h_dt1d_comb[i]->GetXaxis()->SetTitle(Form("%s",                                     xtitle1d[i]));
+        else h_dt1d_comb[i]->GetXaxis()->SetTitle(Form("%s (%s)",                                             xtitle1d[i], ytitle1d[i]));
+        if(strncmp(ytitle1d[i],"",1000) == 0) h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / %1.2g ", h_dt1d_comb[i]->GetBinWidth(1)));
+        else h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / (%1.2g %s) ", h_dt1d_comb[i]->GetBinWidth(1), ytitle1d[i]));
+        if ( strncmp(file1dname[i],"lep_azimuthal_asymmetry2", 1000 ) == 0 ) h_dt1d_comb[i]->GetYaxis()->SetTitle(Form("Entries / (#pi/%i %s) ", h_dt1d_comb[i]->GetNbinsX(), ytitle1d[i]));
 
         h_dt1d_comb[i]->GetYaxis()->SetTitleOffset(1.3);
     }
@@ -2092,10 +2117,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         if (!hasplotall[i]) continue;
 
         leg1d_comb[i] = new TLegend(0.57, 0.60, 0.93, 0.931);
-        if(combinebackgroundsinplot) leg1d_comb[i] = new TLegend(0.65, 0.69, 0.92, 0.92);
+        if(combinebackgroundsinplot) leg1d_comb[i] = new TLegend(0.62, 0.68, 0.92, 0.92);
         leg1d_comb[i]->SetName(Form("leg_%s", h_dt1d_comb[i]->GetName()));
         leg1d_comb[i]->SetFillColor(0);
-        leg1d_comb[i]->AddEntry(h_dt1d_comb[i], "data ", "lep");
+        leg1d_comb[i]->SetLineColor(0);
+        leg1d_comb[i]->SetBorderSize(0);
+        leg1d_comb[i]->SetFillStyle(0);
+        leg1d_comb[i]->AddEntry(h_dt1d_comb[i], "Data ", "lep");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTSL], legend[TTSL], "f");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTDL], legend[TTDL], "f");
         //leg1d_comb[i]->AddEntry(h_mc1d_comb[i][WJETS], legend[WJETS], "f");
@@ -2108,7 +2136,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         }
         else {
             leg1d_comb[i]->AddEntry(h_mc1d_comb[i][TTDL], legend[TTDL], "f");
-            leg1d_comb[i]->AddEntry(h_mc1d_bkg_comb[i], "background", "f");
+            leg1d_comb[i]->AddEntry(h_mc1d_bkg_comb[i], "Background", "f");
         }
 
     }
@@ -2171,15 +2199,14 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         h_basic->SetMarkerSize(0.000001);
         h_basic->SetMarkerStyle(1);
         h_basic->Draw("e3");
-
-        //if (file1dname[i] == "lep_azimuthal_asymmetry2") h_basic->GetXaxis()->SetNdivisions(-408);
+        h_basic->GetXaxis()->SetNdivisions(504);
 
         s_mc1d_comb[i]->Draw("hist,same");
 
         TGraphAsymmErrors *g_data = GetPoissonizedGraph(h_dt1d_comb[i]);
         g_data->Draw("e1,p,z,same");
         //h_mc1d_bkg_comb[i]->Draw("same");
-        h_dt1d_comb[i]->Draw("axis,same");
+        h_dt1d_comb[i]->Draw("same");
         leg1d_comb[i]->Draw("same");
 
         //if(i==57) h_dt1d_comb[i]->Print("all");
@@ -2207,7 +2234,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         respad = new TPad("respad", "respad", 0, 0, 1, r*(1. - epsilon));
         plotpad->SetBottomMargin(epsilon);
         respad->SetTopMargin(0.0);
-        respad->SetBottomMargin(0.335);
+        respad->SetBottomMargin(0.37);
         respad->SetFillColor(0);
         respad->SetFillStyle(0);
         respad->Draw();
@@ -2220,27 +2247,16 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         ratio->GetYaxis()->SetTitleOffset(0.6);
         ratio->GetYaxis()->SetTitleSize(0.120);
-        ratio->GetYaxis()->SetNdivisions(805);
+        ratio->GetYaxis()->SetNdivisions(305);
         ratio->GetYaxis()->SetLabelSize(h_basic->GetYaxis()->GetLabelSize()*(1.-r)/r);
-        ratio->GetYaxis()->SetRangeUser(0.71, 1.29);
+        ratio->GetYaxis()->SetRangeUser(0.68, 1.32);
         ratio->GetYaxis()->SetTitle("Data/Simulation ");
         ratio->GetXaxis()->SetLabelSize(h_basic->GetXaxis()->GetLabelSize()*(1.-r)/r);
         ratio->GetXaxis()->SetTitleSize(h_basic->GetXaxis()->GetTitleSize()*(1.-r)/r);
         ratio->GetXaxis()->SetTitle(h_basic->GetXaxis()->GetTitle());
         //      ratio->SetMarkerSize(1);
-        /*
-        if (file1dname[i] == "lep_azimuthal_asymmetry2") {
-            ratio->GetXaxis()->SetNdivisions(-408);
-            TString binlabels[] = {"0","#pi/8","#pi/4","3#pi/8","#pi/2","5#pi/8","3#pi/4","7#pi/8","#pi"};
-            TLatex label;
-            label.SetTextSize(h_basic->GetXaxis()->GetLabelSize()*(1.-r)/r);
-            label.SetTextFont(42);
-            label.SetTextAlign(22);
-            for (Int_t k=0;k<=8;k++) {
-                Double_t xnew = h_basic->GetXaxis()->GetBinLowEdge(k+1);
-                label.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/12.,binlabels[k]);
-            }
-        }*/
+        ratio->GetXaxis()->SetNdivisions(504);
+
         h_basic->GetXaxis()->SetLabelSize(0.);
         h_basic->GetXaxis()->SetTitleSize(0.);
         ratio->Draw();
@@ -2248,6 +2264,29 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         TLine line;
         line.SetLineWidth(1);
         line.DrawLine(h_dt1d_comb[i]->GetXaxis()->GetXmin(), 1, h_dt1d_comb[i]->GetXaxis()->GetXmax(), 1);
+
+        canv1d_comb[i]->Update();
+        respad->cd();
+
+        if ( strncmp(file1dname[i],"lep_azimuthal_asymmetry2", 1000 ) == 0 ) {
+
+            ratio->GetXaxis()->SetNdivisions(-405);
+            h_basic->GetXaxis()->SetNdivisions(-405);
+            TString binlabels[] = {"0","#pi/5","2#pi/5","3#pi/5","4#pi/5","#pi"};
+            TLatex pilabel;
+            pilabel.SetTextSize(ratio->GetXaxis()->GetLabelSize());
+            //pilabel.SetTextSize(0.04);
+            ratio->GetXaxis()->SetLabelSize(0);
+            pilabel.SetTextFont(42);
+            pilabel.SetTextAlign(22);
+            for (Int_t k=0;k<=5;k++) {
+                Double_t xnew = double(k)*TMath::Pi()/5.;
+                pilabel.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/9.,binlabels[k]);
+                //pilabel.DrawLatex(xnew,.5,binlabels[k]);
+            }
+        }
+
+
 
         CMS_lumi( canv1d_comb[i], 2, 11 );
 
