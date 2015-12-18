@@ -75,7 +75,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
     else if (Var2D == "ttrapidity2") yaxisunit = "";
     else if (Var2D == "ttpt") yaxisunit = " (GeV)";
 
-    TString xaxisunit;
 
     // if (!(scalefake == 1. && scalewjets == 1. && scaleDY == 1. && scaletw == 1. && scaleVV == 1.))  summary_name = summary_name + Form("_%i_%i_%i_%i_%i", int(10.*scalefake + 0.5), int(10.*scalewjets + 0.5), int(10.*scaleDY + 0.5), int(10.*scaletw + 0.5), int(10.*scaleVV + 0.5));
 
@@ -128,9 +127,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         bool combineLepMinus = acceptanceName == "lepCosTheta" ? true : false;
         bool combineLepMinusCPV = acceptanceName == "lepCosThetaCPV" ? true : false;
         bool isChargeAsym = (acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" || acceptanceName == "topCosTheta" || acceptanceName == "pseudorapiditydiff" || acceptanceName == "rapiditydiff" );
-
-        if (acceptanceName == "lepAzimAsym2") xaxisunit = " (radians)";
-        else xaxisunit = "";
 		
 		//Do all our bin splitting
 		int nbinsx_gen = -99;
@@ -1227,7 +1223,6 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hs->Add(hAfbVsMtt_plussyst);
 
         bool drawTheory = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) );
-        //bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" ) );
         bool drawTheoryUncorrelated = ( ( Var2D != "ttpt" ) && ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle") );
 		//double minmin = min( hAfbVsMtt->GetMinimum(), hTop_AfbVsMtt->GetMinimum() );
 		double minmin = min( hAfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hAfbVsMtt->GetMinimumBin()), hTop_AfbVsMtt->GetMinimum() - hAfbVsMtt->GetBinError(hTop_AfbVsMtt->GetMinimumBin()));
@@ -1275,7 +1270,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hTop_AfbVsMtt->SetMarkerColor(TColor::GetColorDark(kRed));
         hTop_AfbVsMtt->SetMarkerSize(0);
         hTop_AfbVsMtt->SetLineWidth( 3.0 );
-        hTop_AfbVsMtt->SetLineStyle(2);
+        hTop_AfbVsMtt->SetLineStyle(7);
         //hTop_AfbVsMtt->Draw("E same");
 
         if(drawTheory) {
@@ -1350,7 +1345,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
         TLegend *leg1;
-        if(drawTheory) leg1 = new TLegend(0.71, 0.78, 0.88, 0.92, NULL, "brNDC");
+        if(drawTheory) leg1 = new TLegend(0.71, 0.775, 0.88, 0.915, NULL, "brNDC");
         else leg1 = new TLegend(0.69, 0.76, 0.86, 0.92, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
@@ -1368,9 +1363,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         TLegend *leg2;
         if(drawTheory) {
-	        leg2 = new TLegend(0.37, 0.78, 0.69, 0.92, NULL, "brNDC");
-	        if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.42, 0.85, 0.68, 0.92, NULL, "brNDC");
-	        leg2->SetEntrySeparation(0.5);
+	        leg2 = new TLegend(0.37, 0.755, 0.69, 0.915, NULL, "brNDC");
+	        if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.42, 0.845, 0.68, 0.915, NULL, "brNDC");
+	        //leg2->SetEntrySeparation(0.5);
 	        leg2->SetFillColor(0);
 	        leg2->SetLineColor(0);
 	        leg2->SetBorderSize(0);
@@ -1381,13 +1376,13 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        //leg2->AddEntry(hAfbVsMtt_theory_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "LF");
 	        //if(drawTheoryUncorrelated) leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "LF");
 	        if(!isChargeAsym){
-		        if(acceptanceName != "lepCosThetaCPV") leg2->AddEntry(hAfbVsMtt_theory_syst,  "B&S, SM", "LF");
-		        else leg2->AddEntry(hAfbVsMtt_theory_syst,  "B&S, SM", "L");
+		        if(acceptanceName != "lepCosThetaCPV") leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO+EW, SM", "LF");
+		        else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO+EW, SM", "L");
 		    }
 		    else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO+EW", "L"); 
 	        if(drawTheoryUncorrelated) {
-	        	if(observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "B&S, uncorr.", "LF");
-	        	else leg2->AddEntry(hAfbVsMtt_uncorr_default,  "B&S, uncorr.", "L");
+	        	if(observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "LF");
+	        	else leg2->AddEntry(hAfbVsMtt_uncorr_default,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "L");
 	        }
 	        leg2->Draw();
 	    }

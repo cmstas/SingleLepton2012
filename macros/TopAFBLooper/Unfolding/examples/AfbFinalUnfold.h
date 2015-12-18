@@ -703,7 +703,7 @@ syst_corr[11] = 0.002339;
     case 1:
     {
       observablename="lep_azimuthal_asymmetry2";
-      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}|";
+      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}|";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
       //Double_t pi = 3.141592653589793;
@@ -768,7 +768,7 @@ syst_corr[5] = 0.027031;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.6; xbins1D[2]=-0.3; xbins1D[3]=0.0; xbins1D[4]=0.3; xbins1D[5]=0.6; xbins1D[6]=1.0;
@@ -849,7 +849,7 @@ syst_corr[5] = 0.012532;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
       //xbins1D[0]=-1.0; xbins1D[1]=-0.5; xbins1D[2]=-0.2; xbins1D[3]=0.0; xbins1D[4]=0.2; xbins1D[5]=0.5; xbins1D[6]=1.0;
@@ -950,7 +950,7 @@ syst_corr[5] = 0.037653;
     case 9:
     {
       observablename="lep_azimuthal_asymmetry";
-      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}";
+      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}";
       acceptanceName="lepAzimAsym";
       asymlabel="A_{#Delta#phi}";
       xbins1D[0]=-pi; xbins1D[1]=-0.67*pi; xbins1D[2]=-0.33*pi; xbins1D[3]=0.0; xbins1D[4]=0.33*pi; xbins1D[5]=0.67*pi; xbins1D[6]=pi;
@@ -1085,7 +1085,7 @@ theory_scaleup[2] = 1.1051329824914245E-002;
     case 1:
     {
       observablename="lep_azimuthal_asymmetry2";
-      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}|";
+      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}|";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
@@ -1150,7 +1150,7 @@ syst_corr[2] = 0.039233;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
@@ -1237,7 +1237,7 @@ theory_scaleup[2] = 0.;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
@@ -1352,7 +1352,7 @@ theory_scaleup[2] =  -7.6374174747447288E-002/-2.;
     case 9:
     {
       observablename="lep_azimuthal_asymmetry";
-      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}";
+      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}";
       yaxislabel="M_{t#bar{t}}";
       acceptanceName="lepAzimAsym";
       asymlabel="A_{#Delta#phi}";
@@ -1464,7 +1464,7 @@ theory_scaleup[2] = -3.4258795512555877E-004;
     case 1:
     {
       observablename="lep_azimuthal_asymmetry2";
-      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}|";
+      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}|";
       yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
@@ -1527,7 +1527,7 @@ syst_corr[2] = 0.032914;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
@@ -1614,7 +1614,7 @@ theory_scaleup[2] = 0.;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
@@ -1729,7 +1729,7 @@ theory_scaleup[2] = -0.15254738928307032     /-2.;
     case 9:
     {
       observablename="lep_azimuthal_asymmetry";
-      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}";
+      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}";
       yaxislabel="p_{T}^{t#bar{t}}";
       acceptanceName="lepAzimAsym";
       asymlabel="A_{#Delta#phi}";
@@ -1841,7 +1841,7 @@ theory_scaleup[2] = 1.0282819076233869E-002;
     case 1:
     {
       observablename="lep_azimuthal_asymmetry2";
-      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}|";
+      xaxislabel="|#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}|";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepAzimAsym2";
       asymlabel="A_{#Delta#phi}";
@@ -1904,7 +1904,7 @@ syst_corr[2] = 0.033703;
     case 3:
     {
       observablename="lepMinus_costheta_cms";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepMinusCosTheta";
       asymlabel="A_{P-}";
@@ -1991,7 +1991,7 @@ theory_scaleup[2] = 0.;
     case 5:
     {
       observablename="top_spin_correlation";
-      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{-}}}#kern[-1.15]{*}";
+      xaxislabel="cos#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.4]{+}}}#kern[-1.70]{*} #kern[+0.3]{c}os#kern[+0.3]{#theta}_{#font[12]{l#lower[-0.48]{#font[122]{\55}}}}#kern[-1.15]{*}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="topSpinCorr";
       asymlabel="A_{c1c2}";
@@ -2106,7 +2106,7 @@ theory_scaleup[2] = -0.21735053981565339     /-2.;
     case 9:
     {
       observablename="lep_azimuthal_asymmetry";
-      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{-}}}";
+      xaxislabel="#Delta#phi_{#font[12]{l#lower[-0.4]{+}l#lower[-0.48]{#font[122]{\55}}}}";
       yaxislabel="|y_{t#bar{t}}|";
       acceptanceName="lepAzimAsym";
       asymlabel="A_{#Delta#phi}";

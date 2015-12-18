@@ -123,10 +123,10 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         Initialize1DBinning(iVar);
         bool isChargeAsym = (acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" || acceptanceName == "topCosTheta" || acceptanceName == "pseudorapiditydiff" || acceptanceName == "rapiditydiff" );
 
-        TString xaxisunit;
-        TString xaxisinvunit;
-        if (acceptanceName == "lepAzimAsym2") {xaxisunit = " (radians)"; xaxisinvunit = " (1/radians)";}
-        else {xaxisunit = ""; xaxisinvunit = "";}
+        TString xaxisunit = "";
+        TString xaxisinvunit = "";
+        //if (acceptanceName == "lepAzimAsym2") {xaxisunit = " (radians)"; xaxisinvunit = " (1/radians)";}
+
 
 		// Figure out all possible binning schemes based on the basic binning scheme
 		int nbinsx_gen = -99;
@@ -1027,12 +1027,14 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //GetAfb(hData_unfolded, Afb, AfbErr);
         //cout<<" Unfolded (ignoring correlation): "<< Afb <<" +/-  "<< AfbErr<<"\n";
 
+        bool drawTheory = ( ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) );
+        bool drawTheoryUncorrelated = ( ( observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle") );
 
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
+        if (drawTheory)
 		  {
             GetAfb_integratewidth( (TH1D *) theoryProfileCorr, Afb, AfbErr);
             cout << " Bernreuther SM: " << Afb << " +/-  " << AfbErr << "\n";
-            if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" ) {
+            if (drawTheoryUncorrelated ) {
 	            GetAfb_integratewidth( (TH1D *) theoryProfileUnCorr, Afb, AfbErr);
 	            cout << " Bernreuther uncorrelated: " << Afb << " +/-  " << AfbErr << "\n";
 	        }
@@ -1182,7 +1184,6 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         else hData_unfolded_totalunc->SetMaximum(1.3 * hData_unfolded->GetMaximum());
 
 
-
         TCanvas *c_test;
         if(drawDiffs) c_test = new TCanvas("c_final", "c_final", 500, 560);
         else c_test = new TCanvas("c_final", "c_final", 500, 500);
@@ -1261,21 +1262,21 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         denominatorM_nopTreweighting->SetLineWidth(lineWidthDiffs);
         denominatorM_nopTreweighting->SetLineColor(TColor::GetColorDark(kRed));
         denominatorM_nopTreweighting->SetFillStyle(0);
-        denominatorM_nopTreweighting->SetLineStyle(2);
+        denominatorM_nopTreweighting->SetLineStyle(7);
         hTrue->SetLineWidth(lineWidthDiffs);
         hTrue->SetLineColor(TColor::GetColorDark(kRed));
-        hTrue->SetLineStyle(2);
+        hTrue->SetLineStyle(7);
         //hTrue->SetFillColor(TColor::GetColorDark(kGreen));
         hTrue->SetFillStyle(0);
         //if (!draw_truth_before_pT_reweighting) hTrue->Draw("hist same");
         //else denominatorM_nopTreweighting->Draw("hist same");
         hData_unfolded->Draw("E1X0 same");
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
+        if (drawTheory)
 		  {
             if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") theoryProfileCorr_scale->Draw("E2 same");
             theoryProfileCorr->Draw("hist same");
             
-            if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) {
+            if( drawTheoryUncorrelated ) {
             	if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2")  theoryProfileUnCorr_scale->Draw("E2 same");  //no scale uncertainty for uncorrelated predictions except for lep_azimuthal_asymmetry2
             	theoryProfileUnCorr->Draw("hist same");
             }
@@ -1287,43 +1288,34 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_totalunc->Draw("E0X0 same");
         hData_unfolded->Draw("E1X0 same");
 
-		bool second_legend = false;
-		if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") second_legend = true;
-
-		float left_bound = 0.65;
-		if( second_legend ) left_bound = 0.71;
+		float left_bound = 0.725;
+		if(isChargeAsym) left_bound = 0.71;
 
 		float leg_textSize = 0.069;
-		if( second_legend ) leg_textSize *= 0.8;
-		else leg_textSize *= 0.9;
+		leg_textSize *= 0.8;
 
 		TLegend *leg1;
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
-        if( second_legend ) leg1 = new TLegend(left_bound, 0.78, 0.9, 0.92, NULL, "brNDC");
-        else leg1 = new TLegend(left_bound, 0.76, 0.9, 0.92, NULL, "brNDC");
-        leg1->SetEntrySeparation(0.1);
+        leg1 = new TLegend(left_bound, 0.78, 0.9, 0.92, NULL, "brNDC");
+        //leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
         leg1->SetFillStyle(0);
         leg1->SetTextSize(leg_textSize);
         leg1->SetTextFont(62);
-        //if(second_legend) leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.2]{ }-#kern[-0.2]{ }#kern[-0.1]{b}kg.#kern[-0.2]{ }) unfolded");
-        //else leg1->AddEntry(hData_unfolded, "(#kern[-0.2]{ }Data#kern[-0.25]{ }-#kern[-0.2]{ }#kern[-0.1]{b}ackground#kern[-0.2]{ }) unfolded");
-        if(second_legend) leg1->AddEntry(hData_unfolded, "Data","EP");
-        else leg1->AddEntry(hData_unfolded, "Data","EP");
-        //if(second_legend) leg1->AddEntry(hData_unfolded_plussyst,    "Syst. uncertainty", "F");
+        leg1->AddEntry(hData_unfolded, "Data","EP");
         //else leg1->AddEntry(hData_unfolded_plussyst,    "Systematic uncertainty", "F");
         leg1->AddEntry(hTrue,    "MC@NLO", "L");
 
         leg1->Draw();
 
-        if (observablename == "lep_azimuthal_asymmetry2" || observablename == "top_spin_correlation" || observablename == "lep_cos_opening_angle" || acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym")
+        if (drawTheory)
 		  {
             TLegend *leg2;
-            leg2 = new TLegend(0.38, 0.78, 0.70, 0.92, NULL, "brNDC");
-            if ( acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
-            leg2->SetEntrySeparation(0.5);
+            leg2 = new TLegend(0.38, 0.76, 0.70, 0.92, NULL, "brNDC");
+            if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
+            //leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
             leg2->SetBorderSize(0);
@@ -1332,19 +1324,19 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             leg2->SetTextFont(62);
 
             	//leg2->AddEntry(theoryProfileCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "L");
-            	//if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
+            	//if( drawTheoryUncorrelated ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             	
-            	if(acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym" ){
+            	if(isChargeAsym){
             		leg2->AddEntry(theoryProfileCorr,  "NLO+EW", "L");
             	}
             	else{
-	            	if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") leg2->AddEntry(theoryProfileCorr_scale,  "B&S, SM", "LF");
-	            	else leg2->AddEntry(theoryProfileCorr,  "B&S, SM", "L");
+	            	if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") leg2->AddEntry(theoryProfileCorr_scale,  "NLO+EW, SM", "LF");
+	            	else leg2->AddEntry(theoryProfileCorr,  "NLO+EW, SM", "L");
 	            }
 
-            	if( !(acceptanceName == "lepCosTheta" || acceptanceName == "lepCosThetaCPV" || acceptanceName == "rapiditydiffMarco" || acceptanceName == "lepChargeAsym") ) {
-            		if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(theoryProfileUnCorr_scale,  "B&S, uncorr.", "LF");
-            		else leg2->AddEntry(theoryProfileUnCorr,  "B&S, uncorr.", "L");
+            	if( drawTheoryUncorrelated ) {
+            		if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(theoryProfileUnCorr_scale,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "LF");
+            		else leg2->AddEntry(theoryProfileUnCorr,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "L");
             	}
 
             leg2->Draw();
@@ -1465,6 +1457,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             }
 
             //h_diff_totalunc->GetXaxis()->SetTitle( hData_unfolded_totalunc->GetXaxis()->GetTitle() );
+            h_diff_totalunc->GetXaxis()->SetTickLength( hData_unfolded_totalunc->GetXaxis()->GetTickLength()*(1.-r)/r );
+            //h_diff_totalunc->GetYaxis()->SetTickLength( hData_unfolded_totalunc->GetYaxis()->GetTickLength()*(1.-r)/r );
             h_diff_totalunc->GetXaxis()->SetTitle(xaxislabel+xaxisunit);
             h_diff_totalunc->GetXaxis()->SetTitleSize( hData_unfolded_totalunc->GetXaxis()->GetTitleSize()*(1.-r)/r);
             h_diff_totalunc->GetXaxis()->SetLabelSize( hData_unfolded_totalunc->GetXaxis()->GetLabelSize()*(1.-r)/r);
@@ -1489,7 +1483,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 	            for (Int_t k=0;k<=nbinsx_gen;k++) {
 	            	Double_t xnew = hData_unfolded_totalunc->GetXaxis()->GetBinLowEdge(k+1);
 	            	//if(k%2==0) label.DrawLatex(xnew,hsd->GetMinimum(),Form("%i#pi/6",k/2));
-	            	if(k%2==0) label.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/12.,binlabels[k/2]);
+	            	if(k%2==0) label.DrawLatex(xnew,gPad->GetUymin()-(gPad->GetUymax()-gPad->GetUymin())/11.5,binlabels[k/2]);
 	            }
 	        }
 /*
@@ -1547,8 +1541,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 	        AFB_vs_tau0_c->SetLineColor(kBlue);
 	        AFB_vs_tau0_u->SetLineColor(kRed);
 	        AFB_vs_tau0_d->SetLineColor(kRed);
-	        AFB_vs_tau_u->SetLineStyle(2);
-	        AFB_vs_tau_d->SetLineStyle(2);
+	        AFB_vs_tau_u->SetLineStyle(7);
+	        AFB_vs_tau_d->SetLineStyle(7);
 	        AFB_vs_tau->Draw("hist");
 	        AFB_vs_tau0_c->Draw("hist same");
 	        AFB_vs_tau0_d->Draw("hist same");
