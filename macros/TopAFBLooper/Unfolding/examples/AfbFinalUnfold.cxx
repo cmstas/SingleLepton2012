@@ -1314,7 +1314,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		  {
             TLegend *leg2;
             leg2 = new TLegend(0.38, 0.76, 0.70, 0.92, NULL, "brNDC");
-            if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
+            if ( isChargeAsym ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
+            else if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.38, 0.845, 0.70, 0.92, NULL, "brNDC");
             //leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);

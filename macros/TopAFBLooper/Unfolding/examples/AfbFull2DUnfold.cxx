@@ -1323,10 +1323,11 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hAfbVsMtt->GetYaxis()->SetTitle(asymlabel+"   ");
         hAfbVsMtt->GetYaxis()->SetTitleOffset(1.4);
         hAfbVsMtt->GetYaxis()->SetLabelOffset(999);
-        hAfbVsMtt->GetYaxis()->SetTickLength(0);
+        //hAfbVsMtt->GetYaxis()->SetTickLength(0);
         hAfbVsMtt->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
         hAfbVsMtt->GetXaxis()->SetTitleOffset(1.0);
         if (Var2D == "mtt") hAfbVsMtt->GetXaxis()->SetNdivisions(405);
+        else hAfbVsMtt->GetXaxis()->SetNdivisions(505);
         hAfbVsMtt_statonly->SetLineWidth( 3.0 );
         hAfbVsMtt_statonly->SetMarkerSize(1.0);
         hAfbVsMtt_statonly->Draw("E1X0 same");
@@ -1335,7 +1336,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         hs->GetYaxis()->SetTitle(asymlabel+"   ");
         hs->GetYaxis()->SetTitleOffset(1.4);
         hs->GetYaxis()->SetLabelOffset(999);
-        hs->GetYaxis()->SetTickLength(0);
+        //hs->GetYaxis()->SetTickLength(0);
         hs->GetXaxis()->SetTitle(yaxislabel + yaxisunit);
         hs->GetXaxis()->SetTitleOffset(1.0);
         if (Var2D == "mtt") hs->GetXaxis()->SetNdivisions(405);
@@ -1345,14 +1346,15 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
         TLegend *leg1;
-        if(drawTheory) leg1 = new TLegend(0.71, 0.775, 0.88, 0.915, NULL, "brNDC");
-        else leg1 = new TLegend(0.69, 0.76, 0.86, 0.92, NULL, "brNDC");
+        if(isChargeAsym) leg1 = new TLegend(0.665, 0.774, 0.865, 0.914, NULL, "brNDC");
+        else if(drawTheory) leg1 = new TLegend(0.70, 0.775, 0.87, 0.915, NULL, "brNDC");
+        else leg1 = new TLegend(0.69, 0.775, 0.86, 0.915, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
         leg1->SetBorderSize(0);
-        leg1->SetTextSize(0.045);
-        //if( isChargeAsym ) leg1->SetTextSize(0.045);
+        leg1->SetTextSize(0.044);
+        if( isChargeAsym ) leg1->SetTextSize(0.049);
         leg1->SetTextFont(62);
         leg1->SetFillStyle(0);
         leg1->AddEntry(hAfbVsMtt_statonly, "Data", "EP");
@@ -1363,15 +1365,16 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         TLegend *leg2;
         if(drawTheory) {
-	        leg2 = new TLegend(0.37, 0.755, 0.69, 0.915, NULL, "brNDC");
-	        if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.42, 0.845, 0.68, 0.915, NULL, "brNDC");
+	        leg2 = new TLegend(0.365, 0.76, 0.675, 0.915, NULL, "brNDC");
+	        if ( isChargeAsym ) leg2 = new TLegend(0.365, 0.844, 0.64, 0.914, NULL, "brNDC");
+	        else if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.365, 0.842, 0.675, 0.912, NULL, "brNDC");
 	        //leg2->SetEntrySeparation(0.5);
 	        leg2->SetFillColor(0);
 	        leg2->SetLineColor(0);
 	        leg2->SetBorderSize(0);
 	        leg2->SetFillStyle(0);
-	        leg2->SetTextSize(0.045);
-	        //if( isChargeAsym ) leg2->SetTextSize(0.045);
+	        leg2->SetTextSize(0.044);
+	        if( isChargeAsym ) leg2->SetTextSize(0.049);
 	        leg2->SetTextFont(62);
 	        //leg2->AddEntry(hAfbVsMtt_theory_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "LF");
 	        //if(drawTheoryUncorrelated) leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "LF");
