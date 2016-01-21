@@ -1409,14 +1409,14 @@ def main():
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
             for col in range(nbins):
-                if col<nbins-1: print "%i :" % (col+1),
-                else: print "%i" % (col+1)
+                if col<nbins-1: print "$%i$ :" % (col+1),
+                else: print "$%i$" % (col+1)
             print "*xheader: Bin of %s" % (plotLatex[plot])
             print "*data: x",
             for col in range(nbins): print ": y",
             print ""
             for row in range(nbins):
-                print "** %i;" % (row+1),
+                print "** $%i$;" % (row+1),
                 for col in range(nbins): print " %2.7g;" % (covDataStat[row,col]),
                 print ""
             print "*dataend:\n"
@@ -1431,14 +1431,14 @@ def main():
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
             for col in range(nbins):
-                if col<nbins-1: print "%i :" % (col+1),
-                else: print "%i" % (col+1)
+                if col<nbins-1: print "$%i$ :" % (col+1),
+                else: print "$%i$" % (col+1)
             print "*xheader: Bin of %s" % (plotLatex[plot])
             print "*data: x",
             for col in range(nbins): print ": y",
             print ""
             for row in range(nbins):
-                print "** %i;" % (row+1),
+                print "** $%i$;" % (row+1),
                 for col in range(nbins): print " %2.7g;" % (covar_total[row,col]),
                 print ""
             print "*dataend:\n"
@@ -1447,7 +1447,7 @@ def main():
 
             #bin values
             print "*dataset:"
-            print "*location: Figure 3"
+            print "*location: Figure 4"
             print "*dscomment: Values of %s in the %i bins of %s, and inclusively (bottom row). The value 9999 is used as a placeholder for infinity." % (plotLatexAsym[plot], nbins2D, secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
             print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
@@ -1464,7 +1464,7 @@ def main():
 
             #stat correlation matrix
             print "*dataset:"
-            print "*location: Figure 3"
+            print "*location: Figure 4"
             print "*dscomment: Statistical correlation matrix for %s in the %i bins of %s." % (plotLatexAsym[plot], nbins2D, secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
             print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
@@ -1472,21 +1472,21 @@ def main():
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
             for col in range(nbins2D):
-                if col<nbins2D-1: print "%i :" % (col+1),
-                else: print "%i" % (col+1)
+                if col<nbins2D-1: print "$%i$ :" % (col+1),
+                else: print "$%i$" % (col+1)
             print "*xheader: Bin of %s" % (secvarLatex)
             print "*data: x",
             for col in range(nbins2D): print ": y",
             print ""
             for row in range(nbins2D):
-                print "** %i;" % (row+1),
+                print "** $%i$;" % (row+1),
                 for col in range(nbins2D): print " %2.7g;" % (afbcordatastat[row,col]),
                 print ""
             print "*dataend:\n"
 
             #syst correlation matrix
             print "*dataset:"
-            print "*location: Figure 3"
+            print "*location: Figure 4"
             print "*dscomment: Systematic correlation matrix for %s in the %i bins of %s." % (plotLatexAsym[plot], nbins2D, secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
             print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
@@ -1494,14 +1494,14 @@ def main():
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
             for col in range(nbins2D):
-                if col<nbins2D-1: print "%i :" % (col+1),
-                else: print "%i" % (col+1)
+                if col<nbins2D-1: print "$%i$ :" % (col+1),
+                else: print "$%i$" % (col+1)
             print "*xheader: Bin of %s" % (secvarLatex)
             print "*data: x",
             for col in range(nbins2D): print ": y",
             print ""
             for row in range(nbins2D):
-                print "** %i;" % (row+1),
+                print "** $%i$;" % (row+1),
                 for col in range(nbins2D): print " %2.7g;" % (afbcorsyst[row,col]),
                 print ""
             print "*dataend:\n"
