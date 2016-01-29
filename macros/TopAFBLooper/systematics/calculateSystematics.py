@@ -622,6 +622,15 @@ def main():
 
     systorderlist = ['JESMET','JER','LES','Btag','LepSelEff','PUshape','Background','Mass','Scale','PDF','hadronization','Regularisation','pt_reweight']
 
+    #if allowcombine: asymorderlist = ['rapiditydiffMarco','lepChargeAsym','lepAzimAsym2','lepCosOpeningAngle','topSpinCorr','lepCosTheta','lepPlusCosTheta']
+    #else: asymorderlist = ['rapiditydiffMarco','lepChargeAsym','lepAzimAsym2','lepCosOpeningAngle','topSpinCorr','lepPlusCosTheta','lepMinusCosTheta']
+
+    if allowcombine: asymorderlist = ['lepAzimAsym2','lepCosOpeningAngle','topSpinCorr','lepCosTheta','lepPlusCosTheta']
+    else: asymorderlist = ['lepAzimAsym2','lepCosOpeningAngle','topSpinCorr','lepPlusCosTheta','lepMinusCosTheta']
+
+    #if allowcombine: asymorderlist = ['lepAzimAsym2','lepCosOpeningAngle','lepCosTheta','lepPlusCosTheta','topSpinCorr']
+    #else: asymorderlist = ['lepAzimAsym2','lepCosOpeningAngle','lepPlusCosTheta','lepMinusCosTheta','topSpinCorr']
+
     afberrs = {}
     afberrs2D = {}
     afberr_MCstat = {}
@@ -752,7 +761,8 @@ def main():
 
 
     #Loop over the different asymmetry variables...
-    for plot in sorted(systematics.keys()):
+    #for plot in sorted(systematics.keys()):
+    for plot in asymorderlist:
 
         if plot == 'lepCosThetaCPV': continue
 
@@ -1388,14 +1398,14 @@ def main():
             print "*location: Figure 3"
             print "*dscomment: Values of the %i bins of the normalized differential cross section as a function of %s." % (nbins, plotLatex[plot])
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s" % (plotKeyword[plot])
+            #print "*obskey: %s" % (plotKeyword[plot])
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader: Value"
             print "*xheader: Bin of %s" % (plotLatexUnit[plot])
             print "*data: x : y"
             for col in range(nbins):
-                print "** %2.7f TO %2.7f; %2.7f;" % (binlabels[plot][col],binlabels[plot][col+1], bin_nominals_i[col])
+                print "** %2.4f TO %2.4f; %2.4f;" % (binlabels[plot][col],binlabels[plot][col+1], bin_nominals_i[col])
             print "*dataend:\n"
 
 
@@ -1404,7 +1414,7 @@ def main():
             print "*location: Figure 3"
             print "*dscomment: Statistical covariance matrix for the %i bins of the normalized differential cross section as a function of %s." % (nbins, plotLatex[plot])
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s" % (plotKeyword[plot])
+            #print "*obskey: %s" % (plotKeyword[plot])
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
@@ -1417,7 +1427,7 @@ def main():
             print ""
             for row in range(nbins):
                 print "** $%i$;" % (row+1),
-                for col in range(nbins): print " %2.7g;" % (covDataStat[row,col]),
+                for col in range(nbins): print " %2.4g;" % (covDataStat[row,col]),
                 print ""
             print "*dataend:\n"
 
@@ -1426,7 +1436,7 @@ def main():
             print "*location: Figure 3"
             print "*dscomment: Systematic covariance matrix for the %i bins of the normalized differential cross section as a function of %s." % (nbins, plotLatex[plot])
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s" % (plotKeyword[plot])
+            #print "*obskey: %s" % (plotKeyword[plot])
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
@@ -1439,7 +1449,7 @@ def main():
             print ""
             for row in range(nbins):
                 print "** $%i$;" % (row+1),
-                for col in range(nbins): print " %2.7g;" % (covar_total[row,col]),
+                for col in range(nbins): print " %2.4g;" % (covar_total[row,col]),
                 print ""
             print "*dataend:\n"
 
@@ -1450,15 +1460,17 @@ def main():
             print "*location: Figure 4"
             print "*dscomment: Values of %s in the %i bins of %s, and inclusively (bottom row). The value 9999 is used as a placeholder for infinity." % (plotLatexAsym[plot], nbins2D, secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
+            #print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader: %s" % (plotLatexAsym[plot])
-            print "*xheader: Bin of %s" % (secvarLatex)
+            print "*xheader: Bin of %s" % (secvarLatexUnit)
             print "*data: x : y"
             for col in range(nbins2D):
-                print "** %2.2f TO %2.2f; %2.7f +- %2.7f (DSYS=%2.7f);" % (secvarbinlabels[col],secvarbinlabels[col+1], afbs[plot][col], afberrdatastat[plot][col], afberrsyst[plot][col])
-            print "** %2.2f TO %2.2f; %2.7f +- %2.7f (DSYS=%2.7f);" % (0.,9999., afbs[plot][nbins2D], afberrdatastat[plot][nbins2D], afberrsyst[plot][nbins2D])
+                if opts.unfoldingtype == 'ttrapidity2': print "** %2.2f TO %2.2f; %2.4f +- %2.4f (DSYS=%2.4f);" % (secvarbinlabels[col],secvarbinlabels[col+1], afbs[plot][col], afberrdatastat[plot][col], afberrsyst[plot][col])
+                else: print "** %2.0f TO %2.0f; %2.4f +- %2.4f (DSYS=%2.4f);" % (secvarbinlabels[col],secvarbinlabels[col+1], afbs[plot][col], afberrdatastat[plot][col], afberrsyst[plot][col])
+            if opts.unfoldingtype == 'ttrapidity2': print "** %2.2f TO %2.2f; %2.4f +- %2.4f (DSYS=%2.4f);" % (0.,9999., afbs[plot][nbins2D], afberrdatastat[plot][nbins2D], afberrsyst[plot][nbins2D])
+            else: print "** %2.0f TO %2.0f; %2.4f +- %2.4f (DSYS=%2.4f);" % (0.,9999., afbs[plot][nbins2D], afberrdatastat[plot][nbins2D], afberrsyst[plot][nbins2D])
             print "*dataend:\n"
 
 
@@ -1467,7 +1479,7 @@ def main():
             print "*location: Figure 4"
             print "*dscomment: Statistical correlation matrix for %s in the %i bins of %s." % (plotLatexAsym[plot], nbins2D, secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
+            #print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
@@ -1480,7 +1492,7 @@ def main():
             print ""
             for row in range(nbins2D):
                 print "** $%i$;" % (row+1),
-                for col in range(nbins2D): print " %2.7g;" % (afbcordatastat[row,col]),
+                for col in range(nbins2D): print " %2.4g;" % (afbcordatastat[row,col]),
                 print ""
             print "*dataend:\n"
 
@@ -1489,7 +1501,7 @@ def main():
             print "*location: Figure 4"
             print "*dscomment: Systematic correlation matrix for %s in the %i bins of %s." % (plotLatexAsym[plot], nbins2D, secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
+            #print "*obskey: %s %s" % (plotKeywordAsym[plot], secvarKeyword)
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
@@ -1502,7 +1514,7 @@ def main():
             print ""
             for row in range(nbins2D):
                 print "** $%i$;" % (row+1),
-                for col in range(nbins2D): print " %2.7g;" % (afbcorsyst[row,col]),
+                for col in range(nbins2D): print " %2.4g;" % (afbcorsyst[row,col]),
                 print ""
             print "*dataend:\n"
 
@@ -1514,14 +1526,15 @@ def main():
             print "*location: Figure 4"
             print "*dscomment: Fraction of events in each of the $%i\\times%i$ bins of the normalized differential cross section as a function of %s and %s. The value 9999 is used as a placeholder for infinity." % (nbins/nbins2D, nbins2D, plotLatex[plot], secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s %s" % (plotKeyword[plot], secvarKeyword)
+            #print "*obskey: %s %s" % (plotKeyword[plot], secvarKeyword)
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader: Fraction of events"
             print "*xheader: Bin of %s : Bin of %s" % (plotLatexUnit[plot], secvarLatexUnit)
             print "*data: x : x : y"
             for col in range(nbins):
-                print "** %2.7f TO %2.7f; %2.2f TO %2.2f; %2.7f;" % (binlabels[plot][col%(nbins/nbins2D)],binlabels[plot][1+(col)%(nbins/nbins2D)], secvarbinlabels[col/(nbins/nbins2D)], secvarbinlabels[1+col/(nbins/nbins2D)], bin_nominals_i[col])
+                if opts.unfoldingtype == 'ttrapidity2': print "** %2.4f TO %2.4f; %2.2f TO %2.2f; %2.4f;" % (binlabels[plot][col%(nbins/nbins2D)],binlabels[plot][1+(col)%(nbins/nbins2D)], secvarbinlabels[col/(nbins/nbins2D)], secvarbinlabels[1+col/(nbins/nbins2D)], bin_nominals_i[col])
+                else: print "** %2.4f TO %2.4f; %2.0f TO %2.0f; %2.4f;" % (binlabels[plot][col%(nbins/nbins2D)],binlabels[plot][1+(col)%(nbins/nbins2D)], secvarbinlabels[col/(nbins/nbins2D)], secvarbinlabels[1+col/(nbins/nbins2D)], bin_nominals_i[col])
             print "*dataend:\n"
 
 
@@ -1530,7 +1543,7 @@ def main():
             print "*location: Figure 4"
             print "*dscomment: Statistical covariance matrix for the $%i\\times%i$ bins of the normalized differential cross section as a function of %s and %s." % (nbins/nbins2D, nbins2D, plotLatex[plot], secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s %s" % (plotKeyword[plot], secvarKeyword)
+            #print "*obskey: %s %s" % (plotKeyword[plot], secvarKeyword)
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
@@ -1543,7 +1556,7 @@ def main():
             print ""
             for row in range(nbins):
                 print "** $%i\\times%i$;" % (1+(row)%(nbins/nbins2D),1+(row)/(nbins/nbins2D)),
-                for col in range(nbins): print " %2.7g;" % (covDataStat[row,col]),
+                for col in range(nbins): print " %2.4g;" % (covDataStat[row,col]),
                 print ""
             print "*dataend:\n"
 
@@ -1552,7 +1565,7 @@ def main():
             print "*location: Figure 4"
             print "*dscomment: Systematic covariance matrix for the $%i\\times%i$ bins of the normalized differential cross section as a function of %s and %s." % (nbins/nbins2D, nbins2D, plotLatex[plot], secvarLatex)
             print "*reackey: P P --> TOP TOPBAR X"
-            print "*obskey: %s %s" % (plotKeyword[plot], secvarKeyword)
+            #print "*obskey: %s %s" % (plotKeyword[plot], secvarKeyword)
             print "*qual: RE : P P --> TOP TOPBAR X"
             print "*qual: SQRT(S) IN GEV : 8000.0"
             print "*yheader:",
@@ -1565,12 +1578,30 @@ def main():
             print ""
             for row in range(nbins):
                 print "** $%i\\times%i$;" % (1+(row)%(nbins/nbins2D),1+(row)/(nbins/nbins2D)),
-                for col in range(nbins): print " %2.7g;" % (covar_total[row,col]),
+                for col in range(nbins): print " %2.4g;" % (covar_total[row,col]),
                 print ""
             print "*dataend:\n"            
 
 
     #end loop over asymmetries
+
+    if nbins2D==0:
+        #table of asymmetries
+        print "*dataset:"
+        print "*location: Table 5"
+        print "*dscomment: Inclusive values of the asymmetry variables."
+        print "*reackey: P P --> TOP TOPBAR X"
+        #print "*obskey: "
+        print "*qual: RE : P P --> TOP TOPBAR X"
+        print "*qual: SQRT(S) IN GEV : 8000.0"
+        print "*yheader: Data (Unfolded)"
+        print "*xheader: Asymmetry variable"
+        print "*data: x : y"
+        for plot in asymorderlist:
+            print "** %s; %2.4f +- %2.4f (DSYS=%2.4f);" % (plotLatexAsym[plot], afbs[plot], afberrdatastat[plot], afberrsyst[plot])
+        print "*dataend:\n"
+
+
 
     #print table of systematics
     #print "\\begin{table}[!h]"
@@ -1587,42 +1618,21 @@ def main():
             if systematic == 'name': continue
             print systematic,
             #print " & ",
-            #for plot in sorted(systematics.keys()):
-            print " & $%2.3f$ " % afberrs['rapiditydiffMarco',systematic],
-            print " & $%2.3f$ " % afberrs['lepChargeAsym',systematic],
-            print " & $%2.3f$ " % afberrs['lepAzimAsym2',systematic],
-            print " & $%2.3f$ " % afberrs['lepCosOpeningAngle',systematic],
-            print " & $%2.3f$ " % afberrs['topSpinCorr',systematic],
-            print " & $%2.3f$ " % afberrs['lepCosTheta',systematic],
-            print " & $%2.3f$ " % afberrs['lepPlusCosTheta',systematic],
+            for plot in asymorderlist:
+                print " & $%2.3f$ " % afberrs[plot,systematic],
             print " \\\\ "
         print "MCstat",
-        print " & $%2.3f$ " % afberr_MCstat['rapiditydiffMarco'],
-        print " & $%2.3f$ " % afberr_MCstat['lepChargeAsym'],
-        print " & $%2.3f$ " % afberr_MCstat['lepAzimAsym2'],
-        print " & $%2.3f$ " % afberr_MCstat['lepCosOpeningAngle'],
-        print " & $%2.3f$ " % afberr_MCstat['topSpinCorr'],
-        print " & $%2.3f$ " % afberr_MCstat['lepCosTheta'],
-        print " & $%2.3f$ " % afberr_MCstat['lepPlusCosTheta'],
+        for plot in asymorderlist:
+            print " & $%2.3f$ " % afberr_MCstat[plot],
         print " \\\\ "
         print "totalsyst",
-        print " & $%2.3f$ " % afberrsyst['rapiditydiffMarco'],
-        print " & $%2.3f$ " % afberrsyst['lepChargeAsym'],
-        print " & $%2.3f$ " % afberrsyst['lepAzimAsym2'],
-        print " & $%2.3f$ " % afberrsyst['lepCosOpeningAngle'],
-        print " & $%2.3f$ " % afberrsyst['topSpinCorr'],
-        print " & $%2.3f$ " % afberrsyst['lepCosTheta'],
-        print " & $%2.3f$ " % afberrsyst['lepPlusCosTheta'],
+        for plot in asymorderlist:
+            print " & $%2.3f$ " % afberrsyst[plot],
         print " \\\\ "
         print " "
         print "(total uncertainty)",
-        print " & $%2.4f$ " % afberrtotal['rapiditydiffMarco'],
-        print " & $%2.4f$ " % afberrtotal['lepChargeAsym'],
-        print " & $%2.4f$ " % afberrtotal['lepAzimAsym2'],
-        print " & $%2.4f$ " % afberrtotal['lepCosOpeningAngle'],
-        print " & $%2.4f$ " % afberrtotal['topSpinCorr'],
-        print " & $%2.4f$ " % afberrtotal['lepCosTheta'],
-        print " & $%2.4f$ " % afberrtotal['lepPlusCosTheta'],
+        for plot in asymorderlist:
+            print " & $%2.4f$ " % afberrtotal[plot],
         print " \\\\ "
         print " "
     else:
@@ -1638,87 +1648,41 @@ def main():
                 print systematic,
                 #print " & ",
                 #for plot in sorted(systematics.keys()):
-                print " & $%2.3f$ " % afberrs2D['rapiditydiffMarco',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepChargeAsym',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepAzimAsym2',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepCosOpeningAngle',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['topSpinCorr',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepCosTheta',systematic][binindex],
-                print " & $%2.3f$ " % afberrs2D['lepPlusCosTheta',systematic][binindex],
+                for plot in asymorderlist:
+                    print " & $%2.3f$ " % afberrs2D[plot,systematic][binindex],
                 print " \\\\ "
             print "MCstat",
-            print " & $%2.3f$ " % afberr_MCstat2D['rapiditydiffMarco'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepChargeAsym'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepAzimAsym2'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepCosOpeningAngle'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['topSpinCorr'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepCosTheta'][binindex],
-            print " & $%2.3f$ " % afberr_MCstat2D['lepPlusCosTheta'][binindex],
+            for plot in asymorderlist:
+                print " & $%2.3f$ " % afberr_MCstat2D[plot][binindex],
             print " \\\\ "
             print "totalsyst",
-            print " & $%2.3f$ " % afberrsyst['rapiditydiffMarco'][binindex],
-            print " & $%2.3f$ " % afberrsyst['lepChargeAsym'][binindex],
-            print " & $%2.3f$ " % afberrsyst['lepAzimAsym2'][binindex],
-            print " & $%2.3f$ " % afberrsyst['lepCosOpeningAngle'][binindex],
-            print " & $%2.3f$ " % afberrsyst['topSpinCorr'][binindex],
-            print " & $%2.3f$ " % afberrsyst['lepCosTheta'][binindex],
-            print " & $%2.3f$ " % afberrsyst['lepPlusCosTheta'][binindex],
+            for plot in asymorderlist:
+                print " & $%2.3f$ " % afberrsyst[plot][binindex],
             print " \\\\ "
             print " "
             print "(total uncertainty)",
-            print " & $%2.4f$ " % afberrtotal['rapiditydiffMarco'][binindex],
-            print " & $%2.4f$ " % afberrtotal['lepChargeAsym'][binindex],
-            print " & $%2.4f$ " % afberrtotal['lepAzimAsym2'][binindex],
-            print " & $%2.4f$ " % afberrtotal['lepCosOpeningAngle'][binindex],
-            print " & $%2.4f$ " % afberrtotal['topSpinCorr'][binindex],
-            print " & $%2.4f$ " % afberrtotal['lepCosTheta'][binindex],
-            print " & $%2.4f$ " % afberrtotal['lepPlusCosTheta'][binindex],
+            for plot in asymorderlist:
+                print " & $%2.4f$ " % afberrtotal[plot][binindex],
             print " \\\\ "
             print " "
 
     if nbins2D==0:
-        print "$A_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'], afberrdatastat['rapiditydiffMarco'], afberrsyst['rapiditydiffMarco'])
-        print "$A^{lep}_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'], afberrdatastat['lepChargeAsym'], afberrsyst['lepChargeAsym'])
-        print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'], afberrdatastat['lepAzimAsym2'], afberrsyst['lepAzimAsym2'])
-        print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'], afberrdatastat['lepCosOpeningAngle'], afberrsyst['lepCosOpeningAngle'])
-        print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'], afberrdatastat['topSpinCorr'], afberrsyst['topSpinCorr'])
-        print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'], afberrdatastat['lepCosTheta'], afberrsyst['lepCosTheta'])
-        print "$A_{P}^{\\rm{CPV}}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'], afberrdatastat['lepPlusCosTheta'], afberrsyst['lepPlusCosTheta'])
+        for plot in asymorderlist:
+            print "%s & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (plotLatexAsym[plot], afbs[plot], afberrdatastat[plot], afberrsyst[plot])
     else:
         for binindex in range(nbins2D+1):
             if binindex<nbins2D: print binlist2D[binindex]
             else: print "inclusive"
-            print "$A_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'][binindex], afberrdatastat['rapiditydiffMarco'][binindex], afberrsyst['rapiditydiffMarco'][binindex])
-            print "$A^{lep}_{C}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'][binindex], afberrdatastat['lepChargeAsym'][binindex], afberrsyst['lepChargeAsym'][binindex])
-            print "$A_{\\Delta\\phi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'][binindex], afberrdatastat['lepAzimAsym2'][binindex], afberrsyst['lepAzimAsym2'][binindex])
-            print "$A_{\\cos\\varphi}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'][binindex], afberrdatastat['lepCosOpeningAngle'][binindex], afberrsyst['lepCosOpeningAngle'][binindex])
-            print "$A_{c1c2}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex])
-            print "$A_{P}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex])
-            print "$A_{P}^{\\rm{CPV}}$ & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex])
+            for plot in asymorderlist:
+                print "%s & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (plotLatexAsym[plot], afbs[plot][binindex], afberrdatastat[plot][binindex], afberrsyst[plot][binindex])
 
         print " "
         print " All bins: "
-        print "$A_{C}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['rapiditydiffMarco'][binindex], afberrdatastat['rapiditydiffMarco'][binindex], afberrsyst['rapiditydiffMarco'][binindex]),
-        print "\\\\"
-        print "$A^{lep}_{C}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepChargeAsym'][binindex], afberrdatastat['lepChargeAsym'][binindex], afberrsyst['lepChargeAsym'][binindex]),
-        print "\\\\"
-        print "$A_{\\Delta\\phi}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepAzimAsym2'][binindex], afberrdatastat['lepAzimAsym2'][binindex], afberrsyst['lepAzimAsym2'][binindex]),
-        print "\\\\"
-        print "$A_{\\cos\\varphi}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosOpeningAngle'][binindex], afberrdatastat['lepCosOpeningAngle'][binindex], afberrsyst['lepCosOpeningAngle'][binindex]),
-        print "\\\\"
-        print "$A_{c1c2}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['topSpinCorr'][binindex], afberrdatastat['topSpinCorr'][binindex], afberrsyst['topSpinCorr'][binindex]),
-        print "\\\\"
-        print "$A_{P}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepCosTheta'][binindex], afberrdatastat['lepCosTheta'][binindex], afberrsyst['lepCosTheta'][binindex]),
-        print "\\\\"
-        print "$A_{P}^{\\rm{CPV}}$",
-        for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs['lepPlusCosTheta'][binindex], afberrdatastat['lepPlusCosTheta'][binindex], afberrsyst['lepPlusCosTheta'][binindex]),
-        print "\\\\"
+        for plot in asymorderlist:
+            print plotLatexAsym[plot],
+            for binindex in range(nbins2D): print " & $%2.3f \\pm %2.3f \\pm %2.3f$ " % (afbs[plot][binindex], afberrdatastat[plot][binindex], afberrsyst[plot][binindex]),
+            print "\\\\"
+ 
 
 
 if __name__ == '__main__':
