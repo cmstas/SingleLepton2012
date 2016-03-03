@@ -1328,16 +1328,16 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             	//if( drawTheoryUncorrelated ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             	
             	if(isChargeAsym){
-            		leg2->AddEntry(theoryProfileCorr,  "NLO+EW", "L");
+            		leg2->AddEntry(theoryProfileCorr,  "NLO", "L");
             	}
             	else{
-	            	if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") leg2->AddEntry(theoryProfileCorr_scale,  "NLO+EW, SM", "LF");
-	            	else leg2->AddEntry(theoryProfileCorr,  "NLO+EW, SM", "L");
+	            	if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") leg2->AddEntry(theoryProfileCorr_scale,  "NLO, SM", "LF");
+	            	else leg2->AddEntry(theoryProfileCorr,  "NLO, SM", "L");
 	            }
 
             	if( drawTheoryUncorrelated ) {
-            		if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(theoryProfileUnCorr_scale,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "LF");
-            		else leg2->AddEntry(theoryProfileUnCorr,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "L");
+            		if(drawTheoryScaleBand && observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(theoryProfileUnCorr_scale,  "#splitline{#lower[0.1]{NLO,}}{#lower[-0.15]{no spin corr.}}", "LF");
+            		else leg2->AddEntry(theoryProfileUnCorr,  "#splitline{#lower[0.1]{NLO,}}{#lower[-0.15]{no spin corr.}}", "L");
             	}
 
             leg2->Draw();

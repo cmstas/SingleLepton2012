@@ -1365,9 +1365,9 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         TLegend *leg2;
         if(drawTheory) {
-	        leg2 = new TLegend(0.365, 0.76, 0.675, 0.915, NULL, "brNDC");
-	        if ( isChargeAsym ) leg2 = new TLegend(0.365, 0.844, 0.64, 0.914, NULL, "brNDC");
-	        else if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.365, 0.842, 0.675, 0.912, NULL, "brNDC");
+	        leg2 = new TLegend(0.375, 0.76, 0.675, 0.915, NULL, "brNDC");
+	        if ( isChargeAsym ) leg2 = new TLegend(0.375, 0.844, 0.64, 0.914, NULL, "brNDC");
+	        else if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.375, 0.842, 0.675, 0.912, NULL, "brNDC");
 	        //leg2->SetEntrySeparation(0.5);
 	        leg2->SetFillColor(0);
 	        leg2->SetLineColor(0);
@@ -1379,13 +1379,13 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 	        //leg2->AddEntry(hAfbVsMtt_theory_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(SM, #mu = ^{}m_{t})}", "LF");
 	        //if(drawTheoryUncorrelated) leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "LF");
 	        if(!isChargeAsym){
-		        if(acceptanceName != "lepCosThetaCPV") leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO+EW, SM", "LF");
-		        else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO+EW, SM", "L");
+		        if(acceptanceName != "lepCosThetaCPV") leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO, SM", "LF");
+		        else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO, SM", "L");
 		    }
-		    else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO+EW", "L"); 
+		    else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO", "L"); 
 	        if(drawTheoryUncorrelated) {
-	        	if(observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "LF");
-	        	else leg2->AddEntry(hAfbVsMtt_uncorr_default,  "#splitline{#lower[0.1]{NLO+EW,}}{#lower[-0.15]{no spin corr.}}", "L");
+	        	if(observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{#lower[0.1]{NLO,}}{#lower[-0.15]{no spin corr.}}", "LF");
+	        	else leg2->AddEntry(hAfbVsMtt_uncorr_default,  "#splitline{#lower[0.1]{NLO,}}{#lower[-0.15]{no spin corr.}}", "L");
 	        }
 	        leg2->Draw();
 	    }
