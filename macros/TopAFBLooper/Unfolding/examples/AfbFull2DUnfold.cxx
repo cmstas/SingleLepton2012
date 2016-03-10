@@ -1251,7 +1251,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
         hAfbVsMtt->SetMinimum( minmin );
         hAfbVsMtt->SetMaximum( maxmax );
-        hAfbVsMtt->Draw("E0X0");
+        if(isChargeAsym) hAfbVsMtt->Draw("E0X0");
+        else hAfbVsMtt->Draw("E0X0");
 
 /*
         THStack *ht = new THStack("ht_systband", "Systematic band for theory");
@@ -1330,7 +1331,8 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         else hAfbVsMtt->GetXaxis()->SetNdivisions(505);
         hAfbVsMtt_statonly->SetLineWidth( 3.0 );
         hAfbVsMtt_statonly->SetMarkerSize(1.0);
-        hAfbVsMtt_statonly->Draw("E1X0 same");
+        if(isChargeAsym) hAfbVsMtt_statonly->Draw("E1X0 same");
+        else hAfbVsMtt_statonly->Draw("E1X0 same");
 /*
         hs->GetYaxis()->SetNdivisions(507);
         hs->GetYaxis()->SetTitle(asymlabel+"   ");
@@ -1342,11 +1344,12 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         if (Var2D == "mtt") hs->GetXaxis()->SetNdivisions(405);
 */
 
-        hAfbVsMtt->Draw("E0X0 same");
+        if(isChargeAsym) hAfbVsMtt->Draw("E0X0 same");
+        else hAfbVsMtt->Draw("E0X0 same");
 
 
         TLegend *leg1;
-        if(isChargeAsym) leg1 = new TLegend(0.665, 0.774, 0.865, 0.914, NULL, "brNDC");
+        if(isChargeAsym) leg1 = new TLegend(0.77, 0.844, 0.915, 0.915, NULL, "brNDC");
         else if(drawTheory) leg1 = new TLegend(0.70, 0.775, 0.87, 0.915, NULL, "brNDC");
         else leg1 = new TLegend(0.69, 0.775, 0.86, 0.915, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
@@ -1360,14 +1363,15 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
         leg1->AddEntry(hAfbVsMtt_statonly, "Data", "EP");
         //leg1->AddEntry(hAfbVsMtt_plussyst,    "Syst. uncertainty", "F");
         //leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO parton level");
-        leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO");
+        if( !isChargeAsym ) leg1->AddEntry(hTop_AfbVsMtt,    "MC@NLO");
         leg1->Draw();
 
         TLegend *leg2;
-        if(drawTheory) {
+        if(drawTheory || isChargeAsym) {
 	        leg2 = new TLegend(0.375, 0.76, 0.675, 0.915, NULL, "brNDC");
-	        if ( isChargeAsym ) leg2 = new TLegend(0.375, 0.844, 0.64, 0.914, NULL, "brNDC");
-	        else if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.375, 0.842, 0.675, 0.912, NULL, "brNDC");
+	        if ( isChargeAsym && !drawTheory ) leg2 = new TLegend(0.375, 0.844, 0.64, 0.914, NULL, "brNDC");
+	        if ( isChargeAsym && drawTheory ) leg2 = new TLegend(0.375, 0.774, 0.64, 0.914, NULL, "brNDC");
+	        if ( !isChargeAsym && !drawTheoryUncorrelated ) leg2 = new TLegend(0.375, 0.842, 0.675, 0.912, NULL, "brNDC");
 	        //leg2->SetEntrySeparation(0.5);
 	        leg2->SetFillColor(0);
 	        leg2->SetLineColor(0);
@@ -1382,7 +1386,10 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		        if(acceptanceName != "lepCosThetaCPV") leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO, SM", "LF");
 		        else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO, SM", "L");
 		    }
-		    else leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO", "L"); 
+		    else {		    	
+		    	leg2->AddEntry(hTop_AfbVsMtt,    "MC@NLO");
+		    	if(drawTheory) leg2->AddEntry(hAfbVsMtt_theory_syst,  "NLO (QCD+EW)", "L"); 
+		    }
 	        if(drawTheoryUncorrelated) {
 	        	if(observablename == "lep_azimuthal_asymmetry2") leg2->AddEntry(hAfbVsMtt_uncorr_syst,  "#splitline{#lower[0.1]{NLO,}}{#lower[-0.15]{no spin corr.}}", "LF");
 	        	else leg2->AddEntry(hAfbVsMtt_uncorr_default,  "#splitline{#lower[0.1]{NLO,}}{#lower[-0.15]{no spin corr.}}", "L");

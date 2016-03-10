@@ -1241,7 +1241,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hData_unfolded_totalunc->SetMarkerSize(1);
         hData_unfolded_totalunc->SetFillStyle(0);
         hData_unfolded_totalunc->SetLineWidth(lineWidthDiffs);
-        hData_unfolded_totalunc->Draw("E0X0");
+        if( isChargeAsym ) hData_unfolded_totalunc->Draw("E0X0");
+        else hData_unfolded_totalunc->Draw("E0X0");
         hData_unfolded_totalunc->GetXaxis()->SetTitle(xaxislabel+xaxisunit);
         hData_unfolded_totalunc->GetYaxis()->SetTitle("1/#sigma d#sigma/d(" + xaxislabel + ")" + xaxisinvunit);
         if (observablename == "lep_azimuthal_asymmetry2") hData_unfolded_totalunc->GetYaxis()->SetTitle("1/#sigma d#sigma/d" + xaxislabel + xaxisinvunit);
@@ -1257,7 +1258,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         //hData_unfolded->SetMarkerStyle(23);
         hData_unfolded->SetMarkerSize(1);
         hData_unfolded->SetFillStyle(0);
-        //hData_unfolded->Draw("E1X0 same");
+        //if( isChargeAsym ) hData_unfolded->Draw("E1X0 same");
+        //else hData_unfolded->Draw("E1X0 same");
         hData_unfolded->SetLineWidth(lineWidthDiffs);
         denominatorM_nopTreweighting->SetLineWidth(lineWidthDiffs);
         denominatorM_nopTreweighting->SetLineColor(TColor::GetColorDark(kRed));
@@ -1270,7 +1272,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         hTrue->SetFillStyle(0);
         //if (!draw_truth_before_pT_reweighting) hTrue->Draw("hist same");
         //else denominatorM_nopTreweighting->Draw("hist same");
-        hData_unfolded->Draw("E1X0 same");
+        if( isChargeAsym ) hData_unfolded->Draw("E1X0 same");
+        else hData_unfolded->Draw("E1X0 same");
         if (drawTheory)
 		  {
             if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") theoryProfileCorr_scale->Draw("E2 same");
@@ -1285,11 +1288,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         if (!draw_truth_before_pT_reweighting) hTrue->Draw("hist same");
         else denominatorM_nopTreweighting->Draw("hist same");
 
-        hData_unfolded_totalunc->Draw("E0X0 same");
-        hData_unfolded->Draw("E1X0 same");
+        if( isChargeAsym ) hData_unfolded_totalunc->Draw("E0X0 same");
+        else hData_unfolded_totalunc->Draw("E0X0 same");
+        if( isChargeAsym ) hData_unfolded->Draw("E1X0 same");
+        else hData_unfolded->Draw("E1X0 same");
 
 		float left_bound = 0.725;
-		if(isChargeAsym) left_bound = 0.71;
+		if(isChargeAsym) left_bound += 0.07;
 
 		float leg_textSize = 0.069;
 		leg_textSize *= 0.8;
@@ -1297,6 +1302,7 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		TLegend *leg1;
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
         leg1 = new TLegend(left_bound, 0.78, 0.9, 0.92, NULL, "brNDC");
+        if(isChargeAsym) leg1 = new TLegend(left_bound, 0.845, 0.92, 0.92, NULL, "brNDC");
         //leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
@@ -1306,16 +1312,17 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         leg1->SetTextFont(62);
         leg1->AddEntry(hData_unfolded, "Data","EP");
         //else leg1->AddEntry(hData_unfolded_plussyst,    "Systematic uncertainty", "F");
-        leg1->AddEntry(hTrue,    "MC@NLO", "L");
+        if(!isChargeAsym) leg1->AddEntry(hTrue,    "MC@NLO", "L");
 
         leg1->Draw();
 
-        if (drawTheory)
+        if (drawTheory || isChargeAsym)
 		  {
             TLegend *leg2;
             leg2 = new TLegend(0.38, 0.76, 0.70, 0.92, NULL, "brNDC");
-            if ( isChargeAsym ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
-            else if ( !drawTheoryUncorrelated ) leg2 = new TLegend(0.38, 0.845, 0.70, 0.92, NULL, "brNDC");
+            if ( isChargeAsym && !drawTheory ) leg2 = new TLegend(0.41, 0.845, 0.70, 0.92, NULL, "brNDC");
+            if ( isChargeAsym && drawTheory ) leg2 = new TLegend(0.41, 0.78, 0.70, 0.91, NULL, "brNDC");
+            if ( !isChargeAsym && !drawTheoryUncorrelated ) leg2 = new TLegend(0.38, 0.845, 0.70, 0.92, NULL, "brNDC");
             //leg2->SetEntrySeparation(0.5);
             leg2->SetFillColor(0);
             leg2->SetLineColor(0);
@@ -1328,7 +1335,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
             	//if( drawTheoryUncorrelated ) leg2->AddEntry(theoryProfileUnCorr,  "#splitline{W.#kern[-0.2]{ }Bernreuther#kern[-0.2]{ }&#kern[-0.1]{ }Z.#kern[-0.0]{-}G.#kern[-0.2]{ }Si}{(uncorrelated, #mu = ^{}m_{t})}", "L");
             	
             	if(isChargeAsym){
-            		leg2->AddEntry(theoryProfileCorr,  "NLO", "L");
+            		leg2->AddEntry(hTrue,    "MC@NLO", "L");
+            		if(drawTheory) leg2->AddEntry(theoryProfileCorr,  "NLO (QCD+EW)", "L");
             	}
             	else{
 	            	if(drawTheoryScaleBand && acceptanceName != "lepCosThetaCPV") leg2->AddEntry(theoryProfileCorr_scale,  "NLO, SM", "LF");
@@ -1442,7 +1450,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 */
 
 
-            h_diff_totalunc->Draw("E0X0");
+            if( isChargeAsym ) h_diff_totalunc->Draw("E0");
+            else h_diff_totalunc->Draw("E0X0");
 
             h_diff_totalunc->SetMinimum(0.921);
             h_diff_totalunc->SetMaximum(1.079); //because THStack multiplies the max when gStyle->SetHistTopMargin(0.) is not set
@@ -1518,7 +1527,8 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         	hData_unfolded_totalunc->GetXaxis()->SetTitleSize(0.);
 
 
-            h_diff->Draw("E1X0 same");
+            if( isChargeAsym ) h_diff->Draw("E1 same");
+            else h_diff->Draw("E1X0 same");
             line->Draw();
             c_test->Modified();
             c_test->Update();
