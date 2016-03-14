@@ -1297,12 +1297,13 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
 		if(isChargeAsym) left_bound += 0.07;
 
 		float leg_textSize = 0.069;
-		leg_textSize *= 0.8;
+		if(isChargeAsym) leg_textSize *= 0.85;
+		else leg_textSize *= 0.8;
 
 		TLegend *leg1;
         //TLegend* leg1=new TLegend(0.55,0.62,0.9,0.838,NULL,"brNDC");
         leg1 = new TLegend(left_bound, 0.78, 0.9, 0.92, NULL, "brNDC");
-        if(isChargeAsym) leg1 = new TLegend(left_bound, 0.845, 0.92, 0.92, NULL, "brNDC");
+        if(isChargeAsym) leg1 = new TLegend(left_bound, 0.845, 0.95, 0.92, NULL, "brNDC");
         //leg1->SetEntrySeparation(0.1);
         leg1->SetFillColor(0);
         leg1->SetLineColor(0);
@@ -1527,8 +1528,9 @@ void AfbUnfoldExample(double scalettdil = 1., double scalefake = 2.18495, double
         	hData_unfolded_totalunc->GetXaxis()->SetTitleSize(0.);
 
 
-            if( isChargeAsym ) h_diff->Draw("E1 same");
+            if( isChargeAsym ) h_diff->Draw("E1X0 same");
             else h_diff->Draw("E1X0 same");
+            line->SetLineStyle(3);
             line->Draw();
             c_test->Modified();
             c_test->Update();

@@ -1103,6 +1103,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 		gStyle->SetPadLeftMargin(0.185);
 		gStyle->SetPadBottomMargin(0.15);
 		gStyle->SetPadTopMargin(0.070);
+		if(isChargeAsym) gStyle->SetPadTopMargin(0.070);
 		gStyle->SetErrorX(0.5);
 		//tdrStyle->SetErrorX(0.5);
 		gStyle->SetEndErrorSize(6);
@@ -1349,7 +1350,7 @@ void AfbUnfoldExample(TString Var2D = "mtt", double scalettdil = 1., double scal
 
 
         TLegend *leg1;
-        if(isChargeAsym) leg1 = new TLegend(0.77, 0.844, 0.915, 0.915, NULL, "brNDC");
+        if(isChargeAsym) leg1 = new TLegend(0.77, 0.844, 0.935, 0.915, NULL, "brNDC");
         else if(drawTheory) leg1 = new TLegend(0.70, 0.775, 0.87, 0.915, NULL, "brNDC");
         else leg1 = new TLegend(0.69, 0.775, 0.86, 0.915, NULL, "brNDC");
         leg1->SetEntrySeparation(100);
