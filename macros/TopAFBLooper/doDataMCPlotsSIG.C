@@ -86,6 +86,7 @@ void zeroHist( TH1F *&h )
 }
 
 TGraphAsymmErrors *GetPoissonizedGraph(TH1F *histo);
+TGraphAsymmErrors *GetPoissonizedRatioGraph(TH1F *histo, TH1F *histoMC);
 
 void myText(Double_t x, Double_t y, Color_t color, char *text)
 {
@@ -433,6 +434,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     gStyle->SetPadRightMargin(0.041);
     gStyle->SetPadLeftMargin(0.18);
     gStyle->SetErrorX(0);
+    gStyle->SetEndErrorSize(0);
 
     //-------------------------------
     // SINGLE LEPTON - MT SCALING
@@ -994,7 +996,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //for (int isr = 0; isr < NSAMPLE; ++isr)
     //{
 
-    const int N1DHISTS = 60;
+    const int N1DHISTS = 66;
     TH1F *h_dt1d_comb[N1DHISTS];
     TH1F *h_mc1d_comb[N1DHISTS][MCID];
     vector<TH1F *> sorted_mc1d_comb[N1DHISTS];
@@ -1037,6 +1039,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "Etall",
         "Phill",
         "Ptll",
+        "withsoln_Mll",
+        "withsoln_Etall",
+        "withsoln_Phill",
+        "withsoln_Ptll",
+        "Ptll_minus_Pttt",
+        "Ptll_over_PtttplusPtll",
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
@@ -1093,17 +1101,26 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
     //logScale.push_back(6);
     //logScale.push_back(7);
     logScale.push_back(8);
+
+    logScale.push_back(9);
+    logScale.push_back(10);
+
+    logScale.push_back(25);
+    logScale.push_back(28);
+    logScale.push_back(29);
+    logScale.push_back(32);
+
     //logScale.push_back(16);
     //logScale.push_back(56);
     //logScale.push_back(33+11);
     //logScale.push_back(34+11);
     //logScale.push_back(35+11);
     //logScale.push_back(36+11);
-    logScale.push_back(41+8);
-    logScale.push_back(42+8);
+    logScale.push_back(41+14);
+    logScale.push_back(42+14);
 
     // List of rebin factors:
-    int rebinFactor[N1DHISTS] = {4, 4, 4, 4, 4, 4, 4, 4, 1, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int rebinFactor[N1DHISTS] = {4, 4, 2, 4, 4, 4, 4, 4, 1, 4, 4, 4, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 4, 4, 4, 4};
 
     const char *xtitle1d[N1DHISTS] =
     {
@@ -1137,6 +1154,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "Etall",
         "Phill",
         "Ptll",
+        "withsoln_Mll",
+        "withsoln_Etall",
+        "withsoln_Phill",
+        "withsoln_Ptll",
+        "Ptll_minus_Pttt",
+        "Ptll_over_PtttplusPtll",
         "lepPlus_Pt",
         "lepMinus_Pt",
         "lepPt",
@@ -1210,6 +1233,12 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         "GeV",
         "",
         "GeV",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
         "",
         "",
         "",
@@ -1818,7 +1847,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             h_basic->SetMarkerColor(kWhite);
             h_basic->SetMarkerSize(0.000001);
             h_basic->SetMarkerStyle(1);
-            if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 ) {h_basic->GetXaxis()->SetNdivisions(508);h_basic->GetXaxis()->SetRangeUser(-2.8,2.8);}
+            if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 || strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) {h_basic->GetXaxis()->SetNdivisions(508);h_basic->GetXaxis()->SetRangeUser(-2.8,2.8);}
             else if ( strncmp(file1dname[i],"tt_mass", 1000 ) == 0 ) {h_basic->GetXaxis()->SetNdivisions(-504);}
             else h_basic->GetXaxis()->SetNdivisions(504);
             h_basic->Draw("e3");
@@ -1915,6 +1944,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
             //gPad->SetGridy();
             //cout << "----------------------------------------------" << endl;
+
+            TGraphAsymmErrors *ratioG = GetPoissonizedRatioGraph(h_dt1d[i], h_mc1d_tot[i]);
+
             TH1F *ratio = (TH1F *) h_dt1d[i]->Clone(Form("%s_ratio", h_dt1d[i]->GetName()));
             ratio->Divide(h_mc1d_tot[i]);
 
@@ -1927,7 +1959,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             //    else
             //    ratio->GetYaxis()->SetRangeUser(0.7,1.3);
             ratio->GetYaxis()->SetRangeUser(0.68, 1.32);
-            if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 ) {ratio->GetXaxis()->SetNdivisions(508);ratio->GetXaxis()->SetRangeUser(-2.8,2.8);}
+            if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 || strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) {ratio->GetXaxis()->SetNdivisions(508);ratio->GetXaxis()->SetRangeUser(-2.8,2.8);}
             else if ( strncmp(file1dname[i],"tt_mass", 1000 ) == 0 ) {ratio->GetXaxis()->SetNdivisions(-504);}
             else ratio->GetXaxis()->SetNdivisions(504);
             //if (i == 3) ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
@@ -1940,7 +1972,13 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
             //  ratio->SetMarkerSize(1);
             h_basic->GetXaxis()->SetLabelSize(0.);
             h_basic->GetXaxis()->SetTitleSize(0.);
-            ratio->Draw();
+            
+            if ( strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) {
+                ratio->GetYaxis()->SetRangeUser(0.83, 1.17);
+                ratio->Draw("E0");
+                //ratioG->Draw("p,E0,same");
+            }
+            else ratio->Draw();
 
             // float xmin = ratio->GetXaxis()->GetBinLowEdge(1);
             // float xmax = ratio->GetXaxis()->GetBinUpEdge(ratio->GetNbinsX());
@@ -1953,7 +1991,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
             TLine line;
             line.SetLineWidth(1);
-            if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 ) line.DrawLine(-2.8, 1, 2.8, 1);
+            if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 || strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) line.DrawLine(-2.8, 1, 2.8, 1);
             else line.DrawLine(h_dt1d[i]->GetXaxis()->GetXmin(), 1, h_dt1d[i]->GetXaxis()->GetXmax(), 1);
 
             canv1d[i]->Update();
@@ -2205,7 +2243,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         h_basic->SetMarkerColor(kWhite);
         h_basic->SetMarkerSize(0.000001);
         h_basic->SetMarkerStyle(1);
-        if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 ) {h_basic->GetXaxis()->SetNdivisions(508);h_basic->GetXaxis()->SetRangeUser(-2.8,2.8);}
+        if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 || strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) {h_basic->GetXaxis()->SetNdivisions(508);h_basic->GetXaxis()->SetRangeUser(-2.8,2.8);}
         else if ( strncmp(file1dname[i],"tt_mass", 1000 ) == 0 ) {h_basic->GetXaxis()->SetNdivisions(-504);}
         else h_basic->GetXaxis()->SetNdivisions(504);
         h_basic->Draw("e3");
@@ -2253,6 +2291,9 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         //gPad->SetGridy();
         //cout << "----------------------------------------------" << endl;
+
+        TGraphAsymmErrors *ratioG = GetPoissonizedRatioGraph(h_dt1d_comb[i], h_mc1d_tot_comb[i]);
+
         TH1F *ratio = (TH1F *) h_dt1d_comb[i]->Clone(Form("%s_ratio", h_dt1d_comb[i]->GetName()));
         ratio->Divide(h_mc1d_tot_comb[i]);
 
@@ -2261,7 +2302,7 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
         ratio->GetYaxis()->SetNdivisions(305);
         ratio->GetYaxis()->SetLabelSize(h_basic->GetYaxis()->GetLabelSize()*(1.-r)/r);
         ratio->GetYaxis()->SetRangeUser(0.68, 1.32);
-        if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 ) {ratio->GetXaxis()->SetNdivisions(508);ratio->GetXaxis()->SetRangeUser(-2.8,2.8);}
+        if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 || strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) {ratio->GetXaxis()->SetNdivisions(508);ratio->GetXaxis()->SetRangeUser(-2.8,2.8);}
         else if ( strncmp(file1dname[i],"tt_mass", 1000 ) == 0 ) {ratio->GetXaxis()->SetNdivisions(-504);}
         else ratio->GetXaxis()->SetNdivisions(504);
         ratio->GetYaxis()->SetTitle("Data/Simulation ");
@@ -2273,11 +2314,17 @@ void doDataMCPlotsSIG(const char *region = "SIG", const char *ttbar_tag = "mcatn
 
         h_basic->GetXaxis()->SetLabelSize(0.);
         h_basic->GetXaxis()->SetTitleSize(0.);
-        ratio->Draw();
+        
+        if ( strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) {
+            ratio->GetYaxis()->SetRangeUser(0.83, 1.17);
+            ratio->Draw("E0");
+            //ratioG->Draw("p,E0,same");
+        }
+        else ratio->Draw();
 
         TLine line;
         line.SetLineWidth(1);
-        if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 ) line.DrawLine(-2.8, 1, 2.8, 1);
+        if ( strncmp(file1dname[i],"ttRapidity2", 1000 ) == 0 || strncmp(file1dname[i],"top_rapiditydiff_Marco", 1000 ) == 0 || strncmp(file1dname[i],"lep_charge_asymmetry", 1000 ) == 0 ) line.DrawLine(-2.8, 1, 2.8, 1);
         else line.DrawLine(h_dt1d_comb[i]->GetXaxis()->GetXmin(), 1, h_dt1d_comb[i]->GetXaxis()->GetXmax(), 1);
 
         canv1d_comb[i]->Update();
@@ -2449,6 +2496,37 @@ TGraphAsymmErrors *GetPoissonizedGraph(TH1F *histo)
     return graph;
 
 }
+
+TGraphAsymmErrors *GetPoissonizedRatioGraph(TH1F *histo, TH1F *histoMC)
+{
+
+    TGraphAsymmErrors *graph = new TGraphAsymmErrors();
+    graph->SetName(Form("g_%s", histoMC->GetName()));
+
+    int j = 0;
+    for (int i = 1; i <= histo->GetNbinsX(); ++i)
+    {
+
+        if (histo->GetBinContent(i) != 0 && histoMC->GetBinContent(i) != 0)
+        {
+
+            graph->SetPoint(j, histo->GetBinCenter(i), histo->GetBinContent(i)/histoMC->GetBinContent(i));
+
+            graph->SetPointError(j,
+                                 //histo->GetBinWidth(i) / 2.,
+                                 //histo->GetBinWidth(i) / 2.,
+                                 0.,
+                                 0.,
+                                 (histo->GetBinContent(i)/histoMC->GetBinContent(i))*sqrt(pow(error_poisson_down(histo->GetBinContent(i))/histo->GetBinContent(i),2) + pow(histoMC->GetBinError(i)/histoMC->GetBinContent(i),2)),
+                                 (histo->GetBinContent(i)/histoMC->GetBinContent(i))*sqrt(pow(error_poisson_up(histo->GetBinContent(i))/histo->GetBinContent(i),2) + pow(histoMC->GetBinError(i)/histoMC->GetBinContent(i),2)) );
+
+            ++j;
+        }
+    }
+    return graph;
+
+}
+
 
 double error_poisson_up(double data)
 {
