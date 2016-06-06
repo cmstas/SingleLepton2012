@@ -354,6 +354,66 @@ def GetCorrectedAfb_integratewidth_V(covarianceM, nbins, n, binwidth):
 
 
 
+def GetCorrectedAfb_integratewidth_V_diff(covarianceM, nbins, n, binwidth):
+
+    # Need to calculate AFB and Error for the fully corrected distribution, m_correctE(j,i)
+    afb = zeros( [nbins/2] )
+    afberr = zeros( [nbins/2] )
+    afbcov = zeros( [nbins/2,nbins/2] )
+    afbcor = zeros( [nbins/2,nbins/2] )
+
+    dfdn = zeros( [nbins,nbins/2] )
+
+    # Setup Alpha Vector
+    alpha = zeros( [nbins] )
+    for i in range(nbins):
+        if i < nbins/2: alpha[i] = -1
+        else: alpha[i] = 1
+
+    for k in range(nbins/2):
+        # Components of the error calculation
+        sum_n = 0.
+        sum_alpha_n = 0.
+        for i in range(nbins):
+            if( i==k or i==nbins-k-1):
+                sum_n += n[i] * binwidth[i]
+                sum_alpha_n += alpha[i] * n[i] * binwidth[i]
+
+        for i in range(nbins):
+            if( i==k or i==nbins-k-1):
+                dfdn[i][k] = ( alpha[i] * sum_n - sum_alpha_n ) / pow(sum_n,2)
+
+        # Calculate Afb
+        afb[k] = sum_alpha_n / sum_n
+
+
+    for k in range(nbins/2):
+
+        # Error Calculation
+        for l in range(nbins/2):
+            for i in range(nbins):
+                if( i==k or i==nbins-k-1):
+                    for j in range(nbins):
+                        if( j==l or j==nbins-l-1):
+                            if(k==l): afberr[k] += covarianceM[i,j] * dfdn[i][k] * dfdn[j][l] * binwidth[i] * binwidth[j]
+                            afbcov[k,l] += covarianceM[i,j] * dfdn[i][k] * dfdn[j][l] * binwidth[i] * binwidth[j]
+
+        afberr[k] = sqrt(afberr[k])
+
+    for row in range(nbins/2):
+        for col in range(nbins/2):
+            afbcor[row,col] = afbcov[row,col] / math.sqrt( afbcov[row,row] * afbcov[col,col] )
+
+
+    print afb
+    print afberr
+    print afbcor
+
+    return (afb,afberr,afbcov)
+
+
+
+
 def GetNormalisedCovarianceMatrix(covarianceM, nbins, n, binwidth):
 
     # Components of the error calculation
@@ -1241,6 +1301,9 @@ def main():
                 if abs(covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j])>1e-7: print "WARNING: if this is not a rounding error, something went wrong with GetNormalisedCovarianceMatrix: %2.3g" % ((covar_total_incDataStat_test[i,j] - covar_total_incDataStat[i,j])/sqrt(covar_total_incDataStat[i,i]*covar_total_incDataStat[j,j]))
 
         if nbins2D==0:
+            (afbdiff,afberrdiff,afbcovdiff) = GetCorrectedAfb_integratewidth_V_diff(covDataStat, nbins, bin_nominals_i, binwidth)
+            #(afbdiff,afberrdiff,afbcovdiff) = GetCorrectedAfb_integratewidth_V_diff(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
+            (afbdiff,afberrdiff,afbcovdiff) = GetCorrectedAfb_integratewidth_V_diff(covar_total, nbins, bin_nominals_i, binwidth)
             (afb,afberrdatastat[plot]) = GetCorrectedAfb_integratewidth_V(covDataStat, nbins, bin_nominals_i, binwidth)
             (afb,afberrtotal[plot]) = GetCorrectedAfb_integratewidth_V(covar_total_incDataStat, nbins, bin_nominals_i, binwidth)
             (afbs[plot],afberrsyst[plot]) = GetCorrectedAfb_integratewidth_V(covar_total, nbins, bin_nominals_i, binwidth)
